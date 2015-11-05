@@ -68,7 +68,7 @@ vector<CHotspot *> CNodeRepair::RepairPoorNodes()
 	while(! poorNodes.empty())
 	{
 		int inode = poorNodes[0];
-		while(countForNode(selectedHotspots, inode) < LAMBDA * time)
+		while(countForNode(selectedHotspots, inode) < LAMBDA * min(time, MAX_MEMORY_TIME) )
 		{
 			CHotspot *hotspot = findMaxCoverHotspotForNode(inode);
 			if(hotspot != NULL)

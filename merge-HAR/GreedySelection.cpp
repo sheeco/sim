@@ -112,21 +112,28 @@ void CGreedySelection::GreedySelect(int time)
 			//merge-HAR: ratio
 			cover *= pow( hotspotsAboveAverage[i]->getRatioByCandidateType(), hotspotsAboveAverage[i]->getAge() );
 
-			if( cover >= max_cover)
+			if( cover > max_cover)
 			{
 				index_max_hotspot = i;
 				max_cover = cover;
 			}
 		}  //调整中心结束
 
+		CHotspot *best_hotspot;
 		if(index_max_hotspot == -1)
 		{
-			cout<<"Error: CGreedySelection::GreedySelection() index_max_hotspot == -1"<<endl;
-			_PAUSE;
+			//cout<<"Error: CGreedySelection::GreedySelection() index_max_hotspot == -1"<<endl;
+			
+			//在merge-HAR中可能出现此情况，剩余的未选中热点中有一部分由于是旧热点，系数得到累积之后达不到GAMA指示的水平
+			//此时，直接选中cover数最大的候选热点
+			index_max_hotspot = unselectedHotspots.size() - 1;
+			best_hotspot = unselectedHotspots[index_max_hotspot];
 		}
-
-		//选中当前cover数最大的hotspot
-		CHotspot *best_hotspot = hotspotsAboveAverage[index_max_hotspot];
+		else
+		{
+			//选中当前cover数最大的hotspot
+			best_hotspot = hotspotsAboveAverage[index_max_hotspot];
+		}
 
 		if(DO_MERGE_HAR)
 		{
