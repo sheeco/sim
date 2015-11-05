@@ -85,7 +85,7 @@ int g_nHotspotCandidates = 0;
 
 string logInfo;
 
-string HELP = "\n         ( ALL CASE SENSITIVE ) \n"
+string HELP = "\n       ( ALL CASE SENSITIVE ) \n"
 			  "<mode>        -har;          -ihar;       -mhar; \n"
 			  "<time>		 -data [];	    -run []; \n"
 			  "<parameter>   -alpha [];     -beta [];    -gama [];    -heat [] [];    -prob []; \n"
