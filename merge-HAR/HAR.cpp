@@ -700,7 +700,7 @@ void HAR::CompareWithOldHotspots()
 	double newArea = g_selectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(g_selectedHotspots);
 
 	ofstream similarity("similarity.txt", ios::app);
-	if(currentTime == startTimeForHotspotSelection)
+	if( currentTime == startTimeForHotspotSelection + SLOT_HOTSPOT_UPDATE )
 	{
 		similarity << logInfo;
 		similarity << "#time" << TAB << "#Overlap/Old" << TAB << "#Overlap/New" << TAB
