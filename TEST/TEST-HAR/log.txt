@@ -1,0 +1,479 @@
+
+########  [ 0 ]  LOCATION UPDATE
+
+########  [ 0 ]  HOTSPOT SELECTTION
+####  [ Hotspot ]  25
+####  [ MA Node ]  0
+##  99 - 24 - 1 - 25 - 99	714.444
+##  99 - 7 - 12 - 14 - 9 - 10 - 8 - 3 - 99	808.466
+##  99 - 26 - 0 - 28 - 18 - 11 - 23 - 19 - 6 - 99	676.096
+##  99 - 5 - 15 - 22 - 17 - 21 - 13 - 4 - 99	503.703
+
+########  [ 0 ]  NODE MOBILITY
+
+########  [ 0 ]  DATA GENERATE
+
+########  [ 0 ]  DATA SEND
+####  [ MA 0 Receives 9 Data ]
+####  [ Delivery Ratio ]  0
+####  [ MA State ]  9  0  0  0  
+####  [ MA 2 Waits For 0 ]
+####  [ MA 3 Waits For 0 ]
+####  [ MA 3 Waits For 0 ]
+####  [ MA 2 Receives 2 Data ]
+####  [ MA 3 Receives 18 Data ]
+####  [ Delivery Ratio ]  0
+####  [ MA 2 Waits For 0 ]
+####  [ MA 3 Waits For 0 ]
+####  [ MA 3 Sends 18 Data ]
+####  [ MA 2 Receives 20 Data ]
+####  [ MA 3 Receives 18 Data ]
+####  [ Delivery Ratio ]  0.0779221
+
+########  [ 30 ]  NODE MOBILITY
+
+########  [ 30 ]  DATA SEND
+####  [ MA 3 Waits For 0 ]
+####  [ Delivery Ratio ]  0.0584416
+####  [ MA 2 Receives 5 Data ]
+####  [ Delivery Ratio ]  0.0467532
+####  [ MA 1 Waits For 0 ]
+####  [ Delivery Ratio ]  0.038961
+
+########  [ 60 ]  NODE MOBILITY
+
+########  [ 60 ]  DATA SEND
+####  [ MA 3 Receives 7 Data ]
+####  [ Delivery Ratio ]  0.0333952
+####  [ MA 2 Waits For 0 ]
+####  [ MA 3 Waits For 0 ]
+####  [ Delivery Ratio ]  0.0292208
+####  [ MA 2 Receives 2 Data ]
+####  [ Delivery Ratio ]  0.025974
+
+########  [ 90 ]  NODE MOBILITY
+
+########  [ 90 ]  DATA SEND
+####  [ MA 2 Receives 10 Data ]
+####  [ Delivery Ratio ]  0.0233766
+
+########  [ 100 ]  LOCATION UPDATE
+####  [ MA 2 Waits For 0 ]
+####  [ Delivery Ratio ]  0.0212515
+####  [ MA State ]  9  0  39  25  
+####  [ Delivery Ratio ]  0.0194805
+
+########  [ 120 ]  NODE MOBILITY
+
+########  [ 120 ]  DATA SEND
+####  [ MA 1 Receives 13 Data ]
+####  [ Delivery Ratio ]  0.017982
+####  [ Delivery Ratio ]  0.0166976
+####  [ Delivery Ratio ]  0.0155844
+
+########  [ 150 ]  NODE MOBILITY
+
+########  [ 150 ]  DATA SEND
+####  [ MA 0 Waits For 0 ]
+####  [ MA 1 Waits For 0 ]
+####  [ MA 1 Receives 16 Data ]
+####  [ MA 1 Receives 6 Data ]
+####  [ Delivery Ratio ]  0.0146104
+####  [ Delivery Ratio ]  0.013751
+####  [ Delivery Ratio ]  0.012987
+
+########  [ 180 ]  NODE MOBILITY
+
+########  [ 180 ]  DATA GENERATE
+
+########  [ 180 ]  DATA SEND
+####  [ Delivery Ratio ]  0.0123035
+####  [ Delivery Ratio ]  0.0116883
+
+########  [ 200 ]  LOCATION UPDATE
+####  [ Delivery Ratio ]  0.0111317
+####  [ MA State ]  9  35  39  25  
+
+########  [ 210 ]  NODE MOBILITY
+
+########  [ 210 ]  DATA SEND
+####  [ Delivery Ratio ]  0.0106257
+####  [ Delivery Ratio ]  0.0101637
+####  [ Delivery Ratio ]  0.00974026
+
+########  [ 240 ]  NODE MOBILITY
+
+########  [ 240 ]  DATA SEND
+####  [ MA 3 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.00935065
+####  [ MA 3 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.00899101
+####  [ MA 3 Waits For 0 ]
+####  [ Delivery Ratio ]  0.00865801
+
+########  [ 270 ]  NODE MOBILITY
+
+########  [ 270 ]  DATA SEND
+####  [ Delivery Ratio ]  0.00834879
+####  [ MA 0 Waits For 0 ]
+####  [ MA 2 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.0080609
+####  [ MA 2 Waits For 0 ]
+####  [ Delivery Ratio ]  0.00779221
+
+########  [ 300 ]  LOCATION UPDATE
+
+########  [ 300 ]  NODE MOBILITY
+
+########  [ 300 ]  DATA SEND
+####  [ Delivery Ratio ]  0.00754085
+####  [ MA State ]  9  35  59  65  
+####  [ Delivery Ratio ]  0.00730519
+####  [ MA 3 Waits For 0 ]
+####  [ MA 3 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.00708383
+
+########  [ 330 ]  NODE MOBILITY
+
+########  [ 330 ]  DATA SEND
+####  [ Delivery Ratio ]  0.00687548
+####  [ MA 1 Waits For 0 ]
+####  [ Delivery Ratio ]  0.00667904
+####  [ Delivery Ratio ]  0.00649351
+
+########  [ 360 ]  NODE MOBILITY
+
+########  [ 360 ]  DATA GENERATE
+
+########  [ 360 ]  DATA SEND
+####  [ Delivery Ratio ]  0.00631801
+####  [ Delivery Ratio ]  0.00615174
+####  [ MA 1 Waits For 0 ]
+####  [ MA 2 Waits For 0 ]
+####  [ MA 2 Receives 6 Data ]
+####  [ MA 2 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.00599401
+
+########  [ 390 ]  NODE MOBILITY
+
+########  [ 390 ]  DATA SEND
+####  [ Delivery Ratio ]  0.00584416
+
+########  [ 400 ]  LOCATION UPDATE
+####  [ Delivery Ratio ]  0.00570162
+####  [ MA State ]  9  35  85  85  
+####  [ Delivery Ratio ]  0.00556586
+
+########  [ 420 ]  NODE MOBILITY
+
+########  [ 420 ]  DATA SEND
+####  [ Delivery Ratio ]  0.00543642
+####  [ Delivery Ratio ]  0.00531287
+####  [ Delivery Ratio ]  0.00519481
+
+########  [ 450 ]  NODE MOBILITY
+
+########  [ 450 ]  DATA SEND
+####  [ Delivery Ratio ]  0.00508187
+####  [ MA 3 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.00497375
+####  [ MA 2 Waits For 0 ]
+####  [ Delivery Ratio ]  0.00487013
+
+########  [ 480 ]  NODE MOBILITY
+
+########  [ 480 ]  DATA SEND
+####  [ Delivery Ratio ]  0.00477074
+####  [ MA 2 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.00467532
+
+########  [ 500 ]  LOCATION UPDATE
+####  [ Delivery Ratio ]  0.00458365
+####  [ MA State ]  9  35  100  100  
+
+########  [ 510 ]  NODE MOBILITY
+
+########  [ 510 ]  DATA SEND
+####  [ MA 3 Sends 100 Data ]
+####  [ MA 3 Waits For 0 ]
+####  [ Delivery Ratio ]  0.0294705
+####  [ MA 1 Waits For 0 ]
+####  [ MA 3 Waits For 0 ]
+####  [ MA 3 Waits For 0 ]
+####  [ MA 3 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.0289145
+####  [ MA 1 Waits For 0 ]
+####  [ Delivery Ratio ]  0.028379
+
+########  [ 540 ]  NODE MOBILITY
+
+########  [ 540 ]  DATA GENERATE
+
+########  [ 540 ]  DATA SEND
+####  [ MA 0 Waits For 0 ]
+####  [ MA 3 Waits For 0 ]
+####  [ Delivery Ratio ]  0.027863
+####  [ Delivery Ratio ]  0.0273655
+####  [ Delivery Ratio ]  0.0268854
+
+########  [ 570 ]  NODE MOBILITY
+
+########  [ 570 ]  DATA SEND
+####  [ MA 3 Waits For 0 ]
+####  [ MA 3 Receives 20 Data ]
+####  [ MA 3 Receives 20 Data ]
+####  [ MA 3 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.0264219
+####  [ Delivery Ratio ]  0.025974
+####  [ Delivery Ratio ]  0.0255411
+
+########  [ 600 ]  LOCATION UPDATE
+
+########  [ 600 ]  NODE MOBILITY
+
+########  [ 600 ]  DATA SEND
+####  [ Delivery Ratio ]  0.0251224
+####  [ MA State ]  9  35  100  80  
+####  [ MA 1 Waits For 0 ]
+####  [ Delivery Ratio ]  0.0247172
+####  [ MA 1 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.0243249
+
+########  [ 630 ]  NODE MOBILITY
+
+########  [ 630 ]  DATA SEND
+####  [ MA 1 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.0239448
+####  [ Delivery Ratio ]  0.0235764
+####  [ Delivery Ratio ]  0.0232192
+
+########  [ 660 ]  NODE MOBILITY
+
+########  [ 660 ]  DATA SEND
+####  [ Delivery Ratio ]  0.0228726
+####  [ Delivery Ratio ]  0.0225363
+####  [ MA 2 Sends 100 Data ]
+####  [ MA 2 Receives 20 Data ]
+####  [ MA 2 Receives 16 Data ]
+####  [ MA 2 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.0410314
+
+########  [ 690 ]  NODE MOBILITY
+
+########  [ 690 ]  DATA SEND
+####  [ MA 2 Waits For 0 ]
+####  [ Delivery Ratio ]  0.0404453
+
+########  [ 700 ]  LOCATION UPDATE
+####  [ MA 2 Waits For 0 ]
+####  [ Delivery Ratio ]  0.0398756
+####  [ MA State ]  9  75  56  80  
+####  [ MA 0 Receives 3 Data ]
+####  [ Delivery Ratio ]  0.0393218
+
+########  [ 720 ]  NODE MOBILITY
+
+########  [ 720 ]  DATA GENERATE
+
+########  [ 720 ]  DATA SEND
+####  [ MA 0 Sends 12 Data ]
+####  [ MA 0 Receives 20 Data ]
+####  [ MA 0 Receives 20 Data ]
+####  [ MA 0 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.040918
+####  [ Delivery Ratio ]  0.040365
+####  [ Delivery Ratio ]  0.0398268
+
+########  [ 750 ]  NODE MOBILITY
+
+########  [ 750 ]  DATA SEND
+####  [ MA 2 Waits For 0 ]
+####  [ MA 3 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.0393028
+####  [ MA 2 Receives 19 Data ]
+####  [ Delivery Ratio ]  0.0387924
+####  [ MA 2 Waits For 0 ]
+####  [ MA 2 Receives 20 Data ]
+####  [ MA 2 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.038295
+
+########  [ 780 ]  NODE MOBILITY
+
+########  [ 780 ]  DATA SEND
+####  [ Delivery Ratio ]  0.0378103
+####  [ Delivery Ratio ]  0.0373377
+
+########  [ 800 ]  LOCATION UPDATE
+####  [ Delivery Ratio ]  0.0368767
+####  [ MA State ]  41  75  100  100  
+
+########  [ 810 ]  NODE MOBILITY
+
+########  [ 810 ]  DATA SEND
+####  [ MA 1 Sends 75 Data ]
+####  [ MA 1 Receives 20 Data ]
+####  [ MA 1 Receives 9 Data ]
+####  [ MA 1 Receives 13 Data ]
+####  [ Delivery Ratio ]  0.0483054
+####  [ Delivery Ratio ]  0.0477234
+####  [ Delivery Ratio ]  0.0471552
+
+########  [ 840 ]  NODE MOBILITY
+
+########  [ 840 ]  DATA SEND
+####  [ Delivery Ratio ]  0.0466005
+####  [ Delivery Ratio ]  0.0460586
+####  [ MA 1 Waits For 0 ]
+####  [ MA 0 Receives 11 Data ]
+####  [ MA 0 Receives 20 Data ]
+####  [ Delivery Ratio ]  0.0455292
+
+########  [ 870 ]  NODE MOBILITY
+
+########  [ 870 ]  DATA SEND
+####  [ MA 0 Waits For 0 ]
+####  [ Delivery Ratio ]  0.0450118
+####  [ Delivery Ratio ]  0.0445061
+####  [ Delivery Ratio ]  0.0440115
+
+########  [ 900 ]  LOCATION UPDATE
+
+########  [ 900 ]  HOTSPOT SELECTTION
+####  [ Hotspot ]  13
+####  [ MA Node ]  4
+##  99 - 107 - 99	294.147
+##  99 - 177 - 99	372.481
+##  99 - 287 - 99	2.41003
+##  99 - 167 - 99	16.1685
+##  99 - 170 - 99	369.693
+##  99 - 179 - 255 - 99	455.448
+##  99 - 181 - 163 - 169 - 1 - 99	733.354
+##  99 - 60 - 241 - 99	491.515
+
+########  [ 900 ]  NODE MOBILITY
+
+########  [ 900 ]  DATA GENERATE
+
+########  [ 900 ]  DATA SEND
+####  [ MA 1 Sends 42 Data ]
+####  [ MA 1 Updates Its Route ]
+####  [ MA 1 Receives 18 Data ]
+####  [ MA 1 Receives 20 Data ]
+####  [ MA 1 Receives 9 Data ]
+####  [ MA 4 Receives 9 Data ]
+####  [ Delivery Ratio ]  0.0495219
+####  [ MA State ]  72  47  100  100  9  0  0  0  
+####  [ MA 6 Waits For 232 ]
+####  [ MA 7 Waits For 264 ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0489836
+####  [ MA 6 Sends 11 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.049993
+
+########  [ 930 ]  NODE MOBILITY
+
+########  [ 930 ]  DATA SEND
+####  [ MA 6 Sends 11 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0509809
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0518113
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0526245
+
+########  [ 960 ]  NODE MOBILITY
+
+########  [ 960 ]  DATA SEND
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0534208
+####  [ MA 2 Sends 100 Data ]
+####  [ MA 2 Updates Its Route ]
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 2 Receives 7 Data ]
+####  [ MA 2 Receives 9 Data ]
+####  [ MA 2 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.067453
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0667716
+
+########  [ 990 ]  NODE MOBILITY
+
+########  [ 990 ]  DATA SEND
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0674026
+
+########  [ 1000 ]  LOCATION UPDATE
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0680211
+####  [ MA State ]  72  47  17  100  9  0  10  0  
+####  [ MA 3 Sends 100 Data ]
+####  [ MA 3 Updates Its Route ]
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 3 Receives 9 Data ]
+####  [ MA 3 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0813598
+
+########  [ 1020 ]  NODE MOBILITY
+
+########  [ 1020 ]  DATA SEND
+####  [ MA 2 Waits For 273 ]
+####  [ MA 2 Receives 20 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0805699
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 2 Receives 9 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.081044
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 2 Receives 9 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.081509
+
+########  [ 1050 ]  NODE MOBILITY
+
+########  [ 1050 ]  DATA SEND
+####  [ MA 4 Waits For 298 ]
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 2 Receives 9 Data ]
+####  [ MA 4 Receives 19 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0819652
+####  [ MA 0 Sends 72 Data ]
+####  [ MA 0 Updates Its Route ]
+####  [ MA 3 Waits For 90 ]
+####  [ MA 6 Sends 10 Data ]
+####  [ MA 0 Receives 9 Data ]
+####  [ MA 0 Receives 1 Data ]
+####  [ MA 2 Receives 9 Data ]
+####  [ MA 3 Receives 20 Data ]
+####  [ MA 4 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0911518
+####  [ MA 2 Receives 9 Data ]
+####  [ MA 3 Receives 1 Data ]
+####  [ MA 4 Receives 1 Data ]
+####  [ MA 6 Receives 9 Data ]
+####  [ MA 6 Receives 1 Data ]
+####  [ Delivery Ratio ]  0.0903078
+
+########  [ 1080 ]  NODE MOBILITY

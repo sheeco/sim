@@ -1,0 +1,7 @@
+0	0	77	0
+
+#2015-10-30 19:29:55
+#HAR
+
+#Time	#ArrivalCount	#TotalCount	#DeliveryRatio
+900	347	6930	0.0500722
