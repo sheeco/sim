@@ -4,6 +4,7 @@
 using namespace std;
 
 extern bool DO_MERGE_HAR;
+extern double GAMA;
 extern int startTimeForHotspotSelection;
 extern int g_nPositions;
 extern vector<CPosition*> g_positions;

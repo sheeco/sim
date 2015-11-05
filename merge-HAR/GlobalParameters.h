@@ -1,7 +1,5 @@
 #pragma once
 
-// TODO: 在此处引用程序需要的其他头文件
-
 #include <stdio.h>
 #include <afx.h>
 #include <tchar.h>
@@ -52,7 +50,7 @@ using namespace std;
 #define RATE_DATA_GENERATE 0.01
 #define CONSUMPTION_DATA_SEND 1
 #define CONSUMPTION_DATA_RECIEVE 0.5
-#define PROB_DATA_FORWARD 1.0
+//#define PROB_DATA_FORWARD 1.0
 
 /********************************** GA ***********************************/
 #define DO_GA false
@@ -60,10 +58,6 @@ using namespace std;
 
 /********************************* IHAR **********************************/
 //#define DO_IHAR false
-
-//IHAR: Node Repair
-#define LAMBDA(t) 0.06 * t
-#define MAX_MEMORY_TIME 3600
 
 //IHAR: Node Number Test
 #define TEST_CHANGE_NUM_NODE false
@@ -81,6 +75,8 @@ using namespace std;
 #define ROUND(x) (x - floor(x) >= 0.5) ? (int)ceil(x) : (int)floor(x)
 #define TAB "\t"
 #define _PAUSE system("pause")
+#define PI 3.1415926535
+#define AREA_SINGE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
 
 /****************************** Global的辅助函数 *******************************/
 //Randomly product a float number between min and max

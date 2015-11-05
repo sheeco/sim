@@ -1,6 +1,6 @@
 #include "HAR.h"
 
-//void HAR::HotspotSelection(int time)
+//void HAR::HotspotSelection()
 //{
 //
 //}
@@ -20,38 +20,39 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 		sum_generationRate += m_nodes.at(coveredNodes[i]).getGenerationRate();
 	}
 
-	////merge-HAR: ratio
+	double ratio = 1;
+
+	////merge-HAR: exp ratio
 	//double ratio = pow( hotspot->getRatioByCandidateType(), hotspot->getAge() );
 
 	//merge-HAR: ln ratio
-	//double ratio = hotspot->getRatioByCandidateType() * log( 1 + hotspot->getAge() );
-	//if(ratio == 0)
-	//	ratio = 1;
-
-	double ratio = 1;
+	//double ratio = hotspot->getRatioByCandidateType() * ( 1 + log( 1 + hotspot->getAge() ) );
 
 	return ratio * ( CO_HOTSPOT_HEAT_A1 * nCoveredNodes + CO_HOTSPOT_HEAT_A2 * sum_generationRate ) ;
 }
 
-double HAR::getWaitingTime(CHotspot *hotspot, int time)
+double HAR::getWaitingTime(CHotspot *hotspot)
 {
 	long double result = 1;
 	int count_trueHotspot = 0;
 	vector<int> coveredNodes = hotspot->getCoveredNodes();
 	for(int i = 0; i < coveredNodes.size(); i++)
 	{
-		int tmp_time = time;
+		int tmp_time = currentTime;
 		double tmp;
 
-		//IHAR: Reduce Memory Time
+		//IHAR: Reduce Memory currentTime
 		if(DO_IHAR)
 		{
-			time = min(time, MAX_MEMORY_TIME);
+			tmp_time = min(currentTime, MAX_MEMORY_TIME);
 		}
 
-		tmp = (double) hotspot->getNCoveredPositionsForNode(coveredNodes[i]) / (double) (time + SLOT_HOTSPOT_UPDATE);
+		tmp = (double) hotspot->getNCoveredPositionsForNode(coveredNodes[i]) / (double) (tmp_time + SLOT_HOTSPOT_UPDATE);
 
-		//double tmp = (double) hotspot->getNCoveredPositionsForNode(coveredNodes[i]) / (double) (time + SLOT_HOTSPOT_UPDATE);
+		//merge-HAR: ratio
+		tmp *= pow( hotspot->getRatioByCandidateType(), hotspot->getAge() );
+
+		//double tmp = (double) hotspot->getNCoveredPositionsForNode(coveredNodes[i]) / (double) (currentTime + SLOT_HOTSPOT_UPDATE);
 		if(tmp >= BETA)
 		{
 			result *= tmp;
@@ -93,20 +94,20 @@ double HAR::getSumGenerationRate(vector<int> nodes_a, vector<int> nodes_b)
 	return sum;
 }
 
-double HAR::getTimeIncrementForInsertion(CRoute route, int front, CHotspot *hotspot, int time)
+double HAR::getTimeIncrementForInsertion(CRoute route, int front, CHotspot *hotspot)
 {
-	double result = getWaitingTime(hotspot, time) + ( route.getAddingDistance(front, hotspot) / SPEED_MANODE );
+	double result = getWaitingTime(hotspot) + ( route.getAddingDistance(front, hotspot) / SPEED_MANODE );
 	return result;
 }
 
-double HAR::calculateRatioForInsertion(CRoute route, int front, CHotspot *hotspot, int time)
+double HAR::calculateRatioForInsertion(CRoute route, int front, CHotspot *hotspot)
 {
-	double time_incr = getTimeIncrementForInsertion(route, front, hotspot, time);
+	double time_incr = getTimeIncrementForInsertion(route, front, hotspot);
 	double sumGenerationRate = getSumGenerationRate(route.getCoveredNodes(), hotspot->getCoveredNodes());
 	return ( time_incr * sumGenerationRate );
 }
 
-double HAR::calculateEDTime(int time)
+double HAR::calculateEDTime()
 {
 	double sum_length = 0;
 	double avg_length = 0;
@@ -126,7 +127,7 @@ double HAR::calculateEDTime(int time)
 	avg_length = sum_length / m_hotspots.size() + 1;
 	for(vector<CHotspot *>::iterator ihotspot = m_hotspots.begin(); ihotspot != m_hotspots.end(); ihotspot++)
 	{
-		sum_waitingTime += getWaitingTime(*ihotspot, time);
+		sum_waitingTime += getWaitingTime(*ihotspot);
 		sum_pm += exp( -1 / (*ihotspot)->getHeat() );
 	}
 	avg_waitingTime = sum_waitingTime / m_hotspots.size();
@@ -140,7 +141,7 @@ double HAR::calculateEDTime(int time)
 	return ED;
 }
 
-void HAR::ChangeNodeNumber(int time)
+void HAR::ChangeNodeNumber()
 {
 	float bet = RandomFloat(-1, 1);
 	if(bet > 0)
@@ -177,14 +178,14 @@ void HAR::ChangeNodeNumber(int time)
 	NUM_NODE += delta;
 }
 
-void HAR::UpdateNodeLocations(int time)
+void HAR::UpdateNodeLocations()
 {
 	//node
 	for(int i = 0; i < NUM_NODE; i++)
 	{
 		double x = 0, y = 0;
-		CFileParser::getPositionFromFile(i, time, x, y);
-		m_nodes[i].setLocation(x, y, time);
+		CFileParser::getPositionFromFile(i, currentTime, x, y);
+		m_nodes[i].setLocation(x, y, currentTime);
 	}
 }
 
@@ -216,17 +217,45 @@ void HAR::OptimizeRoute(CRoute &route)
 	route = result;
 }
 
-void HAR::HotspotClassification(int time, vector<CHotspot *> hotspots)
+void HAR::HotspotSelection()
 {
-	vector<CHotspot *> tmp_hotspots = hotspots;
-	this->m_hotspots = hotspots;
+	CGreedySelection greedySelection;
+
+	/**************************** 热点归并过程(merge-HAR) *****************************/
+	//merge-HAR: 
+	if(DO_MERGE_HAR)
+		greedySelection.mergeHotspots(currentTime);
+
+	/********************************** 贪婪选取 *************************************/
+	greedySelection.GreedySelect(currentTime);
+
+
+	/********************************* 后续选取过程 ***********************************/
+	CPostSelector postSelector(g_selectedHotspots);
+	g_selectedHotspots = postSelector.PostSelect(currentTime);
+
+	
+	/***************************** 疏漏节点修复过程(IHAR) ******************************/
+	//IHAR: POOR NODE REPAIR
+	if(DO_IHAR)
+	{
+		CNodeRepair repair(g_selectedHotspots, g_hotspotCandidates, currentTime);
+		g_selectedHotspots = repair.RepairPoorNodes();
+		g_selectedHotspots = postSelector.assignPositionsToHotspots(g_selectedHotspots);
+
+		//比较相邻两次热点选取的相似度
+		CompareWithOldHotspots();
+	}
+}
+
+void HAR::HotspotClassification()
+{
+	vector<CHotspot *> tmp_hotspots = g_selectedHotspots;
+	this->m_hotspots = g_selectedHotspots;
 	for(vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin(); ihotspot != tmp_hotspots.end(); ihotspot++)
 	{
 		(*ihotspot)->setHeat( getHotspotHeat(*ihotspot) );
 	}
-
-	//merge-HAR
-	//FIXME:
 	
 	vector<CRoute> newRoutes;
 	
@@ -266,7 +295,7 @@ void HAR::HotspotClassification(int time, vector<CHotspot *> hotspots)
 					}
 				}
 
-				time_increment = getTimeIncrementForInsertion(route, best_front, tmp_hotspots[ihotspot], time);
+				time_increment = getTimeIncrementForInsertion(route, best_front, tmp_hotspots[ihotspot]);
 				sum_generationRate = getSumGenerationRate(route.getCoveredNodes(), tmp_hotspots[ihotspot]->getCoveredNodes());
 				ratio = time_increment * sum_generationRate;  //sum_ge重复计算？？
 				if(ratio > max_ratio)
@@ -310,7 +339,7 @@ void HAR::HotspotClassification(int time, vector<CHotspot *> hotspots)
 }
 
 
-void HAR::MANodeRouteDesign(int time)
+void HAR::MANodeRouteDesign()
 {
 	vector<CRoute> routes = m_sink->getNewRoutes();
 	//对每个分类的路线用最近邻居算法进行优化
@@ -333,7 +362,7 @@ void HAR::MANodeRouteDesign(int time)
 		int num_newMANodes = routes.size() - m_MANodes.size();
 		for(int i = 0; i < num_newMANodes; i++)
 		{
-			CMANode ma(m_sink->popRoute(), time);
+			CMANode ma(m_sink->popRoute(), currentTime);
 			m_MANodes.push_back(ma);
 		}
 	}
@@ -343,35 +372,46 @@ void HAR::MANodeRouteDesign(int time)
 }
 
 
-void HAR::GenerateData(int time)
+void HAR::GenerateData()
 {
-	if(time > DATATIME)
+	if(currentTime > DATATIME)
 		return;
 
 	for(int i = 0; i < NUM_NODE; i++)
 	{
-		m_nodes.at(i).generateData(time);
+		m_nodes.at(i).generateData(currentTime);
 	}
 }
 
 
-void HAR::SendData(int time)
+void HAR::SendData()
 {
+	//记录waiting time信息
+	ofstream waiting_time("waiting-time.txt", ios::app);
+	if( currentTime == startTimeForHotspotSelection )
+	{
+		waiting_time << logInfo;
+		waiting_time << "#Time" << TAB << "#HotspotID" << TAB << "#HotspotType/HotspotAge" << TAB 
+					 << "#Cover" << TAB << "#Heat" << TAB << "#WaitingTime" << endl;
+	}
+	waiting_time.close();	
+
 	//更新所有MA的位置
 	for(vector<CMANode>::iterator iMANode = m_MANodes.begin(); iMANode != m_MANodes.end(); )
 	{
+
 		//重置flag为true
 		iMANode->setFlag(true);
 		do
 		{
-			iMANode->updateLocation(time);
+			iMANode->updateLocation(currentTime);
 			//如果到达sink，投递MA的所有数据
 			if( CBase::getDistance( *iMANode, *m_sink) <= TRANS_RANGE )
 			{
 				if(iMANode->getBufferSize() > 0)
 				{
 					cout << "####  [ MA " << iMANode->getID() << " Sends " << iMANode->getBufferSize() << " Data ]" << endl; 
-					m_sink->receiveData(iMANode->sendAllData(), time);
+					m_sink->receiveData(iMANode->sendAllData(), currentTime);
 				}
 				if( iMANode->routeIsOverdue() )
 				{
@@ -394,18 +434,43 @@ void HAR::SendData(int time)
 			if(   iMANode->isAtHotspot() 
 					&& iMANode->getWaitingTime() < 0 )
 			{
+				ofstream waiting_time("waiting-time.txt", ios::app);
+
+				CHotspot *atHotspot = iMANode->getAtHotspot();
+				int tmp = ROUND( getWaitingTime(atHotspot) );
 				//FIXME: 如果不允许Buffer溢出，Buffer已满时即直接跳过waiting
 				if( (! INFINITE_BUFFER) && (! BUFFER_OVERFLOW_ALLOWED) && iMANode->isFull() )
-					;
+					iMANode->setWaitingTime( 0 );
 				else
 				{
-					int tmp = getWaitingTime(iMANode->getAtHotspot(), time);
 					iMANode->setWaitingTime( tmp );
 					cout << "####  [ MA " << iMANode->getID() << " Waits For " << tmp << " ]" << endl;
+					if(tmp == 0)
+						iMANode->setAtHotspot(NULL);
 				}
-				iMANode->setAtHotspot(NULL);
+
+				//记录waiting time信息
+				waiting_time << atHotspot->getTime() << TAB << atHotspot->getID() << TAB ;
+				switch( atHotspot->getCandidateType() )
+				{
+					case TYPE_OLD_HOTSPOT: 
+						waiting_time << "O/" ;
+						break;
+					case TYPE_MERGE_HOTSPOT: 
+						waiting_time << "M/" ;
+						break;
+					case TYPE_NEW_HOTSPOT: 
+						waiting_time << "N/" ;
+						break;
+					default:
+						break;
+				}
+				waiting_time << atHotspot->getAge() << TAB << atHotspot->getNCoveredPosition() << TAB 
+							 << atHotspot->getHeat() << TAB << tmp << endl;
+				waiting_time.close();	
+
 			}
-		}while(iMANode->getTime() < time);
+		}while(iMANode->getTime() < currentTime);
 		
 		//删除多余的MA
 		if( ! iMANode->getFlag() )
@@ -427,6 +492,11 @@ void HAR::SendData(int time)
 			if(CBase::getDistance( (CBase)*iMANode, (CBase)*inode ) > TRANS_RANGE)
 				continue;
 
+			if( iMANode->isAtHotspot() )
+				CMANode::encountAtHotspots();
+			else
+				CMANode::encountOnTheWay();
+
 			if( ! inode->hasData() )
 				continue;
 
@@ -440,12 +510,12 @@ void HAR::SendData(int time)
 			if( INFINITE_BUFFER || BUFFER_OVERFLOW_ALLOWED )
 			{
 				cout << "####  [ MA " << iMANode->getID() << " Receives " << inode->getBufferSize() << " Data ]" << endl;
-				iMANode->receiveData(time, inode->sendAllData());
+				iMANode->receiveData(currentTime, inode->sendAllData());
 			}
 			else
 			{
 				cout << "####  [ MA " << iMANode->getID() << " Receives " << inode->getBufferSize() << " Data ]" << endl;
-				iMANode->receiveData(time, inode->sendData( iMANode->getBufferCapacity() ) );
+				iMANode->receiveData(currentTime, inode->sendData( iMANode->getBufferCapacity() ) );
 			}
 		}
 	}
@@ -457,59 +527,59 @@ void HAR::SendData(int time)
 	cout << "####  [ Delivery Ratio ]  " << CData::getDataArrivalCount() / (double)CData::getDataCount() << endl;
 }
 
-void HAR::PrintInfo(int time)
+void HAR::PrintInfo()
 {
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、节点buffer状态
-	if(time % SLOT_HOTSPOT_UPDATE == 0)
+	if(currentTime % SLOT_HOTSPOT_UPDATE == 0)
 	{
 		ofstream hotspot("hotspot.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			hotspot << logInfo;
-			hotspot << "#Time" << TAB << "#HotspotCount" << endl;
+			hotspot << "#time" << TAB << "#HotspotCount" << endl;
 		}
-		hotspot << time << TAB << g_selectedHotspots.size() << endl; 
+		hotspot << currentTime << TAB << g_selectedHotspots.size() << endl; 
 		//CFileParser::writeHotspotToFile("hotspot.txt", m_hotspots, false);
 
 		//CFileParser::writeHotspotToFile("hotspot-details.txt", m_hotspots, true);
 		ofstream hotspot_statistics("hotspot-statistics.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			hotspot_statistics << logInfo;
-			hotspot_statistics << "#Time" << TAB << "#CoverSum" << TAB << "#HotspotCount" << TAB << "#CoverAvg" << endl;
+			hotspot_statistics << "#time" << TAB << "#CoverSum" << TAB << "#HotspotCount" << TAB << "#CoverAvg" << endl;
 		}
-		CFileParser::writeHotspotStatisics(time, "hotspot-statistics.txt", m_hotspots);
+		CFileParser::writeHotspotStatisics(currentTime, "hotspot-statistics.txt", m_hotspots);
 
 		//ofstream hotspot_class("class.txt", ios::app);
-		//hotspot_class << time << TAB << m_routes.size() << endl;
+		//hotspot_class << currentTime << TAB << m_routes.size() << endl;
 		//hotspot_class.close();
 
 		//FIXME: 计算ED
 		ofstream ed("ed.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			ed << logInfo;
-			ed << "#Time" << TAB << "#EstimatedDelay" << endl;
+			ed << "#time" << TAB << "#EstimatedDelay" << endl;
 		}
-		ed << time << TAB << calculateEDTime(time) << endl;
+		ed << currentTime << TAB << calculateEDTime() << endl;
 		ed.close();
 
 		ofstream energy_consumption("energy-consumption.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			energy_consumption << logInfo;
-			energy_consumption << "#Time" << TAB << "#EnergyConsumptionAvg" << endl;
+			energy_consumption << "#time" << TAB << "#AvgEnergyConsumption" << endl;
 		}
-		energy_consumption << time << TAB << ( getAverageEnergyConsumption() * 100 ) << endl;
+		energy_consumption << currentTime << TAB << ( getAverageEnergyConsumption() * 100 ) << endl;
 		energy_consumption.close();
 
 		ofstream buffer("buffer-node-statistics.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			buffer << logInfo;
-			buffer << "#Time" << TAB << "#AvgBufferStateInHistoryOfEachNode" << endl;
+			buffer << "#time" << TAB << "#AvgBufferStateInHistoryOfEachNode" << endl;
 		}
-		buffer << time << TAB;
+		buffer << currentTime << TAB;
 		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
 			 buffer << inode->getAverageBufferSize() << TAB;
 		buffer << endl;
@@ -517,56 +587,67 @@ void HAR::PrintInfo(int time)
 	}
 
 	//数据投递率、数据投递时延
-	if(time % SLOT_RECORD_INFO == 0)
+	if(currentTime % SLOT_RECORD_INFO == 0)
 	{
 		ofstream delivery_ratio("delivery-ratio-100.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			delivery_ratio << logInfo;
-			delivery_ratio << "#Time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
+			delivery_ratio << "#time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
 		}
-		delivery_ratio << time << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
+		delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		ofstream delay("delay.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			delay << logInfo;
-			delay << "#Time" << TAB << "#Delay" << endl;
+			delay << "#time" << TAB << "#AvgDelay" << endl;
 		}
-		delay << time << TAB << CData::getAverageDelay() << endl;
+		delay << currentTime << TAB << CData::getAverageDelay() << endl;
 		delay.close();
+
+		ofstream encounter("encounter.txt", ios::app);
+		if(currentTime == startTimeForHotspotSelection)
+		{
+			encounter << logInfo;
+			encounter << "#time" << TAB << "#Encounter" << TAB << "#EncounterAtHotspots" << TAB << "#EncounterOnTheWay" << TAB 
+					  << "#EncounterPercentAtHotspots" << TAB << "#EncounterPercentOnTheWay" << endl;
+		}
+		encounter << currentTime << TAB << CMANode::getEncounter() << TAB << CMANode::getEncounterAtHotspots() << TAB << CMANode::getEncounterOnTheWay() << TAB 
+				  << CMANode::getEncounterPercentAtHotspots() << TAB << CMANode::getEncounterPercentOnTheWay() << endl;
+		encounter.close();
 
 	}
 
 	static int tmp_nDelivery;
 	static int tmp_nData;
-	if( time % ( SLOT_HOTSPOT_UPDATE ) == 0 )
+	if( currentTime % ( SLOT_HOTSPOT_UPDATE ) == 0 )
 	{
 		tmp_nDelivery = CData::getDataArrivalCount() - tmp_nDelivery;
 		tmp_nData = CData::getDataCount() - tmp_nData;
 
 		ofstream delivery_ratio("delivery-ratio-900.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			delivery_ratio << logInfo;
-			delivery_ratio << "#Time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
+			delivery_ratio << "#time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
 		}
-		delivery_ratio << time << TAB << tmp_nDelivery << TAB << tmp_nData << TAB << (double)tmp_nDelivery / tmp_nData << endl;
+		delivery_ratio << currentTime << TAB << tmp_nDelivery << TAB << tmp_nData << TAB << (double)tmp_nDelivery / tmp_nData << endl;
 		delivery_ratio.close();
 		
 		ofstream ma("ma.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			ma << logInfo;
-			ma << "#Time" << TAB << "#MACount" << endl;
+			ma << "#time" << TAB << "#MACount" << TAB << "#AvgMAWayPointCount" << endl;
 		}
-		ma << time << TAB << m_routes.size() << endl;
+		ma << currentTime << TAB << m_routes.size() << TAB << ( (double)g_selectedHotspots.size() / (double)m_routes.size() ) << endl;
 		ma.close();
 	}
 
-	if(time % SLOT_RECORD_INFO == 0
-		|| time == RUNTIME)
+	if(currentTime % SLOT_RECORD_INFO == 0
+		|| currentTime == RUNTIME)
 	{
 		cout << "####  [ MA State ]  ";
 		for(vector<CMANode>::iterator iMA = m_MANodes.begin(); iMA != m_MANodes.end(); iMA++)
@@ -574,37 +655,58 @@ void HAR::PrintInfo(int time)
 		cout << endl;
 
 		ofstream ma("buffer-ma.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			ma << logInfo;
-			ma << "#Time" << TAB << "#BufferStateOfEachMA" << endl;
+			ma << "#time" << TAB << "#BufferStateOfEachMA" << endl;
 		}
-		ma << time << TAB;
+		ma << currentTime << TAB;
 		for(vector<CMANode>::iterator iMA = m_MANodes.begin(); iMA != m_MANodes.end(); iMA++)
 			ma << iMA->getBufferSize() << TAB ;
 		ma << endl;
 		ma.close();
 
 		ofstream node("buffer-node.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			node << logInfo;
-			node << "#Time" << TAB << "#BufferStateOfEachNode" << endl;
+			node << "#time" << TAB << "#BufferStateOfEachNode" << endl;
 		}
-		node << time << TAB;
+		node << currentTime << TAB;
 		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
 			node << inode->getBufferSize() << "  " ;
 		node << endl;
 		node.close();
 
 		ofstream overflow("overflow.txt", ios::app);
-		if(time == startTimeForHotspotSelection)
+		if(currentTime == startTimeForHotspotSelection)
 		{
 			overflow << logInfo;
-			overflow << "#Time" << TAB << "#OverflowCount" << endl;
+			overflow << "#time" << TAB << "#OverflowCount" << endl;
 		}
-		overflow << time << TAB << CData::getOverflowCount() << endl;
+		overflow << currentTime << TAB << CData::getOverflowCount() << endl;
 		overflow.close();
 	}
 
+}
+
+void HAR::CompareWithOldHotspots()
+{
+	if( g_oldSelectedHotspots.empty() )
+		return ;
+
+	double overlapArea = CHotspot::getOverlapArea(g_oldSelectedHotspots, g_selectedHotspots);
+	double oldArea = g_oldSelectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(g_oldSelectedHotspots);
+	double newArea = g_selectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(g_selectedHotspots);
+
+	ofstream similarity("similarity.txt", ios::app);
+	if(currentTime == startTimeForHotspotSelection)
+	{
+		similarity << logInfo;
+		similarity << "#time" << TAB << "#Overlap/Old" << TAB << "#Overlap/New" << TAB
+				   << "#OverlapArea" << TAB << "#OldArea" << TAB << "#NewArea" << endl;
+	}
+	similarity << currentTime << TAB << ( overlapArea / oldArea ) << TAB << ( overlapArea / newArea ) << TAB
+			   << overlapArea << TAB << oldArea << TAB << newArea << endl;
+	similarity.close();
 }

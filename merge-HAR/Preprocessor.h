@@ -10,6 +10,7 @@ extern bool DO_IHAR;
 extern bool DO_MERGE_HAR;
 
 extern int NUM_NODE;
+extern int MAX_MEMORY_TIME;
 
 extern int g_nPositions;
 extern int g_nHotspotCandidates;
@@ -18,6 +19,7 @@ extern int* g_degreeForPositions;
 extern int* g_degreeForHotspots;
 extern vector<CHotspot*> g_hotspotCandidates;
 extern vector<CHotspot*> g_selectedHotspots;
+extern vector<CHotspot*> g_oldSelectedHotspots;
 extern vector<CPosition*> g_positions;
 extern vector<CPosition*> g_tmpPositions;
 

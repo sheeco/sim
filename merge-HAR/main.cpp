@@ -34,7 +34,11 @@ vector<CPosition *> g_tmpPositions;  //´æ·ÅGAµÄpreprocess¹ı³ÌÖĞÉ¾³ıµÄposition£¬Ô
 
 /************************************ IHAR ************************************/
 
-//Node Number Test
+//IHAR: Node Repair
+double LAMBDA = 0.06;
+int MAX_MEMORY_TIME = 3600;
+
+//IHAR: Node Number Test
 int NUM_NODE = NUM_NODE_INIT;
 
 
@@ -46,11 +50,6 @@ double RATIO_MERGE_HOTSPOT = 1.0;
 double RATIO_NEW_HOTSPOT = 1.0;
 double RATIO_OLD_HOTSPOT = 1.0;
 
-//merge-HAR: 
-//ÉÏÒ»´ÎÌ°À·Ñ¡È¡×îÖÕµÃµ½µÄÈÈµã¼¯ºÏ£¬±£ÁôÓÃÓÚÏÂÒ»´ÎÑ¡È¡µÄmerge²Ù×÷
-//×¢Òâ£ºmerge²Ù×÷µÃµ½µÄÊä³öhotspotÓ¦¸ÃÊ¹ÓÃg_hotspotCandidatesÖĞµÄÊµÀıĞŞ¸ÄµÃµ½£¬²»¿É±£Áô¶Ôg_oldSelectedHotspotsÖĞÊµÀıµÄÈÎºÎÒıÓÃ£¬ÒòÎªÔÚmerge½áÊøºó½«±»free
-vector<CHotspot *> g_oldSelectedHotspots;
-
 ////merge-HAR
 ////FIXME:Èç¹ûĞèÒªÊ¹ÓÃµ½¹ıÆÚµÄpositionĞÅÏ¢£¬Ôò²»ÈÓµô¹ıÆÚµÄposition£¬¸ÄÎª·ÅÈë´Ëvector
 //vector<CPosition *> g_overduePositions;
@@ -61,11 +60,13 @@ vector<CHotspot *> g_oldSelectedHotspots;
 bool DO_IHAR = false;
 bool DO_MERGE_HAR = false;
 
-double CO_HOTSPOT_HEAT_A1 = 1;
-double CO_HOTSPOT_HEAT_A2 = 30;
 double ALPHA = 0.3;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
+double GAMA = 0.5;  //ratio for HotspotsAboveAverage
+double CO_HOTSPOT_HEAT_A1 = 1;
+double CO_HOTSPOT_HEAT_A2 = 30;
 
+double PROB_DATA_FORWARD = 1.0;
 int DATATIME = 15300;
 int RUNTIME = 20000;
 int currentTime = 0;
@@ -75,15 +76,21 @@ vector<CPosition *> g_positions;
 vector<CHotspot *> g_hotspotCandidates;
 vector<CHotspot *> g_selectedHotspots;
 
+//ÉÏÒ»´ÎÌ°À·Ñ¡È¡×îÖÕµÃµ½µÄÈÈµã¼¯ºÏ£¬±£Áô
+//×¢Òâ£ºmerge²Ù×÷µÃµ½µÄÊä³öhotspotÓ¦¸ÃÊ¹ÓÃg_hotspotCandidatesÖĞµÄÊµÀıĞŞ¸ÄµÃµ½£¬²»¿É±£Áô¶Ôg_oldSelectedHotspotsÖĞÊµÀıµÄÈÎºÎÒıÓÃ£¬ÒòÎªÔÚmerge½áÊøºó½«±»free
+vector<CHotspot *> g_oldSelectedHotspots;
+
 int g_nPositions = 0;
 int g_nHotspotCandidates = 0;
 
 string logInfo;
 
 string HELP = "( ALL CASE SENSITIVE ) \n"
-			  "<mode>        -har;         -ihar;       -mhar; \n"
-	          "<parameter>   -alpha [];    -beta [];    -heat [] []; \n"
-			  "<merge>       -merge [];    -old []; \n";
+			  "<mode>        -har;          -ihar;       -mhar; \n"
+			  "<time>		 -data [];	    -run []; \n"
+			  "<parameter>   -alpha [];     -beta [];    -gama [];    -heat [] [];    -prob []; \n"
+			  "<ihar>		 -lambda [];    -memory []; \n"
+			  "<mhar>        -merge [];     -old []; \n";
 
 
 int main(int argc, char* argv[])
@@ -124,6 +131,24 @@ int main(int argc, char* argv[])
 					BETA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-gama" )
+			{
+				if(iField < argc - 1)
+					GAMA = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}			
+			else if( field == "-lambda" )
+			{
+				if(iField < argc - 1)
+					LAMBDA = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-memory" )
+			{
+				if(iField < argc - 1)
+					MAX_MEMORY_TIME = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-merge" )
 			{
 				if(iField < argc - 1)
@@ -145,6 +170,12 @@ int main(int argc, char* argv[])
 				}
 				iField += 3;
 			}
+			else if( field == "-prob" )
+			{
+				if(iField < argc - 1)
+					PROB_DATA_FORWARD = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-data" )
 			{
 				if(iField < argc - 1)
@@ -160,7 +191,8 @@ int main(int argc, char* argv[])
 			else if( field == "-help" )
 			{
 				cout << HELP;
-				break;
+				_PAUSE;
+				exit(1);
 			}
 			else
 				iField++;
@@ -196,7 +228,7 @@ int main(int argc, char* argv[])
 		{
 			logInfo += "#IHAR\n\n";
 			parameters << "#IHAR" << endl << endl;
-			parameters << "LAMBDA" << TAB << LAMBDA(1) << endl;
+			parameters << "LAMBDA" << TAB << LAMBDA << endl;
 			parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
 		}
 		else if(DO_MERGE_HAR)
@@ -214,6 +246,9 @@ int main(int argc, char* argv[])
 		}
 		parameters << "ALPHA" << TAB << ALPHA << endl;
 		parameters << "BETA" << TAB << BETA << endl;
+		parameters << "GAMA" << TAB << GAMA << endl;
+		parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
+		parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
 		parameters << "PROB_DATA_FORWARD" << TAB << PROB_DATA_FORWARD << endl;
 		parameters << "DATA GENERATION TIME" << TAB << DATATIME << endl;
 		parameters << "RUN TIME" << TAB << RUNTIME << endl;
@@ -229,13 +264,13 @@ int main(int argc, char* argv[])
 		{
 			if(currentTime % SLOT_CHANGE_NUM_NODE == 0 && currentTime > 0)
 			{
-				har.ChangeNodeNumber(currentTime);
+				har.ChangeNodeNumber();
 			}
 		}
 
 
 		/********************************* µØÀíĞÅÏ¢ÊÕ¼¯ ***********************************/
-		if( currentTime % SLOT_LOCATION_UPDATE == 0 )
+		if( currentTime % SLOT_LOCATION_UPDATE == 0)
 		{
 			cout << endl << "########  [ " << currentTime << " ]  LOCATION UPDATE" << endl;
 			CPreprocessor::CollectNewPositions(currentTime);
@@ -243,25 +278,10 @@ int main(int argc, char* argv[])
 
 
 		/*********************************** ÈÈµãÑ¡È¡ *************************************/
-		//if( currentTime < startTimeForHotspotSelection )
-		//{
-		//	cout << endl << "########  [ " << currentTime << " ]  HOTSPOT SELECTTION" << endl;
-		//	cout << "##  PASSED" << endl;
-		//	currentTime += 5;
-		//	continue;
-		//}
-		if( currentTime % SLOT_HOTSPOT_UPDATE == 0 )
+		if( currentTime % SLOT_HOTSPOT_UPDATE == 0 
+			&& currentTime >= startTimeForHotspotSelection )
 		{
 			cout  <<  endl <<"########  [ " << currentTime << " ]  HOTSPOT SELECTTION" << endl;
-
-			//merge-HAR: ½«ÉÏÒ»ÂÖÑ¡ÖĞµÄÈÈµã¼¯ºÏ±£´æµ½g_oldSelectedHotspots
-			if(DO_MERGE_HAR)
-			{
-				//ÊÖ¶¯ÊÍ·Å¾ÉµÄg_oldSelectedHotspots
-				if(! g_oldSelectedHotspots.empty())
-					CPreprocessor::freePointerVector(g_oldSelectedHotspots);
-				g_oldSelectedHotspots = g_selectedHotspots;
-			}
 
 
 			/******************************** ¹¹½¨ºòÑ¡ÈÈµã¼¯ºÏ *********************************/
@@ -269,50 +289,39 @@ int main(int argc, char* argv[])
 
 
 			/*********************************** Ì°À·Ñ¡È¡ **************************************/
-			CGreedySelection greedySelection;
-
-			//merge-HAR: 
-			if(DO_MERGE_HAR)
-				greedySelection.mergeHotspots(currentTime);
-			greedySelection.GreedySelect(currentTime);
-
-
-			/********************************* ºóĞøÑ¡È¡¹ı³Ì ***********************************/
-			CPostSelector postSelector_Greedy(g_selectedHotspots);
-			g_selectedHotspots = postSelector_Greedy.PostSelect(currentTime);
-
-			//IHAR: POOR NODE REPAIR
-			if(DO_IHAR)
-			{
-				CNodeRepair repair(g_selectedHotspots, g_hotspotCandidates, currentTime);
-				g_selectedHotspots = repair.RepairPoorNodes();
-				g_selectedHotspots = postSelector_Greedy.assignPositionsToHotspots(g_selectedHotspots);
-			}
+			har.HotspotSelection();
 			cout << "####  [ Hotspot ]  " << g_selectedHotspots.size() << endl;
 
 
 			/*********************************** ÈÈµã·ÖÀà *************************************/
-			har.HotspotClassification(currentTime, g_selectedHotspots);
+			har.HotspotClassification();
 			cout << "####  [ MA Node ]  " << har.getNClass() << endl;
 
 
 			/*********************************** Â·¾¶¹æ»® *************************************/
-			har.MANodeRouteDesign(currentTime);
+			har.MANodeRouteDesign();
 		}
 
 		if(currentTime % SLOT_MOBILITYMODEL == 0)
-			cout << endl << "########  [ " << currentTime << " ]  NODE MOBILITY" << endl;
-			har.UpdateNodeLocations(currentTime);
+		{
+			cout << endl << "########  [ " << currentTime << " ]  NODE MOVEMENT" << endl;
+			har.UpdateNodeLocations();
+		}
 
 		if(currentTime % SLOT_DATA_GENERATE == 0)
-			cout << endl << "########  [ " << currentTime << " ]  DATA GENERATE" << endl;
-			har.GenerateData(currentTime);
+		{
+			cout << endl << "########  [ " << currentTime << " ]  DATA GENERATION" << endl;
+			har.GenerateData();
+		}
 
 		if(currentTime % SLOT_DATA_SEND == 0)
-			cout << endl << "########  [ " << currentTime << " ]  DATA SEND" << endl;
-			har.SendData(currentTime);
+		{
+			cout << endl << "########  [ " << currentTime << " ]  DATA DELIVERY" << endl;
+			har.SendData();
+		}
 
-		har.PrintInfo(currentTime);
+		if( currentTime >= startTimeForHotspotSelection )
+			har.PrintInfo();
 
 		currentTime += TIMESLOT;
 	}

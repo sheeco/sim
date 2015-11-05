@@ -708,35 +708,25 @@ void CPreprocessor::AdjustRemoteHotspots()
 
 void CPreprocessor::BuildCandidateHotspots(int time)
 {
-	//释放指针vector
+	//释放上一轮选取中未被选中的废弃热点
 	if(! g_hotspotCandidates.empty())
 		freePointerVector(g_hotspotCandidates);
 
-	//merge-HAR: merge-HAR中禁止在此释放，改为在主函数中手动释放
-	if(! DO_MERGE_HAR)
-		g_selectedHotspots.clear();
+	/************ 注意：不论执行HAR, IHAR, merge-HAR，都缓存上一轮热点选取的结果；
+	              HAR中不会使用到，IHAR中将用于比较前后两轮选取的热点的相似度，
+			      merge-HAR中将用于热点归并。                            ********************/
 
-//DBG:
-	//int dbg_sumID = 0;
-	//int dbg_count = 0;
-	//int dbg_tmp = 0;
-	//for(vector<CPosition *>::iterator ipos = g_positions.begin(); ipos != g_positions.end(); ipos++)
-	//{
-		//cout<<(*ipos)->getID()<<" ";
-		//dbg_sumID += (*ipos)->getID();
-		//dbg_count++;
-		//if(dbg_tmp == (*ipos)->getID())
-		//	_PAUSE;
-		//dbg_tmp = (*ipos)->getID();
-	//	cout<<endl<<"count: "<<dbg_count<<", sum: "<<dbg_sumID<<";";
-	//}
-	//cout<<endl<<"sumID = "<<dbg_sumID<<", count = "<<dbg_count<<endl;
-	
+	//将上一轮选中的热点集合保存到g_oldSelectedHotspots
+	//并释放旧的g_oldSelectedHotspots
+	if(! g_oldSelectedHotspots.empty())
+		freePointerVector(g_oldSelectedHotspots);
+	g_oldSelectedHotspots = g_selectedHotspots;
+	//仅清空g_selectedHotspot，不释放内存
+	g_selectedHotspots.erase(g_selectedHotspots.begin(), g_selectedHotspots.end());
+
+
 	//将所有position按x坐标排序，以便简化遍历操作
 	g_positions = mergeSort(g_positions);
-
-	//dbg_sumID = 0;
-	//dbg_count = 0;
 
 	//从每个position出发生成一个候选hotspot
 	for(vector<CPosition *>::iterator ipos = g_positions.begin(); ipos != g_positions.end(); ipos++)
@@ -748,7 +738,6 @@ void CPreprocessor::BuildCandidateHotspots(int time)
 
 		g_hotspotCandidates.push_back(GenerateHotspotFromPosition(*ipos, time));
 	}
-	//cout<<endl<<"sumID = "<<dbg_sumID<<", count = "<<dbg_count<<endl;
 
 	////将所有候选hotspot按x坐标排序
 	//g_hotspotCandidates = mergeSort(g_hotspotCandidates, largerByLocationX);
@@ -766,6 +755,7 @@ void CPreprocessor::UpdateDegrees()
 {
 	//更新相关信息
 	GenerateDegrees();
+	//GA:（由于未采用GA算法，其所需的cover矩阵暂不生成）
 }
 
 void CPreprocessor::SaveHotspotsToFile(int time, vector<CHotspot *> hotspots)

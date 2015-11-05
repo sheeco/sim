@@ -32,7 +32,7 @@ double CPostSelector::getRatioForHotspot(CHotspot *hotspot)
 	{
 		//merge-HAR: ratio
 		double ratioForMerge = pow( hotspot->getRatioByCandidateType(), hotspot->getAge() );
-		return ratioForMerge * ( hotspot->getNCoveredPosition() - 1 ) / ( maxCoverNum - 1 );
+		return ratioForMerge * ( hotspot->getNCoveredPosition() - 1 ) / (double)( maxCoverNum - 1 );
 	}
 }
 

@@ -24,6 +24,10 @@ private:
 	static double energyConsumption;
 	static long int ID_COUNT;
 
+	static int encounter;
+	static int encounterAtHotspots;
+	static int encounterOnTheWay;
+
 public:
 	CMANode(void)
 	{
@@ -84,11 +88,13 @@ public:
 	{
 		this->atHotspot = atHotspot;
 	}
+	
 	//判断MA是否位于sink处
 	//inline bool isAtSink()
 	//{
 	//	return atSink;
 	//}
+
 	inline bool isAtHotspot()
 	{
 		if(atHotspot == NULL)
@@ -124,6 +130,38 @@ public:
 			return 0;
 		else
 			return ( BUFFER_CAPACITY_MA - buffer.size() );
+	}
+	//相遇计数
+	inline static int getEncounterPercentAtHotspots()
+	{
+		return (double)encounterAtHotspots / (double)encounter;
+	}
+	inline static int getEncounterPercentOnTheWay()
+	{
+		return (double)encounterOnTheWay / (double)encounter;
+	}	
+	inline static int getEncounter()
+	{
+		return encounter;
+	}
+	inline static double getEncounterAtHotspots()
+	{
+		return encounterAtHotspots;
+	}
+	inline static double getEncounterOnTheWay()
+	{
+		return encounterOnTheWay;
+	}
+	//用于记录MA节点与sensor的相遇计数
+	inline static void encountAtHotspots()
+	{
+		encounterAtHotspots++;
+		encounter++;
+	}
+	inline static void encountOnTheWay()
+	{
+		encounterOnTheWay++;
+		encounter++;
 	}
 
 	//接收data

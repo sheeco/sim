@@ -22,6 +22,19 @@ private:
 	int candidateType;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
 	int age;  //用于标记旧热点或归并热点的年龄，即连任轮数
 
+	//检查某个position是否已在覆盖列表中
+	bool ifPositionExists(CPosition* pos);
+
+	//从覆盖列表中删除某个position，只有贪婪算法会用到
+	void removePosition(CPosition* pos);
+
+
+	//检查某个node是否在覆盖列表中，必须在generateCoveredNodes之后调用
+	bool ifNodeExists(int inode);	
+
+	//计算两个热点的重叠面积，如无重叠则返回0
+	static double getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot);
+
 public:
 	CHotspot()
 	{
@@ -92,6 +105,17 @@ public:
 	{
 		this->age = age;
 	}
+	inline int getNCoveredNodes()
+	{
+		return coveredNodes.size();
+	}
+	inline vector<int> getCoveredNodes()
+	{
+		return coveredNodes;
+	}
+
+	int getNCoveredPositionsForNode(int inode);	
+	
 	double getRatioByCandidateType()
 	{
 		switch( this->candidateType )
@@ -116,12 +140,6 @@ public:
 		ID_COUNT++;
 	}
 
-	//检查某个position是否已在覆盖列表中
-	bool ifPositionExists(CPosition* pos);
-
-	//从覆盖列表中删除某个position，只有贪婪算法会用到
-	void removePosition(CPosition* pos);
-
 	//从覆盖列表中删除多个position，只有贪婪算法会用到
 	void removePositionList(vector<CPosition *> positions);
 
@@ -132,22 +150,16 @@ public:
 	//修改覆盖列表之后不会自动调用，应该在需要的时候手动调用
 	void recalculateCenter();
 
-	//检查某个node是否在覆盖列表中，必须在generateCoveredNodes之后调用
-	bool ifNodeExists(int inode);
-
 	//确定覆盖的node列表，在hotspot选取结束后手动调用
 	void generateCoveredNodes();
-	inline int getNCoveredNodes()
-	{
-		return coveredNodes.size();
-	}
-	inline vector<int> getCoveredNodes()
-	{
-		return coveredNodes;
-	}
-	int getNCoveredPositionsForNode(int inode);
 
+	//生成包含该热点的时间、年龄、ID、坐标、cover数等信息的字符串
 	string toString(bool withDetails);
+	
+	//计算两个热点集合中所有热点pair的重叠面积之和（如有三个或更多个热点共同重叠，重叠部分的面积将多次计入，以度量相似程度）
+	static double getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots);
+	//计算一个热点集合内的重叠面积，用于更准确的计算集合间重叠面积
+	static double getOverlapArea(vector<CHotspot *> hotspots);
 
 };
 

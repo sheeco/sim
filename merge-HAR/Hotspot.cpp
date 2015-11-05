@@ -1,4 +1,5 @@
 #include "Hotspot.h"
+#include "Preprocessor.h"
 
 long int CHotspot::ID_COUNT = 0;
 
@@ -115,4 +116,54 @@ string CHotspot::toString(bool withDetails)
 			os << coveredPositions[i]->getID() << TAB ;
 	}
 	return os.str();
+}
+
+double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
+{
+	double distance = CBase::getDistance(*oldHotspot, *newHotspot);
+	double cos = ( distance / 2 ) / TRANS_RANGE;
+	double sin = sqrt( 1 - cos * cos );
+	double angle = acos(cos);
+	double sector = ( angle / 2 ) * TRANS_RANGE * TRANS_RANGE;
+	double triangle = ( TRANS_RANGE * ( distance / 2 ) ) * sin / 2;
+
+	return ( sector - triangle ) * 4 ;
+}
+
+double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots)
+{
+	//Sort by Coordinate X to save time
+	CPreprocessor::mergeSort(oldHotspots, CPreprocessor::largerByLocationX);
+	CPreprocessor::mergeSort(newHotspots, CPreprocessor::largerByLocationX);
+
+	vector<CHotspot *>::iterator iOld, iNew;
+	double sumArea = 0;
+	for(iOld = oldHotspots.begin(); iOld != oldHotspots.end(); iOld++)
+	{
+		for(iNew = newHotspots.begin(); iNew != newHotspots.end(); iNew++)
+		{
+			if( (*iOld)->getID() == (*iNew)->getID() )
+			{
+				sumArea += AREA_SINGE_HOTSPOT;
+				continue;
+			}
+
+			if( (*iNew)->getX() + 2 * TRANS_RANGE <= (*iOld)->getX() )
+				continue;
+			if( (*iOld)->getX() + 2 * TRANS_RANGE <= (*iNew)->getX() )
+				break;
+
+			if( CBase::getDistance(**iOld, **iNew) < 2 * TRANS_RANGE)
+			{
+				sumArea += getOverlapArea(*iOld, *iNew);
+			}
+		}
+	}
+
+	return sumArea;
+}
+
+double CHotspot::getOverlapArea(vector<CHotspot *> hotspots)
+{
+	return getOverlapArea(hotspots, hotspots) - AREA_SINGE_HOTSPOT * hotspots.size();
 }

@@ -4,6 +4,7 @@
 using namespace std;
 
 extern int NUM_NODE;
+extern double LAMBDA;
 
 class CNodeRepair
 {

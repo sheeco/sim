@@ -7,13 +7,19 @@
 #include "Sink.h"
 #include "MANode.h"
 #include "Route.h"
+#include "GreedySelection.h"
+#include "PostSelector.h"
+#include "NodeRepair.h"
 
 extern bool DO_IHAR;
+extern int currentTime;
 extern int startTimeForHotspotSelection;
 extern double CO_HOTSPOT_HEAT_A1;
 extern double CO_HOTSPOT_HEAT_A2;
 extern double BETA;
+extern int MAX_MEMORY_TIME;
 extern int NUM_NODE;
+extern double PROB_DATA_FORWARD;
 extern int DATATIME;
 extern int RUNTIME;
 
@@ -36,11 +42,11 @@ private:
 
 	//用于hotspot classification
 	double getHotspotHeat(CHotspot *hotspot);
-	double getWaitingTime(CHotspot *hotspot, int time);
+	double getWaitingTime(CHotspot *hotspot);
 	double getSumGenerationRate(vector<int> nodes);  //计算ge的sum，同一个node不应重复计算
 	double getSumGenerationRate(vector<int> nodes_a, vector<int> nodes_b);
-	double getTimeIncrementForInsertion(CRoute route, int front, CHotspot *hotspot, int time);
-	double calculateRatioForInsertion(CRoute route, int front, CHotspot *hotspot, int time);
+	double getTimeIncrementForInsertion(CRoute route, int front, CHotspot *hotspot);
+	double calculateRatioForInsertion(CRoute route, int front, CHotspot *hotspot);
 	//对一条route进行优化（TSP 最近邻居算法）
 	void OptimizeRoute(CRoute &route);
 	//计算相关统计数据
@@ -51,7 +57,7 @@ private:
 		else
 			return ( CNode::getEnergyConsumption() + CMANode::getEnergyConsumption() ) / CData::getDataArrivalCount();
 	}
-	double calculateEDTime(int time);
+	double calculateEDTime();
 
 
 public:
@@ -83,19 +89,24 @@ public:
 	}
 	
 	//在限定范围内随机增删一定数量的node
-	void ChangeNodeNumber(int time);
+	void ChangeNodeNumber();
 	//更新所有node的位置（而不是position）
-	void UpdateNodeLocations(int time);
-	//根据所给hotspot集合得到hotspot class的集合
-	void HotspotClassification(int time, vector<CHotspot *> hotspots);
+	void UpdateNodeLocations();
+	//执行热点选取
+	void HotspotSelection();
+	//根据选取出的hotspot集合得到hotspot class的集合
+	void HotspotClassification();
 	//对初步得到的hotspot class进行路径优化（TSP 最近邻居算法）
-	void MANodeRouteDesign(int time);
+	void MANodeRouteDesign();
 	//在特定时槽上产生数据
-	void GenerateData(int time);
+	void GenerateData();
 	//在特定时槽上发送数据
-	void SendData(int time);
+	void SendData();
 	//打印相关信息到文件
-	void PrintInfo(int time);
+	void PrintInfo();
+
+	//比较此次热点选取的结果与上一次选取结果之间的相似度
+	void CompareWithOldHotspots();
 
 };
 

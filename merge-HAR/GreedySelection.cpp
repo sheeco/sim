@@ -42,9 +42,9 @@ void CGreedySelection::UpdateStatus()
 		double cover = unselectedHotspots[i]->getNCoveredPosition();
 
 		//merge-HAR: ratio
-		cover = pow( unselectedHotspots[i]->getRatioByCandidateType(), unselectedHotspots[i]->getAge() ) * cover;
+		cover *= pow( unselectedHotspots[i]->getRatioByCandidateType(), unselectedHotspots[i]->getAge() );
 
-		if( cover / max_nCover < 0.5)
+		if( cover / max_nCover < GAMA)
 			break;
 		else
 			hotspotsAboveAverage.push_back(unselectedHotspots[i]);
@@ -57,17 +57,17 @@ void CGreedySelection::GreedySelect(int time)
 	int oldCount = 0;
 	int newCount = 0;
 	ofstream merge("merge.txt", ios::app);
-	ofstream merge_statistics("merge-statistics.txt", ios::app);
+	ofstream merge_details("merge-details.txt", ios::app);
 	if( DO_MERGE_HAR )
 	{
 		if(time == startTimeForHotspotSelection)
 		{
 			merge << logInfo;
-			merge_statistics << logInfo;
-			merge << "#Time" << TAB << "#MergeHotspotCount" << TAB << "#OldHotspotCount" << TAB << "#NewHotspotCount";
-			merge_statistics << "#Time" << TAB << "#HotspotType/#CoverCount" << endl;
+			merge_details << logInfo;
+			merge << "#Time" << TAB << "#MergeHotspotCount" << TAB << "#MergeHotspotPercent" << TAB << "#OldHotspotCount" << TAB << "#OldHotspotPercent" << TAB << "#NewHotspotCount" << TAB << "#NewHotspotPercent" ;
+			merge_details << "#Time" << TAB << "#HotspotType/#CoverCount" << endl ;
 		}
-		merge_statistics << time << TAB;
+		merge_details << time << TAB;
 	}
 	do
 	{
@@ -110,7 +110,7 @@ void CGreedySelection::GreedySelect(int time)
 			double cover = hotspotsAboveAverage[i]->getNCoveredPosition();
 
 			//merge-HAR: ratio
-			cover = pow( hotspotsAboveAverage[i]->getRatioByCandidateType(), hotspotsAboveAverage[i]->getAge() ) * cover;
+			cover *= pow( hotspotsAboveAverage[i]->getRatioByCandidateType(), hotspotsAboveAverage[i]->getAge() );
 
 			if( cover >= max_cover)
 			{
@@ -132,17 +132,17 @@ void CGreedySelection::GreedySelect(int time)
 		{
 			if( best_hotspot->getCandidateType() == TYPE_MERGE_HOTSPOT )
 			{
-				merge_statistics << "M/" << best_hotspot->getAge() << TAB;
+				merge_details << "M/" << best_hotspot->getAge() << TAB;
 				mergeCount++;
 			}
 			else if( best_hotspot->getCandidateType() == TYPE_OLD_HOTSPOT )
 			{
-				merge_statistics << "O/" << best_hotspot->getAge() << TAB;
+				merge_details << "O/" << best_hotspot->getAge() << TAB;
 				oldCount++;
 			}
 			else
 			{
-				merge_statistics << "N/" << best_hotspot->getAge() << TAB;
+				merge_details << "N/" << best_hotspot->getAge() << TAB;
 				newCount++;
 			}
 		}
@@ -184,12 +184,13 @@ void CGreedySelection::GreedySelect(int time)
 
 	if(DO_MERGE_HAR)
 	{
-		merge << time << TAB << mergeCount << TAB << oldCount << TAB << newCount << endl;
-		merge_statistics << endl;
+		int total = g_selectedHotspots.size();
+		merge << time << TAB << mergeCount << TAB << (double)mergeCount / (double)total << TAB << oldCount << TAB << (double)oldCount / (double)total << TAB << newCount << TAB << (double)newCount / (double)total << endl;
+		merge_details << endl;
 	}
 
 	merge.close();
-	merge_statistics.close();
+	merge_details.close();
 }
 
 int CGreedySelection::getCost()
@@ -235,11 +236,11 @@ void CGreedySelection::mergeHotspots(int time)
 		for(vector<CHotspot *>::iterator iNew = g_hotspotCandidates.begin(); iNew != g_hotspotCandidates.end(); iNew++, i++)
 		{
 			//for (x within range)
-			if( (*iNew)->getX() + TRANS_RANGE < (*iOld)->getX() )
+			if( (*iNew)->getX() + 2 * TRANS_RANGE <= (*iOld)->getX() )
 				continue;
-			if( (*iOld)->getX() + TRANS_RANGE < (*iNew)->getX() )
+			if( (*iOld)->getX() + 2 * TRANS_RANGE <= (*iNew)->getX() )
 				break;
-			//try merge (new)
+			//try merge
 			if( CBase::getDistance(**iOld, **iNew) < 2 * TRANS_RANGE)
 			{
 				//FIXE: time copied from old or new ?
