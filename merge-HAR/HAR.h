@@ -12,6 +12,10 @@
 #include "NodeRepair.h"
 
 extern bool DO_IHAR;
+extern bool DO_COMP;
+extern bool HEAT_RATIO_EXP;
+extern bool HEAT_RATIO_LN;
+
 extern int currentTime;
 extern int startTimeForHotspotSelection;
 extern double CO_HOTSPOT_HEAT_A1;

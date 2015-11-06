@@ -50,6 +50,9 @@ double RATIO_MERGE_HOTSPOT = 1.0;
 double RATIO_NEW_HOTSPOT = 1.0;
 double RATIO_OLD_HOTSPOT = 1.0;
 
+bool HEAT_RATIO_EXP = false;
+bool HEAT_RATIO_LN = false;
+
 ////merge-HAR
 ////FIXME:如果需要使用到过期的position信息，则不扔掉过期的position，改为放入此vector
 //vector<CPosition *> g_overduePositions;
@@ -59,6 +62,7 @@ double RATIO_OLD_HOTSPOT = 1.0;
 
 bool DO_IHAR = false;
 bool DO_MERGE_HAR = false;
+bool DO_COMP = false;
 
 double ALPHA = 0.3;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
@@ -86,7 +90,7 @@ int g_nHotspotCandidates = 0;
 string logInfo;
 
 string HELP = "\n       ( ALL CASE SENSITIVE ) \n"
-			  "<mode>        -har;          -ihar;       -mhar; \n"
+			  "<mode>        -har;          -ihar;       -mhar;    -comp;    -heat-exp;    -heat-ln \n"
 			  "<time>		 -data [];	    -run []; \n"
 			  "<parameter>   -alpha [];     -beta [];    -gama [];    -heat [] [];    -prob []; \n"
 			  "<ihar>		 -lambda [];    -memory []; \n"
@@ -111,12 +115,30 @@ int main(int argc, char* argv[])
 			{
 				DO_IHAR = true;
 				DO_MERGE_HAR = false;
+				DO_COMP = true;
 				iField++;
 			}
 			else if( field == "-mhar" )
 			{
 				DO_MERGE_HAR = true;
 				DO_IHAR = false;
+				iField++;
+			}
+			else if( field == "-comp" )
+			{
+				DO_COMP = true;
+				iField++;
+			}
+			else if( field == "-heat-exp" )
+			{
+				HEAT_RATIO_EXP = true;
+				HEAT_RATIO_LN = false;
+				iField++;
+			}
+			else if( field == "-heat-ln" )
+			{
+				HEAT_RATIO_LN = true;
+				HEAT_RATIO_EXP = false;
 				iField++;
 			}
 			else if( field == "-alpha" )
@@ -237,7 +259,13 @@ int main(int argc, char* argv[])
 			parameters << "#merge-HAR" << endl << endl;
 			parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
 			parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
-			parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl << endl;
+			parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl;
+			if( HEAT_RATIO_EXP )
+				parameters << "HEAT_RATIO" << TAB << "EXP" << endl << endl;
+			else if( HEAT_RATIO_LN )
+				parameters << "HEAT_RATIO" << TAB << "LN" << endl << endl;
+			else
+				parameters << "HEAT_RATIO" << TAB << "FLAT" << endl << endl;
 		}
 		else
 		{

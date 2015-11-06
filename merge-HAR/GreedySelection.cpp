@@ -63,9 +63,9 @@ void CGreedySelection::GreedySelect(int time)
 		if(time == startTimeForHotspotSelection)
 		{
 			merge << logInfo;
-			merge_details << logInfo;
-			merge << "#Time" << TAB << "#MergeHotspotCount" << TAB << "#MergeHotspotPercent" << TAB << "#OldHotspotCount" << TAB << "#OldHotspotPercent" << TAB << "#NewHotspotCount" << TAB << "#NewHotspotPercent" ;
-			merge_details << "#Time" << TAB << "#HotspotType/#CoverCount" << endl ;
+			merge << "#Time" << TAB << "#MergeHotspotCount" << TAB << "#MergeHotspotPercent" << TAB << "#OldHotspotCount" << TAB 
+				  << "#OldHotspotPercent" << TAB << "#NewHotspotCount" << TAB << "#NewHotspotPercent" << endl;
+			merge_details << "#Time" << TAB << "#HotspotType/#MergeAge ..." << endl;
 		}
 		merge_details << time << TAB;
 	}
@@ -192,8 +192,8 @@ void CGreedySelection::GreedySelect(int time)
 	if(DO_MERGE_HAR)
 	{
 		int total = g_selectedHotspots.size();
-		merge << time << TAB << mergeCount << TAB << (double)mergeCount / (double)total << TAB << oldCount << TAB << (double)oldCount / (double)total << TAB << newCount << TAB << (double)newCount / (double)total << endl;
-		merge_details << endl;
+		merge << time << TAB << mergeCount << TAB << (double)mergeCount / (double)total << TAB << oldCount << TAB 
+			  << (double)oldCount / (double)total << TAB << newCount << TAB << (double)newCount / (double)total << endl;
 	}
 
 	merge.close();
@@ -225,7 +225,7 @@ void CGreedySelection::mergeHotspots(int time)
 	if(time == startTimeForHotspotSelection)
 	{
 		merge_details << logInfo;
-		merge_details << "#Time" << TAB << "#LegalMergeCount" << TAB << "#BestMergeCount" << TAB << "#NoMergeCount/#OldHotspotCount" << endl;
+		merge_details << "#Time" << TAB << "#LegalMergeCount" << TAB << "#BestMergeCount" << TAB << "#OldHotspotCount" << endl;
 		merge_details << "#Time" << TAB << "#OldCover/#NewCover/#MergeCover,#MergeAge ..." << endl;
 	}
 
@@ -268,7 +268,6 @@ void CGreedySelection::mergeHotspots(int time)
 						delete best_merge;
 					best_merge = merge;
 				}
-				merge_details << endl;
 			}	
 		}
 
@@ -313,7 +312,7 @@ void CGreedySelection::mergeHotspots(int time)
 	uncoveredPositions = g_positions;
 	unselectedHotspots = g_hotspotCandidates;
 
-	merge_details << time << TAB << mergeCount << TAB << mergeResult.size() << TAB << oldCount << endl;
-	merge_details << time << TAB << tmp << endl;
+	merge_details << endl << time << TAB << mergeCount << TAB << mergeResult.size() << TAB << oldCount << endl;
+	merge_details << time << TAB << tmp.str() << endl;
 	merge_details.close();
 }

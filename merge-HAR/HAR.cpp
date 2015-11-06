@@ -22,11 +22,16 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 
 	double ratio = 1;
 
-	////merge-HAR: exp ratio
-	//double ratio = pow( hotspot->getRatioByCandidateType(), hotspot->getAge() );
-
-	//merge-HAR: ln ratio
-	//double ratio = hotspot->getRatioByCandidateType() * ( 1 + log( 1 + hotspot->getAge() ) );
+	if( HEAT_RATIO_EXP )
+	{
+		//merge-HAR: exp ratio
+		ratio *= pow( hotspot->getRatioByCandidateType(), hotspot->getAge() );
+	}
+	else if( HEAT_RATIO_LN )
+	{
+		//merge-HAR: ln ratio
+		ratio *= hotspot->getRatioByCandidateType() * ( 1 + log( 1 + hotspot->getAge() ) );
+	}
 
 	return ratio * ( CO_HOTSPOT_HEAT_A1 * nCoveredNodes + CO_HOTSPOT_HEAT_A2 * sum_generationRate ) ;
 }
@@ -242,8 +247,11 @@ void HAR::HotspotSelection()
 		CNodeRepair repair(g_selectedHotspots, g_hotspotCandidates, currentTime);
 		g_selectedHotspots = repair.RepairPoorNodes();
 		g_selectedHotspots = postSelector.assignPositionsToHotspots(g_selectedHotspots);
+	}
 
-		//比较相邻两次热点选取的相似度
+	//比较相邻两次热点选取的相似度
+	if(DO_COMP)
+	{
 		CompareWithOldHotspots();
 	}
 }
