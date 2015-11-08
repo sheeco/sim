@@ -21,6 +21,7 @@ extern vector<CPosition*> g_tmpPositions;
 
 extern int g_old_nPositions;
 extern int g_old_nHotspots;
+extern string logInfo;
 
 class CPostSelector
 {
@@ -38,7 +39,6 @@ private:
 	void findLostNodes();
 	CHotspot* findMaxCoverHotspotForNode(int inode);
 
-
 	//检查选取的hotspot集合是否能覆盖所有node
 	bool verifyCompleted();
 
@@ -51,5 +51,6 @@ public:
 	//执行hotspot选取，返回得到的hotspot集合
 	vector<CHotspot *> PostSelect(int currentTime);
 	int getNCoveredPositions();
+	
 };
 

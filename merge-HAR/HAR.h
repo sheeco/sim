@@ -32,6 +32,7 @@ extern double RATIO_NEW_HOTSPOT;
 extern double RATIO_OLD_HOTSPOT;
 
 extern string logInfo;
+extern ofstream debugInfo;
 
 class HAR
 {
@@ -41,6 +42,24 @@ private:
 	vector<CHotspot *> m_hotspots;
 	vector<CRoute> m_routes;  //即hotspot class
 	vector<CMANode> m_MANodes;
+
+	//用于计算最终取出的热点总数的历史平均值
+	static int HOTSPOT_COST_SUM;
+	static int HOTSPOT_COST_COUNT;
+	//用于计算所需MA个数的历史平均值
+	static int MA_COST_SUM;
+	static int MA_COST_COUNT;
+	//用于计算MA的平均路点（热点）个数的历史平均值
+	static double MA_WAYPOINT_SUM;
+	static int MA_WAYPOINT_COUNT;
+	//用于计算最终选取出的热点集合中，merge和old热点的比例的历史平均值
+	static double MERGE_PERCENT_SUM;
+	static int MERGE_PERCENT_COUNT;
+	static double OLD_PERCENT_SUM;
+	static int OLD_PERCENT_COUNT;
+	//用于计算热点前后相似度的历史平均值
+	static double SIMILARITY_RATIO_SUM;
+	static int SIMILARITY_RATIO_COUNT;
 
 	/** 辅助函数 **/
 
@@ -54,15 +73,51 @@ private:
 	//对一条route进行优化（TSP 最近邻居算法）
 	void OptimizeRoute(CRoute &route);
 	//计算相关统计数据
-	double getAverageEnergyConsumption()
-	{
-		if(CData::getDataArrivalCount() == 0)
-			return 0;
-		else
-			return ( CNode::getEnergyConsumption() + CMANode::getEnergyConsumption() ) / CData::getDataArrivalCount();
-	}
 	double calculateEDTime();
 
+	//用于最终debug结果的统计和记录
+	double getAverageHotspotCost()
+	{
+		if( HOTSPOT_COST_COUNT == 0 )
+			return 0;
+		else
+			return HOTSPOT_COST_SUM / HOTSPOT_COST_COUNT;
+	}
+	double getAverageMACost()
+	{
+		if( MA_COST_COUNT == 0 )
+			return 0;
+		else
+			return MA_COST_SUM / MA_COST_COUNT;
+	}
+	double getAverageMAWaypoint()
+	{
+		if( MA_WAYPOINT_COUNT == 0 )
+			return 0;
+		else
+			return MA_WAYPOINT_SUM / MA_WAYPOINT_COUNT;
+	}
+	double getAverageMergePercent()
+	{
+		if( MERGE_PERCENT_COUNT == 0 )
+			return 0;
+		else
+			return MERGE_PERCENT_SUM / MERGE_PERCENT_COUNT;
+	}
+	double getAverageOldPercent()
+	{
+		if( OLD_PERCENT_COUNT == 0 )
+			return 0;
+		else
+			return OLD_PERCENT_SUM / OLD_PERCENT_COUNT;
+	}
+	double getAverageSimilarityRatio()
+	{
+		if( SIMILARITY_RATIO_COUNT == 0 )
+			return 0;
+		else
+			return SIMILARITY_RATIO_SUM / SIMILARITY_RATIO_COUNT;
+	}	
 
 public:
 	HAR(void)
@@ -85,13 +140,11 @@ public:
 	~HAR(void)
 	{}
 
-//	void HotspotSelection(int time);
-
 	inline int getNClass()
 	{
 		return m_routes.size();
 	}
-	
+
 	//在限定范围内随机增删一定数量的node
 	void ChangeNodeNumber();
 	//更新所有node的位置（而不是position）

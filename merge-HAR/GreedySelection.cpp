@@ -1,6 +1,5 @@
 #include "GreedySelection.h"
 
-
 CGreedySelection::CGreedySelection()
 {
 	//制作候选hotspot集的副本
@@ -53,22 +52,6 @@ void CGreedySelection::UpdateStatus()
 
 void CGreedySelection::GreedySelect(int time)
 {
-	int mergeCount = 0;
-	int oldCount = 0;
-	int newCount = 0;
-	ofstream merge("merge.txt", ios::app);
-	ofstream merge_details("merge-details.txt", ios::app);
-	if( DO_MERGE_HAR )
-	{
-		if(time == startTimeForHotspotSelection)
-		{
-			merge << logInfo;
-			merge << "#Time" << TAB << "#MergeHotspotCount" << TAB << "#MergeHotspotPercent" << TAB << "#OldHotspotCount" << TAB 
-				  << "#OldHotspotPercent" << TAB << "#NewHotspotCount" << TAB << "#NewHotspotPercent" << endl;
-			merge_details << "#Time" << TAB << "#HotspotType/#MergeAge ..." << endl;
-		}
-		merge_details << time << TAB;
-	}
 	do
 	{
 		this->UpdateStatus();
@@ -135,24 +118,6 @@ void CGreedySelection::GreedySelect(int time)
 			best_hotspot = hotspotsAboveAverage[index_max_hotspot];
 		}
 
-		if(DO_MERGE_HAR)
-		{
-			if( best_hotspot->getCandidateType() == TYPE_MERGE_HOTSPOT )
-			{
-				merge_details << "M/" << best_hotspot->getAge() << TAB;
-				mergeCount++;
-			}
-			else if( best_hotspot->getCandidateType() == TYPE_OLD_HOTSPOT )
-			{
-				merge_details << "O/" << best_hotspot->getAge() << TAB;
-				oldCount++;
-			}
-			else
-			{
-				merge_details << "N/" << best_hotspot->getAge() << TAB;
-				newCount++;
-			}
-		}
 		selectedHotspots.push_back(best_hotspot);
 		for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ihotspot++)
 		{
@@ -189,15 +154,6 @@ void CGreedySelection::GreedySelect(int time)
 	g_hotspotCandidates = unselectedHotspots;
 	g_selectedHotspots = selectedHotspots;
 
-	if(DO_MERGE_HAR)
-	{
-		int total = g_selectedHotspots.size();
-		merge << time << TAB << mergeCount << TAB << (double)mergeCount / (double)total << TAB << oldCount << TAB 
-			  << (double)oldCount / (double)total << TAB << newCount << TAB << (double)newCount / (double)total << endl;
-	}
-
-	merge.close();
-	merge_details.close();
 }
 
 int CGreedySelection::getCost()
@@ -221,13 +177,6 @@ void CGreedySelection::mergeHotspots(int time)
 	int mergeCount = 0;
 	int oldCount = 0;
 	stringstream tmp;
-	ofstream merge_details("merge-details.txt", ios::app);
-	if(time == startTimeForHotspotSelection)
-	{
-		merge_details << logInfo;
-		merge_details << "#Time" << TAB << "#LegalMergeCount" << TAB << "#BestMergeCount" << TAB << "#OldHotspotCount" << endl;
-		merge_details << "#Time" << TAB << "#OldCover/#NewCover/#MergeCover,#MergeAge ..." << endl;
-	}
 
 	//sort new hotspots by x coordinates
 	CPreprocessor::mergeSort(g_hotspotCandidates, CPreprocessor::largerByLocationX);
@@ -312,7 +261,4 @@ void CGreedySelection::mergeHotspots(int time)
 	uncoveredPositions = g_positions;
 	unselectedHotspots = g_hotspotCandidates;
 
-	merge_details << endl << time << TAB << mergeCount << TAB << mergeResult.size() << TAB << oldCount << endl;
-	merge_details << time << TAB << tmp.str() << endl;
-	merge_details.close();
 }

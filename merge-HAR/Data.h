@@ -1,4 +1,5 @@
 #pragma once
+
 class CData
 {
 private:
@@ -107,6 +108,7 @@ public:
 			return 0;
 		return DELAY_SUM / ARRIVAL_COUNT;
 	}
+	static double getAverageEnergyConsumption();
 
 };
 

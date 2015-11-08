@@ -159,11 +159,12 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 
 	selectedHotspots = this->assignPositionsToHotspots(selectedHotspots);
 	//计算最终选取出的hotspot的cover的node，以备使用
-	for(int i = 0; i < selectedHotspots.size(); i++)
+	for(vector<CHotspot *>::iterator ihotspot = selectedHotspots.begin(); ihotspot != selectedHotspots.end(); ihotspot++)
 	{
-		selectedHotspots[i]->generateCoveredNodes();
-		selectedHotspots[i]->recalculateCenter();
+		(*ihotspot)->generateCoveredNodes();
+		(*ihotspot)->recalculateCenter();
 	}
+
 	return selectedHotspots;
 }
 

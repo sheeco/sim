@@ -88,6 +88,7 @@ int g_nPositions = 0;
 int g_nHotspotCandidates = 0;
 
 string logInfo;
+ofstream debugInfo("debug.txt", ios::app);
 
 string HELP = "\n       ( ALL CASE SENSITIVE ) \n"
 			  "<mode>        -har;          -ihar;       -mhar;    -comp;    -heat-exp;    -heat-ln \n"
@@ -241,10 +242,12 @@ int main(int argc, char* argv[])
 		t = time(NULL); //获取目前秒时间  
 		strftime(buffer, 64, "%Y-%m-%d %H:%M:%S", localtime(&t));  
 		logtime = string(buffer);
-		logInfo = "\n#" + logtime + "\n";
+		logInfo = "\n#" + logtime + TAB;
 	
 		ofstream parameters("parameters.txt", ios::app);
 		parameters << endl << endl << "#" << logtime << endl;
+
+		debugInfo << ALPHA << TAB << BETA << TAB << CO_HOTSPOT_HEAT_A1 << TAB << CO_HOTSPOT_HEAT_A2 << TAB ;
 
 		if(DO_IHAR)
 		{
@@ -252,6 +255,8 @@ int main(int argc, char* argv[])
 			parameters << "#IHAR" << endl << endl;
 			parameters << "LAMBDA" << TAB << LAMBDA << endl;
 			parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
+
+			debugInfo << LAMBDA << TAB << MAX_MEMORY_TIME << TAB ;
 		}
 		else if(DO_MERGE_HAR)
 		{
@@ -260,18 +265,31 @@ int main(int argc, char* argv[])
 			parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
 			parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
 			parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl;
+
+			debugInfo << RATIO_MERGE_HOTSPOT << TAB << RATIO_OLD_HOTSPOT << TAB ;
+
 			if( HEAT_RATIO_EXP )
+			{
 				parameters << "HEAT_RATIO" << TAB << "EXP" << endl << endl;
+				debugInfo << "EXP" << TAB ;
+			}
 			else if( HEAT_RATIO_LN )
+			{
 				parameters << "HEAT_RATIO" << TAB << "LN" << endl << endl;
+				debugInfo << "LN" << TAB ;
+			}
 			else
+			{
 				parameters << "HEAT_RATIO" << TAB << "FLAT" << endl << endl;
+				debugInfo << "FLAT" << TAB ;
+			}
 		}
 		else
 		{
 			logInfo += "#HAR\n\n";
 			parameters << "#HAR" << endl << endl;
 		}
+
 		parameters << "ALPHA" << TAB << ALPHA << endl;
 		parameters << "BETA" << TAB << BETA << endl;
 		parameters << "GAMA" << TAB << GAMA << endl;
@@ -280,6 +298,7 @@ int main(int argc, char* argv[])
 		parameters << "PROB_DATA_FORWARD" << TAB << PROB_DATA_FORWARD << endl;
 		parameters << "DATA GENERATION TIME" << TAB << DATATIME << endl;
 		parameters << "RUN TIME" << TAB << RUNTIME << endl;
+
 		parameters.close();
 	}
 
@@ -353,5 +372,5 @@ int main(int argc, char* argv[])
 
 		currentTime += TIMESLOT;
 	}
-
+	debugInfo.close();
 }

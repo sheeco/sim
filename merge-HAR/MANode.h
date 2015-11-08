@@ -132,11 +132,11 @@ public:
 			return ( BUFFER_CAPACITY_MA - buffer.size() );
 	}
 	//ÏàÓö¼ÆÊý
-	inline static int getEncounterPercentAtHotspots()
+	inline static double getEncounterPercentAtHotspots()
 	{
 		return (double)encounterAtHotspots / (double)encounter;
 	}
-	inline static int getEncounterPercentOnTheWay()
+	inline static double getEncounterPercentOnTheWay()
 	{
 		return (double)encounterOnTheWay / (double)encounter;
 	}	
