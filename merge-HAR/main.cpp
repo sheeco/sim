@@ -251,7 +251,8 @@ int main(int argc, char* argv[])
 
 		if(DO_IHAR)
 		{
-			logInfo += "#IHAR\n\n";
+			logInfo += "#IHAR\n";
+			parameters << endl;
 			parameters << "#IHAR" << endl << endl;
 			parameters << "LAMBDA" << TAB << LAMBDA << endl;
 			parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
@@ -260,7 +261,8 @@ int main(int argc, char* argv[])
 		}
 		else if(DO_MERGE_HAR)
 		{
-			logInfo += "#merge-HAR\n\n";
+			logInfo += "#merge-HAR\n";
+			parameters << endl;
 			parameters << "#merge-HAR" << endl << endl;
 			parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
 			parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
@@ -286,7 +288,8 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			logInfo += "#HAR\n\n";
+			logInfo += "#HAR\n";
+			parameters << endl;
 			parameters << "#HAR" << endl << endl;
 		}
 

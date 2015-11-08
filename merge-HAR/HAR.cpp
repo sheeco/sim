@@ -576,7 +576,7 @@ void HAR::PrintInfo()
 		int sumCover = 0;
 		for(vector<CHotspot *>::iterator it = m_hotspots.begin(); it != m_hotspots.end(); it++)
 			sumCover += (*it)->getNCoveredPosition();
-		hotspot_statistics << time << TAB << sumCover << TAB << m_hotspots.size() << TAB << (double)sumCover / (double)m_hotspots.size() << endl;
+		hotspot_statistics << currentTime << TAB << sumCover << TAB << m_hotspots.size() << TAB << (double)sumCover / (double)m_hotspots.size() << endl;
 		hotspot_statistics.close();
 
 		//热点归并过程统计信息（在最终选取出的热点集合中）
@@ -596,18 +596,7 @@ void HAR::PrintInfo()
 				merge_details << logInfo;
 				merge_details << "#Time" << TAB << "#HotspotType/#MergeAge ..." << endl;
 			}
-			merge_details << time << TAB;
-
-			//三种热点所占的比例
-			int total = m_hotspots.size();
-			merge << time << TAB << mergeCount << TAB << (double)mergeCount / (double)total << TAB << oldCount << TAB 
-				  << (double)oldCount / (double)total << TAB << newCount << TAB << (double)newCount / (double)total << endl;
-
-			//用于计算归并热点和旧热点所占比例的历史平均值信息
-			MERGE_PERCENT_SUM += (double)mergeCount / (double)total;
-			MERGE_PERCENT_COUNT++;
-			OLD_PERCENT_SUM += (double)oldCount / (double)total;
-			OLD_PERCENT_COUNT++;
+			merge_details << currentTime << TAB;
 
 			//热点类型及年龄统计信息
 			for(vector<CHotspot *>::iterator ihotspot = m_hotspots.begin(); ihotspot != m_hotspots.end(); ihotspot++)
@@ -628,6 +617,17 @@ void HAR::PrintInfo()
 					newCount++;
 				}
 			}
+
+			//三种热点所占的比例
+			int total = m_hotspots.size();
+			merge << currentTime << TAB << mergeCount << TAB << (double)mergeCount / (double)total << TAB << oldCount << TAB 
+				  << (double)oldCount / (double)total << TAB << newCount << TAB << (double)newCount / (double)total << endl;
+
+			//用于计算归并热点和旧热点所占比例的历史平均值信息
+			MERGE_PERCENT_SUM += (double)mergeCount / (double)total;
+			MERGE_PERCENT_COUNT++;
+			OLD_PERCENT_SUM += (double)oldCount / (double)total;
+			OLD_PERCENT_COUNT++;
 
 			merge.close();
 			merge_details.close();
@@ -783,7 +783,7 @@ void HAR::PrintInfo()
 		debugInfo << getAverageMACost() << TAB << getAverageMAWaypoint() << TAB ;
 		if(DO_COMP)
 			debugInfo << getAverageSimilarityRatio() << TAB ;
-		debugInfo << logInfo.replace(0, 1, "\t") << endl;
+		debugInfo << logInfo.replace(0, 1, "");
 	}
 
 }

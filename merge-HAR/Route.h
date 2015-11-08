@@ -73,6 +73,13 @@ public:
 	//取得移动目标，即下一个point
 	inline CBase* getToPoint()
 	{
+		if( toPoint > waypoints.size() - 1 
+			|| toPoint < 0 
+			|| ( ( waypoints[toPoint]->getID() != SINK_ID ) && ( ( (CHotspot *)waypoints[toPoint] )->getCandidateType() > 3 ) ) )
+		{
+			cout << "Error: toPoint exceeds the range " << endl;
+			_PAUSE;
+		}
 		return waypoints[toPoint];
 	}
 	//将toPoint后移一个

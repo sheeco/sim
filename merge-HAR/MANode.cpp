@@ -132,6 +132,8 @@ void CMANode::updateLocation(int time)
 			if( toPoint != CSink::getSink() )
 			{
 				this->atHotspot = (CHotspot *)toPoint;
+				if( atHotspot->getCandidateType() > 3 )
+					_PAUSE;
 			}
 			route.updateToPoint();
 			return;

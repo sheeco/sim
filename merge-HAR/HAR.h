@@ -79,42 +79,42 @@ private:
 	double getAverageHotspotCost()
 	{
 		if( HOTSPOT_COST_COUNT == 0 )
-			return 0;
+			return -1;
 		else
-			return HOTSPOT_COST_SUM / HOTSPOT_COST_COUNT;
+			return (double)HOTSPOT_COST_SUM / (double)HOTSPOT_COST_COUNT;
 	}
 	double getAverageMACost()
 	{
 		if( MA_COST_COUNT == 0 )
-			return 0;
+			return -1;
 		else
-			return MA_COST_SUM / MA_COST_COUNT;
+			return (double)MA_COST_SUM / (double)MA_COST_COUNT;
 	}
 	double getAverageMAWaypoint()
 	{
 		if( MA_WAYPOINT_COUNT == 0 )
-			return 0;
+			return -1;
 		else
 			return MA_WAYPOINT_SUM / MA_WAYPOINT_COUNT;
 	}
 	double getAverageMergePercent()
 	{
 		if( MERGE_PERCENT_COUNT == 0 )
-			return 0;
+			return -1;
 		else
 			return MERGE_PERCENT_SUM / MERGE_PERCENT_COUNT;
 	}
 	double getAverageOldPercent()
 	{
 		if( OLD_PERCENT_COUNT == 0 )
-			return 0;
+			return -1;
 		else
 			return OLD_PERCENT_SUM / OLD_PERCENT_COUNT;
 	}
 	double getAverageSimilarityRatio()
 	{
 		if( SIMILARITY_RATIO_COUNT == 0 )
-			return 0;
+			return -1;
 		else
 			return SIMILARITY_RATIO_SUM / SIMILARITY_RATIO_COUNT;
 	}	
