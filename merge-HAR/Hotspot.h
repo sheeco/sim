@@ -2,6 +2,7 @@
 
 #include "Position.h"
 
+extern int currentTime;
 extern double RATIO_MERGE_HOTSPOT;
 extern double RATIO_NEW_HOTSPOT;
 extern double RATIO_OLD_HOTSPOT;
@@ -16,6 +17,7 @@ private:
 	vector<CPosition *> coveredPositions;  //覆盖列表
 	vector<int> coveredNodes;  //覆盖的node列表，hotspot选取结束后手动调用generateCoveredNodes生成
 	double heat;
+	vector<int> deliveryCounts;  //存储该热点上的投递计数，连任的热点应对每一任期内的投递计数进行统计
 	static long int ID_COUNT;
 
 	//merge-HAR
@@ -42,6 +44,7 @@ public:
 		//merge_HAR
 		this->candidateType = TYPE_NEW_HOTSPOT;
 		this->age = 0;
+		this->deliveryCounts.push_back(0);
 	}
 
 	//从某个Position的位置生成一个hotspot
@@ -50,12 +53,13 @@ public:
 		this->nCoveredPosition = 0;
 		this->x = pos->getX();
 		this->y = pos->getY();
-		this->ID = pos->getID();
+		this->ID = -1;
 		this->time = time;
 		this->heat = 0;
 		//merge_HAR
 		this->candidateType = TYPE_NEW_HOTSPOT;
 		this->age = 0;
+		this->deliveryCounts.push_back(0);
 
 		addPosition(pos);
 	}
@@ -131,11 +135,29 @@ public:
 		}
 	}
 
+	//从当前这一热点任期内的投递计数，该函数应当在MA的路径更新时调用输出统计结果
+	inline int getDeliveryCount()
+	{
+		while( deliveryCounts.size() < ( ( currentTime - time ) / SLOT_HOTSPOT_UPDATE + 1 ) )
+			deliveryCounts.push_back(0);
+		if(age == 0)
+			return deliveryCounts.at(0);
+		else
+			return deliveryCounts.at( ( currentTime - time ) / SLOT_HOTSPOT_UPDATE - 1 );
+	}
+
+	inline void addDeliveryCount(int n)
+	{
+		while( deliveryCounts.size() < ( ( currentTime - time ) / SLOT_HOTSPOT_UPDATE + 1 ) )
+			deliveryCounts.push_back(0);
+		deliveryCounts.at( deliveryCounts.size() - 1 ) += n;
+	}
+
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{
-		if(this->ID != -1)
-			return;
+		//if(this->ID != -1)
+		//	return;
 		this->ID = ID_COUNT;
 		ID_COUNT++;
 	}

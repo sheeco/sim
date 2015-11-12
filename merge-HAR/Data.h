@@ -15,6 +15,10 @@ private:
 	static long double DELAY_SUM;  //时延加和，用于计算平均时延
 	static long int OVERFLOW_COUNT;  //因节点Buffer溢出被丢弃的数据计数
 
+	//(注意：由于这两个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途)
+	static long int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
+	static long int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
+
 	//自动生成ID
 	inline void generateID()
 	{
@@ -48,6 +52,31 @@ public:
 		ARRIVAL_COUNT++;
 		DELAY_SUM += timeArrival - timeBirth;
 	}
+	static void deliverAtHotspot(int n)
+	{
+		DELIVERY_AT_HOTSPOT_COUNT += n;
+	}
+	static void deliverOnRoute(int n)
+	{
+		DELIVERY_ON_ROUTE_COUNT += n;
+	}
+	//该函数应当在MA的路径更新时调用输出统计结果
+	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
+	static long int getDeliveryAtHotspotCount()
+	{
+		return DELIVERY_AT_HOTSPOT_COUNT;
+	}
+	//该函数应当在MA的路径更新时调用输出统计结果
+	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
+	static long int getDeliveryTotalCount()
+	{
+		return DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT;
+	}
+	static double getDeliveryAtHotspotPercent()
+	{
+		return (double)DELIVERY_AT_HOTSPOT_COUNT / (double)( DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT );
+	}
+
 	static inline void overflow()
 	{
 		OVERFLOW_COUNT++;

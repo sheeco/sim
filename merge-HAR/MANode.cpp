@@ -11,7 +11,7 @@ void CMANode::receiveData(int time, vector<CData> data)
 {
 	if(buffer.size() > BUFFER_CAPACITY_MA)
 	{
-		cout<<"Error: CNode::generateData() buffer overflown"<<endl;
+		cout<<"Error: CMANode::receiveData() buffer overflown"<<endl;
 		_PAUSE;
 		return;
 	}
@@ -39,8 +39,6 @@ void CMANode::receiveData(int time, vector<CData> data)
 		if(buffer.size() == BUFFER_CAPACITY_MA)
 			buffer.erase(buffer.begin());  //如果buffer已满，删除最早的一个Data
 		buffer.push_back(data[i]);
-		//FIXME: 到达MA就认为数据已成功投递
-		//data[i].arriveSink(time);
 	}
 	energyConsumption += num * (CONSUMPTION_DATA_SEND * 4 + CONSUMPTION_DATA_RECIEVE * 3);
 }
@@ -85,11 +83,11 @@ void CMANode::updateLocation(int time)
 		{
 			interval -= waitingTime;
 			waitingTime = 0;
-			atHotspot = NULL;
 		}
 	}
 	if(interval == 0)
 		return;
+	atHotspot = NULL;
 	//路线过期，立即返回sink
 	if( route.isOverdue() )
 	{

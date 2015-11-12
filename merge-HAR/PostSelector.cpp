@@ -130,26 +130,38 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ihotspot++)
 		(*ihotspot)->setFlag(false);
 	//选中所有ratio >= ALPHA的hotspot
-	for(int i = hotspotCandidates.size() - 1; i >= 0; i--)
+	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); )
 	{
-		CHotspot *ihotspot = hotspotCandidates[i];
-		if(this->getRatioForHotspot(ihotspot) >= ALPHA)
+		if(this->getRatioForHotspot(*ihotspot) >= ALPHA)
 		{
-			ihotspot->setFlag(true);
-			this->includeHotspots(ihotspot);
+			(*ihotspot)->setFlag(true);
+			this->includeHotspots( (*ihotspot) );
+			//将选中的热点从候选集中删除
+			ihotspot = hotspotCandidates.erase(ihotspot);
 		}
 		else
-			break;
+		{
+			ihotspot++;
+			continue;
+		}
 	}
 	//为每个lost node选中一个cover数最大的hotspot
 	this->findLostNodes();
 	for(vector<int>::iterator inode = lostNodes.begin(); inode != lostNodes.end(); inode++)
 	{
-		if( ifExists(coveredNodes, *inode) )
-			continue;
 		CHotspot* hotspot = findMaxCoverHotspotForNode(*inode);
 		if(hotspot != NULL)
 			includeHotspots(hotspot);
+		//将选中的热点从候选集中删除
+		for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ihotspot++)
+		{
+			if( (*ihotspot)->getID() == hotspot->getID() )
+			{
+				hotspotCandidates.erase(ihotspot);
+				break;
+			}
+		}
+
 	}
 	if(! verifyCompleted())
 	{
@@ -165,6 +177,8 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 		(*ihotspot)->recalculateCenter();
 	}
 
+	//将未选中的候选热点放回全局候选集
+	g_hotspotCandidates.insert( g_hotspotCandidates.end(), hotspotCandidates.begin(), hotspotCandidates.end() );
 	return selectedHotspots;
 }
 

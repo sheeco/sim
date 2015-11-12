@@ -38,8 +38,8 @@ public:
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{
-		if(this->ID != -1)
-			return;
+		//if(this->ID != -1)
+		//	return;
 		this->ID = ID_COUNT;
 		ID_COUNT++;
 	}

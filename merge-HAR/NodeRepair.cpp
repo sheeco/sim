@@ -82,6 +82,7 @@ vector<CHotspot *> CNodeRepair::RepairPoorNodes()
 		poorNodes.erase(poorNodes.begin());
 	}
 
+	g_hotspotCandidates = unselectedHotspots;
 	return selectedHotspots;
 }
 

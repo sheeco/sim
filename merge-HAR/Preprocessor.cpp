@@ -730,14 +730,7 @@ void CPreprocessor::BuildCandidateHotspots(int time)
 
 	//从每个position出发生成一个候选hotspot
 	for(vector<CPosition *>::iterator ipos = g_positions.begin(); ipos != g_positions.end(); ipos++)
-	{
-		//cout<<(*ipos)->getID()<<" ";
-		//dbg_sumID += (*ipos)->getID();
-		//dbg_count++;
-		//cout<<endl<<"count: "<<dbg_count<<", sum: "<<dbg_sumID<<";";
-
 		g_hotspotCandidates.push_back(GenerateHotspotFromPosition(*ipos, time));
-	}
 
 	////将所有候选hotspot按x坐标排序
 	//g_hotspotCandidates = mergeSort(g_hotspotCandidates, largerByLocationX);

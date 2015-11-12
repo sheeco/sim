@@ -49,6 +49,9 @@ double HAR::getWaitingTime(CHotspot *hotspot)
 	long double result = 1;
 	int count_trueHotspot = 0;
 	vector<int> coveredNodes = hotspot->getCoveredNodes();
+	//DBG:
+	vector<int> nCoveredPositionsForNode;
+
 	for(int i = 0; i < coveredNodes.size(); i++)
 	{
 		int tmp_time = currentTime;
@@ -60,6 +63,8 @@ double HAR::getWaitingTime(CHotspot *hotspot)
 			tmp_time = min(currentTime, MAX_MEMORY_TIME);
 		}
 
+		//DBG:
+		nCoveredPositionsForNode.push_back( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) );
 		tmp = (double) hotspot->getNCoveredPositionsForNode(coveredNodes[i]) / (double) (tmp_time + SLOT_HOTSPOT_UPDATE);
 
 		//merge-HAR: ratio
@@ -407,10 +412,24 @@ void HAR::SendData()
 	if( currentTime == startTimeForHotspotSelection )
 	{
 		waiting_time << logInfo;
-		waiting_time << "#Time" << TAB << "#HotspotID" << TAB << "#HotspotType/HotspotAge" << TAB 
+		waiting_time << "#Time" << TAB << "#MANodeID" << TAB << "#HotspotID" << TAB << "#HotspotType/HotspotAge" << TAB 
 					 << "#Cover" << TAB << "#Heat" << TAB << "#WaitingTime" << endl;
 	}
-	waiting_time.close();	
+	waiting_time.close();
+	ofstream delivery_hotspot("delivery-hotspot.txt", ios::app);
+	if( currentTime == startTimeForHotspotSelection )
+	{
+		delivery_hotspot << endl << logInfo;
+		delivery_hotspot << "#Time" << TAB << "#DeliveryCountForSingleHotspotInThisSlot ..." ;
+	}
+	ofstream delivery_statistics("delivery-statistics.txt", ios::app);
+	if( currentTime == startTimeForHotspotSelection )
+	{
+		delivery_statistics << endl << logInfo;
+		delivery_statistics << "#Time" << TAB << "#DeliveryAtHotspotCount" << TAB << "#DeliveryTotalCount" << TAB << "#DeliveryAtHotspotPercent" << endl;
+	}
+	//用于统计过期热点的投递计数时判断是否应当输出时间
+	static bool hasMoreNewRoutes = false;
 
 	//更新所有MA的位置
 	for(vector<CMANode>::iterator iMANode = m_MANodes.begin(); iMANode != m_MANodes.end(); )
@@ -431,9 +450,22 @@ void HAR::SendData()
 				}
 				if( iMANode->routeIsOverdue() )
 				{
-					//取得新路线
+					//保留过期路径，用于稍后统计旧热点的投递计数信息
+					vector<CBase *> overdueHotspots = iMANode->getRoute()->getWayPoints();
+
+					//更新路线，取得新的热点集合
 					if( m_sink->hasMoreNewRoutes() )
 					{
+						//热点集合发生更新，输出上一轮热点选取的时间
+						if( ! hasMoreNewRoutes )
+						{
+							delivery_hotspot << endl << currentTime - SLOT_HOTSPOT_UPDATE << TAB ;
+							delivery_statistics << currentTime - SLOT_HOTSPOT_UPDATE << TAB << CData::getDeliveryAtHotspotCount() << TAB 
+								<< CData::getDeliveryTotalCount() << TAB << CData::getDeliveryAtHotspotPercent() << endl;
+							delivery_statistics.close();
+							hasMoreNewRoutes = true;
+						}
+
 						iMANode->setRoute(m_sink->popRoute());
 						cout << "####  [ MA " << iMANode->getID() << " Updates Its Route ]" << endl;
 					}
@@ -442,8 +474,23 @@ void HAR::SendData()
 					{
 						iMANode->setFlag(false);
 						cout << "####  [ MA " << iMANode->getID() << " Is Removed ]" << endl;
-						break;
 					}
+
+					//统计旧热点的投递计数信息
+					for(vector<CBase *>::iterator iHotspot = overdueHotspots.begin(); iHotspot != overdueHotspots.end(); iHotspot++)
+					{
+						if( (*iHotspot)->getID() == SINK_ID )
+							continue;
+						CHotspot *hotspot = (CHotspot *)(*iHotspot);
+						delivery_hotspot << hotspot->getDeliveryCount() << TAB ;
+					}
+					if( ! iMANode->getFlag() )
+						break;
+				}
+				else if( ! m_sink->hasMoreNewRoutes() )
+				{
+					//热点集合更新结束，重置flag
+					hasMoreNewRoutes = false;
 				}
 			}
 			//如果到达hotspot，waitingTime尚未获取
@@ -461,14 +508,14 @@ void HAR::SendData()
 				{
 					iMANode->setWaitingTime( tmp );
 					cout << "####  [ MA " << iMANode->getID() << " Waits For " << tmp << " ]" << endl;
-					if(tmp == 0)
-						iMANode->setAtHotspot(NULL);
+					//if(tmp == 0)
+					//	iMANode->setAtHotspot(NULL);
 				}
 
 				//记录waiting time信息
-				if( tmp != 0)
+				if( tmp > 0)
 				{
-					waiting_time << atHotspot->getTime() << TAB << atHotspot->getID() << TAB ;
+					waiting_time << atHotspot->getTime() << TAB << iMANode->getID() << TAB << atHotspot->getID() << TAB ;
 					switch( atHotspot->getCandidateType() )
 					{
 						case TYPE_OLD_HOTSPOT: 
@@ -511,6 +558,7 @@ void HAR::SendData()
 			if(CBase::getDistance( (CBase)*iMANode, (CBase)*inode ) > TRANS_RANGE)
 				continue;
 
+			//对于热点上和路径上分别统计相遇次数
 			if( iMANode->isAtHotspot() )
 				CMANode::encountAtHotspot();
 			else
@@ -526,16 +574,29 @@ void HAR::SendData()
 				continue;
 			}
 
+			vector<CData> data;
 			if( INFINITE_BUFFER || BUFFER_OVERFLOW_ALLOWED )
 			{
 				cout << "####  [ MA " << iMANode->getID() << " Receives " << inode->getBufferSize() << " Data ]" << endl;
-				iMANode->receiveData(currentTime, inode->sendAllData());
+				data = inode->sendAllData();
+				iMANode->receiveData(currentTime, data);
 			}
 			else
 			{
 				cout << "####  [ MA " << iMANode->getID() << " Receives " << inode->getBufferSize() << " Data ]" << endl;
-				iMANode->receiveData(currentTime, inode->sendData( iMANode->getBufferCapacity() ) );
+				data = inode->sendData( iMANode->getBufferCapacity() );
+				iMANode->receiveData(currentTime, data);
 			}
+
+			//对于热点上和路径上分别统计数据投递计数
+			if( iMANode->isAtHotspot() )
+			{
+				CData::deliverAtHotspot( data.size() );
+				iMANode->getAtHotspot()->addDeliveryCount( data.size() );
+			}
+			else
+				CData::deliverOnRoute( data.size() );
+
 		}
 	}
 
@@ -543,7 +604,8 @@ void HAR::SendData()
 	for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
 		inode->updateBufferStatus();
 
-	cout << "####  [ Delivery Ratio ]  " << CData::getDeliveryRatio() << endl;
+	cout << "####  [ Delivery Ratio ]  " << CData::getDataArrivalCount() / (double)CData::getDataCount() << endl;
+	delivery_hotspot.close();
 }
 
 void HAR::PrintInfo()
@@ -557,7 +619,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			hotspot << logInfo;
-			hotspot << "#time" << TAB << "#HotspotCount" << endl;
+			hotspot << "#Time" << TAB << "#HotspotCount" << endl;
 		}
 		hotspot << currentTime << TAB << m_hotspots.size() << endl; 
 		hotspot.close();
@@ -571,7 +633,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			hotspot_statistics << logInfo;
-			hotspot_statistics << "#time" << TAB << "#CoverSum" << TAB << "#HotspotCount" << TAB << "#AvgCover" << endl;
+			hotspot_statistics << "#Time" << TAB << "#CoverSum" << TAB << "#HotspotCount" << TAB << "#AvgCover" << endl;
 		}
 		int sumCover = 0;
 		for(vector<CHotspot *>::iterator it = m_hotspots.begin(); it != m_hotspots.end(); it++)
@@ -638,7 +700,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			ma << logInfo;
-			ma << "#time" << TAB << "#MACount" << TAB << "#AvgMAWayPointCount" << endl;
+			ma << "#Time" << TAB << "#MACount" << TAB << "#AvgMAWayPointCount" << endl;
 		}
 		ma << currentTime << TAB << m_routes.size() << TAB << ( (double)m_hotspots.size() / (double)m_routes.size() ) << endl;
 		ma.close();
@@ -655,7 +717,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			ed << logInfo;
-			ed << "#time" << TAB << "#EstimatedDelay" << endl;
+			ed << "#Time" << TAB << "#EstimatedDelay" << endl;
 		}
 		ed << currentTime << TAB << calculateEDTime() << endl;
 		ed.close();
@@ -665,7 +727,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			energy_consumption << logInfo;
-			energy_consumption << "#time" << TAB << "#AvgEnergyConsumption" << endl;
+			energy_consumption << "#Time" << TAB << "#AvgEnergyConsumption" << endl;
 		}
 		energy_consumption << currentTime << TAB << ( CData::getAverageEnergyConsumption() * 100 ) << endl;
 		energy_consumption.close();
@@ -675,7 +737,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			buffer << logInfo;
-			buffer << "#time" << TAB << "#AvgBufferStateInHistoryOfEachNode" << endl;
+			buffer << "#Time" << TAB << "#AvgBufferStateInHistoryOfEachNode" << endl;
 		}
 		buffer << currentTime << TAB;
 		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
@@ -688,7 +750,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			delivery_ratio << logInfo;
-			delivery_ratio << "#time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
+			delivery_ratio << "#Time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
 		}
 		delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
@@ -704,7 +766,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			delivery_ratio << logInfo;
-			delivery_ratio << "#time" << TAB << "#DeliveryRatio" << endl;
+			delivery_ratio << "#Time" << TAB << "#DeliveryRatio" << endl;
 		}
 		delivery_ratio << currentTime << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
@@ -714,7 +776,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			delay << logInfo;
-			delay << "#time" << TAB << "#AvgDelay" << endl;
+			delay << "#Time" << TAB << "#AvgDelay" << endl;
 		}
 		delay << currentTime << TAB << CData::getAverageDelay() << endl;
 		delay.close();
@@ -724,7 +786,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			encounter << logInfo;
-			encounter << "#time" << TAB << "#EncounterAtHotspot" << TAB << "#Encounter" << TAB << "#EncounterPercentAtHotspot" << endl;
+			encounter << "#Time" << TAB << "#EncounterAtHotspot" << TAB << "#Encounter" << TAB << "#EncounterPercentAtHotspot" << endl;
 		}
 		encounter << currentTime << TAB << CMANode::getEncounterAtHotspot() << TAB << CMANode::getEncounter() << TAB << CMANode::getEncounterPercentAtHotspot() << endl;
 		encounter.close();
@@ -740,7 +802,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			ma << logInfo;
-			ma << "#time" << TAB << "#BufferStateOfEachMA" << endl;
+			ma << "#Time" << TAB << "#BufferStateOfEachMA" << endl;
 		}
 		ma << currentTime << TAB;
 		for(vector<CMANode>::iterator iMA = m_MANodes.begin(); iMA != m_MANodes.end(); iMA++)
@@ -753,7 +815,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			node << logInfo;
-			node << "#time" << TAB << "#BufferStateOfEachNode" << endl;
+			node << "#Time" << TAB << "#BufferStateOfEachNode" << endl;
 		}
 		node << currentTime << TAB;
 		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
@@ -766,7 +828,7 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			overflow << logInfo;
-			overflow << "#time" << TAB << "#OverflowCount" << endl;
+			overflow << "#Time" << TAB << "#OverflowCount" << endl;
 		}
 		overflow << currentTime << TAB << CData::getOverflowCount() << endl;
 		overflow.close();
@@ -781,7 +843,7 @@ void HAR::PrintInfo()
 		debugInfo << getAverageMACost() << TAB << getAverageMAWaypoint() << TAB ;
 		if(DO_COMP)
 			debugInfo << getAverageSimilarityRatio() << TAB ;
-		debugInfo << logInfo.replace(0, 1, "");
+		debugInfo << CData::getDeliveryAtHotspotPercent() << TAB << logInfo.replace(0, 1, "");
 	}
 
 }
@@ -800,7 +862,7 @@ void HAR::CompareWithOldHotspots()
 	if( currentTime == startTimeForHotspotSelection + SLOT_HOTSPOT_UPDATE )
 	{
 		similarity << logInfo;
-		similarity << "#time" << TAB << "#Overlap/Old" << TAB << "#Overlap/New" << TAB
+		similarity << "#Time" << TAB << "#Overlap/Old" << TAB << "#Overlap/New" << TAB
 				   << "#OverlapArea" << TAB << "#OldArea" << TAB << "#NewArea" << endl;
 	}
 	similarity << currentTime << TAB << ( overlapArea / oldArea ) << TAB << ( overlapArea / newArea ) << TAB

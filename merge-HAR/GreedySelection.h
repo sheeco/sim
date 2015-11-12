@@ -22,11 +22,6 @@ private:
 	vector<CHotspot *> unselectedHotspots;  //未被选中的hotspot集合
 	vector<CHotspot *> hotspotsAboveAverage;  //ratio高于1/2的hotspot集合
 	vector<CHotspot *> selectedHotspots;  //选中的hotspot集合，即整个贪婪算法的输出
-
-	////merge-HAR: 
-	////来自g_oldSelectedHotspots，上一次贪婪选取得到的最终selectedHotspots的深拷贝
-	////注意：需要手动释放避免野指针
-	//vector<CHotspot*> copy_oldSelectedHotspots;  
 	
 	//检查是否已完成选取得到合法的解
 	inline bool isValid()
