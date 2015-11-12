@@ -3,8 +3,8 @@
 double CMANode::energyConsumption = 0;
 long int CMANode::ID_COUNT = 0;
 int CMANode::encounter = 0;
-int CMANode::encounterAtHotspots = 0;
-int CMANode::encounterOnTheWay = 0;
+int CMANode::encounterAtHotspot = 0;
+int CMANode::encounterOnRoute = 0;
 
 
 void CMANode::receiveData(int time, vector<CData> data)

@@ -25,8 +25,8 @@ private:
 	static long int ID_COUNT;
 
 	static int encounter;
-	static int encounterAtHotspots;
-	static int encounterOnTheWay;
+	static int encounterAtHotspot;
+	static int encounterOnRoute;
 
 public:
 	CMANode(void)
@@ -132,35 +132,28 @@ public:
 			return ( BUFFER_CAPACITY_MA - buffer.size() );
 	}
 	//相遇计数
-	inline static double getEncounterPercentAtHotspots()
+	inline static double getEncounterPercentAtHotspot()
 	{
-		return (double)encounterAtHotspots / (double)encounter;
+		return (double)encounterAtHotspot / (double)encounter;
 	}
-	inline static double getEncounterPercentOnTheWay()
-	{
-		return (double)encounterOnTheWay / (double)encounter;
-	}	
 	inline static int getEncounter()
 	{
 		return encounter;
 	}
-	inline static double getEncounterAtHotspots()
+	inline static int getEncounterAtHotspot()
 	{
-		return encounterAtHotspots;
+		return encounterAtHotspot;
 	}
-	inline static double getEncounterOnTheWay()
-	{
-		return encounterOnTheWay;
-	}
+
 	//用于记录MA节点与sensor的相遇计数
-	inline static void encountAtHotspots()
+	inline static void encountAtHotspot()
 	{
-		encounterAtHotspots++;
+		encounterAtHotspot++;
 		encounter++;
 	}
-	inline static void encountOnTheWay()
+	inline static void encountOnRoute()
 	{
-		encounterOnTheWay++;
+		encounterOnRoute++;
 		encounter++;
 	}
 

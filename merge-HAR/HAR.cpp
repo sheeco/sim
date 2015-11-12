@@ -512,9 +512,9 @@ void HAR::SendData()
 				continue;
 
 			if( iMANode->isAtHotspot() )
-				CMANode::encountAtHotspots();
+				CMANode::encountAtHotspot();
 			else
-				CMANode::encountOnTheWay();
+				CMANode::encountOnRoute();
 
 			if( ! inode->hasData() )
 				continue;
@@ -724,11 +724,9 @@ void HAR::PrintInfo()
 		if(currentTime == startTimeForHotspotSelection)
 		{
 			encounter << logInfo;
-			encounter << "#time" << TAB << "#Encounter" << TAB << "#EncounterAtHotspots" << TAB << "#EncounterOnTheWay" << TAB 
-					  << "#EncounterPercentAtHotspots" << TAB << "#EncounterPercentOnTheWay" << endl;
+			encounter << "#time" << TAB << "#EncounterAtHotspot" << TAB << "#Encounter" << TAB << "#EncounterPercentAtHotspot" << endl;
 		}
-		encounter << currentTime << TAB << CMANode::getEncounter() << TAB << CMANode::getEncounterAtHotspots() << TAB << CMANode::getEncounterOnTheWay() << TAB 
-				  << CMANode::getEncounterPercentAtHotspots() << TAB << CMANode::getEncounterPercentOnTheWay() << endl;
+		encounter << currentTime << TAB << CMANode::getEncounterAtHotspot() << TAB << CMANode::getEncounter() << TAB << CMANode::getEncounterPercentAtHotspot() << endl;
 		encounter.close();
 
 		//logÊä³ö
