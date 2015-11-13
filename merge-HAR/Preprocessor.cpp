@@ -143,6 +143,42 @@ bool CPreprocessor::largerByNCoveredPositions(CBase *left, CBase *right)
 	return ( ( (CHotspot *) left)->getNCoveredPosition() ) > ( ( (CHotspot *) right)->getNCoveredPosition() );
 }
 
+vector<int> CPreprocessor::merge(vector<int> &left, vector<int> &right, bool(*Comp)(int, int))
+{
+	vector<int> result;
+	vector<int>::size_type li = 0;
+	vector<int>::size_type ri = 0;
+	while(li < left.size()
+		&& ri < right.size())
+	{
+		if(! Comp(left[li], right[ri]) )
+			result.push_back(right[ri++]);
+		else
+			result.push_back(left[li++]);
+	}
+	while(li < left.size())
+		result.push_back(left[li++]);
+	while(ri < right.size())
+		result.push_back(right[ri++]);
+	return result;
+}
+
+vector<int> CPreprocessor::mergeSort(vector<int> &v, bool(*Comp)(int, int))
+{
+	if(v.size() == 0)
+		return vector<int>();
+	if(v.size() == 1)
+		return vector<int>(1, v[0]);
+
+	vector<int>::iterator mid = v.begin() + v.size() / 2;
+	vector<int> left(v.begin(), mid);
+	vector<int> right(mid, v.end());
+	left = mergeSort(left, Comp);
+	right = mergeSort(right, Comp);
+
+	return merge(left, right, Comp);
+}
+
 vector<CPosition *> CPreprocessor::merge(vector<CPosition *> &left, vector<CPosition *> &right)
 {
 	vector<CPosition *> result;

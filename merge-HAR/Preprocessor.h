@@ -55,6 +55,10 @@ public:
 	static void freePointerVector(vector<CHotspot *> &v);	
 	
 	//用于归并排序的函数
+	static vector<int> merge(vector<int> &left, vector<int> &right, bool(*Comp)(int, int));
+	static vector<int> mergeSort(vector<int> &v, bool(*Comp)(int, int));
+	//用于int序列的降序排列
+	static bool smaller(int left, int right){	return left > right;	};
 	//CPosition类只能按照x坐标排序，CHotspot类可以按照x坐标或者cover数排序
 	static vector<CPosition *> merge(vector<CPosition *> &left, vector<CPosition *> &right);
 	static vector<CPosition *> mergeSort(vector<CPosition *> &v);

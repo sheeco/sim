@@ -21,6 +21,7 @@ extern int startTimeForHotspotSelection;
 extern double CO_HOTSPOT_HEAT_A1;
 extern double CO_HOTSPOT_HEAT_A2;
 extern double BETA;
+extern int MIN_WAITING_TIME;
 extern int MAX_MEMORY_TIME;
 extern int NUM_NODE;
 extern double PROB_DATA_FORWARD;

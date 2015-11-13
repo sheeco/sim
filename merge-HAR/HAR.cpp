@@ -79,12 +79,12 @@ double HAR::getWaitingTime(CHotspot *hotspot)
 	}
 	//FIXME: 如果不是true hotspot，waiting time为0
 	if(count_trueHotspot == 0)
-		return 0;
+		return MIN_WAITING_TIME;
 	double prob = exp( -1 / hotspot->getHeat() );
 	result = prob / result;
 	result = pow(result, ( 1 / (double) count_trueHotspot ) );
 
-	return result;
+	return result + MIN_WAITING_TIME;
 }
 
 double HAR::getSumGenerationRate(vector<int> nodes)
@@ -420,8 +420,9 @@ void HAR::SendData()
 	if( currentTime == startTimeForHotspotSelection )
 	{
 		delivery_hotspot << endl << logInfo;
-		delivery_hotspot << "#Time" << TAB << "#DeliveryCountForSingleHotspotInThisSlot ..." ;
+		delivery_hotspot << "#Time" << TAB << "#DeliveryCountForSingleHotspotInThisSlot ..." << endl;
 	}
+	static vector<int> deliveryCounts;  //用于存储hotspot投递计数
 	ofstream delivery_statistics("delivery-statistics.txt", ios::app);
 	if( currentTime == startTimeForHotspotSelection )
 	{
@@ -456,10 +457,19 @@ void HAR::SendData()
 					//更新路线，取得新的热点集合
 					if( m_sink->hasMoreNewRoutes() )
 					{
-						//热点集合发生更新，输出上一轮热点选取的时间
+						//热点集合发生更新，输出已完成统计的热点投递计数集合，和上一轮热点选取的时间
 						if( ! hasMoreNewRoutes )
 						{
-							delivery_hotspot << endl << currentTime - SLOT_HOTSPOT_UPDATE << TAB ;
+							if( ! deliveryCounts.empty() )
+							{
+								//从大到小排序输出
+								deliveryCounts = CPreprocessor::mergeSort(deliveryCounts, CPreprocessor::smaller);
+								for(vector<int>::iterator icount = deliveryCounts.begin(); icount != deliveryCounts.end(); icount++)
+									delivery_hotspot << *icount << TAB ;
+								delivery_hotspot << endl;
+								deliveryCounts.erase( deliveryCounts.begin(), deliveryCounts.end() );
+							}
+							delivery_hotspot << currentTime - SLOT_HOTSPOT_UPDATE << TAB ;
 							delivery_statistics << currentTime - SLOT_HOTSPOT_UPDATE << TAB << CData::getDeliveryAtHotspotCount() << TAB 
 								<< CData::getDeliveryTotalCount() << TAB << CData::getDeliveryAtHotspotPercent() << endl;
 							delivery_statistics.close();
@@ -482,7 +492,7 @@ void HAR::SendData()
 						if( (*iHotspot)->getID() == SINK_ID )
 							continue;
 						CHotspot *hotspot = (CHotspot *)(*iHotspot);
-						delivery_hotspot << hotspot->getDeliveryCount() << TAB ;
+						deliveryCounts.push_back( hotspot->getDeliveryCount() );
 					}
 					if( ! iMANode->getFlag() )
 						break;

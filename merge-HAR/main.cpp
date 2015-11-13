@@ -69,6 +69,7 @@ double BETA = 0.0025;  //ratio for true hotspot
 double GAMA = 0.5;  //ratio for HotspotsAboveAverage
 double CO_HOTSPOT_HEAT_A1 = 1;
 double CO_HOTSPOT_HEAT_A2 = 30;
+int MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
 
 double PROB_DATA_FORWARD = 1.0;
 int DATATIME = 15300;
@@ -92,7 +93,7 @@ ofstream debugInfo("debug.txt", ios::app);
 
 string HELP = "\n       ( ALL CASE SENSITIVE ) \n"
 			  "<mode>        -har;          -ihar;       -mhar;    -comp;    -heat-exp;    -heat-ln \n"
-			  "<time>		 -data [];	    -run []; \n"
+			  "<time>		 -data [];	    -run [];	 -min-wait []; \n"
 			  "<parameter>   -alpha [];     -beta [];    -gama [];    -heat [] [];    -prob []; \n"
 			  "<ihar>		 -lambda [];    -memory []; \n"
 			  "<mhar>        -merge [];     -old []; \n\n";
@@ -209,6 +210,12 @@ int main(int argc, char* argv[])
 			{
 				if(iField < argc - 1)
 					RUNTIME = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-min-wait" )
+			{
+				if(iField < argc - 1)
+					MIN_WAITING_TIME = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-help" )
