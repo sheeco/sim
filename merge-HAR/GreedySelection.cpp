@@ -103,7 +103,7 @@ void CGreedySelection::GreedySelect(int time)
 		}  //调整中心结束
 
 		CHotspot *best_hotspot;
-		if(index_max_hotspot == -1)
+		if( index_max_hotspot == -1 || index_max_hotspot == unselectedHotspots.size() )
 		{
 			//cout<<"Error: CGreedySelection::GreedySelection() index_max_hotspot == -1"<<endl;
 			
@@ -129,7 +129,7 @@ void CGreedySelection::GreedySelect(int time)
 		}
 		
 		//将这个hotspot覆盖列表中的所有position从其他hotspot的列表中、从uncoveredPositions中移除
-		vector<CPosition *> tmp_positions = hotspotsAboveAverage[index_max_hotspot]->getCoveredPositions();
+		vector<CPosition *> tmp_positions = best_hotspot->getCoveredPositions();
 		for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ihotspot++)
 		{
 			(*ihotspot)->removePositionList(tmp_positions);
