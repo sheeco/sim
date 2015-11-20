@@ -169,13 +169,8 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 		_PAUSE;
 	}
 
+	//分配每个position到唯一一个热点，并计算最终选取出的hotspot的cover的node，以备使用
 	selectedHotspots = this->assignPositionsToHotspots(selectedHotspots);
-	//计算最终选取出的hotspot的cover的node，以备使用
-	for(vector<CHotspot *>::iterator ihotspot = selectedHotspots.begin(); ihotspot != selectedHotspots.end(); ihotspot++)
-	{
-		(*ihotspot)->generateCoveredNodes();
-		(*ihotspot)->recalculateCenter();
-	}
 
 	//将未选中的候选热点放回全局候选集
 	g_hotspotCandidates.insert( g_hotspotCandidates.end(), hotspotCandidates.begin(), hotspotCandidates.end() );

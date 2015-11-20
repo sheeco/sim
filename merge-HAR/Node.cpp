@@ -1,5 +1,6 @@
 #include "Node.h"
 
+int CNode::ID_COUNT = 0;
 double CNode::energyConsumption = 0;
 
 CNode::~CNode(void)

@@ -21,6 +21,7 @@ private:
 	int bufferSizeSum;
 	int bufferChangeCount;
 
+	static int ID_COUNT;
 	static double energyConsumption;
 
 public:
@@ -48,9 +49,14 @@ public:
 	{
 		return energyConsumption;
 	}
-	inline void setID(int ID)
+	inline void setSinkID()
 	{
-		this->ID = ID;
+		this->ID = SINK_ID;
+	}
+	inline void generateID()
+	{
+		ID_COUNT++;
+		this->ID = ID_COUNT;
 	}
 	inline bool hasData()
 	{

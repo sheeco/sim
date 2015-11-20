@@ -60,7 +60,7 @@ using namespace std;
 //#define DO_IHAR false
 
 //IHAR: Node Number Test
-#define TEST_CHANGE_NUM_NODE false
+//#define TEST_DYNAMIC_NUM_NODE false
 #define NUM_NODE_MIN 14
 #define NUM_NODE_MAX 34
 #define NUM_NODE_INIT 29

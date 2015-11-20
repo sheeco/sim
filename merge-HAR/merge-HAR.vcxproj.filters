@@ -121,16 +121,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\README.txt">
-      <Filter>资源文件</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\.gitattributes">
       <Filter>资源文件</Filter>
     </None>
     <None Include="..\.gitignore">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\README">
+      <Filter>资源文件</Filter>
+    </Text>
   </ItemGroup>
 </Project>

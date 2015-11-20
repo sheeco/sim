@@ -12,7 +12,7 @@
 #include "NodeRepair.h"
 
 extern bool DO_IHAR;
-extern bool DO_COMP;
+extern bool TEST_HOTSPOT_SIMILARITY;
 extern bool HEAT_RATIO_EXP;
 extern bool HEAT_RATIO_LN;
 
@@ -77,48 +77,65 @@ private:
 	double calculateEDTime();
 
 	//用于最终debug结果的统计和记录
-	double getAverageHotspotCost()
+	inline double getAverageHotspotCost()
 	{
 		if( HOTSPOT_COST_COUNT == 0 )
 			return -1;
 		else
 			return (double)HOTSPOT_COST_SUM / (double)HOTSPOT_COST_COUNT;
 	}
-	double getAverageMACost()
+	inline double getAverageMACost()
 	{
 		if( MA_COST_COUNT == 0 )
 			return -1;
 		else
 			return (double)MA_COST_SUM / (double)MA_COST_COUNT;
 	}
-	double getAverageMAWaypoint()
+	inline double getAverageMAWaypoint()
 	{
 		if( MA_WAYPOINT_COUNT == 0 )
 			return -1;
 		else
 			return MA_WAYPOINT_SUM / MA_WAYPOINT_COUNT;
 	}
-	double getAverageMergePercent()
+	inline double getAverageMergePercent()
 	{
 		if( MERGE_PERCENT_COUNT == 0 )
 			return -1;
 		else
 			return MERGE_PERCENT_SUM / MERGE_PERCENT_COUNT;
 	}
-	double getAverageOldPercent()
+	inline double getAverageOldPercent()
 	{
 		if( OLD_PERCENT_COUNT == 0 )
 			return -1;
 		else
 			return OLD_PERCENT_SUM / OLD_PERCENT_COUNT;
 	}
-	double getAverageSimilarityRatio()
+	inline double getAverageSimilarityRatio()
 	{
 		if( SIMILARITY_RATIO_COUNT == 0 )
 			return -1;
 		else
 			return SIMILARITY_RATIO_SUM / SIMILARITY_RATIO_COUNT;
 	}	
+	bool ifNodeExists(int id)
+	{
+		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
+		{
+			if(inode->getID() == id)
+				return true;
+		}
+		return false;
+	}
+	CNode getNodeByID(int id)
+	{
+		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
+		{
+			if(inode->getID() == id)
+				return *inode;
+		}
+	}
 
 public:
 	HAR(void)
@@ -129,11 +146,11 @@ public:
 			if(i % 5 == 0)
 				generationRate *= 5;
 			CNode node(generationRate, BUFFER_CAPACITY_NODE);
-			node.setID(i);
+			node.generateID();
 			m_nodes.push_back(node);
 		}
 		CNode sink(0, BUFFER_CAPACITY_SINK);
-		sink.setID(SINK_ID);
+		sink.setSinkID();
 		sink.setLocation(SINK_X, SINK_Y, 0);
 		m_sink = CSink::getSink();
 	}

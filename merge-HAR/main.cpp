@@ -24,6 +24,7 @@ int g_old_nPositions = 0;
 int g_old_nHotspots = 0;
 
 //cover¾ØÕóºÍ¶ÈÊýlist£¬ÓÃÓÚSCP
+//FIXME: Ó¦¸Ã½«GAÖÐÓÃµ½µÄ¾ØÕóºÍ¶ÈÊýÐÅÏ¢µÄÉú³ÉÓëÏà¹Ø»ù±¾²Ù×÷·ÖÀë¿ª
 int** g_coverMatrix = NULL;
 int* g_degreeForPositions = NULL;
 int* g_degreeForHotspots = NULL;
@@ -35,7 +36,7 @@ vector<CPosition *> g_tmpPositions;  //´æ·ÅGAµÄpreprocess¹ý³ÌÖÐÉ¾³ýµÄposition£¬Ô
 /************************************ IHAR ************************************/
 
 //IHAR: Node Repair
-double LAMBDA = 0.06;
+double LAMBDA = 0;
 int MAX_MEMORY_TIME = 3600;
 
 //IHAR: Node Number Test
@@ -62,7 +63,8 @@ bool HEAT_RATIO_LN = false;
 
 bool DO_IHAR = false;
 bool DO_MERGE_HAR = false;
-bool DO_COMP = false;
+bool TEST_HOTSPOT_SIMILARITY = true;
+bool TEST_DYNAMIC_NUM_NODE = false;
 
 double ALPHA = 0.3;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
@@ -91,12 +93,12 @@ int g_nHotspotCandidates = 0;
 string logInfo;
 ofstream debugInfo("debug.txt", ios::app);
 
-string HELP = "\n       ( ALL CASE SENSITIVE ) \n"
-			  "<mode>        -har;          -ihar;       -mhar;    -comp;    -heat-exp;    -heat-ln \n"
-			  "<time>		 -data [];	    -run [];	 -min-wait []; \n"
-			  "<parameter>   -alpha [];     -beta [];    -gama [];    -heat [] [];    -prob []; \n"
-			  "<ihar>		 -lambda [];    -memory []; \n"
-			  "<mhar>        -merge [];     -old []; \n\n";
+string HELP = "\n										!!!!!! ALL CASE SENSITIVE !!!!!! \n"
+			  "<mode>			-har;				-ihar;				 -mhar;				-hotspot-similarity;		-dynamic-node-number; \n"
+			  "<time>			-time-data [];	    -time-run []; \n"
+			  "<parameter>		-alpha [];			-beta [];			 -gama [];			-heat [] [];				-prob-trans []; \n"
+			  "<ihar>			-lambda [];			-lifetime []; \n"
+			  "<mhar>			-merge [];			-old [];			 -min-wait [];		-heat-exp;					-heat-ln \n\n";
 
 
 int main(int argc, char* argv[])
@@ -108,6 +110,8 @@ int main(int argc, char* argv[])
 		for(iField = 1; iField < argc; )
 		{
 			string field = argv[iField];
+
+			//<mode> ²»´øÊýÖµµÄ²¼¶ûÐÍ²ÎÊý
 			if( field == "-har" )
 			{
 				DO_IHAR = DO_MERGE_HAR = false;
@@ -117,7 +121,7 @@ int main(int argc, char* argv[])
 			{
 				DO_IHAR = true;
 				DO_MERGE_HAR = false;
-				DO_COMP = true;
+				TEST_HOTSPOT_SIMILARITY = true;
 				iField++;
 			}
 			else if( field == "-mhar" )
@@ -126,9 +130,14 @@ int main(int argc, char* argv[])
 				DO_IHAR = false;
 				iField++;
 			}
-			else if( field == "-comp" )
+			else if( field == "-hotspot-similarity" )
 			{
-				DO_COMP = true;
+				TEST_HOTSPOT_SIMILARITY = true;
+				iField++;
+			}
+			else if( field == "-dynamic-node-number" )
+			{
+				TEST_DYNAMIC_NUM_NODE = true;
 				iField++;
 			}
 			else if( field == "-heat-exp" )
@@ -143,6 +152,34 @@ int main(int argc, char* argv[])
 				HEAT_RATIO_EXP = false;
 				iField++;
 			}
+
+			//¹ØÓÚÊ±¼äµÄÕûÐÍ²ÎÊý
+			else if( field == "-lifetime" )
+			{
+				if(iField < argc - 1)
+					MAX_MEMORY_TIME = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-time-data" )
+			{
+				if(iField < argc - 1)
+					DATATIME = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-time-run" )
+			{
+				if(iField < argc - 1)
+					RUNTIME = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-min-wait" )
+			{
+				if(iField < argc - 1)
+					MIN_WAITING_TIME = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+
+			//ÆäËûdouble²ÎÊý
 			else if( field == "-alpha" )
 			{
 				if(iField < argc - 1)
@@ -167,12 +204,6 @@ int main(int argc, char* argv[])
 					LAMBDA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-memory" )
-			{
-				if(iField < argc - 1)
-					MAX_MEMORY_TIME = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
 			else if( field == "-merge" )
 			{
 				if(iField < argc - 1)
@@ -185,6 +216,14 @@ int main(int argc, char* argv[])
 					RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-prob-trans" )
+			{
+				if(iField < argc - 1)
+					PROB_DATA_FORWARD = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
+
+			//´øÁ½¸ö»òÒÔÉÏÊýÖµµÄ²ÎÊý
 			else if( field == "-heat" )
 			{
 				if(iField < argc - 2)
@@ -194,30 +233,8 @@ int main(int argc, char* argv[])
 				}
 				iField += 3;
 			}
-			else if( field == "-prob" )
-			{
-				if(iField < argc - 1)
-					PROB_DATA_FORWARD = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-data" )
-			{
-				if(iField < argc - 1)
-					DATATIME = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-run" )
-			{
-				if(iField < argc - 1)
-					RUNTIME = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-min-wait" )
-			{
-				if(iField < argc - 1)
-					MIN_WAITING_TIME = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
+
+			//Êä³öhelpÐÅÏ¢
 			else if( field == "-help" )
 			{
 				cout << HELP;
@@ -317,7 +334,7 @@ int main(int argc, char* argv[])
 	while(currentTime <= RUNTIME)
 	{
 		//IHAR: Node Number Test:
-		if( TEST_CHANGE_NUM_NODE )
+		if( TEST_DYNAMIC_NUM_NODE )
 		{
 			if(currentTime % SLOT_CHANGE_NUM_NODE == 0 && currentTime > 0)
 			{

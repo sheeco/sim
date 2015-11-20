@@ -4,11 +4,15 @@
 
 
 
-# Specific files for this project (Edited by Eco on 2015-11-03)
+# Specific files for this project ( mHAR ) ( Edited by Eco on 2015-11-03; Updated on 2015-11-16 )
 
 *.newlocation
 
+*.txt
+
 run.bat
+
+TEST
 
 
 

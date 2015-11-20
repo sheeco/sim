@@ -20,12 +20,12 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 	vector<int> coveredNodes = hotspot->getCoveredNodes();
 	for(int i = 0; i < coveredNodes.size(); i++)
 	{
-		if(coveredNodes[i] >= m_nodes.size())
+		if( ! ifNodeExists( coveredNodes[i] ) )
 		{
 			nCoveredNodes--;
 			continue;
 		}
-		sum_generationRate += m_nodes.at(coveredNodes[i]).getGenerationRate();
+		sum_generationRate += getNodeByID( coveredNodes[i] ).getGenerationRate();
 	}
 
 	double ratio = 1;
@@ -92,9 +92,9 @@ double HAR::getSumGenerationRate(vector<int> nodes)
 	double sum = 0;
 	for(int i = 0; i < nodes.size(); i++)
 	{
-		if(nodes[i] >= m_nodes.size())
+		if( ! ifNodeExists( nodes[i] ) )
 			continue;
-		sum += m_nodes.at(nodes[i]).getGenerationRate();
+		sum += getNodeByID( nodes[i] ).getGenerationRate();
 	}
 	return sum;
 }
@@ -105,9 +105,9 @@ double HAR::getSumGenerationRate(vector<int> nodes_a, vector<int> nodes_b)
 	addToListUniquely(nodes_a, nodes_b);
 	for(int i = 0; i < nodes_a.size(); i++)
 	{
-		if(nodes_a[i] >= m_nodes.size())
+		if( ! ifNodeExists( nodes_a[i] ) )
 			continue;
-		sum += m_nodes.at(nodes_a[i]).getGenerationRate();
+		sum += getNodeByID( nodes_a[i] ).getGenerationRate();
 	}
 	return sum;
 }
@@ -182,7 +182,7 @@ void HAR::ChangeNodeNumber()
 			if(i % 5 == 0)
 				generationRate *= 5;
 			CNode node(generationRate, BUFFER_CAPACITY_NODE);
-			node.setID(i);
+			node.generateID();
 			m_nodes.push_back(node);
 		}	
 	}
@@ -263,7 +263,7 @@ void HAR::HotspotSelection()
 	}
 
 	//比较相邻两次热点选取的相似度
-	if(DO_COMP)
+	if(TEST_HOTSPOT_SIMILARITY)
 	{
 		CompareWithOldHotspots();
 	}
@@ -851,7 +851,7 @@ void HAR::PrintInfo()
 		if(DO_MERGE_HAR)
 			debugInfo << getAverageMergePercent() << TAB << getAverageOldPercent() << TAB ;
 		debugInfo << getAverageMACost() << TAB << getAverageMAWaypoint() << TAB ;
-		if(DO_COMP)
+		if(TEST_HOTSPOT_SIMILARITY)
 			debugInfo << getAverageSimilarityRatio() << TAB ;
 		debugInfo << CData::getDeliveryAtHotspotPercent() << TAB << logInfo.replace(0, 1, "");
 	}
