@@ -31,10 +31,10 @@ vector<CHotspot *> CGA::getSelectedHotspots()
 {
 	vector<CHotspot *> selectedHotspots;
 	int *choices = BestSolution.getChoices();
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		if(choices[i])
-			selectedHotspots.push_back(g_hotspotCandidates[i]);
+			selectedHotspots.push_back(CHotspot::hotspotCandidates[i]);
 	}
 	return selectedHotspots;
 }
@@ -61,7 +61,7 @@ void CGA::GenerateInitialSolutions()
 CGASolution CGA::Optimize()
 {
 	//FIXME: setting of final mutation bits number
-	//CO_MUTATION_FINAL =  ((g_nHotspotCandidates / 10) > 10)? (g_nHotspotCandidates / 10) : 10;
+	//CO_MUTATION_FINAL =  ((CHotspot::nHotspotCandidates / 10) > 10)? (CHotspot::nHotspotCandidates / 10) : 10;
 	CO_MUTATION_FINAL = 10;
 
 	double bet1 = 0;

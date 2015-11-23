@@ -20,12 +20,12 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 	vector<int> coveredNodes = hotspot->getCoveredNodes();
 	for(int i = 0; i < coveredNodes.size(); i++)
 	{
-		if( ! ifNodeExists( coveredNodes[i] ) )
+		if( ! CNode::ifNodeExists( coveredNodes[i] ) )
 		{
 			nCoveredNodes--;
 			continue;
 		}
-		sum_generationRate += getNodeByID( coveredNodes[i] ).getGenerationRate();
+		sum_generationRate += CNode::getNodeByID( coveredNodes[i] ).getGenerationRate();
 	}
 
 	double ratio = 1;
@@ -33,12 +33,12 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 	if( HEAT_RATIO_EXP )
 	{
 		//merge-HAR: exp ratio
-		ratio *= pow( hotspot->getRatioByCandidateType(), hotspot->getAge() );
+		ratio *= pow( hotspot->getCoByCandidateType(), hotspot->getAge() );
 	}
 	else if( HEAT_RATIO_LN )
 	{
 		//merge-HAR: ln ratio
-		ratio *= hotspot->getRatioByCandidateType() * ( 1 + log( 1 + hotspot->getAge() ) );
+		ratio *= hotspot->getCoByCandidateType() * ( 1 + log( 1 + hotspot->getAge() ) );
 	}
 
 	return ratio * ( CO_HOTSPOT_HEAT_A1 * nCoveredNodes + CO_HOTSPOT_HEAT_A2 * sum_generationRate ) ;
@@ -68,7 +68,7 @@ double HAR::getWaitingTime(CHotspot *hotspot)
 		tmp = (double) hotspot->getNCoveredPositionsForNode(coveredNodes[i]) / (double) (tmp_time + SLOT_HOTSPOT_UPDATE);
 
 		//merge-HAR: ratio
-		tmp *= pow( hotspot->getRatioByCandidateType(), hotspot->getAge() );
+		tmp *= pow( hotspot->getCoByCandidateType(), hotspot->getAge() );
 
 		//double tmp = (double) hotspot->getNCoveredPositionsForNode(coveredNodes[i]) / (double) (currentTime + SLOT_HOTSPOT_UPDATE);
 		if(tmp >= BETA)
@@ -92,9 +92,9 @@ double HAR::getSumGenerationRate(vector<int> nodes)
 	double sum = 0;
 	for(int i = 0; i < nodes.size(); i++)
 	{
-		if( ! ifNodeExists( nodes[i] ) )
+		if( ! CNode::ifNodeExists( nodes[i] ) )
 			continue;
-		sum += getNodeByID( nodes[i] ).getGenerationRate();
+		sum += CNode::getNodeByID( nodes[i] ).getGenerationRate();
 	}
 	return sum;
 }
@@ -105,9 +105,9 @@ double HAR::getSumGenerationRate(vector<int> nodes_a, vector<int> nodes_b)
 	addToListUniquely(nodes_a, nodes_b);
 	for(int i = 0; i < nodes_a.size(); i++)
 	{
-		if( ! ifNodeExists( nodes_a[i] ) )
+		if( ! CNode::ifNodeExists( nodes_a[i] ) )
 			continue;
-		sum += getNodeByID( nodes_a[i] ).getGenerationRate();
+		sum += CNode::getNodeByID( nodes_a[i] ).getGenerationRate();
 	}
 	return sum;
 }
@@ -166,7 +166,7 @@ void HAR::ChangeNodeNumber()
 		bet = 0.2 + bet / 2;
 	else
 		bet = -0.2 + bet / 2;
-	int delta = bet * (NUM_NODE_MAX - NUM_NODE_MIN);
+	int delta = ROUND( bet * (NUM_NODE_MAX - NUM_NODE_MIN) );
 	if(delta == 0)
 		return;
 	if(delta < NUM_NODE_MIN - NUM_NODE)
@@ -183,15 +183,33 @@ void HAR::ChangeNodeNumber()
 				generationRate *= 5;
 			CNode node(generationRate, BUFFER_CAPACITY_NODE);
 			node.generateID();
-			m_nodes.push_back(node);
+			CNode::nodes.push_back(node);
+			CNode::idNodes.push_back( node.getID() );
 		}	
 	}
 	else
 	{
-		vector<CNode>::iterator start = m_nodes.begin();
-		vector<CNode>::iterator end = m_nodes.end();
+		//FIXME: Random selected ?
+		vector<CNode>::iterator start = CNode::nodes.begin();
+		vector<CNode>::iterator end = CNode::nodes.end();
 		vector<CNode> new_nodes(start, start + NUM_NODE + delta);
-		m_nodes = new_nodes;
+
+		//Remove invalid positoins belonging to the deleted nodes
+		vector<int> deletedNodes;
+		for(vector<CNode>::iterator inode = start + NUM_NODE + delta; inode != end; inode++)
+			deletedNodes.push_back( inode->getID() );
+		for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
+		{
+			if( ifExists(deletedNodes, (*ipos)->getNode()) )
+				ipos = CPosition::positions.erase(ipos);
+			else
+				ipos++;
+		}
+
+		CNode::nodes = new_nodes;
+		CNode::idNodes.erase( CNode::idNodes.begin(), CNode::idNodes.end() );
+		for(vector<CNode>::iterator inode = new_nodes.begin(); inode != new_nodes.end(); inode++)
+			CNode::idNodes.push_back( inode->getID() );
 	}
 	NUM_NODE += delta;
 }
@@ -199,11 +217,11 @@ void HAR::ChangeNodeNumber()
 void HAR::UpdateNodeLocations()
 {
 	//node
-	for(int i = 0; i < NUM_NODE; i++)
+	for(int i = 0; i < CNode::nodes.size(); i++)
 	{
 		double x = 0, y = 0;
 		CFileParser::getPositionFromFile(i, currentTime, x, y);
-		m_nodes[i].setLocation(x, y, currentTime);
+		CNode::nodes[i].setLocation(x, y, currentTime);
 	}
 }
 
@@ -249,17 +267,17 @@ void HAR::HotspotSelection()
 
 
 	/********************************* 后续选取过程 ***********************************/
-	CPostSelector postSelector(g_selectedHotspots);
-	g_selectedHotspots = postSelector.PostSelect(currentTime);
+	CPostSelector postSelector(CHotspot::selectedHotspots);
+	CHotspot::selectedHotspots = postSelector.PostSelect(currentTime);
 
 	
 	/***************************** 疏漏节点修复过程(IHAR) ******************************/
 	//IHAR: POOR NODE REPAIR
 	if(DO_IHAR)
 	{
-		CNodeRepair repair(g_selectedHotspots, g_hotspotCandidates, currentTime);
-		g_selectedHotspots = repair.RepairPoorNodes();
-		g_selectedHotspots = postSelector.assignPositionsToHotspots(g_selectedHotspots);
+		CNodeRepair repair(CHotspot::selectedHotspots, CHotspot::hotspotCandidates, currentTime);
+		CHotspot::selectedHotspots = repair.RepairPoorNodes();
+		CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
 	}
 
 	//比较相邻两次热点选取的相似度
@@ -271,8 +289,8 @@ void HAR::HotspotSelection()
 
 void HAR::HotspotClassification()
 {
-	vector<CHotspot *> tmp_hotspots = g_selectedHotspots;
-	this->m_hotspots = g_selectedHotspots;
+	vector<CHotspot *> tmp_hotspots = CHotspot::selectedHotspots;
+	this->m_hotspots = CHotspot::selectedHotspots;
 	for(vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin(); ihotspot != tmp_hotspots.end(); ihotspot++)
 	{
 		(*ihotspot)->setHeat( getHotspotHeat(*ihotspot) );
@@ -398,9 +416,9 @@ void HAR::GenerateData()
 	if(currentTime > DATATIME)
 		return;
 
-	for(int i = 0; i < NUM_NODE; i++)
+	for(int i = 0; i < CNode::nodes.size(); i++)
 	{
-		m_nodes.at(i).generateData(currentTime);
+		CNode::nodes.at(i).generateData(currentTime);
 	}
 }
 
@@ -561,7 +579,7 @@ void HAR::SendData()
 	//投递数据
 	for(vector<CMANode>::iterator iMANode = m_MANodes.begin(); iMANode != m_MANodes.end(); iMANode++)
 	{
-		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
+		for(vector<CNode>::iterator inode = CNode::nodes.begin(); inode != CNode::nodes.end(); inode++)
 		{
 			if( (! BUFFER_OVERFLOW_ALLOWED) && iMANode->isFull() )
 				break;
@@ -611,7 +629,7 @@ void HAR::SendData()
 	}
 
 	//更新所有节点的buffer状态记录
-	for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
+	for(vector<CNode>::iterator inode = CNode::nodes.begin(); inode != CNode::nodes.end(); inode++)
 		inode->updateBufferStatus();
 
 	cout << "####  [ Delivery Ratio ]  " << CData::getDataArrivalCount() / (double)CData::getDataCount() << endl;
@@ -750,7 +768,7 @@ void HAR::PrintInfo()
 			buffer << "#Time" << TAB << "#AvgBufferStateInHistoryOfEachNode" << endl;
 		}
 		buffer << currentTime << TAB;
-		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
+		for(vector<CNode>::iterator inode = CNode::nodes.begin(); inode != CNode::nodes.end(); inode++)
 			 buffer << inode->getAverageBufferSize() << TAB;
 		buffer << endl;
 		buffer.close();
@@ -828,7 +846,7 @@ void HAR::PrintInfo()
 			node << "#Time" << TAB << "#BufferStateOfEachNode" << endl;
 		}
 		node << currentTime << TAB;
-		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
+		for(vector<CNode>::iterator inode = CNode::nodes.begin(); inode != CNode::nodes.end(); inode++)
 			node << inode->getBufferSize() << "  " ;
 		node << endl;
 		node.close();
@@ -850,7 +868,7 @@ void HAR::PrintInfo()
 		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << getAverageHotspotCost() << TAB ;
 		if(DO_MERGE_HAR)
 			debugInfo << getAverageMergePercent() << TAB << getAverageOldPercent() << TAB ;
-		debugInfo << getAverageMACost() << TAB << getAverageMAWaypoint() << TAB ;
+		debugInfo << getAverageMACost() << TAB ;
 		if(TEST_HOTSPOT_SIMILARITY)
 			debugInfo << getAverageSimilarityRatio() << TAB ;
 		debugInfo << CData::getDeliveryAtHotspotPercent() << TAB << logInfo.replace(0, 1, "");
@@ -861,12 +879,12 @@ void HAR::PrintInfo()
 void HAR::CompareWithOldHotspots()
 {
 	static double sumSimilarityRatio = 0;
-	if( g_oldSelectedHotspots.empty() )
+	if( CHotspot::oldSelectedHotspots.empty() )
 		return ;
 
-	double overlapArea = CHotspot::getOverlapArea(g_oldSelectedHotspots, g_selectedHotspots);
-	double oldArea = g_oldSelectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(g_oldSelectedHotspots);
-	double newArea = g_selectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(g_selectedHotspots);
+	double overlapArea = CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots, CHotspot::selectedHotspots);
+	double oldArea = CHotspot::oldSelectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots);
+	double newArea = CHotspot::selectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
 
 	ofstream similarity("similarity.txt", ios::app);
 	if( currentTime == startTimeForHotspotSelection + SLOT_HOTSPOT_UPDATE )

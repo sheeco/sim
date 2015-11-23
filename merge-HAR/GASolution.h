@@ -1,13 +1,9 @@
 #pragma once
 #include "Hotspot.h"
 
-extern int g_nPositions;
-extern int g_nHotspotCandidates;
 extern int** g_coverMatrix;
 extern int* g_degreeForPositions;
 extern int* g_degreeForHotspots;
-extern vector<CHotspot*> g_hotspotCandidates;
-extern vector<CPosition*> g_positions;
 
 //FIXME:如果适应度函数修改，这里也可能要做相应的修改
 #define WORST_FITNESS 999999

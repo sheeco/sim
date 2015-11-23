@@ -127,10 +127,12 @@
     <None Include="..\.gitignore">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\README">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="..\README.txt">
       <Filter>资源文件</Filter>
     </Text>
   </ItemGroup>

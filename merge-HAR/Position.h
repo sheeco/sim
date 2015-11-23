@@ -11,6 +11,11 @@ private:
 	static long int ID_COUNT;
 
 public:
+
+	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
+	static vector<CPosition *> positions;
+	static int nPositions;
+
 	CPosition()
 	{
 		node = -1;

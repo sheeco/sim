@@ -44,7 +44,7 @@ using namespace std;
 #define SLOT_DATA_GENERATE 180	//数据产生slot
 #define SLOT_DATA_SEND 30	//数据发送slot
 #define SLOT_RECORD_INFO 100  //记录数据投递率和数据投递时延的slot
-#define SLOT_CHANGE_NUM_NODE 5000
+#define SLOT_CHANGE_NUM_NODE 5 * SLOT_HOTSPOT_UPDATE  //动态节点个数测试时，节点个数发生变化的周期
 
 //data
 #define RATE_DATA_GENERATE 0.01

@@ -2,6 +2,8 @@
 
 #include "Position.h"
 
+extern bool BALANCED_RATIO;
+extern int NUM_NODE;
 extern int currentTime;
 extern double RATIO_MERGE_HOTSPOT;
 extern double RATIO_NEW_HOTSPOT;
@@ -13,11 +15,12 @@ class CHotspot: public CBase
 private:
 	
 	//int birth;  //hotspot的ID即birth，即起始position的ID
-	int nCoveredPosition;
 	vector<CPosition *> coveredPositions;  //覆盖列表
 	vector<int> coveredNodes;  //覆盖的node列表，hotspot选取结束后手动调用generateCoveredNodes生成
 	double heat;
 	vector<int> deliveryCounts;  //存储该热点上的投递计数，连任的热点应对每一任期内的投递计数进行统计
+	double ratio;  //用于测试新的ratio计算方法，将在贪婪选取和后续选取过程中用到
+
 	static long int ID_COUNT;
 
 	//merge-HAR
@@ -38,19 +41,27 @@ private:
 	static double getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot);
 
 public:
+
+	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
+	static vector<CHotspot *> hotspotCandidates;
+	static vector<CHotspot *> selectedHotspots;
+	//上一次贪婪选取最终得到的热点集合，保留
+	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
+	static vector<CHotspot *> oldSelectedHotspots;
+	static int nHotspotCandidates;
+
 	CHotspot()
 	{
-		this->nCoveredPosition = 0;
 		//merge_HAR
 		this->candidateType = TYPE_NEW_HOTSPOT;
 		this->age = 0;
 		this->deliveryCounts.push_back(0);
+		this->ratio = 0;
 	}
 
 	//从某个Position的位置生成一个hotspot
 	CHotspot(CPosition* pos, int time)  //time应当是当前time，而不是pos的time
 	{
-		this->nCoveredPosition = 0;
 		this->x = pos->getX();
 		this->y = pos->getY();
 		this->ID = -1;
@@ -60,6 +71,7 @@ public:
 		this->candidateType = TYPE_NEW_HOTSPOT;
 		this->age = 0;
 		this->deliveryCounts.push_back(0);
+		this->ratio = 0;
 
 		addPosition(pos);
 	}
@@ -67,13 +79,9 @@ public:
 	~CHotspot(){};
 
 	//setters & getters
-	inline void setNCoveredPosition(int nCoveredPosition)
-	{
-		this->nCoveredPosition = nCoveredPosition;
-	}
 	inline int getNCoveredPosition()
 	{
-		return nCoveredPosition;
+		return coveredPositions.size();
 	}
 	inline vector<CPosition *> getCoveredPositions()
 	{
@@ -117,10 +125,35 @@ public:
 	{
 		return coveredNodes;
 	}
+	inline double getRatio()
+	{
+		return ratio;
+	}
+	//新的ratio计算方法，将在贪婪选取和后续选取过程中用到，不使用-balanced-ratio时ratio==nCoverdPosition
+	//注意：调用之前必须确保coveredNodes已得到更新
+	double calculateRatio()
+	{
+		if( BALANCED_RATIO )
+		{
+			ratio = coveredPositions.size() * ( NUM_NODE - coveredNodes.size() + 1 ) / NUM_NODE;
+			return ratio;
+		}
+		else
+		{
+			ratio = coveredPositions.size();
+			return ratio;
+		}
+	}
+	//当覆盖列表发生更改时调用，更新覆盖节点列表和ratio
+	void updateStatus()
+	{
+		recalculateCenter();
+		generateCoveredNodes();
+	}
 
 	int getNCoveredPositionsForNode(int inode);	
 	
-	double getRatioByCandidateType()
+	double getCoByCandidateType()
 	{
 		switch( this->candidateType )
 		{

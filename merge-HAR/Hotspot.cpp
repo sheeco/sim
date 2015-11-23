@@ -2,6 +2,10 @@
 #include "Preprocessor.h"
 
 long int CHotspot::ID_COUNT = 0;
+int CHotspot::nHotspotCandidates = 0;
+vector<CHotspot *> CHotspot::hotspotCandidates;
+vector<CHotspot *> CHotspot::selectedHotspots;
+vector<CHotspot *> CHotspot::oldSelectedHotspots;
 
 bool CHotspot::ifPositionExists(CPosition* pos)
 {
@@ -28,15 +32,10 @@ void CHotspot::removePosition(CPosition* pos)
 		if(*ipos == pos)
 		{
 			coveredPositions.erase(ipos);
-			nCoveredPosition--;
 			break;
 		}
 	}
-	if(nCoveredPosition < 0)
-	{
-		cout << "Error: CHotspot::removePosition() nCoveredPosition < 0" << endl;
-		_PAUSE;
-	}
+
 	//recalculateCenter();  //不自动调用
 }
 
@@ -58,7 +57,6 @@ void CHotspot::addPosition(CPosition* pos)
 		return;
 
 	coveredPositions.push_back(pos);
-	nCoveredPosition++;
 
 	//recalculateCenter();  //不自动调用
 }
@@ -77,8 +75,8 @@ void CHotspot::recalculateCenter()
 		sum_y += (*ipos)->getY();
 	}
 
-	this->x = sum_x / nCoveredPosition;
-	this->y = sum_y / nCoveredPosition;
+	this->x = sum_x / coveredPositions.size();
+	this->y = sum_y / coveredPositions.size();
 }
 
 int CHotspot::getNCoveredPositionsForNode(int inode)
@@ -109,10 +107,10 @@ void CHotspot::generateCoveredNodes()
 string CHotspot::toString(bool withDetails)
 {
 	ostringstream os;
-	os << this->time << TAB << this->age << TAB << this->ID << TAB << this->x << TAB << this->y << TAB << nCoveredPosition << TAB ;
+	os << this->time << TAB << this->age << TAB << this->ID << TAB << this->x << TAB << this->y << TAB << coveredPositions.size() << TAB ;
 	if(withDetails)
 	{
-		for(int i = 0; i < nCoveredPosition; i++)
+		for(int i = 0; i < coveredPositions.size(); i++)
 			os << coveredPositions[i]->getID() << TAB ;
 	}
 	return os.str();

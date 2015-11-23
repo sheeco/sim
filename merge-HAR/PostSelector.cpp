@@ -2,11 +2,11 @@
 
 CPostSelector::CPostSelector(vector<CHotspot *> hotspotCandidates)
 {
-	this->maxCoverNum = 0;
-	hotspotCandidates = CPreprocessor::mergeSort(hotspotCandidates, CPreprocessor::largerByNCoveredPositions);
+	this->maxRatio = 0;
+	hotspotCandidates = CPreprocessor::mergeSort(hotspotCandidates, CPreprocessor::largerByRatio);
 	if(hotspotCandidates.size() > 0)
 	{
-		this->maxCoverNum = hotspotCandidates.at(hotspotCandidates.size() - 1)->getNCoveredPosition();
+		this->maxRatio = hotspotCandidates.at(hotspotCandidates.size() - 1)->getNCoveredPosition();
 	}
 	this->hotspotCandidates = hotspotCandidates;
 }
@@ -18,21 +18,18 @@ CPostSelector::~CPostSelector(void)
 
 double CPostSelector::getRatioForHotspot(CHotspot *hotspot)
 {
-	if(maxCoverNum == 0)
+	if(maxRatio == 0)
 	{
-		cout<<"Error: CPostSelector::getRatioForHotspot() maxCoverNum = 0"<<endl;
+		cout<<"Error: CPostSelector::getRatioForHotspot() maxRatio = 0"<<endl;
 		_PAUSE;
 		return -1;
-	}
-	else if(maxCoverNum == 1)
-	{
-		return 1;
 	}
 	else
 	{
 		//merge-HAR: ratio
-		double ratioForMerge = pow( hotspot->getRatioByCandidateType(), hotspot->getAge() );
-		return ratioForMerge * ( hotspot->getNCoveredPosition() - 1 ) / (double)( maxCoverNum - 1 );
+		double ratioForMerge = pow( hotspot->getCoByCandidateType(), hotspot->getAge() );
+		//FIXME: balanced ratio for post selection
+		return ratioForMerge * ( hotspot->getRatio() ) / (double)( maxRatio );
 	}
 }
 
@@ -50,14 +47,14 @@ void  CPostSelector::includeHotspots(CHotspot *hotspot)
 void CPostSelector::findLostNodes()
 {
 	this->lostNodes.clear();
-	for(int i = 0; i < NUM_NODE; i++)
+	for(vector<int>::iterator i = CNode::idNodes.begin(); i != CNode::idNodes.end(); i++)
 	{
-		if(! ifExists(this->coveredNodes, i))
-			this->lostNodes.push_back(i);
+		if(! ifExists(this->coveredNodes, *i))
+			this->lostNodes.push_back( *i );
 	}
 }
 
-CHotspot* CPostSelector::findMaxCoverHotspotForNode(int inode)
+CHotspot* CPostSelector::findBestHotspotForNode(int inode)
 {
 	int maxCoverCount = 0;
 	CHotspot *result = NULL;
@@ -79,11 +76,7 @@ CHotspot* CPostSelector::findMaxCoverHotspotForNode(int inode)
 			result = ihotspot;
 		}
 	}
-	//if(result == NULL)
-	//{
-	//	cout<<"Error: CPostSelector::findMaxCoverHotspotForNode() result = NULL"<<endl;
-	//	_PAUSE;
-	//}
+
 	return result;
 }
 
@@ -93,7 +86,7 @@ vector<CHotspot *> CPostSelector::assignPositionsToHotspots(vector<CHotspot *> h
 	vector<CHotspot *> result_hotspots;
 	while(! tmp_hotspots.empty())
 	{
-		tmp_hotspots = CPreprocessor::mergeSort(tmp_hotspots, CPreprocessor::largerByNCoveredPositions);
+		tmp_hotspots = CPreprocessor::mergeSort(tmp_hotspots, CPreprocessor::largerByRatio);
 		//FIXME:尽量多 / 平均？
 		CHotspot *selected_hotspot = tmp_hotspots.at(tmp_hotspots.size() - 1);
 		if(selected_hotspot->getNCoveredPosition() == 0)
@@ -104,13 +97,8 @@ vector<CHotspot *> CPostSelector::assignPositionsToHotspots(vector<CHotspot *> h
 		for(vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin(); ihotspot != tmp_hotspots.end(); ihotspot++)
 		{
 			(*ihotspot)->removePositionList(positions);
+			(*ihotspot)->updateStatus();
 		}
-	}
-	//计算最终选取出的hotspot的cover的node，以备使用
-	for(int i = 0; i < result_hotspots.size(); i++)
-	{
-		result_hotspots[i]->generateCoveredNodes();
-		result_hotspots[i]->recalculateCenter();
 	}
 
 	return result_hotspots;
@@ -149,7 +137,7 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 	this->findLostNodes();
 	for(vector<int>::iterator inode = lostNodes.begin(); inode != lostNodes.end(); inode++)
 	{
-		CHotspot* hotspot = findMaxCoverHotspotForNode(*inode);
+		CHotspot* hotspot = findBestHotspotForNode(*inode);
 		if(hotspot != NULL)
 			includeHotspots(hotspot);
 		//将选中的热点从候选集中删除
@@ -173,7 +161,7 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 	selectedHotspots = this->assignPositionsToHotspots(selectedHotspots);
 
 	//将未选中的候选热点放回全局候选集
-	g_hotspotCandidates.insert( g_hotspotCandidates.end(), hotspotCandidates.begin(), hotspotCandidates.end() );
+	CHotspot::hotspotCandidates.insert( CHotspot::hotspotCandidates.end(), hotspotCandidates.begin(), hotspotCandidates.end() );
 	return selectedHotspots;
 }
 

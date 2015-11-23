@@ -25,6 +25,10 @@ private:
 	static double energyConsumption;
 
 public:
+
+	static vector<CNode> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
+	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
+
 	CNode(void)
 	{
 		generationRate = 0;
@@ -72,6 +76,25 @@ public:
 			return 0;
 		else
 			return (double)bufferSizeSum / (double)bufferChangeCount;
+	}
+
+	static bool ifNodeExists(int id)
+	{
+		for(vector<CNode>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+		{
+			if(inode->getID() == id)
+				return true;
+		}
+		return false;
+	}
+	//该节点不存在时无返回值所以将出错，所以必须在每次调用之前调用函数ifNodeExists()进行检查
+	static CNode getNodeByID(int id)
+	{
+		for(vector<CNode>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+		{
+			if(inode->getID() == id)
+				return *inode;
+		}
 	}
 
 	void generateData(int time);

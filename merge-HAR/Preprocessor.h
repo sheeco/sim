@@ -12,15 +12,10 @@ extern bool DO_MERGE_HAR;
 extern int NUM_NODE;
 extern int MAX_MEMORY_TIME;
 
-extern int g_nPositions;
-extern int g_nHotspotCandidates;
+
 extern int** g_coverMatrix;
 extern int* g_degreeForPositions;
 extern int* g_degreeForHotspots;
-extern vector<CHotspot*> g_hotspotCandidates;
-extern vector<CHotspot*> g_selectedHotspots;
-extern vector<CHotspot*> g_oldSelectedHotspots;
-extern vector<CPosition*> g_positions;
 extern vector<CPosition*> g_tmpPositions;
 
 extern int g_old_nPositions;
@@ -33,8 +28,8 @@ private:
 	CPreprocessor(void);
 	~CPreprocessor(void);
 
-	//根据position指针得到它在全局变量g_positions中的下标
-	//应在g_positions完成排序之后调用，并且此后不能再改变其中的元素顺序
+	//根据position指针得到它在全局变量CPosition::positions中的下标
+	//应在CPosition::positions完成排序之后调用，并且此后不能再改变其中的元素顺序
 	static int getIndexOfPosition(CPosition* pos);
 
 	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
@@ -68,7 +63,7 @@ public:
 	static vector<CGASolution> mergeSort(vector<CGASolution> &v, bool(*Comp)(CGASolution, CGASolution));
 	//用于作为参数传入mergeSort函数的Comparison函数
 	static bool largerByLocationX(CBase *left, CBase *right);
-	static bool largerByNCoveredPositions(CBase *left, CBase *right); //实际只能传入CHotspot类
+	static bool largerByRatio(CBase *left, CBase *right); //实际只能传入CHotspot类
 
 	/** 预处理操作函数 **/
 	//从文件中读取所有节点的当前位置，加入position列表（append）

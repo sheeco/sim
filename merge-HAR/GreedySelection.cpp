@@ -3,18 +3,18 @@
 CGreedySelection::CGreedySelection()
 {
 	//制作候选hotspot集的副本
-	if(! g_hotspotCandidates.empty())
+	if(! CHotspot::hotspotCandidates.empty())
 	{
-		for(vector<CHotspot *>::iterator ihotspot = g_hotspotCandidates.begin(); ihotspot != g_hotspotCandidates.end(); ihotspot++)
+		for(vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); ihotspot++)
 		{
 			CHotspot *tmp_hotspot = new CHotspot(**ihotspot);
 			copy_hotspotCandidates.push_back(tmp_hotspot);
 		}
 	}
-	copy_hotspotCandidates = g_hotspotCandidates;
-	//copy_oldSelectedHotspots = g_oldSelectedHotspots;
-	uncoveredPositions = g_positions;
-	unselectedHotspots = g_hotspotCandidates;
+	copy_hotspotCandidates = CHotspot::hotspotCandidates;
+	//copy_oldSelectedHotspots = CHotspot::oldSelectedHotspots;
+	uncoveredPositions = CPosition::positions;
+	unselectedHotspots = CHotspot::hotspotCandidates;
 }
 
 CGreedySelection::~CGreedySelection(void)
@@ -26,24 +26,24 @@ CGreedySelection::~CGreedySelection(void)
 void CGreedySelection::UpdateStatus()
 {
 	hotspotsAboveAverage.clear();
-	//对剩余hotspot按cover数排序
-	unselectedHotspots = CPreprocessor::mergeSort(unselectedHotspots, CPreprocessor::largerByNCoveredPositions);
+	//对剩余hotspot按ratio数从小到大排序（根据-balanced-ratio选项，可能是新的ratio计算或直接使用nCoveredPosition的值）
+	unselectedHotspots = CPreprocessor::mergeSort(unselectedHotspots, CPreprocessor::largerByRatio);
 
 	if(unselectedHotspots.empty())
 		return;
 
-	int max_nCover = unselectedHotspots.at(unselectedHotspots.size() - 1)->getNCoveredPosition();
-	if(max_nCover == 0)
+	double max_ratio = unselectedHotspots.at(unselectedHotspots.size() - 1)->getRatio();
+	if(max_ratio == 0)
 		return;
 
 	for(int i = unselectedHotspots.size() - 1; i >= 0; i--)
 	{
-		double cover = unselectedHotspots[i]->getNCoveredPosition();
+		double ratio = unselectedHotspots[i]->getRatio();
 
 		//merge-HAR: ratio
-		cover *= pow( unselectedHotspots[i]->getRatioByCandidateType(), unselectedHotspots[i]->getAge() );
+		ratio *= pow( unselectedHotspots[i]->getCoByCandidateType(), unselectedHotspots[i]->getAge() );
 
-		if( cover / max_nCover < GAMA)
+		if( ratio / max_ratio < GAMA)
 			break;
 		else
 			hotspotsAboveAverage.push_back(unselectedHotspots[i]);
@@ -56,9 +56,9 @@ void CGreedySelection::GreedySelect(int time)
 	{
 		this->UpdateStatus();
 
-		int index_max_hotspot = -1;
-		int max_cover = 0;
-		//遍历所有ratio高于1/2的hotspot，调整其中心
+		int index_best_hotspot = -1;
+		double best_ratio = 0;
+		//遍历所有ratio高于GAMA水平(1/2)的hotspot，调整其中心
 		for(int i = 0; i < hotspotsAboveAverage.size(); i++)
 		{
 			bool modified = false;
@@ -87,35 +87,35 @@ void CGreedySelection::GreedySelect(int time)
 					}
 				}
 				if(modified)
-					hotspotsAboveAverage[i]->recalculateCenter();
+					hotspotsAboveAverage[i]->updateStatus();
 			}while(modified);
 
-			double cover = hotspotsAboveAverage[i]->getNCoveredPosition();
+			double ratio = hotspotsAboveAverage[i]->getRatio();
 
 			//merge-HAR: ratio
-			cover *= pow( hotspotsAboveAverage[i]->getRatioByCandidateType(), hotspotsAboveAverage[i]->getAge() );
+			ratio *= pow( hotspotsAboveAverage[i]->getCoByCandidateType(), hotspotsAboveAverage[i]->getAge() );
 
-			if( cover > max_cover)
+			if( ratio > best_ratio)
 			{
-				index_max_hotspot = i;
-				max_cover = cover;
+				index_best_hotspot = i;
+				best_ratio = ratio;
 			}
 		}  //调整中心结束
 
 		CHotspot *best_hotspot;
-		if( index_max_hotspot == -1 || index_max_hotspot == unselectedHotspots.size() )
+		if( index_best_hotspot == -1 || index_best_hotspot == unselectedHotspots.size() )
 		{
 			//cout<<"Error: CGreedySelection::GreedySelection() index_max_hotspot == -1"<<endl;
 			
 			//在merge-HAR中可能出现此情况，剩余的未选中热点中有一部分由于是旧热点，系数得到累积之后达不到GAMA指示的水平
-			//此时，直接选中cover数最大的候选热点
-			index_max_hotspot = unselectedHotspots.size() - 1;
-			best_hotspot = unselectedHotspots[index_max_hotspot];
+			//此时，直接选中ratio最大的候选热点
+			index_best_hotspot = unselectedHotspots.size() - 1;
+			best_hotspot = unselectedHotspots[index_best_hotspot];
 		}
 		else
 		{
-			//选中当前cover数最大的hotspot
-			best_hotspot = hotspotsAboveAverage[index_max_hotspot];
+			//选中当前ratio最大的hotspot
+			best_hotspot = hotspotsAboveAverage[index_best_hotspot];
 		}
 
 		selectedHotspots.push_back(best_hotspot);
@@ -133,6 +133,7 @@ void CGreedySelection::GreedySelect(int time)
 		for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ihotspot++)
 		{
 			(*ihotspot)->removePositionList(tmp_positions);
+			(*ihotspot)->updateStatus();
 		}
 	
 		for(int j = 0; j < tmp_positions.size(); j++)
@@ -150,9 +151,9 @@ void CGreedySelection::GreedySelect(int time)
 	}while(! uncoveredPositions.empty());
 
 	//将选取结果存入全局变量
-	//注意：未被选中的热点必须放入g_hotspotCandidates便于之后统一释放，或手动释放
-	g_hotspotCandidates = unselectedHotspots;
-	g_selectedHotspots = selectedHotspots;
+	//注意：未被选中的热点必须放入CHotspot::hotspotCandidates便于之后统一释放，或手动释放
+	CHotspot::hotspotCandidates = unselectedHotspots;
+	CHotspot::selectedHotspots = selectedHotspots;
 
 }
 
@@ -179,9 +180,9 @@ void CGreedySelection::mergeHotspots(int time)
 	stringstream tmp;
 
 	//sort new hotspots by x coordinates
-	CPreprocessor::mergeSort(g_hotspotCandidates, CPreprocessor::largerByLocationX);
+	CPreprocessor::mergeSort(CHotspot::hotspotCandidates, CPreprocessor::largerByLocationX);
 
-	for(vector<CHotspot *>::iterator iOld = g_oldSelectedHotspots.begin(); iOld != g_oldSelectedHotspots.end(); /* iOld++*/ )
+	for(vector<CHotspot *>::iterator iOld = CHotspot::oldSelectedHotspots.begin(); iOld != CHotspot::oldSelectedHotspots.end(); /* iOld++*/ )
 	{
 		CHotspot *best_merge = NULL;
 
@@ -189,7 +190,7 @@ void CGreedySelection::mergeHotspots(int time)
 		int max_cover = -1;
 		int index_max_hotspot = -1;
 		int i = 0;
-		for(vector<CHotspot *>::iterator iNew = g_hotspotCandidates.begin(); iNew != g_hotspotCandidates.end(); iNew++, i++)
+		for(vector<CHotspot *>::iterator iNew = CHotspot::hotspotCandidates.begin(); iNew != CHotspot::hotspotCandidates.end(); iNew++, i++)
 		{
 			//for (x within range)
 			if( (*iNew)->getX() + 2 * TRANS_RANGE <= (*iOld)->getX() )
@@ -223,9 +224,9 @@ void CGreedySelection::mergeHotspots(int time)
 		//pop out the best merge pair and free it
 		if(index_max_hotspot != -1)
 		{
-			vector<CHotspot *>::iterator usedHotspotCandidate = g_hotspotCandidates.begin() + index_max_hotspot;
+			vector<CHotspot *>::iterator usedHotspotCandidate = CHotspot::hotspotCandidates.begin() + index_max_hotspot;
 			delete *usedHotspotCandidate;
-			g_hotspotCandidates.erase(usedHotspotCandidate);
+			CHotspot::hotspotCandidates.erase(usedHotspotCandidate);
 			//push the merge result into mergeResult and set type to merge type
 			best_merge->setCandidateType(TYPE_MERGE_HOTSPOT);
 			best_merge->setAge( (*iOld)->getAge() + 1 );
@@ -247,18 +248,18 @@ void CGreedySelection::mergeHotspots(int time)
 
 			mergeResult.push_back(old);
 			//erase this old hotspot from g_oldSelectedHotspot, or it will be misfreed !
-			iOld = g_oldSelectedHotspots.erase(iOld);
+			iOld = CHotspot::oldSelectedHotspots.erase(iOld);
 		}
 	}
 
-	g_hotspotCandidates.insert( g_hotspotCandidates.end(), mergeResult.begin(), mergeResult.end() );
+	CHotspot::hotspotCandidates.insert( CHotspot::hotspotCandidates.end(), mergeResult.begin(), mergeResult.end() );
 
 	////手动释放
-	//CPreprocessor::freePointerVector(g_oldSelectedHotspots);
-	g_selectedHotspots.clear();
+	//CPreprocessor::freePointerVector(CHotspot::oldSelectedHotspots);
+	CHotspot::selectedHotspots.clear();
 
-	copy_hotspotCandidates = g_hotspotCandidates;
-	uncoveredPositions = g_positions;
-	unselectedHotspots = g_hotspotCandidates;
+	copy_hotspotCandidates = CHotspot::hotspotCandidates;
+	uncoveredPositions = CPosition::positions;
+	unselectedHotspots = CHotspot::hotspotCandidates;
 
 }

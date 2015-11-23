@@ -2,6 +2,8 @@
 
 int CNode::ID_COUNT = 0;
 double CNode::energyConsumption = 0;
+vector<CNode> CNode::nodes;
+vector<int> CNode::idNodes;
 
 CNode::~CNode(void)
 {

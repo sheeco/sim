@@ -6,10 +6,7 @@ using namespace std;
 extern bool DO_MERGE_HAR;
 extern double GAMA;
 extern int startTimeForHotspotSelection;
-extern int g_nPositions;
-extern vector<CPosition*> g_positions;
-extern vector<CHotspot*> g_hotspotCandidates;
-extern vector<CHotspot*> g_oldSelectedHotspots;
+
 
 extern string logInfo;
 
@@ -17,7 +14,7 @@ extern string logInfo;
 class CGreedySelection
 {
 private:
-	vector<CHotspot *> copy_hotspotCandidates;  //来自g_hotspotCandidates，贪婪选取过程中会修改hotspot的信息
+	vector<CHotspot *> copy_hotspotCandidates;  //来自CHotspot::hotspotCandidates，贪婪选取过程中会修改hotspot的信息
 	vector<CPosition *> uncoveredPositions;  //保存尚未被cover的position
 	vector<CHotspot *> unselectedHotspots;  //未被选中的hotspot集合
 	vector<CHotspot *> hotspotsAboveAverage;  //ratio高于1/2的hotspot集合

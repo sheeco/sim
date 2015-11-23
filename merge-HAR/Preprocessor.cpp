@@ -89,14 +89,14 @@ void CPreprocessor::CollectNewPositions(int time)
 {
 	CPosition* tmp_pos = NULL;
 
-	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到g_positions中
-	for(int i = 0; i < NUM_NODE; i++)
+	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到CPosition::positions中
+	for(vector<int>::iterator i = CNode::idNodes.begin(); i != CNode::idNodes.end(); i++)
 	{
 		tmp_pos = new CPosition();
 		double x = 0, y = 0;
-		CFileParser::getPositionFromFile(i, time, x, y);
+		CFileParser::getPositionFromFile(*i, time, x, y);
 		tmp_pos->setLocation(x, y, time);
-		tmp_pos->setNode(i);
+		tmp_pos->setNode( *i );
 		tmp_pos->generateID();
 		if(tmp_pos->getID() == -1)
 		{
@@ -106,22 +106,22 @@ void CPreprocessor::CollectNewPositions(int time)
 		}
 		else
 		{
-			g_positions.push_back(tmp_pos);
+			CPosition::positions.push_back(tmp_pos);
 		}
 	}
 	
-	//IHAR: 
+	//IHAR: 删除过期的position记录
 	if(DO_IHAR)
 	{
 		int threshold = time - MAX_MEMORY_TIME;
 		if(threshold > 0)
 		{
-			for(vector<CPosition *>::iterator ipos = g_positions.begin(); ipos != g_positions.end(); )
+			for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
 			{
 				if((*ipos)->getTime() < threshold)
 				{
 					delete *ipos;
-					ipos = g_positions.erase(ipos);
+					ipos = CPosition::positions.erase(ipos);
 				}
 				else
 					ipos++;
@@ -129,7 +129,7 @@ void CPreprocessor::CollectNewPositions(int time)
 		}
 	}
 
-	g_nPositions = g_positions.size();
+	CPosition::nPositions = CPosition::positions.size();
 }
 
 bool CPreprocessor::largerByLocationX(CBase *left, CBase *right)
@@ -137,10 +137,11 @@ bool CPreprocessor::largerByLocationX(CBase *left, CBase *right)
 	return (*left > *right);
 }
 
-bool CPreprocessor::largerByNCoveredPositions(CBase *left, CBase *right)
+bool CPreprocessor::largerByRatio(CBase *left, CBase *right)
 {
 	//将执行强制类型转换，只能传入CHotspot类
-	return ( ( (CHotspot *) left)->getNCoveredPosition() ) > ( ( (CHotspot *) right)->getNCoveredPosition() );
+	//包括ratio的计算
+	return ( ( (CHotspot *) left)->calculateRatio() ) > ( ( (CHotspot *) right)->calculateRatio() );
 }
 
 vector<int> CPreprocessor::merge(vector<int> &left, vector<int> &right, bool(*Comp)(int, int))
@@ -289,9 +290,9 @@ vector<CGASolution> CPreprocessor::mergeSort(vector<CGASolution> &v, bool(*Comp)
 
 int CPreprocessor::getIndexOfPosition(CPosition* pos)
 {
-	for(int i = 0; i < g_nPositions; i++)
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
-		if(g_positions[i] == pos)
+		if(CPosition::positions[i] == pos)
 			return i;
 	}
 
@@ -304,8 +305,8 @@ CHotspot* CPreprocessor::GenerateHotspotFromPosition(CPosition *pos, int time)
 	result->generateID();
 
 	//重置flag
-	for(int i = 0; i < g_nPositions; i++)
-		g_positions[i]->setFlag(false);
+	for(int i = 0; i < CPosition::nPositions; i++)
+		CPosition::positions[i]->setFlag(false);
 	pos->setFlag(true);
 
 	int index_pos = getIndexOfPosition(pos);
@@ -317,29 +318,29 @@ CHotspot* CPreprocessor::GenerateHotspotFromPosition(CPosition *pos, int time)
 		//对新的hotspot重心，再次遍历position
 		for(int i = index_pos - 1; i >= 0; i--)
 		{
-			if(g_positions[i]->getFlag())
+			if(CPosition::positions[i]->getFlag())
 				continue;
 			//若水平距离已超出range，则可以直接停止搜索
-			if(fabs(result->getX() - g_positions[i]->getX()) > TRANS_RANGE)
+			if(fabs(result->getX() - CPosition::positions[i]->getX()) > TRANS_RANGE)
 				break;
-			if(CBase::getDistance(*result, *g_positions[i]) <= TRANS_RANGE)
+			if(CBase::getDistance(*result, *CPosition::positions[i]) <= TRANS_RANGE)
 			{
-				result->addPosition(g_positions[i]);
-				g_positions[i]->setFlag(true);
+				result->addPosition(CPosition::positions[i]);
+				CPosition::positions[i]->setFlag(true);
 				modified = true;
 			}
 		}
-		for(int i = index_pos + 1; i < g_nPositions; i++)
+		for(int i = index_pos + 1; i < CPosition::nPositions; i++)
 		{
-			if(g_positions[i]->getFlag())
+			if(CPosition::positions[i]->getFlag())
 				continue;
 			//若水平距离已超出range，则可以直接停止搜索
-			if(fabs(g_positions[i]->getX() - result->getX()) > TRANS_RANGE)
+			if(fabs(CPosition::positions[i]->getX() - result->getX()) > TRANS_RANGE)
 				break;
-			if(CBase::getDistance(*result, *g_positions[i]) <= TRANS_RANGE)
+			if(CBase::getDistance(*result, *CPosition::positions[i]) <= TRANS_RANGE)
 			{
-				result->addPosition(g_positions[i]);
-				g_positions[i]->setFlag(true);
+				result->addPosition(CPosition::positions[i]);
+				CPosition::positions[i]->setFlag(true);
 				modified = true;
 			}
 		}
@@ -361,8 +362,8 @@ CHotspot* CPreprocessor::GenerateHotspotFromCoordinates(double x, double y, int 
 	hotspot->generateID();
 
 	//重置flag
-	for(int i = 0; i < g_nPositions; i++)
-		g_positions[i]->setFlag(false);
+	for(int i = 0; i < CPosition::nPositions; i++)
+		CPosition::positions[i]->setFlag(false);
 
 	bool modified;
 	//循环，直到没有新的position被加入
@@ -370,19 +371,19 @@ CHotspot* CPreprocessor::GenerateHotspotFromCoordinates(double x, double y, int 
 	{
 		modified = false;
 		//对新的hotspot重心，再次遍历position
-		for(int i = 0; i < g_nPositions; i++)
+		for(int i = 0; i < CPosition::nPositions; i++)
 		{
-			if(g_positions[i]->getFlag())
+			if(CPosition::positions[i]->getFlag())
 				continue;
-			if( g_positions[i]->getX() + TRANS_RANGE < hotspot->getX() )
+			if( CPosition::positions[i]->getX() + TRANS_RANGE < hotspot->getX() )
 				continue;
 			//若水平距离已超出range，则可以直接停止搜索
-			if( hotspot->getX() + TRANS_RANGE < g_positions[i]->getX() )
+			if( hotspot->getX() + TRANS_RANGE < CPosition::positions[i]->getX() )
 				break;
-			if(CBase::getDistance(*hotspot, *g_positions[i]) <= TRANS_RANGE)
+			if(CBase::getDistance(*hotspot, *CPosition::positions[i]) <= TRANS_RANGE)
 			{
-				hotspot->addPosition(g_positions[i]);
-				g_positions[i]->setFlag(true);
+				hotspot->addPosition(CPosition::positions[i]);
+				CPosition::positions[i]->setFlag(true);
 				modified = true;
 			}
 		}
@@ -407,10 +408,10 @@ void CPreprocessor::GenerateDegrees()
 		free(g_degreeForHotspots);
 		g_degreeForHotspots = NULL;
 	}
-	g_nPositions = g_positions.size();
-	g_nHotspotCandidates = g_hotspotCandidates.size();
-	g_degreeForPositions = (int *)calloc(g_nPositions, sizeof(int));
-	g_degreeForHotspots = (int *)calloc(g_nHotspotCandidates, sizeof(int));
+	CPosition::nPositions = CPosition::positions.size();
+	CHotspot::nHotspotCandidates = CHotspot::hotspotCandidates.size();
+	g_degreeForPositions = (int *)calloc(CPosition::nPositions, sizeof(int));
+	g_degreeForHotspots = (int *)calloc(CHotspot::nHotspotCandidates, sizeof(int));
 	
 	if(g_degreeForHotspots == NULL || g_degreeForPositions == NULL)
 	{
@@ -419,9 +420,9 @@ void CPreprocessor::GenerateDegrees()
 		return;
 	}
 	//计算度数
-	for(int ihotspot = 0; ihotspot < g_hotspotCandidates.size(); ihotspot++)
+	for(int ihotspot = 0; ihotspot < CHotspot::hotspotCandidates.size(); ihotspot++)
 	{
-		vector<CPosition *> tmp_positions = g_hotspotCandidates[ihotspot]->getCoveredPositions();
+		vector<CPosition *> tmp_positions = CHotspot::hotspotCandidates[ihotspot]->getCoveredPositions();
 		g_degreeForHotspots[ihotspot] = tmp_positions.size();
 		for(int i = 0; i < tmp_positions.size(); i++)
 		{
@@ -433,10 +434,10 @@ void CPreprocessor::GenerateDegrees()
 	}
 
 //DBG:
-	//for(int i = 0; i < g_nHotspotCandidates; i++)
+	//for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	//	cout<<g_degreeForHotspots[i]<<" ";
 	//cout<<endl;
-	for(int i = 0; i < g_nPositions; i++)
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
 		if(g_degreeForPositions[i] == 0)
 		{	
@@ -459,16 +460,16 @@ void CPreprocessor::GenerateCoverMatrix()
 		delete[] g_coverMatrix;
 		g_coverMatrix = NULL;
 	}
-	g_nPositions = g_positions.size();
-	g_nHotspotCandidates = g_hotspotCandidates.size();
+	CPosition::nPositions = CPosition::positions.size();
+	CHotspot::nHotspotCandidates = CHotspot::hotspotCandidates.size();
 	//重新分配内存
 	try
 	{
-		g_coverMatrix = new int*[g_nPositions];
-		for(int i = 0; i < g_nPositions; i++)
+		g_coverMatrix = new int*[CPosition::nPositions];
+		for(int i = 0; i < CPosition::nPositions; i++)
 		{
-			g_coverMatrix[i] = new int[g_nHotspotCandidates];
-			memset(g_coverMatrix[i], 0, g_nHotspotCandidates * sizeof(int));
+			g_coverMatrix[i] = new int[CHotspot::nHotspotCandidates];
+			memset(g_coverMatrix[i], 0, CHotspot::nHotspotCandidates * sizeof(int));
 		}
 	}
 	catch(exception e)
@@ -478,9 +479,9 @@ void CPreprocessor::GenerateCoverMatrix()
 		return;
 	}
 	//构造cover矩阵
-	for(int ihotspot = 0; ihotspot < g_hotspotCandidates.size(); ihotspot++)
+	for(int ihotspot = 0; ihotspot < CHotspot::hotspotCandidates.size(); ihotspot++)
 	{
-		vector<CPosition *> tmp_positions = g_hotspotCandidates[ihotspot]->getCoveredPositions();
+		vector<CPosition *> tmp_positions = CHotspot::hotspotCandidates[ihotspot]->getCoveredPositions();
 		for(int i = 0; i < tmp_positions.size(); i++)
 		{
 			int ipos;
@@ -498,22 +499,22 @@ void CPreprocessor::GenerateCoverMatrix()
 	}
 
 	//储存当前的矩阵大小，用于下次释放内存
-	g_old_nPositions = g_nPositions;
-	g_old_nHotspots = g_nHotspotCandidates;
+	g_old_nPositions = CPosition::nPositions;
+	g_old_nHotspots = CHotspot::nHotspotCandidates;
 }
 
 //实际上没有使用这个函数
 void CPreprocessor::RemoveBadHotspots()
 {
-	if(g_hotspotCandidates.empty())
+	if(CHotspot::hotspotCandidates.empty())
 		return;
 
 	int n_removed;
 	//FIXME:
 	//删除数目由删除策略决定
-	n_removed = g_nHotspotCandidates / 2;
+	n_removed = CHotspot::nHotspotCandidates / 2;
 
-	vector<CHotspot *>::iterator ihotspot = g_hotspotCandidates.begin();
+	vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin();
 	bool removed;
 	//遍历所有符合条件的候选hotspot
 	for(int i = 0; i < n_removed; i++)
@@ -543,7 +544,7 @@ void CPreprocessor::RemoveBadHotspots()
 					g_degreeForPositions[index_pos]--;
 			}
 			delete *ihotspot;
-			ihotspot = g_hotspotCandidates.erase(ihotspot);  //执行删除，重新获取迭代器
+			ihotspot = CHotspot::hotspotCandidates.erase(ihotspot);  //执行删除，重新获取迭代器
 		}
 		else
 		{
@@ -558,16 +559,16 @@ void CPreprocessor::RemoveBadHotspots()
 //FIXME:排除孤立的position以提高GA优化效率，降低复杂度
 void CPreprocessor::RemoveIsolatePositions()
 {
-	if(g_hotspotCandidates.empty())
+	if(CHotspot::hotspotCandidates.empty())
 		return;
 
 	//重置flag
-	for(vector<CPosition *>::iterator ipos = g_positions.begin(); ipos != g_positions.end(); ipos++)
+	for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); ipos++)
 		(*ipos)->setFlag(false);
-	for(vector<CHotspot *>::iterator ihotspot = g_hotspotCandidates.begin(); ihotspot != g_hotspotCandidates.end(); ihotspot++)
+	for(vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); ihotspot++)
 		(*ihotspot)->setFlag(false);
 	//遍历所有符合条件的候选hotspot
-	for(vector<CHotspot *>::iterator ihotspot = g_hotspotCandidates.begin(); ihotspot != g_hotspotCandidates.end(); ihotspot++)
+	for(vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); ihotspot++)
 	{
 		//FIXME:只处理cover数为1的hotspot
 		if((*ihotspot)->getNCoveredPosition() > 1)
@@ -596,29 +597,29 @@ void CPreprocessor::RemoveIsolatePositions()
 		//否则，标记cover的position，稍后移入g_tmpPosition，并直接选中这个hotspot
 		else
 		{
-			g_selectedHotspots.push_back(*ihotspot);  //选中
+			CHotspot::selectedHotspots.push_back(*ihotspot);  //选中
 			(*ihotspot)->setFlag(true);
 			for(ipos = tmp_positions.begin(); ipos != tmp_positions.end(); ipos++)
 				(*ipos)->setFlag(true);
 		}
 	}
 	//将标记的hotspot删除
-	for(vector<CHotspot *>::iterator ihotspot = g_hotspotCandidates.begin(); ihotspot != g_hotspotCandidates.end(); )
+	for(vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); )
 	{
 		if((*ihotspot)->getFlag())
 		{	
-			ihotspot = g_hotspotCandidates.erase(ihotspot);
+			ihotspot = CHotspot::hotspotCandidates.erase(ihotspot);
 		}
 		else
 			ihotspot++;
 	}
 	//将标记的position移入g_tmpPositions
-	for(vector<CPosition *>::iterator ipos = g_positions.begin(); ipos != g_positions.end(); )
+	for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
 	{	
 		if((*ipos)->getFlag())
 		{
 			g_tmpPositions.push_back(*ipos);
-			ipos = g_positions.erase(ipos);
+			ipos = CPosition::positions.erase(ipos);
 		}
 		else
 			ipos++;
@@ -635,19 +636,19 @@ void CPreprocessor::PutBackAllPositions()
 	//将之前暂时删除的position放回
 	if(! g_tmpPositions.empty())
 	{
-		g_positions = merge(g_positions, g_tmpPositions);
+		CPosition::positions = merge(CPosition::positions, g_tmpPositions);
 		g_tmpPositions.clear();
 	}
 }
 
 void CPreprocessor::AdjustRemoteHotspots()
 {
-	if(g_hotspotCandidates.empty())
+	if(CHotspot::hotspotCandidates.empty())
 		return;
 
 	vector<CHotspot *>::iterator ihotspot;
 	//遍历所有只含有一个position的候选hotspot
-	for(ihotspot = g_hotspotCandidates.begin(); ihotspot != g_hotspotCandidates.end(); ihotspot++)
+	for(ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); ihotspot++)
 	{
 		if((*ihotspot)->getNCoveredPosition() > 1)
 			break;
@@ -663,21 +664,21 @@ void CPreprocessor::AdjustRemoteHotspots()
 		for(int i = index_pos - 1; i >= 0; i--)
 		{
 			//若水平距离已超出2*range，则可以直接停止搜索
-			if(fabs((*ihotspot)->getX() - g_positions[i]->getX()) > 2 * TRANS_RANGE)
+			if(fabs((*ihotspot)->getX() - CPosition::positions[i]->getX()) > 2 * TRANS_RANGE)
 				break;
-			if(CBase::getDistance(**ihotspot, *g_positions[i]) <=  2 * TRANS_RANGE
-				&& CBase::getDistance(**ihotspot, *g_positions[i]) > max_distance)
+			if(CBase::getDistance(**ihotspot, *CPosition::positions[i]) <=  2 * TRANS_RANGE
+				&& CBase::getDistance(**ihotspot, *CPosition::positions[i]) > max_distance)
 			{
 				pos_max_distance = i;
 			}
 		}
-		for(int i = index_pos + 1; i < g_nPositions; i++)
+		for(int i = index_pos + 1; i < CPosition::nPositions; i++)
 		{
 			//若水平距离已超出2*range，则可以直接停止搜索
-			if(fabs((*ihotspot)->getX() - g_positions[i]->getX()) > 2 * TRANS_RANGE)
+			if(fabs((*ihotspot)->getX() - CPosition::positions[i]->getX()) > 2 * TRANS_RANGE)
 				break;
-			if(CBase::getDistance(**ihotspot, *g_positions[i]) <=  2 * TRANS_RANGE
-				&& CBase::getDistance(**ihotspot, *g_positions[i]) > max_distance)
+			if(CBase::getDistance(**ihotspot, *CPosition::positions[i]) <=  2 * TRANS_RANGE
+				&& CBase::getDistance(**ihotspot, *CPosition::positions[i]) > max_distance)
 			{
 				pos_max_distance = i;
 			}
@@ -687,12 +688,12 @@ void CPreprocessor::AdjustRemoteHotspots()
 		if(pos_max_distance == -1)
 			continue;
 		//将找到的最远position加入这个hotspot的覆盖列表，将hotspot中心调整到两点间的中点
-		(*ihotspot)->addPosition(g_positions[pos_max_distance]);
+		(*ihotspot)->addPosition(CPosition::positions[pos_max_distance]);
 		(*ihotspot)->recalculateCenter();
 		//重置flag
-		for(int i = 0; i < g_nPositions; i++)
-			g_positions[i]->setFlag(false);
-		g_positions[pos_max_distance]->setFlag(true);
+		for(int i = 0; i < CPosition::nPositions; i++)
+			CPosition::positions[i]->setFlag(false);
+		CPosition::positions[pos_max_distance]->setFlag(true);
 
 		//循环，直到没有新的position被加入
 		bool modified = false;
@@ -702,29 +703,29 @@ void CPreprocessor::AdjustRemoteHotspots()
 			//对新的hotspot重心，再次遍历position
 			for(int i = pos_max_distance - 1; i >= 0; i--)
 			{
-				if(g_positions[i]->getFlag())
+				if(CPosition::positions[i]->getFlag())
 					continue;
 				//若水平距离已超出range，则可以直接停止搜索
-				if(fabs((*ihotspot)->getX() - g_positions[i]->getX()) > TRANS_RANGE)
+				if(fabs((*ihotspot)->getX() - CPosition::positions[i]->getX()) > TRANS_RANGE)
 					break;
-				if(CBase::getDistance(**ihotspot, *g_positions[i]) <= TRANS_RANGE)
+				if(CBase::getDistance(**ihotspot, *CPosition::positions[i]) <= TRANS_RANGE)
 				{
-					(*ihotspot)->addPosition(g_positions[i]);
-					g_positions[i]->setFlag(true);
+					(*ihotspot)->addPosition(CPosition::positions[i]);
+					CPosition::positions[i]->setFlag(true);
 					modified = true;
 				}
 			}
-			for(int i = pos_max_distance + 1; i < g_nPositions; i++)
+			for(int i = pos_max_distance + 1; i < CPosition::nPositions; i++)
 			{
-				if(g_positions[i]->getFlag())
+				if(CPosition::positions[i]->getFlag())
 					continue;
 				//若水平距离已超出range，则可以直接停止搜索
-				if(fabs(g_positions[i]->getX() - (*ihotspot)->getX()) > TRANS_RANGE)
+				if(fabs(CPosition::positions[i]->getX() - (*ihotspot)->getX()) > TRANS_RANGE)
 					break;
-				if(CBase::getDistance(**ihotspot, *g_positions[i]) <= TRANS_RANGE)
+				if(CBase::getDistance(**ihotspot, *CPosition::positions[i]) <= TRANS_RANGE)
 				{
-					(*ihotspot)->addPosition(g_positions[i]);
-					g_positions[i]->setFlag(true);
+					(*ihotspot)->addPosition(CPosition::positions[i]);
+					CPosition::positions[i]->setFlag(true);
 					modified = true;
 				}
 			}
@@ -737,7 +738,7 @@ void CPreprocessor::AdjustRemoteHotspots()
 	}
 
 	//重新排序，更新相关信息
-	g_hotspotCandidates = mergeSort(g_hotspotCandidates, largerByNCoveredPositions);
+	CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, largerByRatio);
 	GenerateDegrees();
 	GenerateCoverMatrix();
 }
@@ -745,34 +746,34 @@ void CPreprocessor::AdjustRemoteHotspots()
 void CPreprocessor::BuildCandidateHotspots(int time)
 {
 	//释放上一轮选取中未被选中的废弃热点
-	if(! g_hotspotCandidates.empty())
-		freePointerVector(g_hotspotCandidates);
+	if(! CHotspot::hotspotCandidates.empty())
+		freePointerVector(CHotspot::hotspotCandidates);
 
 	/************ 注意：不论执行HAR, IHAR, merge-HAR，都缓存上一轮热点选取的结果；
 	              HAR中不会使用到，IHAR中将用于比较前后两轮选取的热点的相似度，
 			      merge-HAR中将用于热点归并。                            ********************/
 
-	//将上一轮选中的热点集合保存到g_oldSelectedHotspots
-	//并释放旧的g_oldSelectedHotspots
-	if(! g_oldSelectedHotspots.empty())
-		freePointerVector(g_oldSelectedHotspots);
-	g_oldSelectedHotspots = g_selectedHotspots;
+	//将上一轮选中的热点集合保存到CHotspot::oldSelectedHotspots
+	//并释放旧的CHotspot::oldSelectedHotspots
+	if(! CHotspot::oldSelectedHotspots.empty())
+		freePointerVector(CHotspot::oldSelectedHotspots);
+	CHotspot::oldSelectedHotspots = CHotspot::selectedHotspots;
 	//仅清空g_selectedHotspot，不释放内存
-	g_selectedHotspots.erase(g_selectedHotspots.begin(), g_selectedHotspots.end());
+	CHotspot::selectedHotspots.erase(CHotspot::selectedHotspots.begin(), CHotspot::selectedHotspots.end());
 
 
 	//将所有position按x坐标排序，以便简化遍历操作
-	g_positions = mergeSort(g_positions);
+	CPosition::positions = mergeSort(CPosition::positions);
 
 	//从每个position出发生成一个候选hotspot
-	for(vector<CPosition *>::iterator ipos = g_positions.begin(); ipos != g_positions.end(); ipos++)
-		g_hotspotCandidates.push_back(GenerateHotspotFromPosition(*ipos, time));
+	for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); ipos++)
+		CHotspot::hotspotCandidates.push_back(GenerateHotspotFromPosition(*ipos, time));
 
 	////将所有候选hotspot按x坐标排序
-	//g_hotspotCandidates = mergeSort(g_hotspotCandidates, largerByLocationX);
+	//CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, largerByLocationX);
 
-	//将所有候选hotspot按cover数排序，由小到大
-	g_hotspotCandidates = mergeSort(g_hotspotCandidates, largerByNCoveredPositions);
+	//将所有候选hotspot按ratio排序，由小到大
+	CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, largerByRatio);
 
 	//更新相关信息
 	GenerateDegrees();

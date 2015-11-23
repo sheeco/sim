@@ -4,12 +4,12 @@
 
 CGASolution::CGASolution()
 {
-	if(g_nPositions != 0
-		&& g_nHotspotCandidates != 0)
+	if(CPosition::nPositions != 0
+		&& CHotspot::nHotspotCandidates != 0)
 	{
-		choices = (int *)calloc(g_nHotspotCandidates, sizeof(int));
-		nCoverForPositions = (int *)calloc(g_nPositions, sizeof(int));
-		nNewCoverForHotspots = (int *)calloc(g_nHotspotCandidates, sizeof(int));
+		choices = (int *)calloc(CHotspot::nHotspotCandidates, sizeof(int));
+		nCoverForPositions = (int *)calloc(CPosition::nPositions, sizeof(int));
+		nNewCoverForHotspots = (int *)calloc(CHotspot::nHotspotCandidates, sizeof(int));
 	}
 	if(choices == NULL
 		|| nCoverForPositions == NULL
@@ -39,12 +39,12 @@ CGASolution::CGASolution()
 
 CGASolution::CGASolution(const CGASolution& it)
 {
-	if(g_nPositions != 0
-		&& g_nHotspotCandidates != 0)
+	if(CPosition::nPositions != 0
+		&& CHotspot::nHotspotCandidates != 0)
 	{
-		choices = (int *)calloc(g_nHotspotCandidates, sizeof(int));
-		nCoverForPositions = (int *)calloc(g_nPositions, sizeof(int));
-		nNewCoverForHotspots = (int *)calloc(g_nHotspotCandidates, sizeof(int));
+		choices = (int *)calloc(CHotspot::nHotspotCandidates, sizeof(int));
+		nCoverForPositions = (int *)calloc(CPosition::nPositions, sizeof(int));
+		nNewCoverForHotspots = (int *)calloc(CHotspot::nHotspotCandidates, sizeof(int));
 	}
 	if(choices == NULL
 		|| nCoverForPositions == NULL
@@ -54,12 +54,12 @@ CGASolution::CGASolution(const CGASolution& it)
 		_PAUSE;
 	}
 
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		this->choices[i] = it.choices[i];
 		this->nNewCoverForHotspots[i] = it.nNewCoverForHotspots[i];
 	}
-	for(int i = 0; i < g_nPositions; i++)
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
 		this->nCoverForPositions[i] = it.nCoverForPositions[i];
 	}
@@ -93,12 +93,12 @@ const CGASolution& CGASolution::operator=(const CGASolution& it)
 		nNewCoverForHotspots = NULL;
 	}
 
-	if(g_nPositions != 0
-		&& g_nHotspotCandidates != 0)
+	if(CPosition::nPositions != 0
+		&& CHotspot::nHotspotCandidates != 0)
 	{
-		choices = (int *)calloc(g_nHotspotCandidates, sizeof(int));
-		nCoverForPositions = (int *)calloc(g_nPositions, sizeof(int));
-		nNewCoverForHotspots = (int *)calloc(g_nHotspotCandidates, sizeof(int));
+		choices = (int *)calloc(CHotspot::nHotspotCandidates, sizeof(int));
+		nCoverForPositions = (int *)calloc(CPosition::nPositions, sizeof(int));
+		nNewCoverForHotspots = (int *)calloc(CHotspot::nHotspotCandidates, sizeof(int));
 	}
 	if(choices == NULL
 		|| nCoverForPositions == NULL
@@ -118,12 +118,12 @@ const CGASolution& CGASolution::operator=(const CGASolution& it)
 		_PAUSE;
 	}
 
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		this->choices[i] = it.choices[i];
 		this->nNewCoverForHotspots[i] = it.nNewCoverForHotspots[i];
 	}
-	for(int i = 0; i < g_nPositions; i++)
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
 		this->nCoverForPositions[i] = it.nCoverForPositions[i];
 	}
@@ -158,7 +158,7 @@ bool CGASolution::sameAs(CGASolution it)
 {
 	int* hotspots_1 = this->choices;
 	int* hotspots_2 = it.choices;
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		if(hotspots_1[i] != hotspots_2[i])
 			return false;
@@ -183,8 +183,8 @@ bool CGASolution::equalTo(double left, double right)
 
 void CGASolution::BuildSolutionRandomly()
 {
-	memset(choices, 0, g_nHotspotCandidates * sizeof(int));
-	for(int i = 0; i < g_nPositions; i++)
+	memset(choices, 0, CHotspot::nHotspotCandidates * sizeof(int));
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
 		vector<int> tmp_hotspots = getHotspotsForPosition(i);
 		int bet_hotspot = RandomInt(0, tmp_hotspots.size());
@@ -199,12 +199,12 @@ void CGASolution::BuildSolutionRandomly()
 
 void CGASolution::UpdateStatus()
 {
-	memset(nCoverForPositions, 0, g_nPositions * sizeof(int));
-	memset(nNewCoverForHotspots, 0, g_nHotspotCandidates * sizeof(int));
+	memset(nCoverForPositions, 0, CPosition::nPositions * sizeof(int));
+	memset(nNewCoverForHotspots, 0, CHotspot::nHotspotCandidates * sizeof(int));
 
 	int hotspotCount = 0;
 	//遍历所有选中的hotspot
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		if(choices[i] == 0)
 			continue;
@@ -215,7 +215,7 @@ void CGASolution::UpdateStatus()
 		}
 
 		hotspotCount++;
-		for(int j = 0; j < g_nPositions; j++)
+		for(int j = 0; j < CPosition::nPositions; j++)
 		{
 			int tmp = g_coverMatrix[j][i];
 			////如果这个position是首次被覆盖，更新这个hotspot的nNewCoverForHotspot值
@@ -230,7 +230,7 @@ void CGASolution::UpdateStatus()
 
 
 	this->valid = true;
-	for(int i = 0; i < g_nPositions; i++)
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
 		if(nCoverForPositions[i] == 0)
 		{
@@ -249,7 +249,7 @@ void CGASolution::UpdateStatus()
 vector<int> CGASolution::getHotspotsForPosition(int index_pos)
 {
 	vector<int> result;
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		if(g_coverMatrix[index_pos][i] == 1)
 			result.push_back(i);
@@ -257,7 +257,7 @@ vector<int> CGASolution::getHotspotsForPosition(int index_pos)
 //DBG:
 	if(result.empty())
 	{
-		cout<<"Error: CGASolution::getHotspotsForPosition() no hotspots found for g_positions["<<index_pos<<"]"<<endl;
+		cout<<"Error: CGASolution::getHotspotsForPosition() no hotspots found for CPosition::positions["<<index_pos<<"]"<<endl;
 		_PAUSE;
 	}
 	return result;
@@ -266,7 +266,7 @@ vector<int> CGASolution::getHotspotsForPosition(int index_pos)
 vector<int> CGASolution::getPositionsForHotspot(int index_hotspot)
 {
 	vector<int> result;
-	for(int i = 0; i < g_nPositions; i++)
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
 		if(g_coverMatrix[i][index_hotspot] == 1)
 			result.push_back(i);
@@ -274,7 +274,7 @@ vector<int> CGASolution::getPositionsForHotspot(int index_hotspot)
 //DBG:
 	if(result.empty())
 	{
-		cout<<"Error: CGASolution::getPositionsForHotspot() no positions found for g_hotspotCandidates["<<index_hotspot<<"]"<<endl;
+		cout<<"Error: CGASolution::getPositionsForHotspot() no positions found for CHotspot::hotspotCandidates["<<index_hotspot<<"]"<<endl;
 		_PAUSE;
 	}
 	return result;
@@ -285,7 +285,7 @@ void CGASolution::GreedyFix()
 	if(this->valid)
 		return;
 
-	for(int i = 0; i < g_nPositions; i++)
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
 		if(nCoverForPositions[i] > 0)
 			continue;
@@ -310,7 +310,7 @@ void CGASolution::RemoveRedundantHotspotRandomly()
 //DBG:
 	//printDegrees();
 	vector<int> tmp_order;
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		tmp_order.push_back(i);
 	}
@@ -367,8 +367,8 @@ void CGASolution::FusionCrossover(CGASolution &parent_1, CGASolution &parent_2, 
 	//输入解被复制的概率与cost成反比
 	double threshold = parent_2.getFitnessValue() / (parent_1.getFitnessValue() + parent_2.getFitnessValue());
 
-	memset(choices_out, 0, g_nHotspotCandidates * sizeof(int));
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	memset(choices_out, 0, CHotspot::nHotspotCandidates * sizeof(int));
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		double bet = RandomFloat(0, 1);
 		if(bet < threshold)
@@ -396,8 +396,8 @@ void CGASolution::UniformCrossover(CGASolution &parent_1, CGASolution &parent_2,
 	int* choices_p1 = parent_1.getChoices();
 	int* choices_p2 = parent_2.getChoices();
 
-	memset(choices_out, 0, g_nHotspotCandidates * sizeof(int));
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	memset(choices_out, 0, CHotspot::nHotspotCandidates * sizeof(int));
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		int bet = RandomInt(0, 2);
 		if(bet == 0)
@@ -418,10 +418,10 @@ void CGASolution::BitMutation(int nBits)
 {
 	if(nBits == 0)
 		return;
-	if(nBits > g_nHotspotCandidates)
-		nBits = g_nHotspotCandidates;
+	if(nBits > CHotspot::nHotspotCandidates)
+		nBits = CHotspot::nHotspotCandidates;
 
-	vector<int> bits = CPreprocessor::RandomIntList(0, g_nHotspotCandidates, nBits);
+	vector<int> bits = CPreprocessor::RandomIntList(0, CHotspot::nHotspotCandidates, nBits);
 	for(vector<int>::iterator ibit = bits.begin(); ibit != bits.end(); ibit++)
 		choices[*ibit] = 1 - choices[*ibit];
 
@@ -437,10 +437,10 @@ void CGASolution::BitMutation(int nBits)
 string CGASolution::toString()
 {
 	ostringstream os;
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		if(choices[i] == 1)
-			os<<g_hotspotCandidates[i]->toString(false)<<endl;
+			os<<CHotspot::hotspotCandidates[i]->toString(false)<<endl;
 		else if(choices[i] < 0)
 		{
 			cout<<"Error: CGASolution::toString() choices["<<i<<"] = "<<choices[i]<<endl;
@@ -453,14 +453,14 @@ string CGASolution::toString()
 
 void CGASolution::printDegrees()
 {
-	for(int i = 0; i < g_nHotspotCandidates; i++)
+	for(int i = 0; i < CHotspot::nHotspotCandidates; i++)
 	{
 		cout<<choices[i]<<" ";
 		if(choices[i] < 0 || choices[i] > 1)
 			_PAUSE;
 	}
 	cout<<endl;
-	for(int i = 0; i < g_nPositions; i++)
+	for(int i = 0; i < CPosition::nPositions; i++)
 	{
 		cout<<nCoverForPositions[i]<<" ";
 		if(nCoverForPositions[i] < 0)

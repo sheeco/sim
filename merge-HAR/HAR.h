@@ -39,7 +39,6 @@ class HAR
 {
 private:
 	CSink* m_sink;
-	vector<CNode> m_nodes;
 	vector<CHotspot *> m_hotspots;
 	vector<CRoute> m_routes;  //即hotspot class
 	vector<CMANode> m_MANodes;
@@ -119,23 +118,7 @@ private:
 		else
 			return SIMILARITY_RATIO_SUM / SIMILARITY_RATIO_COUNT;
 	}	
-	bool ifNodeExists(int id)
-	{
-		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
-		{
-			if(inode->getID() == id)
-				return true;
-		}
-		return false;
-	}
-	CNode getNodeByID(int id)
-	{
-		for(vector<CNode>::iterator inode = m_nodes.begin(); inode != m_nodes.end(); inode++)
-		{
-			if(inode->getID() == id)
-				return *inode;
-		}
-	}
+
 
 public:
 	HAR(void)
@@ -147,7 +130,8 @@ public:
 				generationRate *= 5;
 			CNode node(generationRate, BUFFER_CAPACITY_NODE);
 			node.generateID();
-			m_nodes.push_back(node);
+			CNode::nodes.push_back(node);
+			CNode::idNodes.push_back( node.getID() );
 		}
 		CNode sink(0, BUFFER_CAPACITY_SINK);
 		sink.setSinkID();
@@ -163,7 +147,7 @@ public:
 		return m_routes.size();
 	}
 
-	//在限定范围内随机增删一定数量的node
+	//在限定范围内随机增删一定数量的node，并删除被抛弃的node的position记录，不再用于热点选取
 	void ChangeNodeNumber();
 	//更新所有node的位置（而不是position）
 	void UpdateNodeLocations();

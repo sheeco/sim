@@ -13,13 +13,9 @@ extern int CO_MUTATION_FINAL;
 extern int CO_MUTATION_CHILDREN;
 extern double CO_MUTATION_GRADIENT;
 
-extern int g_nPositions;
-extern int g_nHotspotCandidates;
 extern int** g_coverMatrix;
 extern int* g_degreeForPositions;
 extern int* g_degreeForHotspots;
-extern vector<CHotspot*> g_hotspotCandidates;
-extern vector<CPosition*> g_positions;
 
 class CGA
 {

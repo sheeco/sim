@@ -9,14 +9,6 @@ using namespace std;
 extern double ALPHA;
 extern int NUM_NODE;
 
-extern int g_nPositions;
-extern int g_nHotspotCandidates;
-//extern int** g_coverMatrix;
-//extern int* g_degreeForPositions;
-//extern int* g_degreeForHotspots;
-extern vector<CHotspot*> g_hotspotCandidates;
-extern vector<CHotspot*> g_selectedHotspots;
-extern vector<CPosition*> g_positions;
 extern vector<CPosition*> g_tmpPositions;
 
 extern int g_old_nPositions;
@@ -26,7 +18,7 @@ extern string logInfo;
 class CPostSelector
 {
 private:
-	unsigned int maxCoverNum;
+	double maxRatio;
 	vector<int> coveredNodes;
 	vector<int> lostNodes;
 	vector<int> coveredPositions;
@@ -37,7 +29,7 @@ private:
 	double getRatioForHotspot(CHotspot *hotspot);
 	void includeHotspots(CHotspot *hotspot);
 	void findLostNodes();
-	CHotspot* findMaxCoverHotspotForNode(int inode);
+	CHotspot* findBestHotspotForNode(int inode);
 
 	//检查选取的hotspot集合是否能覆盖所有node
 	bool verifyCompleted();

@@ -19,6 +19,8 @@ int CO_MUTATION_FINAL = 10;
 int CO_MUTATION_CHILDREN = ROUND( MAX_SOLUTION_NUM / 3 );
 double CO_MUTATION_GRADIENT = 0.1;
 
+//其他g_系列变量已移动到相关类的静态变量，以下的变量除外
+
 //存储上一次更新Hotspot时的旧参数，用于内存释放
 int g_old_nPositions = 0;
 int g_old_nHotspots = 0;
@@ -30,7 +32,7 @@ int* g_degreeForPositions = NULL;
 int* g_degreeForHotspots = NULL;
 
 //排除孤立的position以提高GA优化效率，降低复杂度（未采用）
-vector<CPosition *> g_tmpPositions;  //存放GA的preprocess过程中删除的position，在当前GA过程结束之后需要放回g_positions中
+vector<CPosition *> g_tmpPositions;  //存放GA的preprocess过程中删除的position，在当前GA过程结束之后需要放回CPosition::positions中
 
 
 /************************************ IHAR ************************************/
@@ -63,10 +65,11 @@ bool HEAT_RATIO_LN = false;
 
 bool DO_IHAR = false;
 bool DO_MERGE_HAR = false;
+bool BALANCED_RATIO = false;
 bool TEST_HOTSPOT_SIMILARITY = true;
 bool TEST_DYNAMIC_NUM_NODE = false;
 
-double ALPHA = 0.3;  //ratio for post selection
+double ALPHA = 0.03;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
 double GAMA = 0.5;  //ratio for HotspotsAboveAverage
 double CO_HOTSPOT_HEAT_A1 = 1;
@@ -78,17 +81,6 @@ int DATATIME = 15300;
 int RUNTIME = 20000;
 int currentTime = 0;
 int startTimeForHotspotSelection = SLOT_HOTSPOT_UPDATE;  //no MA node at first
-
-vector<CPosition *> g_positions;
-vector<CHotspot *> g_hotspotCandidates;
-vector<CHotspot *> g_selectedHotspots;
-
-//上一次贪婪选取最终得到的热点集合，保留
-//注意：merge操作得到的输出hotspot应该使用g_hotspotCandidates中的实例修改得到，不可保留对g_oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
-vector<CHotspot *> g_oldSelectedHotspots;
-
-int g_nPositions = 0;
-int g_nHotspotCandidates = 0;
 
 string logInfo;
 ofstream debugInfo("debug.txt", ios::app);
@@ -150,6 +142,11 @@ int main(int argc, char* argv[])
 			{
 				HEAT_RATIO_LN = true;
 				HEAT_RATIO_EXP = false;
+				iField++;
+			}
+			else if( field == "-balanced-ratio" )
+			{
+				BALANCED_RATIO = true;
 				iField++;
 			}
 
@@ -364,7 +361,7 @@ int main(int argc, char* argv[])
 
 			/*********************************** 贪婪选取 **************************************/
 			har.HotspotSelection();
-			cout << "####  [ Hotspot ]  " << g_selectedHotspots.size() << endl;
+			cout << "####  [ Hotspot ]  " << CHotspot::selectedHotspots.size() << endl;
 
 
 			/*********************************** 热点分类 *************************************/
