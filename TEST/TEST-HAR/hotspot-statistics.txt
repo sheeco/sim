@@ -1,7 +1,0 @@
-0	29	25	1
-
-#2015-10-30 19:29:55
-#HAR
-
-#Time	#CoverSum	#HotspotCount	#CoverAvg
-900	191	13	14
