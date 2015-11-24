@@ -85,12 +85,12 @@ int startTimeForHotspotSelection = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 string logInfo;
 ofstream debugInfo("debug.txt", ios::app);
 
-string HELP = "\n										!!!!!! ALL CASE SENSITIVE !!!!!! \n"
-			  "<mode>			-har;				-ihar;				 -mhar;				-hotspot-similarity;		-dynamic-node-number; \n"
-			  "<time>			-time-data [];	    -time-run []; \n"
-			  "<parameter>		-alpha [];			-beta [];			 -gama [];			-heat [] [];				-prob-trans []; \n"
-			  "<ihar>			-lambda [];			-lifetime []; \n"
-			  "<mhar>			-merge [];			-old [];			 -min-wait [];		-heat-exp;					-heat-ln \n\n";
+string HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
+              "<mode>            -har;                -ihar;                -mhar;               -hotspot-similarity;        -dynamic-node-number;        -balanced-ratio; \n"
+              "<time>            -time-data [];       -time-run []; \n"
+              "<parameter>       -alpha     [];       -beta     [];         -gama     [];        -heat [] [];                -prob-trans []; \n"
+              "<ihar>            -lambda    [];       -lifetime []; \n"
+              "<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln; \n\n";
 
 
 int main(int argc, char* argv[])
@@ -268,11 +268,11 @@ int main(int argc, char* argv[])
 		ofstream parameters("parameters.txt", ios::app);
 		parameters << endl << endl << "#" << logtime << endl;
 
-		debugInfo << ALPHA << TAB << BETA << TAB << CO_HOTSPOT_HEAT_A1 << TAB << CO_HOTSPOT_HEAT_A2 << TAB ;
+		debugInfo << ALPHA << TAB << BETA << TAB << MIN_WAITING_TIME << TAB ;
 
 		if(DO_IHAR)
 		{
-			logInfo += "#IHAR\n";
+			logInfo += "#IHAR";
 			parameters << endl;
 			parameters << "#IHAR" << endl << endl;
 			parameters << "LAMBDA" << TAB << LAMBDA << endl;
@@ -282,7 +282,7 @@ int main(int argc, char* argv[])
 		}
 		else if(DO_MERGE_HAR)
 		{
-			logInfo += "#merge-HAR\n";
+			logInfo += "#merge-HAR";
 			parameters << endl;
 			parameters << "#merge-HAR" << endl << endl;
 			parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
@@ -309,16 +309,33 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			logInfo += "#HAR\n";
-			parameters << endl;
+			logInfo += "#HAR";
 			parameters << "#HAR" << endl << endl;
 		}
+
+		if(BALANCED_RATIO)
+		{
+			logInfo += "\t#BALANCED_RATIO";
+			parameters << endl;
+			parameters << "#BALANCED_RATIO" << endl;
+		}
+		if(TEST_DYNAMIC_NUM_NODE)
+		{
+			logInfo += "\t#DYNAMIC_NODE_NUMBER";
+			parameters << endl;
+			parameters << "#DYNAMIC_NODE_NUMBER" << endl;
+		}
+
+
+		logInfo += "\n";
+		parameters << endl;
 
 		parameters << "ALPHA" << TAB << ALPHA << endl;
 		parameters << "BETA" << TAB << BETA << endl;
 		parameters << "GAMA" << TAB << GAMA << endl;
 		parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
 		parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
+		parameters << "MIN_WAITING_TIME" << TAB << MIN_WAITING_TIME << endl;
 		parameters << "PROB_DATA_FORWARD" << TAB << PROB_DATA_FORWARD << endl;
 		parameters << "DATA GENERATION TIME" << TAB << DATATIME << endl;
 		parameters << "RUN TIME" << TAB << RUNTIME << endl;

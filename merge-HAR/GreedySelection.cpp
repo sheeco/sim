@@ -27,6 +27,8 @@ void CGreedySelection::UpdateStatus()
 {
 	hotspotsAboveAverage.clear();
 	//对剩余hotspot按ratio数从小到大排序（根据-balanced-ratio选项，可能是新的ratio计算或直接使用nCoveredPosition的值）
+	for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ihotspot++)
+		(*ihotspot)->updateStatus();
 	unselectedHotspots = CPreprocessor::mergeSort(unselectedHotspots, CPreprocessor::largerByRatio);
 
 	if(unselectedHotspots.empty())
@@ -131,10 +133,8 @@ void CGreedySelection::GreedySelect(int time)
 		//将这个hotspot覆盖列表中的所有position从其他hotspot的列表中、从uncoveredPositions中移除
 		vector<CPosition *> tmp_positions = best_hotspot->getCoveredPositions();
 		for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ihotspot++)
-		{
 			(*ihotspot)->removePositionList(tmp_positions);
-			(*ihotspot)->updateStatus();
-		}
+
 	
 		for(int j = 0; j < tmp_positions.size(); j++)
 		{

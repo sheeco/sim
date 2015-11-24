@@ -59,8 +59,8 @@ public:
 	}
 	inline void generateID()
 	{
+		this->ID = ID_COUNT;		
 		ID_COUNT++;
-		this->ID = ID_COUNT;
 	}
 	inline bool hasData()
 	{

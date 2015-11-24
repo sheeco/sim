@@ -116,7 +116,10 @@ bool CPostSelector::verifyCompleted()
 vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 {
 	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ihotspot++)
+	{
 		(*ihotspot)->setFlag(false);
+		(*ihotspot)->updateStatus();
+	}
 	//选中所有ratio >= ALPHA的hotspot
 	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); )
 	{

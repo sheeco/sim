@@ -144,11 +144,12 @@ public:
 			return ratio;
 		}
 	}
-	//当覆盖列表发生更改时调用，更新覆盖节点列表和ratio
+	//当覆盖列表发生更改时调用，更新坐标、覆盖节点列表和ratio
 	void updateStatus()
 	{
 		recalculateCenter();
 		generateCoveredNodes();
+		calculateRatio();
 	}
 
 	int getNCoveredPositionsForNode(int inode);	

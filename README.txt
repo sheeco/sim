@@ -3,55 +3,51 @@
 
 ### debug.txt
 
-#Alpha	#Beta	#Heat_1	#Heat_2	( #Lambda	#Lifetime )	( #Merge	#Old	#Heat )	
+#Alpha            #Beta     #MinWaitingTime    ( #Lambda             #Lifetime )       ( #Merge        #Old              #Heat )
 
-#DeliveryRatio	#Delay	#HotspotCostAvg	( #MergePercentAvg	#OldPercentAvg )	#MACostAvg	#WaypointAvg	#SimilarityAvg	#AtHotspotPercent
+#DeliveryRatio    #Delay    #HotspotCostAvg    ( #MergePercentAvg    #OldPercentAvg )    #MACostAvg    #SimilarityAvg    #AtHotspotPercent
 
 
 
 ### 参数格式
 
-										!!!!!! ALL CASE SENSITIVE !!!!!!
+                                                  !!!!!! ALL CASE SENSITIVE !!!!!!
 
-<mode>			-har;				-ihar;				 -mhar;				-hotspot-similarity;		-dynamic-node-number;
-
-<time>			-time-data [];	    -time-run [];
-
-<parameter>		-alpha [];			-beta [];			 -gama [];			-heat [] [];				-prob-trans [];
-
-<ihar>			-lambda [];			-lifetime [];
-
-<mhar>			-merge [];			-old [];			 -min-wait [];		-heat-exp;			-heat-ln
+<mode>            -har;                -ihar;                -mhar;               -hotspot-similarity;        -dynamic-node-number;        -balanced-ratio;
+<time>            -time-data [];       -time-run [];
+<parameter>       -alpha     [];       -beta     [];         -gama     [];        -heat [] [];                -prob-trans [];
+<ihar>            -lambda    [];       -lifetime [];
+<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;
 
 
 
 ### 参数默认值
 
-scheme						HAR
-hotspot_similarity			true
-dynamic_node-number			false
-min_wait					0
+scheme                        HAR
+hotspot_similarity            true
+dynamic_node-number           false
+min_wait                      0
 
-alpha						0.3
-beta						0.0025
-gama						0.5
-heat						1, 30
-prob_trans					1.0
+alpha                         0.03
+beta                          0.0025
+gama                          0.5
+heat                          1, 30
+prob_trans                    1.0
 
 (IHAR)
-lambda						0
-lifetime					3600
+lambda                        0
+lifetime                      3600
 
 (mHAR)
-merge						1.0
-old							1.0
-heat						flat
+merge                         1.0
+old                           1.0
+heat                          flat
 
 
 
 ### 文件说明
 
-README
+README.txt
 
 GlobalParameters.h
 
@@ -143,4 +139,6 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 动态节点个数测试时，在下一次热点选取之前(HAR::ChangeNodeNumber())删除被抛弃节点的位置点信息（注意：节点个数变化周期应该为热点选取周期的倍数）；
 将所有的g_系列全局变量都改为相关类内的静态变量（GA等未采用的方法相关的变量未改动）；
 增加CHotspot::ratio及相关方法和改动，用于测试新的ratio计算方法，将在贪婪选取和后续选取过程中用到，可使用命令行参数-balanced-ratio选项开启；
+增加poor-hotspot.txt用于测试投递计数为0的热点信息；
 *应该将动态节点个数测试时的增删节点过程改成随机选取节点；
+*针对热点的排序应该改成从大到小的；

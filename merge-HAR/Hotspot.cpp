@@ -35,8 +35,6 @@ void CHotspot::removePosition(CPosition* pos)
 			break;
 		}
 	}
-
-	//recalculateCenter();  //不自动调用
 }
 
 void CHotspot::removePositionList(vector<CPosition *> positions)
@@ -57,8 +55,6 @@ void CHotspot::addPosition(CPosition* pos)
 		return;
 
 	coveredPositions.push_back(pos);
-
-	//recalculateCenter();  //不自动调用
 }
 
 void CHotspot::recalculateCenter()

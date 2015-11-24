@@ -447,6 +447,8 @@ void HAR::SendData()
 		delivery_statistics << endl << logInfo;
 		delivery_statistics << "#Time" << TAB << "#DeliveryAtHotspotCount" << TAB << "#DeliveryTotalCount" << TAB << "#DeliveryAtHotspotPercent" << endl;
 	}
+	//用于测试投递计数为0的热点信息
+	ofstream poor_hotspots("poor-hotspots.txt", ios::app);
 	//用于统计过期热点的投递计数时判断是否应当输出时间
 	static bool hasMoreNewRoutes = false;
 
@@ -510,7 +512,11 @@ void HAR::SendData()
 						if( (*iHotspot)->getID() == SINK_ID )
 							continue;
 						CHotspot *hotspot = (CHotspot *)(*iHotspot);
-						deliveryCounts.push_back( hotspot->getDeliveryCount() );
+						int count = hotspot->getDeliveryCount();
+						deliveryCounts.push_back( count );
+						//用于测试投递计数为0的热点信息
+						if(count == 0)
+							poor_hotspots << hotspot->getTime() << TAB << hotspot->getID() << TAB << hotspot->getNCoveredPosition() << TAB << hotspot->getNCoveredNodes() << TAB << hotspot->getRatio() << endl;
 					}
 					if( ! iMANode->getFlag() )
 						break;
