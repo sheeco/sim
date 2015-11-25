@@ -52,18 +52,21 @@ public:
 	//用于归并排序的函数
 	static vector<int> merge(vector<int> &left, vector<int> &right, bool(*Comp)(int, int));
 	static vector<int> mergeSort(vector<int> &v, bool(*Comp)(int, int));
-	//用于int序列的降序排列
-	static bool smaller(int left, int right){	return left > right;	};
 	//CPosition类只能按照x坐标排序，CHotspot类可以按照x坐标或者cover数排序
 	static vector<CPosition *> merge(vector<CPosition *> &left, vector<CPosition *> &right);
 	static vector<CPosition *> mergeSort(vector<CPosition *> &v);
-	static vector<CHotspot *> merge(vector<CHotspot *> &left, vector<CHotspot *> &right, bool(*Comp)(CBase *, CBase *));
-	static vector<CHotspot *> mergeSort(vector<CHotspot *> &v, bool(*Comp)(CBase *, CBase *));
-	static vector<CGASolution> merge(vector<CGASolution> &left, vector<CGASolution> &right, bool(*Comp)(CGASolution, CGASolution));
-	static vector<CGASolution> mergeSort(vector<CGASolution> &v, bool(*Comp)(CGASolution, CGASolution));
+	static vector<CHotspot *> merge(vector<CHotspot *> &left, vector<CHotspot *> &right, bool(*Comp)(CHotspot *, CHotspot *));
+	static vector<CHotspot *> mergeSort(vector<CHotspot *> &v, bool(*Comp)(CHotspot *, CHotspot *));
+	//CHotspot类静态拷贝按照( endTime - 900, endTime )期间的投递技术的降序排列
+	static vector<CHotspot> mergeByDeliveryCount(vector<CHotspot> &left, vector<CHotspot> &right, int endTime);
+	static vector<CHotspot> mergeSortByDeliveryCount(vector<CHotspot> &v, int endTime);
+	//GASolution类按照fitness排序
+	//static vector<CGASolution> merge(vector<CGASolution> &left, vector<CGASolution> &right, bool(*Comp)(CGASolution, CGASolution));
+	//static vector<CGASolution> mergeSort(vector<CGASolution> &v, bool(*Comp)(CGASolution, CGASolution));
 	//用于作为参数传入mergeSort函数的Comparison函数
-	static bool largerByLocationX(CBase *left, CBase *right);
-	static bool largerByRatio(CBase *left, CBase *right); //实际只能传入CHotspot类
+	static bool ascendByLocationX(CHotspot *left, CHotspot *right);
+	static bool ascendByRatio(CHotspot *left, CHotspot *right);
+	static bool descendByInt(int left, int right){	return left > right;	};
 
 	/** 预处理操作函数 **/
 	//从文件中读取所有节点的当前位置，加入position列表（append）

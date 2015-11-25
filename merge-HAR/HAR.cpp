@@ -440,15 +440,22 @@ void HAR::SendData()
 		delivery_hotspot << endl << logInfo;
 		delivery_hotspot << "#Time" << TAB << "#DeliveryCountForSingleHotspotInThisSlot ..." << endl;
 	}
-	static vector<int> deliveryCounts;  //用于存储hotspot投递计数
+	//用于存储hotspot及其投递计数的静态拷贝
+	//由于输出相关信息时（900s时的热点将在2700s时被输出）该热点的全局唯一指针已经被释放，所以存储的是该热点的浅拷贝，不能用于其他用途，否则将影响热点记录的唯一性
+	static vector<CHotspot> deliveryCounts;  
 	ofstream delivery_statistics("delivery-statistics.txt", ios::app);
 	if( currentTime == startTimeForHotspotSelection )
 	{
 		delivery_statistics << endl << logInfo;
 		delivery_statistics << "#Time" << TAB << "#DeliveryAtHotspotCount" << TAB << "#DeliveryTotalCount" << TAB << "#DeliveryAtHotspotPercent" << endl;
 	}
-	//用于测试投递计数为0的热点信息
-	ofstream poor_hotspots("poor-hotspots.txt", ios::app);
+	//用于测试投递计数为0的热点信息，按照投递计数降序输出所有热点的覆盖的position数、node数、ratio、投递计数
+	ofstream hotspot_rank("hotspot-rank.txt", ios::app);
+	if( currentTime == startTimeForHotspotSelection )
+	{
+		hotspot_rank << endl << logInfo;
+		hotspot_rank << "#WorkTime" << TAB << "#ID" << TAB << "#Location" << TAB << "#nPosition" << TAB << "#nNode" << TAB << "#Ratio" << TAB << "#Tw" << TAB << "#DeliveryCount" << endl;
+	}
 	//用于统计过期热点的投递计数时判断是否应当输出时间
 	static bool hasMoreNewRoutes = false;
 
@@ -482,12 +489,18 @@ void HAR::SendData()
 						{
 							if( ! deliveryCounts.empty() )
 							{
-								//从大到小排序输出
-								deliveryCounts = CPreprocessor::mergeSort(deliveryCounts, CPreprocessor::smaller);
-								for(vector<int>::iterator icount = deliveryCounts.begin(); icount != deliveryCounts.end(); icount++)
-									delivery_hotspot << *icount << TAB ;
+								//按照投递计数降序排列，2700s时输出900s选出的热点在(900, 1800)期间的投递计数，传入的参数应为1800
+								int endTime =  currentTime - SLOT_HOTSPOT_UPDATE;
+								deliveryCounts = CPreprocessor::mergeSortByDeliveryCount(deliveryCounts, (endTime) );
+								for(vector<CHotspot>::iterator ihotspot = deliveryCounts.begin(); ihotspot != deliveryCounts.end(); ihotspot++)
+								{
+									delivery_hotspot << ihotspot->getDeliveryCount( currentTime - SLOT_HOTSPOT_UPDATE ) << TAB ;
+									hotspot_rank << ihotspot->getTime() << "-" << currentTime - SLOT_HOTSPOT_UPDATE << TAB << ihotspot->getID() << TAB << ihotspot->getX() << "," << ihotspot->getY() << TAB << ihotspot->getNCoveredPosition() << "," << ihotspot->getNCoveredNodes() << TAB 
+										<< ihotspot->getRatio() << TAB << ihotspot->getWaitingTime(endTime) << TAB << ihotspot->getDeliveryCount(endTime) << endl;
+
+								}
 								delivery_hotspot << endl;
-								deliveryCounts.erase( deliveryCounts.begin(), deliveryCounts.end() );
+								deliveryCounts.clear();
 							}
 							delivery_hotspot << currentTime - SLOT_HOTSPOT_UPDATE << TAB ;
 							delivery_statistics << currentTime - SLOT_HOTSPOT_UPDATE << TAB << CData::getDeliveryAtHotspotCount() << TAB 
@@ -513,10 +526,7 @@ void HAR::SendData()
 							continue;
 						CHotspot *hotspot = (CHotspot *)(*iHotspot);
 						int count = hotspot->getDeliveryCount();
-						deliveryCounts.push_back( count );
-						//用于测试投递计数为0的热点信息
-						if(count == 0)
-							poor_hotspots << hotspot->getTime() << TAB << hotspot->getID() << TAB << hotspot->getNCoveredPosition() << TAB << hotspot->getNCoveredNodes() << TAB << hotspot->getRatio() << endl;
+						deliveryCounts.push_back( *hotspot );
 					}
 					if( ! iMANode->getFlag() )
 						break;

@@ -132,12 +132,12 @@ void CPreprocessor::CollectNewPositions(int time)
 	CPosition::nPositions = CPosition::positions.size();
 }
 
-bool CPreprocessor::largerByLocationX(CBase *left, CBase *right)
+bool CPreprocessor::ascendByLocationX(CHotspot *left, CHotspot *right)
 {
 	return (*left > *right);
 }
 
-bool CPreprocessor::largerByRatio(CBase *left, CBase *right)
+bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
 {
 	//将执行强制类型转换，只能传入CHotspot类
 	//包括ratio的计算
@@ -216,7 +216,7 @@ vector<CPosition *> CPreprocessor::mergeSort(vector<CPosition *> &v)
 	return merge(left, right);
 }
 
-vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> &left, vector<CHotspot *> &right, bool(*Comp)(CBase *, CBase *))
+vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> &left, vector<CHotspot *> &right, bool(*Comp)(CHotspot *, CHotspot *))
 {
 	vector<CHotspot *> result;
 	vector<CHotspot *>::size_type li = 0;
@@ -236,7 +236,7 @@ vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> &left, vector<CHotspo
 	return result;
 }
 
-vector<CHotspot *> CPreprocessor::mergeSort(vector<CHotspot *> &v, bool(*Comp)(CBase *, CBase *))
+vector<CHotspot *> CPreprocessor::mergeSort(vector<CHotspot *> &v, bool(*Comp)(CHotspot *, CHotspot *))
 {
 	if(v.size() == 0)
 		return vector<CHotspot *>();
@@ -252,15 +252,53 @@ vector<CHotspot *> CPreprocessor::mergeSort(vector<CHotspot *> &v, bool(*Comp)(C
 	return merge(left, right, Comp);
 }
 
-vector<CGASolution> CPreprocessor::merge(vector<CGASolution> &left, vector<CGASolution> &right, bool(*Comp)(CGASolution, CGASolution))
+//vector<CGASolution> CPreprocessor::merge(vector<CGASolution> &left, vector<CGASolution> &right, bool(*Comp)(CGASolution, CGASolution))
+//{
+//	vector<CGASolution> result;
+//	vector<CGASolution>::size_type li = 0;
+//	vector<CGASolution>::size_type ri = 0;
+//	while(li < left.size()
+//		&& ri < right.size())
+//	{
+//		if(! Comp(left[li], right[ri]) )
+//			result.push_back(right[ri++]);
+//		else
+//			result.push_back(left[li++]);
+//	}
+//	while(li < left.size())
+//		result.push_back(left[li++]);
+//	while(ri < right.size())
+//		result.push_back(right[ri++]);
+//	return result;
+//}
+//
+//vector<CGASolution> CPreprocessor::mergeSort(vector<CGASolution> &v, bool(*Comp)(CGASolution, CGASolution))
+//{
+//	if(v.size() == 0)
+//		return vector<CGASolution>();
+//	if(v.size() == 1)
+//		return vector<CGASolution>(1, v[0]);
+//
+//	vector<CGASolution>::iterator mid = v.begin() + v.size() / 2;
+//	vector<CGASolution> left(v.begin(), mid);
+//	vector<CGASolution> right(mid, v.end());
+//	left = mergeSort(left, Comp);
+//	right = mergeSort(right, Comp);
+//
+//	return merge(left, right, Comp);
+//}
+
+vector<CHotspot> CPreprocessor::mergeByDeliveryCount(vector<CHotspot> &left, vector<CHotspot> &right, int endTime)
 {
-	vector<CGASolution> result;
-	vector<CGASolution>::size_type li = 0;
-	vector<CGASolution>::size_type ri = 0;
+	vector<CHotspot> result;
+	vector<CHotspot>::size_type li = 0;
+	vector<CHotspot>::size_type ri = 0;
 	while(li < left.size()
 		&& ri < right.size())
 	{
-		if(! Comp(left[li], right[ri]) )
+		int lv = left[li].getDeliveryCount(endTime);
+		int rv = right[ri].getDeliveryCount(endTime);
+		if( lv < rv )
 			result.push_back(right[ri++]);
 		else
 			result.push_back(left[li++]);
@@ -272,20 +310,20 @@ vector<CGASolution> CPreprocessor::merge(vector<CGASolution> &left, vector<CGASo
 	return result;
 }
 
-vector<CGASolution> CPreprocessor::mergeSort(vector<CGASolution> &v, bool(*Comp)(CGASolution, CGASolution))
+vector<CHotspot> CPreprocessor::mergeSortByDeliveryCount(vector<CHotspot> &v, int endTime)
 {
 	if(v.size() == 0)
-		return vector<CGASolution>();
+		return vector<CHotspot>();
 	if(v.size() == 1)
-		return vector<CGASolution>(1, v[0]);
+		return vector<CHotspot>(1, v[0]);
 
-	vector<CGASolution>::iterator mid = v.begin() + v.size() / 2;
-	vector<CGASolution> left(v.begin(), mid);
-	vector<CGASolution> right(mid, v.end());
-	left = mergeSort(left, Comp);
-	right = mergeSort(right, Comp);
+	vector<CHotspot>::iterator mid = v.begin() + v.size() / 2;
+	vector<CHotspot> left(v.begin(), mid);
+	vector<CHotspot> right(mid, v.end());
+	left = mergeSortByDeliveryCount(left, endTime);
+	right = mergeSortByDeliveryCount(right, endTime);
 
-	return merge(left, right, Comp);
+	return mergeByDeliveryCount(left, right, endTime);
 }
 
 int CPreprocessor::getIndexOfPosition(CPosition* pos)
@@ -738,7 +776,7 @@ void CPreprocessor::AdjustRemoteHotspots()
 	}
 
 	//重新排序，更新相关信息
-	CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, largerByRatio);
+	CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, ascendByRatio);
 	GenerateDegrees();
 	GenerateCoverMatrix();
 }
@@ -770,10 +808,10 @@ void CPreprocessor::BuildCandidateHotspots(int time)
 		CHotspot::hotspotCandidates.push_back(GenerateHotspotFromPosition(*ipos, time));
 
 	////将所有候选hotspot按x坐标排序
-	//CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, largerByLocationX);
+	//CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, ascendByLocationX);
 
 	//将所有候选hotspot按ratio排序，由小到大
-	CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, largerByRatio);
+	CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, ascendByRatio);
 
 	//更新相关信息
 	GenerateDegrees();

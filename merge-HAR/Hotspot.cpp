@@ -127,8 +127,8 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots)
 {
 	//Sort by Coordinate X to save time
-	CPreprocessor::mergeSort(oldHotspots, CPreprocessor::largerByLocationX);
-	CPreprocessor::mergeSort(newHotspots, CPreprocessor::largerByLocationX);
+	CPreprocessor::mergeSort(oldHotspots, CPreprocessor::ascendByLocationX);
+	CPreprocessor::mergeSort(newHotspots, CPreprocessor::ascendByLocationX);
 
 	vector<CHotspot *>::iterator iOld, iNew;
 	double sumArea = 0;

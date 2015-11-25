@@ -45,7 +45,7 @@ heat                          flat
 
 
 
-### 文件说明
+### 源文件说明
 
 README.txt
 
@@ -84,6 +84,10 @@ GASolution.h & .cpp
 GA.h & .cpp
 
 NodeRepair.h & .cpp
+
+
+
+### 输出文件说明
 
 
 
@@ -134,7 +138,7 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 将node的ID改为自动生成，并随之修改节点数动态变化时的node是否存在的判定，添加函数 HAR::ifNodeExists(int id) 代替 id >= m_nodes.size() 的判定方法（暂未测试）；
 
 
-#2015-11-24
+# 2015-11-24
 
 动态节点个数测试时，在下一次热点选取之前(HAR::ChangeNodeNumber())删除被抛弃节点的位置点信息（注意：节点个数变化周期应该为热点选取周期的倍数）；
 将所有的g_系列全局变量都改为相关类内的静态变量（GA等未采用的方法相关的变量未改动）；
@@ -142,3 +146,11 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 增加poor-hotspot.txt用于测试投递计数为0的热点信息；
 *应该将动态节点个数测试时的增删节点过程改成随机选取节点；
 *针对热点的排序应该改成从大到小的；
+
+
+# 2015-11-25
+
+对mergesort对应的comparison类的名字进行规范化；
+按照投递计数降序输出热点cover的position数、node数和ratio到hotspot-rank.txt，用于统计和分析热点质量；
+按照任期统计等待时间的累积值，同样输出到hotspot-rank.txt文件；
+*整理没有用到的函数定义，包括GA算法相关的全局变量；

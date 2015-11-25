@@ -3,7 +3,7 @@
 CPostSelector::CPostSelector(vector<CHotspot *> hotspotCandidates)
 {
 	this->maxRatio = 0;
-	hotspotCandidates = CPreprocessor::mergeSort(hotspotCandidates, CPreprocessor::largerByRatio);
+	hotspotCandidates = CPreprocessor::mergeSort(hotspotCandidates, CPreprocessor::ascendByRatio);
 	if(hotspotCandidates.size() > 0)
 	{
 		this->maxRatio = hotspotCandidates.at(hotspotCandidates.size() - 1)->getNCoveredPosition();
@@ -86,7 +86,7 @@ vector<CHotspot *> CPostSelector::assignPositionsToHotspots(vector<CHotspot *> h
 	vector<CHotspot *> result_hotspots;
 	while(! tmp_hotspots.empty())
 	{
-		tmp_hotspots = CPreprocessor::mergeSort(tmp_hotspots, CPreprocessor::largerByRatio);
+		tmp_hotspots = CPreprocessor::mergeSort(tmp_hotspots, CPreprocessor::ascendByRatio);
 		//FIXME:尽量多 / 平均？
 		CHotspot *selected_hotspot = tmp_hotspots.at(tmp_hotspots.size() - 1);
 		if(selected_hotspot->getNCoveredPosition() == 0)

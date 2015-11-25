@@ -29,7 +29,7 @@ void CGreedySelection::UpdateStatus()
 	//对剩余hotspot按ratio数从小到大排序（根据-balanced-ratio选项，可能是新的ratio计算或直接使用nCoveredPosition的值）
 	for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ihotspot++)
 		(*ihotspot)->updateStatus();
-	unselectedHotspots = CPreprocessor::mergeSort(unselectedHotspots, CPreprocessor::largerByRatio);
+	unselectedHotspots = CPreprocessor::mergeSort(unselectedHotspots, CPreprocessor::ascendByRatio);
 
 	if(unselectedHotspots.empty())
 		return;
@@ -180,7 +180,7 @@ void CGreedySelection::mergeHotspots(int time)
 	stringstream tmp;
 
 	//sort new hotspots by x coordinates
-	CPreprocessor::mergeSort(CHotspot::hotspotCandidates, CPreprocessor::largerByLocationX);
+	CPreprocessor::mergeSort(CHotspot::hotspotCandidates, CPreprocessor::ascendByLocationX);
 
 	for(vector<CHotspot *>::iterator iOld = CHotspot::oldSelectedHotspots.begin(); iOld != CHotspot::oldSelectedHotspots.end(); /* iOld++*/ )
 	{

@@ -19,6 +19,7 @@ private:
 	vector<int> coveredNodes;  //覆盖的node列表，hotspot选取结束后手动调用generateCoveredNodes生成
 	double heat;
 	vector<int> deliveryCounts;  //存储该热点上的投递计数，连任的热点应对每一任期内的投递计数进行统计
+	vector<int> waitingTimes;  //存储该热点上的等待时间，连任的热点应对每一任期内的投递计数进行统计
 	double ratio;  //用于测试新的ratio计算方法，将在贪婪选取和后续选取过程中用到
 
 	static long int ID_COUNT;
@@ -56,6 +57,7 @@ public:
 		this->candidateType = TYPE_NEW_HOTSPOT;
 		this->age = 0;
 		this->deliveryCounts.push_back(0);
+		this->waitingTimes.push_back(0);
 		this->ratio = 0;
 	}
 
@@ -71,6 +73,7 @@ public:
 		this->candidateType = TYPE_NEW_HOTSPOT;
 		this->age = 0;
 		this->deliveryCounts.push_back(0);
+		this->waitingTimes.push_back(0);
 		this->ratio = 0;
 
 		addPosition(pos);
@@ -113,9 +116,14 @@ public:
 	{
 		return this->age;
 	}
+	//FIXEME: 未测试
 	inline void setAge(int age)
 	{
 		this->age = age;
+		while( deliveryCounts.size() < age + 1 )
+			deliveryCounts.push_back(0);
+		while( waitingTimes.size() < age + 1 )
+			waitingTimes.push_back(0);
 	}
 	inline int getNCoveredNodes()
 	{
@@ -170,24 +178,54 @@ public:
 	}
 
 	//从当前这一热点任期内的投递计数，该函数应当在MA的路径更新时调用输出统计结果
+	//FIXEME: 未测试
 	inline int getDeliveryCount()
 	{
-		while( deliveryCounts.size() < ( ( currentTime - time ) / SLOT_HOTSPOT_UPDATE + 1 ) )
-			deliveryCounts.push_back(0);
 		if(age == 0)
 			return deliveryCounts.at(0);
 		else
-			return deliveryCounts.at( ( currentTime - time ) / SLOT_HOTSPOT_UPDATE - 1 );
+			return deliveryCounts.at( age - 1 );
 	}
-
+	//返回( untilTime - 900, untilTime )期间的投递计数
+	inline int getDeliveryCount(int untilTime)
+	{
+		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
+		if( i < 0 || i > deliveryCounts.size() )
+		{
+			cout << "Error: CHotspot:: getDeliveryCount(" << untilTime << ") " << i << " exceeds (0," << deliveryCounts.size() - 1 << ") !" << endl;
+			_PAUSE;
+		}
+		return deliveryCounts.at( i );
+	}
 	inline void addDeliveryCount(int n)
 	{
-		while( deliveryCounts.size() < ( ( currentTime - time ) / SLOT_HOTSPOT_UPDATE + 1 ) )
-			deliveryCounts.push_back(0);
 		deliveryCounts.at( deliveryCounts.size() - 1 ) += n;
 	}
+	//从当前这一热点任期内的等待时间，该函数应当在MA的路径更新时调用输出统计结果
+	//FIXEME: 未测试
+	inline int getWaitingTime()
+	{
+		if(age == 0)
+			return waitingTimes.at(0);
+		else
+			return waitingTimes.at( age - 1 );
+	}
+	//返回( untilTime - 900, untilTime )期间的等待时间
+	inline int getWaitingTime(int untilTime)
+	{
+		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
+		if( i < 0 || i > waitingTimes.size() )
+		{
+			cout << "Error: CHotspot:: getDeliveryCount(" << untilTime << ") " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
+			_PAUSE;
+		}		return waitingTimes.at( i );
+	}
+	inline void addWaitingTime(int t)
+	{
+		waitingTimes.at( waitingTimes.size() - 1 ) += t;
+	}
 
-	//自动生成ID，需手动调用
+	//自动生成ID，需手动调用，为了确保热点ID的唯一性，制作临时拷贝时不应调用此函数
 	inline void generateID()
 	{
 		//if(this->ID != -1)
