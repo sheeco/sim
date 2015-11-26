@@ -257,9 +257,13 @@ void HAR::HotspotSelection()
 {
 	CGreedySelection greedySelection;
 
+	//TEST： 
+	if( TEST_LEARN )
+		CPreprocessor::DecayPositionsWithoutDeliveryCount();
+
 	/**************************** 热点归并过程(merge-HAR) *****************************/
 	//merge-HAR: 
-	if(DO_MERGE_HAR)
+	if( DO_MERGE_HAR )
 		greedySelection.mergeHotspots(currentTime);
 
 	/********************************** 贪婪选取 *************************************/

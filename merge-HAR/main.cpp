@@ -52,6 +52,7 @@ int NUM_NODE = NUM_NODE_INIT;
 double RATIO_MERGE_HOTSPOT = 1.0;
 double RATIO_NEW_HOTSPOT = 1.0;
 double RATIO_OLD_HOTSPOT = 1.0;
+double CO_POSITION_DECAY = 1.0;
 
 bool HEAT_RATIO_EXP = false;
 bool HEAT_RATIO_LN = false;
@@ -65,9 +66,11 @@ bool HEAT_RATIO_LN = false;
 
 bool DO_IHAR = false;
 bool DO_MERGE_HAR = false;
-bool BALANCED_RATIO = false;
+bool TEST_BALANCED_RATIO = false;
 bool TEST_HOTSPOT_SIMILARITY = true;
 bool TEST_DYNAMIC_NUM_NODE = false;
+bool TEST_LEARN = false;
+int MAX_NUM_HOTSPOT = 9999;
 
 double ALPHA = 0.03;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
@@ -86,11 +89,11 @@ string logInfo;
 ofstream debugInfo("debug.txt", ios::app);
 
 string HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
-              "<mode>            -har;                -ihar;                -mhar;               -hotspot-similarity;        -dynamic-node-number;        -balanced-ratio; \n"
+              "<mode>            -har;                -ihar;                -mhar;               -hotspot-similarity;        -dynamic-node-number;        -balanced-ratio;        -learn; \n"
               "<time>            -time-data [];       -time-run []; \n"
               "<parameter>       -alpha     [];       -beta     [];         -gama     [];        -heat [] [];                -prob-trans []; \n"
               "<ihar>            -lambda    [];       -lifetime []; \n"
-              "<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln; \n\n";
+              "<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;                    -max-hotspot [];        -decay []; \n\n";
 
 
 int main(int argc, char* argv[])
@@ -146,7 +149,12 @@ int main(int argc, char* argv[])
 			}
 			else if( field == "-balanced-ratio" )
 			{
-				BALANCED_RATIO = true;
+				TEST_BALANCED_RATIO = true;
+				iField++;
+			}
+			else if( field == "-learn" )
+			{
+				TEST_LEARN = true;
 				iField++;
 			}
 
@@ -173,6 +181,12 @@ int main(int argc, char* argv[])
 			{
 				if(iField < argc - 1)
 					MIN_WAITING_TIME = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-max-hotspot" )
+			{
+				if(iField < argc - 1)
+					MAX_NUM_HOTSPOT = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 
@@ -217,6 +231,12 @@ int main(int argc, char* argv[])
 			{
 				if(iField < argc - 1)
 					PROB_DATA_FORWARD = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-decay" )
+			{
+				if(iField < argc - 1)
+					CO_POSITION_DECAY = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 
@@ -313,17 +333,25 @@ int main(int argc, char* argv[])
 			parameters << "#HAR" << endl << endl;
 		}
 
-		if(BALANCED_RATIO)
+		if(TEST_BALANCED_RATIO)
 		{
-			logInfo += "\t#BALANCED_RATIO";
+			logInfo += "\t#TEST_BALANCED_RATIO";
 			parameters << endl;
-			parameters << "#BALANCED_RATIO" << endl;
+			parameters << "#TEST_BALANCED_RATIO" << endl;
+		}
+		if(TEST_LEARN)
+		{
+			logInfo += "\t#TEST_LEARN";
+			parameters << endl;
+			parameters << "#TEST_LEARN" << endl;
+			parameters << "DECAY" << TAB << CO_POSITION_DECAY << endl;
+			parameters << "MAX_NUM_HOTSPOT" << TAB << MAX_NUM_HOTSPOT << endl;
 		}
 		if(TEST_DYNAMIC_NUM_NODE)
 		{
-			logInfo += "\t#DYNAMIC_NODE_NUMBER";
+			logInfo += "\t#TEST_DYNAMIC_NODE_NUMBER";
 			parameters << endl;
-			parameters << "#DYNAMIC_NODE_NUMBER" << endl;
+			parameters << "#TEST_DYNAMIC_NODE_NUMBER" << endl;
 		}
 
 

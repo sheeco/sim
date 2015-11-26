@@ -123,6 +123,9 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 	//选中所有ratio >= ALPHA的hotspot
 	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); )
 	{
+		if( selectedHotspots.size() >= MAX_NUM_HOTSPOT )
+			break;
+
 		if(this->getRatioForHotspot(*ihotspot) >= ALPHA)
 		{
 			(*ihotspot)->setFlag(true);

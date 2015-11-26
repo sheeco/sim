@@ -6,6 +6,7 @@ int CHotspot::nHotspotCandidates = 0;
 vector<CHotspot *> CHotspot::hotspotCandidates;
 vector<CHotspot *> CHotspot::selectedHotspots;
 vector<CHotspot *> CHotspot::oldSelectedHotspots;
+vector<CHotspot *> CHotspot::deletedHotspots;
 
 bool CHotspot::ifPositionExists(CPosition* pos)
 {

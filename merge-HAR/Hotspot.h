@@ -2,7 +2,8 @@
 
 #include "Position.h"
 
-extern bool BALANCED_RATIO;
+extern bool TEST_BALANCED_RATIO;
+extern bool TEST_LEARN;
 extern int NUM_NODE;
 extern int currentTime;
 extern double RATIO_MERGE_HOTSPOT;
@@ -50,6 +51,8 @@ public:
 	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
 	static vector<CHotspot *> oldSelectedHotspots;
 	static int nHotspotCandidates;
+	//
+	static vector<CHotspot *> deletedHotspots;
 
 	CHotspot()
 	{
@@ -141,10 +144,18 @@ public:
 	//注意：调用之前必须确保coveredNodes已得到更新
 	double calculateRatio()
 	{
-		if( BALANCED_RATIO )
+		if( TEST_BALANCED_RATIO )
 		{
 			ratio = coveredPositions.size() * ( NUM_NODE - coveredNodes.size() + 1 ) / NUM_NODE;
 			return ratio;
+		}
+		else if( TEST_LEARN )
+		{
+			ratio = 0;
+			for(vector<CPosition*>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ipos++)
+				ratio += (*ipos)->getWeight();
+			return ratio;
+
 		}
 		else
 		{

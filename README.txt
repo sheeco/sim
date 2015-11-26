@@ -13,11 +13,11 @@
 
                                                   !!!!!! ALL CASE SENSITIVE !!!!!!
 
-<mode>            -har;                -ihar;                -mhar;               -hotspot-similarity;        -dynamic-node-number;        -balanced-ratio;
+<mode>            -har;                -ihar;                -mhar;               -hotspot-similarity;        -dynamic-node-number;        -balanced-ratio;        -learn;
 <time>            -time-data [];       -time-run [];
 <parameter>       -alpha     [];       -beta     [];         -gama     [];        -heat [] [];                -prob-trans [];
 <ihar>            -lambda    [];       -lifetime [];
-<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;
+<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;                    -max-hotspot [];        -decay [];
 
 
 
@@ -154,3 +154,8 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 按照投递计数降序输出热点cover的position数、node数和ratio到hotspot-rank.txt，用于统计和分析热点质量；
 按照任期统计等待时间的累积值，同样输出到hotspot-rank.txt文件；
 *整理没有用到的函数定义，包括GA算法相关的全局变量；
+
+
+# 2015-11-27
+
+增加CPreprocessor::DecayPositionsWithoutDeliveryCount，按照投递计数为0的热点对其position执行衰减，可使用命令行参数-learn选项开启，-decay设置衰减系数，-max-hotspot用于暂时稳定热点总数；

@@ -668,6 +668,40 @@ void CPreprocessor::RemoveIsolatePositions()
 	GenerateCoverMatrix();	
 }
 
+void CPreprocessor::DecayPositionsWithoutDeliveryCount()
+{
+	vector<CPosition*> badPositions;
+	if( CHotspot::oldSelectedHotspots.empty() )
+		return;
+
+	for(vector<CHotspot*>::iterator ihotspot = CHotspot::oldSelectedHotspots.begin(); ihotspot != CHotspot::oldSelectedHotspots.end(); )
+	{
+		if( (*ihotspot)->getDeliveryCount(currentTime) == 0 )
+		{
+			addToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
+			//free(*ihotspot);
+			//CHotspot::deletedHotspots.push_back(*ihotspot);
+			//ihotspot = CHotspot::oldSelectedHotspots.erase(ihotspot);
+			ihotspot++;
+		}
+		else
+			ihotspot++;
+	}
+	for(vector<CPosition*>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
+	{
+		if( ifExists(badPositions, *ipos) )
+		{
+			//free(*ipos);
+			//CPosition::deletedPositions.push_back(*ipos);
+			//ipos = CPosition::positions.erase(ipos);
+			(*ipos)->decayWeight();
+			ipos++;
+		}
+		else
+			ipos++;
+	}
+}
+
 void CPreprocessor::PutBackAllPositions()
 {
 	//FIXME:排除孤立的position以提高GA优化效率，降低复杂度

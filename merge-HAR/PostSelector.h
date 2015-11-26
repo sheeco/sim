@@ -7,6 +7,7 @@
 using namespace std;
 
 extern double ALPHA;
+extern int MAX_NUM_HOTSPOT;
 extern int NUM_NODE;
 
 extern vector<CPosition*> g_tmpPositions;

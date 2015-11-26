@@ -94,6 +94,10 @@ public:
 	static void RemoveIsolatePositions();
 	static void PutBackAllPositions();  //将之前移除的position全部放回，必须在PostSelector之前调用，和RemoveIsolatePositions匹配调用
 
+	//在每一次贪婪选择之前调用，将从CHotspot::oldSelectedHotspots中寻找投递计数为0的热点删除放入CHotspot::deletedHotspots
+	//并删除其对应的所有position放入CPosition::deletedPositions
+	static void DecayPositionsWithoutDeliveryCount();
+
 	//对于只含有一个position的hotspot，修正其中心，尽量包含更多的position
 	static void AdjustRemoteHotspots();
 

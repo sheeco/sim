@@ -13,6 +13,7 @@
 
 extern bool DO_IHAR;
 extern bool TEST_HOTSPOT_SIMILARITY;
+extern bool TEST_LEARN;
 extern bool HEAT_RATIO_EXP;
 extern bool HEAT_RATIO_LN;
 
