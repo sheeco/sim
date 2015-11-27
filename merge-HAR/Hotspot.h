@@ -146,7 +146,7 @@ public:
 	{
 		if( TEST_BALANCED_RATIO )
 		{
-			ratio = coveredPositions.size() * ( NUM_NODE - coveredNodes.size() + 1 ) / NUM_NODE;
+			ratio = coveredPositions.size() * (double)( NUM_NODE - coveredNodes.size() + 1 ) / (double)NUM_NODE;
 			return ratio;
 		}
 		else if( TEST_LEARN )

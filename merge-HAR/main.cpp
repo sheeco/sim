@@ -71,6 +71,7 @@ bool TEST_HOTSPOT_SIMILARITY = true;
 bool TEST_DYNAMIC_NUM_NODE = false;
 bool TEST_LEARN = false;
 int MAX_NUM_HOTSPOT = 9999;
+double MIN_POSITION_WEIGHT = 0;
 
 double ALPHA = 0.03;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
@@ -93,7 +94,7 @@ string HELP = "\n                                                  !!!!!! ALL CA
               "<time>            -time-data [];       -time-run []; \n"
               "<parameter>       -alpha     [];       -beta     [];         -gama     [];        -heat [] [];                -prob-trans []; \n"
               "<ihar>            -lambda    [];       -lifetime []; \n"
-              "<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;                    -max-hotspot [];        -decay []; \n\n";
+              "<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;                    -max-hotspot [];        -decay [];        -min-weight []; \n\n";
 
 
 int main(int argc, char* argv[])
@@ -237,6 +238,12 @@ int main(int argc, char* argv[])
 			{
 				if(iField < argc - 1)
 					CO_POSITION_DECAY = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-min-weight" )
+			{
+				if(iField < argc - 1)
+					MIN_POSITION_WEIGHT = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 

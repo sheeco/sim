@@ -458,7 +458,7 @@ void HAR::SendData()
 	if( currentTime == startTimeForHotspotSelection )
 	{
 		hotspot_rank << endl << logInfo;
-		hotspot_rank << "#WorkTime" << TAB << "#ID" << TAB << "#Location" << TAB << "#nPosition" << TAB << "#nNode" << TAB << "#Ratio" << TAB << "#Tw" << TAB << "#DeliveryCount" << endl;
+		hotspot_rank << "#WorkTime" << TAB << "#ID" << TAB << "#Location" << TAB << "#nPosition, nNode" << TAB << "#Ratio" << TAB << "#Tw" << TAB << "#DeliveryCount" << endl;
 	}
 	//用于统计过期热点的投递计数时判断是否应当输出时间
 	static bool hasMoreNewRoutes = false;
@@ -555,6 +555,7 @@ void HAR::SendData()
 				else
 				{
 					iMANode->setWaitingTime( tmp );
+					atHotspot->addWaitingTime( tmp );
 					cout << "####  [ MA " << iMANode->getID() << " Waits For " << tmp << " ]" << endl;
 					//if(tmp == 0)
 					//	iMANode->setAtHotspot(NULL);

@@ -680,6 +680,7 @@ void CPreprocessor::DecayPositionsWithoutDeliveryCount()
 		{
 			addToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
 			//free(*ihotspot);
+			//在mHAR中，应该考虑是否将这些热点排除在归并之外
 			//CHotspot::deletedHotspots.push_back(*ihotspot);
 			//ihotspot = CHotspot::oldSelectedHotspots.erase(ihotspot);
 			ihotspot++;
@@ -691,11 +692,17 @@ void CPreprocessor::DecayPositionsWithoutDeliveryCount()
 	{
 		if( ifExists(badPositions, *ipos) )
 		{
-			//free(*ipos);
-			//CPosition::deletedPositions.push_back(*ipos);
-			//ipos = CPosition::positions.erase(ipos);
 			(*ipos)->decayWeight();
-			ipos++;
+			//Reduce complexity
+			RemoveFromList(badPositions, *ipos);
+			//如果权值低于最小值，直接删除，MIN_POSITION_WEIGHT默认值为1，即不会删除任何position
+			if( (*ipos)->getWeight() < MIN_POSITION_WEIGHT )
+			{
+				CPosition::deletedPositions.push_back(*ipos);
+				ipos = CPosition::positions.erase(ipos);
+			}
+			else
+				ipos++;
 		}
 		else
 			ipos++;

@@ -11,7 +11,7 @@ extern bool DO_MERGE_HAR;
 
 extern int NUM_NODE;
 extern int MAX_MEMORY_TIME;
-
+extern double MIN_POSITION_WEIGHT;
 
 extern int** g_coverMatrix;
 extern int* g_degreeForPositions;

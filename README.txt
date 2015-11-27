@@ -17,7 +17,7 @@
 <time>            -time-data [];       -time-run [];
 <parameter>       -alpha     [];       -beta     [];         -gama     [];        -heat [] [];                -prob-trans [];
 <ihar>            -lambda    [];       -lifetime [];
-<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;                    -max-hotspot [];        -decay [];
+<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;                    -max-hotspot [];        -decay [];        -min-weight [];
 
 
 
@@ -158,4 +158,9 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 
 # 2015-11-27
 
-增加CPreprocessor::DecayPositionsWithoutDeliveryCount，按照投递计数为0的热点对其position执行衰减，可使用命令行参数-learn选项开启，-decay设置衰减系数，-max-hotspot用于暂时稳定热点总数；
+
+为每个position定于初始值为1的权值，增加CPreprocessor::DecayPositionsWithoutDeliveryCount，按照投递计数为0的热点对其position执行衰减，可使用命令行参数-learn选项开启，-decay设置指数型衰减系数；
+由于衰减后的position整体权值水平持续降低，后续选取过程中的固定alpha值将导致选取出的热点总数持续上升，在测试阶段暂时使用-max-hotspot来暂时稳定热点总数；
+增加MIN_POSITION_WEIGHT，权值衰减之后如果低于此值将被直接删除，使用命令行参数-min-weight赋值（默认值为1即不删除）（未测试）；
+修复CHotspot::calculateRatio中的int除法问题；
+修复CHotspot::waitingTimes忘记统计的问题；
