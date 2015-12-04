@@ -1,15 +1,20 @@
 #pragma once
+
 #include "Hotspot.h"
 #include "Preprocessor.h"
+#include "Entity.h"
 
-class CRoute
+using namespace std;
+
+class CRoute : 
+	public CEntity
 {
 private:
-	vector<CBase *> waypoints;  //路线经过的点，包括sink和一些hotspot，必须保证第0个元素是sink
+	vector<CBasicEntity *> waypoints;  //路线经过的点，包括sink和一些hotspot，必须保证第0个元素是sink
 	vector<int> coveredNodes;
 	double length;
 	//MANode正在向toPoint移动的路上
-	//vector<CBase *>::iterator fromPoint;
+	//vector<CBasicEntity *>::iterator fromPoint;
 	int toPoint;
 	bool overdue;  //是否过期
 
@@ -20,7 +25,7 @@ public:
 		toPoint = 0;
 		overdue = false;
 	}
-	CRoute(CBase *sink)
+	CRoute(CBasicEntity *sink)
 	{
 		waypoints.push_back(sink);
 		length = 0;
@@ -31,7 +36,7 @@ public:
 	~CRoute(void)
 	{}
 
-	inline vector<CBase *> getWayPoints()
+	inline vector<CBasicEntity *> getWayPoints()
 	{
 		return waypoints;
 	}
@@ -40,7 +45,7 @@ public:
 		return coveredNodes;
 	}
 
-	inline CBase* getSink()
+	inline CBasicEntity* getSink()
 	{
 		if(waypoints.empty())
 			return NULL;
@@ -71,7 +76,7 @@ public:
 		return length;
 	}
 	//取得移动目标，即下一个point
-	inline CBase* getToPoint()
+	inline CBasicEntity* getToPoint()
 	{
 		if( toPoint > waypoints.size() - 1 
 			|| toPoint < 0 
@@ -89,25 +94,25 @@ public:
 	}
 
 	//将给定的元素放到waypoint列表的最后
-	void AddPoint(CBase *hotspot)
+	void AddPoint(CBasicEntity *hotspot)
 	{
 		waypoints.push_back(hotspot);
 		addToListUniquely(coveredNodes, ((CHotspot *) hotspot)->getCoveredNodes());
 	}
 	//将给定hotspot插入到路径中给定的位置
-	void AddPoint(int front, CBase *hotspot)
+	void AddPoint(int front, CBasicEntity *hotspot)
 	{
-		vector<CBase *>::iterator ipoint = waypoints.begin() + front + 1;
+		vector<CBasicEntity *>::iterator ipoint = waypoints.begin() + front + 1;
 		waypoints.insert(ipoint, hotspot);
 		addToListUniquely(coveredNodes, ((CHotspot *) hotspot)->getCoveredNodes());
 	}
 
 	//对给定插入计算路径增量
-	double getAddingDistance(int front, CBase *hotspot)
+	double getAddingDistance(int front, CBasicEntity *hotspot)
 	{
 		int back = ( front + 1 ) % waypoints.size();
-		double oldDistance =  CBase::getDistance( *waypoints[front], *waypoints[back] );
-		double newDistance = CBase::getDistance( *waypoints[front], *hotspot) + CBase::getDistance(*hotspot, *waypoints[back] );
+		double oldDistance =  CBasicEntity::getDistance( *waypoints[front], *waypoints[back] );
+		double newDistance = CBasicEntity::getDistance( *waypoints[front], *hotspot) + CBasicEntity::getDistance(*hotspot, *waypoints[back] );
 		return ( newDistance - oldDistance );
 	}
 

@@ -3,6 +3,7 @@
 #include "Hotspot.h"
 #include "FileParser.h"
 #include "GASolution.h"
+#include "Processor.h"
 
 using namespace std;
 
@@ -22,7 +23,8 @@ extern int g_old_nPositions;
 extern int g_old_nHotspots;
 
 //一些预处理函数包装成的类
-class CPreprocessor
+class CPreprocessor :
+	public CProcessor
 {
 private:
 	CPreprocessor(void);

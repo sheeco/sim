@@ -1,23 +1,26 @@
 #pragma once
 
-class CData
+#include "BasicEntity.h"
+
+using namespace std;
+
+class CData : 
+	public CBasicEntity
 {
 private:
-	long int ID;
 	int node;  //所属node
 	int timeBirth;  //生成时间
 	int timeArrival;  //到达sink的时间
-	bool flag;
 
 	//用于统计投递率和时延的静态变量
-	static long int ID_COUNT;  
-	static long int ARRIVAL_COUNT;  //到达的数据计数
-	static long double DELAY_SUM;  //时延加和，用于计算平均时延
-	static long int OVERFLOW_COUNT;  //因节点Buffer溢出被丢弃的数据计数
+	static int ID_COUNT;  
+	static int ARRIVAL_COUNT;  //到达的数据计数
+	static double DELAY_SUM;  //时延加和，用于计算平均时延
+	static int OVERFLOW_COUNT;  //因节点Buffer溢出被丢弃的数据计数
 
 	//(注意：由于这两个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途)
-	static long int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
-	static long int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
+	static int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
+	static int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
 
 	//自动生成ID
 	inline void generateID()
@@ -62,13 +65,13 @@ public:
 	}
 	//该函数应当在MA的路径更新时调用输出统计结果
 	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
-	static long int getDeliveryAtHotspotCount()
+	static int getDeliveryAtHotspotCount()
 	{
 		return DELIVERY_AT_HOTSPOT_COUNT;
 	}
 	//该函数应当在MA的路径更新时调用输出统计结果
 	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
-	static long int getDeliveryTotalCount()
+	static int getDeliveryTotalCount()
 	{
 		return DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT;
 	}
@@ -81,7 +84,7 @@ public:
 	{
 		OVERFLOW_COUNT++;
 	}
-	static long int getOverflowCount()
+	static int getOverflowCount()
 	{
 		return OVERFLOW_COUNT;
 	}
@@ -89,10 +92,6 @@ public:
 	inline void setNode(int node)
 	{
 		this->node = node;
-	}
-	inline long int getID()
-	{
-		return ID;
 	}
 	inline int getTimeBirth()
 	{
@@ -106,21 +105,13 @@ public:
 	{
 		return node;
 	}
-	inline bool getFlag()
-	{
-		return flag;
-	}
-	inline void setFlag(bool flag)
-	{
-		this->flag = flag;
-	}
 
 	//统计数据
-	static long int getDataCount()
+	static int getDataCount()
 	{
 		return ID_COUNT;
 	}
-	static long int getDataArrivalCount()
+	static int getDataArrivalCount()
 	{
 		return ARRIVAL_COUNT;
 	}
@@ -131,7 +122,7 @@ public:
 		else
 			return (double)ARRIVAL_COUNT / (double)ID_COUNT;
 	}
-	static long double getAverageDelay()
+	static double getAverageDelay()
 	{
 		if(ARRIVAL_COUNT == 0)
 			return 0;

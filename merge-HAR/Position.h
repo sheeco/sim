@@ -1,17 +1,21 @@
 #pragma once
 
-#include "Base.h"
+#include "BasicEntity.h"
+#include "GeoEntity.h"
 
 extern double CO_POSITION_DECAY;
 
+using namespace std;
+
 //存储单个节点移动位置的类
-class CPosition: public CBase
+class CPosition : 
+	public CGeoEntity
 {
 private:
 	int node;  //所属节点ID
 	//bool isCovered;
 	double weight;
-	static long int ID_COUNT;
+	static int ID_COUNT;
 
 public:
 

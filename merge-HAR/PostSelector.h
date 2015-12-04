@@ -3,6 +3,7 @@
 #include "Hotspot.h"
 #include "Position.h"
 #include "Preprocessor.h"
+#include "Algorithm.h"
 
 using namespace std;
 
@@ -16,7 +17,8 @@ extern int g_old_nPositions;
 extern int g_old_nHotspots;
 extern string logInfo;
 
-class CPostSelector
+class CPostSelector : 
+	public CAlgorithm
 {
 private:
 	double maxRatio;

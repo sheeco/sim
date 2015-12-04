@@ -1,7 +1,7 @@
 #include "Hotspot.h"
 #include "Preprocessor.h"
 
-long int CHotspot::ID_COUNT = 0;
+int CHotspot::ID_COUNT = 0;
 int CHotspot::nHotspotCandidates = 0;
 vector<CHotspot *> CHotspot::hotspotCandidates;
 vector<CHotspot *> CHotspot::selectedHotspots;
@@ -115,7 +115,7 @@ string CHotspot::toString(bool withDetails)
 
 double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 {
-	double distance = CBase::getDistance(*oldHotspot, *newHotspot);
+	double distance = CBasicEntity::getDistance(*oldHotspot, *newHotspot);
 	double cos = ( distance / 2 ) / TRANS_RANGE;
 	double sin = sqrt( 1 - cos * cos );
 	double angle = acos(cos);
@@ -148,7 +148,7 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 			if( (*iOld)->getX() + 2 * TRANS_RANGE <= (*iNew)->getX() )
 				break;
 
-			if( CBase::getDistance(**iOld, **iNew) < 2 * TRANS_RANGE)
+			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * TRANS_RANGE)
 			{
 				sumArea += getOverlapArea(*iOld, *iNew);
 			}

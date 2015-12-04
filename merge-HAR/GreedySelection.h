@@ -1,5 +1,7 @@
 #pragma once
+
 #include "Preprocessor.h"
+#include "Algorithm.h"
 
 using namespace std;
 
@@ -7,11 +9,11 @@ extern bool DO_MERGE_HAR;
 extern double GAMA;
 extern int startTimeForHotspotSelection;
 
-
 extern string logInfo;
 
 //HAR中原始的贪婪hotspot选取方法的包装
-class CGreedySelection
+class CGreedySelection :
+	public CAlgorithm
 {
 private:
 	vector<CHotspot *> copy_hotspotCandidates;  //来自CHotspot::hotspotCandidates，贪婪选取过程中会修改hotspot的信息

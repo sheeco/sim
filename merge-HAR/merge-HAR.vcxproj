@@ -79,11 +79,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Base.h" />
+    <ClInclude Include="Algorithm.h" />
+    <ClInclude Include="BasicEntity.h" />
     <ClInclude Include="Data.h" />
+    <ClInclude Include="Entity.h" />
     <ClInclude Include="FileParser.h" />
     <ClInclude Include="GA.h" />
     <ClInclude Include="GASolution.h" />
+    <ClInclude Include="GeneralNode.h" />
+    <ClInclude Include="GeoEntity.h" />
     <ClInclude Include="GlobalParameters.h" />
     <ClInclude Include="GreedySelection.h" />
     <ClInclude Include="HAR.h" />
@@ -94,11 +98,13 @@
     <ClInclude Include="Position.h" />
     <ClInclude Include="PostSelector.h" />
     <ClInclude Include="Preprocessor.h" />
+    <ClInclude Include="Processor.h" />
+    <ClInclude Include="Protocol.h" />
     <ClInclude Include="Route.h" />
+    <ClInclude Include="RoutingProtocol.h" />
     <ClInclude Include="Sink.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Base.cpp" />
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="FileParser.cpp" />
     <ClCompile Include="GA.cpp" />

@@ -1,7 +1,7 @@
 #include "MANode.h"
 
 double CMANode::energyConsumption = 0;
-long int CMANode::ID_COUNT = 0;
+int CMANode::ID_COUNT = 0;
 int CMANode::encounter = 0;
 int CMANode::encounterAtHotspot = 0;
 int CMANode::encounterOnRoute = 0;
@@ -91,11 +91,11 @@ void CMANode::updateLocation(int time)
 	//路线过期，立即返回sink
 	if( route.isOverdue() )
 	{
-		double timeReachSink = CBase::getDistance( *(CBase *)this , *(CBase *)CSink::getSink() ) / SPEED_MANODE;
+		double timeReachSink = CBasicEntity::getDistance( *(CBasicEntity *)this , *(CBasicEntity *)CSink::getSink() ) / SPEED_MANODE;
 		//若time时刻不会到达sink
 		if( interval < timeReachSink )
 		{
-			CBase::moveTo( *(CBase *)this , *(CBase *)CSink::getSink() , interval, SPEED_MANODE);
+			CBasicEntity::moveTo( *(CBasicEntity *)this , *(CBasicEntity *)CSink::getSink() , interval, SPEED_MANODE);
 		}
 		//将到达sink
 		else
@@ -111,12 +111,12 @@ void CMANode::updateLocation(int time)
 	//在路线上正常移动
 	else
 	{
-		CBase *toPoint = route.getToPoint();
-		double timeReachToPoint = CBase::getDistance( *(CBase *)this , *toPoint ) / SPEED_MANODE;
+		CBasicEntity *toPoint = route.getToPoint();
+		double timeReachToPoint = CBasicEntity::getDistance( *(CBasicEntity *)this , *toPoint ) / SPEED_MANODE;
 		//若time时刻不会到达toPoint
 		if( interval < timeReachToPoint )
 		{
-			CBase::moveTo( *(CBase *)this , *toPoint , interval, SPEED_MANODE);
+			CBasicEntity::moveTo( *(CBasicEntity *)this , *toPoint , interval, SPEED_MANODE);
 		}
 		//将到达toPoint
 		else

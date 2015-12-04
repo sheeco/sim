@@ -1,5 +1,7 @@
 #pragma once
+
 #include "Hotspot.h"
+#include "Algorithm.h"
 
 extern int** g_coverMatrix;
 extern int* g_degreeForPositions;
@@ -9,7 +11,8 @@ extern int* g_degreeForHotspots;
 #define WORST_FITNESS 999999
 #define BEST_FITNESS 0
 
-class CGASolution
+class CGASolution : 
+	public CAlgorithm
 {
 private:
 	int* choices;  //0-1 array (1 for selected hotspots; 0 otherwise)

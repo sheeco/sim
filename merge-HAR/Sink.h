@@ -1,10 +1,13 @@
 #pragma once
-#include "base.h"
+
+#include "BasicEntity.h"
 #include "Data.h"
 #include "Route.h"
 
+using namespace std;
+
 class CSink :
-	public CBase
+	public CGeneralNode
 {
 //protected:
 //	int ID;  //Sink½ÚµãµÄ±àºÅ

@@ -5,7 +5,7 @@
 
 #Alpha            #Beta     #MinWaitingTime    ( #Lambda             #Lifetime )       ( #Merge        #Old              #Heat )
 
-#DeliveryRatio    #Delay    #HotspotCostAvg    ( #MergePercentAvg    #OldPercentAvg )    #MACostAvg    #SimilarityAvg    #AtHotspotPercent
+#DeliveryRatio    #Delay    #HotspotCostAvg    ( #MergePercentAvg    #OldPercentAvg )    #MACostAvg    #SimilarityAvg    #AtHotspotPercent    #Scheme
 
 
 
@@ -47,11 +47,31 @@ heat                          flat
 
 ### 源文件说明
 
+Entity.h & .cpp
+
+BasicEntity.h & .cpp
+
+GeoEntity.h & .cpp
+
+GeneralNode.h & .cpp
+
+Processor.h & .cpp
+
+Algorithm.h & .cpp
+
+Protocol.h & .cpp
+
+RoutingProtocol.h & .cpp
+
+============================
+
 README.txt
 
 GlobalParameters.h
 
 main.cpp
+
+============================
 
 Data.h & .cpp
 
@@ -73,11 +93,15 @@ FileParser.h & .cpp
 
 Preprocesor.h & .cpp
 
+============================
+
 GreedySelection.h & .cpp
 
 PostSelector.h & .cpp
 
 HAR.h & .cpp
+
+============================
 
 GASolution.h & .cpp
 
@@ -95,7 +119,7 @@ NodeRepair.h & .cpp
 
 
 
-### 此前的重要更改：
+### 此前的重要更改    [ 2.0.0 ]
 
 修正旧版本的热点选取、后续选取中的错误（int除法等）；
 
@@ -121,24 +145,24 @@ mHAR中由于所有选取ratio指数增长，在贪婪选取中可能出现posit
 
 
 
-## 2015-11-13
+## 2015-11-13    [ 2.0.1 ]
 
 加入最小等待时间(MIN_WAITING_TIME)，默认为0即不使用该修改，可以从命令行-min-wait赋值；
 
 delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析热点投递计数的集中程度，减少数据后期处理的工作量；
 
 
-## 2015-11-16
+## 2015-11-16    [ 2.0.2 ]
 
 规范化命令行参数输入的关键字，将动态节点数的选项也加入命令行参数；
 
 
-## 2015-11-20
+## 2015-11-20    [ 2.0.3 ]
 
 将node的ID改为自动生成，并随之修改节点数动态变化时的node是否存在的判定，添加函数 HAR::ifNodeExists(int id) 代替 id >= m_nodes.size() 的判定方法（暂未测试）；
 
 
-# 2015-11-24
+# 2015-11-24    [ 2.1.0 ]
 
 动态节点个数测试时，在下一次热点选取之前(HAR::ChangeNodeNumber())删除被抛弃节点的位置点信息（注意：节点个数变化周期应该为热点选取周期的倍数）；
 将所有的g_系列全局变量都改为相关类内的静态变量（GA等未采用的方法相关的变量未改动）；
@@ -148,7 +172,7 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 *针对热点的排序应该改成从大到小的；
 
 
-# 2015-11-25
+# 2015-11-25    [ 2.1.1 ]
 
 对mergesort对应的comparison类的名字进行规范化；
 按照投递计数降序输出热点cover的position数、node数和ratio到hotspot-rank.txt，用于统计和分析热点质量；
@@ -156,11 +180,15 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 *整理没有用到的函数定义，包括GA算法相关的全局变量；
 
 
-# 2015-11-27
-
+# 2015-11-27    [ 2.1.2 ]
 
 为每个position定于初始值为1的权值，增加CPreprocessor::DecayPositionsWithoutDeliveryCount，按照投递计数为0的热点对其position执行衰减，可使用命令行参数-learn选项开启，-decay设置指数型衰减系数；
 由于衰减后的position整体权值水平持续降低，后续选取过程中的固定alpha值将导致选取出的热点总数持续上升，在测试阶段暂时使用-max-hotspot来暂时稳定热点总数；
 增加MIN_POSITION_WEIGHT，权值衰减之后如果低于此值将被直接删除，使用命令行参数-min-weight赋值（默认值为1即不删除）（未测试）；
 修复CHotspot::calculateRatio中的int除法问题；
 修复CHotspot::waitingTimes忘记统计的问题；
+
+
+# 2015-12-04    [ 2.2.0 ]
+
+对整体的类结构做出了调整，类的继承结构规范化；

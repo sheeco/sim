@@ -81,7 +81,7 @@ void CGreedySelection::GreedySelect(int time)
 						continue;
 					if(fabs(hotspotsAboveAverage[i]->getX() - (*ipos)->getX()) > TRANS_RANGE)
 						continue;
-					if(CBase::getDistance(*hotspotsAboveAverage[i], **ipos) <= TRANS_RANGE)
+					if(CBasicEntity::getDistance(*hotspotsAboveAverage[i], **ipos) <= TRANS_RANGE)
 					{
 						hotspotsAboveAverage[i]->addPosition(*ipos);
 						(*ipos)->setFlag(true);
@@ -198,7 +198,7 @@ void CGreedySelection::mergeHotspots(int time)
 			if( (*iOld)->getX() + 2 * TRANS_RANGE <= (*iNew)->getX() )
 				break;
 			//try merge
-			if( CBase::getDistance(**iOld, **iNew) < 2 * TRANS_RANGE)
+			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * TRANS_RANGE)
 			{
 				//FIXE: time copied from old or new ?
 				CHotspot *merge = CPreprocessor::GenerateHotspotFromCoordinates( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 ,

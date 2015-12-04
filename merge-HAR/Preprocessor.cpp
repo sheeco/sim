@@ -361,7 +361,7 @@ CHotspot* CPreprocessor::GenerateHotspotFromPosition(CPosition *pos, int time)
 			//若水平距离已超出range，则可以直接停止搜索
 			if(fabs(result->getX() - CPosition::positions[i]->getX()) > TRANS_RANGE)
 				break;
-			if(CBase::getDistance(*result, *CPosition::positions[i]) <= TRANS_RANGE)
+			if(CBasicEntity::getDistance(*result, *CPosition::positions[i]) <= TRANS_RANGE)
 			{
 				result->addPosition(CPosition::positions[i]);
 				CPosition::positions[i]->setFlag(true);
@@ -375,7 +375,7 @@ CHotspot* CPreprocessor::GenerateHotspotFromPosition(CPosition *pos, int time)
 			//若水平距离已超出range，则可以直接停止搜索
 			if(fabs(CPosition::positions[i]->getX() - result->getX()) > TRANS_RANGE)
 				break;
-			if(CBase::getDistance(*result, *CPosition::positions[i]) <= TRANS_RANGE)
+			if(CBasicEntity::getDistance(*result, *CPosition::positions[i]) <= TRANS_RANGE)
 			{
 				result->addPosition(CPosition::positions[i]);
 				CPosition::positions[i]->setFlag(true);
@@ -418,7 +418,7 @@ CHotspot* CPreprocessor::GenerateHotspotFromCoordinates(double x, double y, int 
 			//若水平距离已超出range，则可以直接停止搜索
 			if( hotspot->getX() + TRANS_RANGE < CPosition::positions[i]->getX() )
 				break;
-			if(CBase::getDistance(*hotspot, *CPosition::positions[i]) <= TRANS_RANGE)
+			if(CBasicEntity::getDistance(*hotspot, *CPosition::positions[i]) <= TRANS_RANGE)
 			{
 				hotspot->addPosition(CPosition::positions[i]);
 				CPosition::positions[i]->setFlag(true);
@@ -745,8 +745,8 @@ void CPreprocessor::AdjustRemoteHotspots()
 			//若水平距离已超出2*range，则可以直接停止搜索
 			if(fabs((*ihotspot)->getX() - CPosition::positions[i]->getX()) > 2 * TRANS_RANGE)
 				break;
-			if(CBase::getDistance(**ihotspot, *CPosition::positions[i]) <=  2 * TRANS_RANGE
-				&& CBase::getDistance(**ihotspot, *CPosition::positions[i]) > max_distance)
+			if(CBasicEntity::getDistance(**ihotspot, *CPosition::positions[i]) <=  2 * TRANS_RANGE
+				&& CBasicEntity::getDistance(**ihotspot, *CPosition::positions[i]) > max_distance)
 			{
 				pos_max_distance = i;
 			}
@@ -756,8 +756,8 @@ void CPreprocessor::AdjustRemoteHotspots()
 			//若水平距离已超出2*range，则可以直接停止搜索
 			if(fabs((*ihotspot)->getX() - CPosition::positions[i]->getX()) > 2 * TRANS_RANGE)
 				break;
-			if(CBase::getDistance(**ihotspot, *CPosition::positions[i]) <=  2 * TRANS_RANGE
-				&& CBase::getDistance(**ihotspot, *CPosition::positions[i]) > max_distance)
+			if(CBasicEntity::getDistance(**ihotspot, *CPosition::positions[i]) <=  2 * TRANS_RANGE
+				&& CBasicEntity::getDistance(**ihotspot, *CPosition::positions[i]) > max_distance)
 			{
 				pos_max_distance = i;
 			}
@@ -787,7 +787,7 @@ void CPreprocessor::AdjustRemoteHotspots()
 				//若水平距离已超出range，则可以直接停止搜索
 				if(fabs((*ihotspot)->getX() - CPosition::positions[i]->getX()) > TRANS_RANGE)
 					break;
-				if(CBase::getDistance(**ihotspot, *CPosition::positions[i]) <= TRANS_RANGE)
+				if(CBasicEntity::getDistance(**ihotspot, *CPosition::positions[i]) <= TRANS_RANGE)
 				{
 					(*ihotspot)->addPosition(CPosition::positions[i]);
 					CPosition::positions[i]->setFlag(true);
@@ -801,7 +801,7 @@ void CPreprocessor::AdjustRemoteHotspots()
 				//若水平距离已超出range，则可以直接停止搜索
 				if(fabs(CPosition::positions[i]->getX() - (*ihotspot)->getX()) > TRANS_RANGE)
 					break;
-				if(CBase::getDistance(**ihotspot, *CPosition::positions[i]) <= TRANS_RANGE)
+				if(CBasicEntity::getDistance(**ihotspot, *CPosition::positions[i]) <= TRANS_RANGE)
 				{
 					(*ihotspot)->addPosition(CPosition::positions[i]);
 					CPosition::positions[i]->setFlag(true);

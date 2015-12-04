@@ -9,6 +9,7 @@
 #include "Route.h"
 #include "GreedySelection.h"
 #include "PostSelector.h"
+#include "RoutingProtocol.h"
 #include "NodeRepair.h"
 
 extern bool DO_IHAR;
@@ -36,7 +37,8 @@ extern double RATIO_OLD_HOTSPOT;
 extern string logInfo;
 extern ofstream debugInfo;
 
-class HAR
+class HAR : 
+	public CRoutingProtocol
 {
 private:
 	CSink* m_sink;

@@ -46,7 +46,7 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 
 double HAR::getWaitingTime(CHotspot *hotspot)
 {
-	long double result = 1;
+	double result = 1;
 	int count_trueHotspot = 0;
 	vector<int> coveredNodes = hotspot->getCoveredNodes();
 	//DBG:
@@ -227,17 +227,17 @@ void HAR::UpdateNodeLocations()
 
 void HAR::OptimizeRoute(CRoute &route)
 {
-	vector<CBase *> waypoints = route.getWayPoints();
-	CBase *current = route.getSink();
+	vector<CBasicEntity *> waypoints = route.getWayPoints();
+	CBasicEntity *current = route.getSink();
 	CRoute result(current);
 	waypoints.erase(waypoints.begin());
 	while(! waypoints.empty())
 	{
 		double min_distance = -1;
-		vector<CBase *>::iterator min_point;
-		for(vector<CBase *>::iterator ipoint = waypoints.begin(); ipoint != waypoints.end(); ipoint++)
+		vector<CBasicEntity *>::iterator min_point;
+		for(vector<CBasicEntity *>::iterator ipoint = waypoints.begin(); ipoint != waypoints.end(); ipoint++)
 		{
-			double distance = CBase::getDistance(**ipoint, *current);
+			double distance = CBasicEntity::getDistance(**ipoint, *current);
 			if( min_distance < 0 
 				|| distance < min_distance)
 			{
@@ -473,7 +473,7 @@ void HAR::SendData()
 		{
 			iMANode->updateLocation(currentTime);
 			//如果到达sink，投递MA的所有数据
-			if( CBase::getDistance( *iMANode, *m_sink) <= TRANS_RANGE )
+			if( CBasicEntity::getDistance( *iMANode, *m_sink) <= TRANS_RANGE )
 			{
 				if(iMANode->getBufferSize() > 0)
 				{
@@ -483,7 +483,7 @@ void HAR::SendData()
 				if( iMANode->routeIsOverdue() )
 				{
 					//保留过期路径，用于稍后统计旧热点的投递计数信息
-					vector<CBase *> overdueHotspots = iMANode->getRoute()->getWayPoints();
+					vector<CBasicEntity *> overdueHotspots = iMANode->getRoute()->getWayPoints();
 
 					//更新路线，取得新的热点集合
 					if( m_sink->hasMoreNewRoutes() )
@@ -524,7 +524,7 @@ void HAR::SendData()
 					}
 
 					//统计旧热点的投递计数信息
-					for(vector<CBase *>::iterator iHotspot = overdueHotspots.begin(); iHotspot != overdueHotspots.end(); iHotspot++)
+					for(vector<CBasicEntity *>::iterator iHotspot = overdueHotspots.begin(); iHotspot != overdueHotspots.end(); iHotspot++)
 					{
 						if( (*iHotspot)->getID() == SINK_ID )
 							continue;
@@ -604,7 +604,7 @@ void HAR::SendData()
 		{
 			if( (! BUFFER_OVERFLOW_ALLOWED) && iMANode->isFull() )
 				break;
-			if(CBase::getDistance( (CBase)*iMANode, (CBase)*inode ) > TRANS_RANGE)
+			if(CBasicEntity::getDistance( (CBasicEntity)*iMANode, (CBasicEntity)*inode ) > TRANS_RANGE)
 				continue;
 
 			//对于热点上和路径上分别统计相遇次数

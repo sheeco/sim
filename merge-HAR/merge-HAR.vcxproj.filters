@@ -27,9 +27,6 @@
     <ClInclude Include="Preprocessor.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Base.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Position.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -66,6 +63,30 @@
     <ClInclude Include="NodeRepair.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Algorithm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicEntity.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneralNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoEntity.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Processor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RoutingProtocol.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GASolution.cpp">
@@ -75,9 +96,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Preprocessor.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Base.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Position.cpp">

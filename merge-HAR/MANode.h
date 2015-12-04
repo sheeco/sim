@@ -3,9 +3,12 @@
 #include "Data.h"
 #include "Route.h"
 #include "Sink.h"
+#include "GeneralNode.h"
+
+using namespace std;
 
 class CMANode :
-	public CBase
+	public CGeneralNode
 {
 //protected:
 //	int ID;  //MA节点的编号
@@ -22,7 +25,7 @@ private:
 	int waitingTime;  //在当前位置的剩余waiting时间
 
 	static double energyConsumption;
-	static long int ID_COUNT;
+	static int ID_COUNT;
 
 	static int encounter;
 	static int encounterAtHotspot;

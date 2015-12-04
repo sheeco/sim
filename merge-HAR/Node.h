@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Base.h"
+#include "BasicEntity.h"
 #include "Data.h"
+#include "GeneralNode.h"
+
+using namespace std;
 
 class CNode :
-	public CBase
+	public CGeneralNode
 {
 //protected:
 //	int ID;  //node±àºÅ

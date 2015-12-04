@@ -1,12 +1,15 @@
 #pragma once
+
 #include "Preprocessor.h"
+#include "Algorithm.h"
 
 using namespace std;
 
 extern int NUM_NODE;
 extern double LAMBDA;
 
-class CNodeRepair
+class CNodeRepair : 
+	public CAlgorithm
 {
 private:
 	int time;

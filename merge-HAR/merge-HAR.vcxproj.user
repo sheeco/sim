@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>-mhar -comp -alpha 0.03 -beta 0.0025 heat 1 30 -merge 1.3 -old 0.9</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>merge-HAR -har -hotspot-similarity -alpha 0.03 -beta 0.0025 -min-wait 90</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

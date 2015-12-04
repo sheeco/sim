@@ -1,9 +1,13 @@
 #pragma once
 
 #include "GlobalParameters.h"
+#include "Entity.h"
+
+using namespace std;
 
 //包含位置坐标、时间戳、ID的基类
-class CBase
+class CBasicEntity : 
+	public CEntity
 {
 protected:
 	int ID;
@@ -13,7 +17,7 @@ protected:
 	bool flag;
 
 public:
-	CBase()
+	CBasicEntity()
 	{
 		ID = -1;
 		x = 0;
@@ -72,19 +76,19 @@ public:
 	//virtual CString toString()const{};
 
 	//操作符重载，基于x坐标比较大小，用于position或hotspot间的排序
-	inline int CBase::operator==(CBase it)  //FIXME:精度问题
+	inline int CBasicEntity::operator==(CBasicEntity it)  //FIXME:精度问题
 	{
 		return (this->x == it.getX());
 	}
-	inline int CBase::operator!=(CBase it)
+	inline int CBasicEntity::operator!=(CBasicEntity it)
 	{
 		return (this->x != it.getX());
 	}
-	inline int CBase::operator<(CBase it)
+	inline int CBasicEntity::operator<(CBasicEntity it)
 	{
 		return (this->x < it.getX());
 	}
-	inline int CBase::operator>(CBase it)
+	inline int CBasicEntity::operator>(CBasicEntity it)
 	{
 		return (this->x > it.getX());
 	}
@@ -98,7 +102,7 @@ public:
 	}
 
 	//返回两点间距离
-	inline static double getDistance(CBase m, CBase n)
+	inline static double getDistance(CBasicEntity m, CBasicEntity n)
 	{
 		double mx, my, nx, ny;
 		mx = m.getX();
@@ -109,7 +113,7 @@ public:
 	}
 
 	//由from向to方向移动，给定时间和速度
-	static void moveTo(CBase &from, CBase to, int time, double speed)
+	static void moveTo(CBasicEntity &from, CBasicEntity to, int time, double speed)
 	{
 		double fromX, fromY, toX, toY;
 		fromX = from.getX();

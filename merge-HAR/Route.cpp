@@ -9,14 +9,14 @@ void CRoute::updateLength()
 	}
 	length = 0;
 	for(int i = 0, j = 1; i < waypoints.size(); i++, j = (j + 1) % waypoints.size())
-		length += CBase::getDistance(*waypoints[i], *waypoints[j]);
+		length += CBasicEntity::getDistance(*waypoints[i], *waypoints[j]);
 	toPoint = 1;  //toPoint指向sink之后的第一个点
 }
 
 string CRoute::toString()
 {
 	stringstream str;
-	for(vector<CBase *>::iterator ipoint = waypoints.begin(); ipoint != waypoints.end(); ipoint++)
+	for(vector<CBasicEntity *>::iterator ipoint = waypoints.begin(); ipoint != waypoints.end(); ipoint++)
 		str << (*ipoint)->getID() << " - ";
 	str << (* waypoints.begin() )->getID() << TAB;
 	str << length / SPEED_MANODE << endl;

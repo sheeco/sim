@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Position.h"
+#include "GeoEntity.h"
 
 extern bool TEST_BALANCED_RATIO;
 extern bool TEST_LEARN;
@@ -10,8 +11,11 @@ extern double RATIO_MERGE_HOTSPOT;
 extern double RATIO_NEW_HOTSPOT;
 extern double RATIO_OLD_HOTSPOT;
 
+using namespace std;
+
 //存储hostspot信息的类
-class CHotspot: public CBase
+class CHotspot : 
+	public CGeoEntity
 {
 private:
 	
@@ -23,7 +27,7 @@ private:
 	vector<int> waitingTimes;  //存储该热点上的等待时间，连任的热点应对每一任期内的投递计数进行统计
 	double ratio;  //用于测试新的ratio计算方法，将在贪婪选取和后续选取过程中用到
 
-	static long int ID_COUNT;
+	static int ID_COUNT;
 
 	//merge-HAR
 	int candidateType;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点

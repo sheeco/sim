@@ -1,5 +1,7 @@
 #pragma once
+
 #include "GASolution.h"
+#include "Algorithm.h"
 
 /** GA相关参数 **/
 
@@ -17,7 +19,8 @@ extern int** g_coverMatrix;
 extern int* g_degreeForPositions;
 extern int* g_degreeForHotspots;
 
-class CGA
+class CGA : 
+	public CAlgorithm
 {
 private:
 	CGASolution BestSolution;
