@@ -3,36 +3,8 @@
 #include "Preprocessor.h"
 #include "PostSelector.h"
 #include "NodeRepair.h"
-#include "GA.h"
 #include "GreedySelection.h"
 #include "HAR.h"
-
-/************************************* GA **************************************/
-
-int POPULATION_SIZE = 100;
-int MAX_UNIMPROVED_NUM = 30;
-int MAX_SOLUTION_NUM = 5000;
-double PROB_CROSSOVER = 0.99;  //交叉概率
-double PROB_MUTATION = 1.0;  //变异概率
-
-int CO_MUTATION_FINAL = 10;
-int CO_MUTATION_CHILDREN = ROUND( MAX_SOLUTION_NUM / 3 );
-double CO_MUTATION_GRADIENT = 0.1;
-
-//其他g_系列变量已移动到相关类的静态变量，以下的变量除外
-
-//存储上一次更新Hotspot时的旧参数，用于内存释放
-int g_old_nPositions = 0;
-int g_old_nHotspots = 0;
-
-//cover矩阵和度数list，用于SCP
-//FIXME: 应该将GA中用到的矩阵和度数信息的生成与相关基本操作分离开
-int** g_coverMatrix = NULL;
-int* g_degreeForPositions = NULL;
-int* g_degreeForHotspots = NULL;
-
-//排除孤立的position以提高GA优化效率，降低复杂度（未采用）
-vector<CPosition *> g_tmpPositions;  //存放GA的preprocess过程中删除的position，在当前GA过程结束之后需要放回CPosition::positions中
 
 
 /************************************ IHAR ************************************/

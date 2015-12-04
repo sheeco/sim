@@ -53,9 +53,6 @@ using namespace std;
 #define CONSUMPTION_DATA_RECIEVE 0.5
 //#define PROB_DATA_FORWARD 1.0
 
-/********************************** GA ***********************************/
-#define DO_GA false
-
 
 /********************************* IHAR **********************************/
 //#define DO_IHAR false

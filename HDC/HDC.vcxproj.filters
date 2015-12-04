@@ -75,16 +75,10 @@
     <ClInclude Include="BasicEntity.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="GA.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GASolution.h">
+    <ClInclude Include="GeoEntity.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="NodeRepair.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="GeoEntity.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -128,12 +122,6 @@
     <ClCompile Include="Sink.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="GA.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="GASolution.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="NodeRepair.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -145,7 +133,6 @@
     <None Include="..\.gitignore">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="ClassDiagram2.cd" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\README.txt">

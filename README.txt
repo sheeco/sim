@@ -111,10 +111,6 @@ HAR.h & .cpp
 
 ============================
 
-GASolution.h & .cpp
-
-GA.h & .cpp
-
 NodeRepair.h & .cpp
 
 
@@ -185,7 +181,6 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 对mergesort对应的comparison类的名字进行规范化；
 按照投递计数降序输出热点cover的position数、node数和ratio到hotspot-rank.txt，用于统计和分析热点质量；
 按照任期统计等待时间的累积值，同样输出到hotspot-rank.txt文件；
-*整理没有用到的函数定义，包括GA算法相关的全局变量；
 
 
 # 2015-11-27    [ 2.1.2 ]
@@ -214,3 +209,4 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 # 2015-12-04    [2.2.1]
 
 更改工程名及工作路径名为HDC；
+整理删除未使用的函数定义，包括GA算法相关的全局变量和处理函数；

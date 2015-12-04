@@ -2,7 +2,6 @@
 
 #include "Hotspot.h"
 #include "FileParser.h"
-#include "GASolution.h"
 #include "Processor.h"
 
 using namespace std;
@@ -14,7 +13,6 @@ extern int NUM_NODE;
 extern int MAX_MEMORY_TIME;
 extern double MIN_POSITION_WEIGHT;
 
-extern int** g_coverMatrix;
 extern int* g_degreeForPositions;
 extern int* g_degreeForHotspots;
 extern vector<CPosition*> g_tmpPositions;
@@ -37,11 +35,6 @@ private:
 	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
 	static CHotspot* GenerateHotspotFromPosition(CPosition *pos, int time);
 
-	//从hotspot列表和position列表生成度数和cover矩阵信息
-	//BuildCandidateHotspots()和RemoveBadHotspots()中会被调用
-	static void GenerateDegrees();
-	static void GenerateCoverMatrix();
-
 public:
 	/** 辅助函数 **/
 	//在min到max的范围内生成size个不重复的随机数
@@ -62,9 +55,6 @@ public:
 	//CHotspot类静态拷贝按照( endTime - 900, endTime )期间的投递技术的降序排列
 	static vector<CHotspot> mergeByDeliveryCount(vector<CHotspot> &left, vector<CHotspot> &right, int endTime);
 	static vector<CHotspot> mergeSortByDeliveryCount(vector<CHotspot> &v, int endTime);
-	//GASolution类按照fitness排序
-	//static vector<CGASolution> merge(vector<CGASolution> &left, vector<CGASolution> &right, bool(*Comp)(CGASolution, CGASolution));
-	//static vector<CGASolution> mergeSort(vector<CGASolution> &v, bool(*Comp)(CGASolution, CGASolution));
 	//用于作为参数传入mergeSort函数的Comparison函数
 	static bool ascendByLocationX(CHotspot *left, CHotspot *right);
 	static bool ascendByRatio(CHotspot *left, CHotspot *right);
@@ -83,25 +73,12 @@ public:
 	//由main函数，在每个hotspot更新时隙上调用
 	static void BuildCandidateHotspots(int time);
 
-	static void UpdateDegrees();
-
 	/** Optional Functions，由main函数调用**/
 	/** 注意：都必须在调用BuildCandidateHotspots之后再调用 **/
-	
-	//为了减少计算量，在选取之前先删除一些太差的hotspot
-	//删除数目：n/2; sqrt(n); the worse half; all below average; ...
-	static void RemoveBadHotspots();
-
-	//IHAR:排除孤立的position以提高GA优化效率，降低复杂度（未采用）
-	static void RemoveIsolatePositions();
-	static void PutBackAllPositions();  //将之前移除的position全部放回，必须在PostSelector之前调用，和RemoveIsolatePositions匹配调用
 
 	//在每一次贪婪选择之前调用，将从CHotspot::oldSelectedHotspots中寻找投递计数为0的热点删除放入CHotspot::deletedHotspots
 	//并删除其对应的所有position放入CPosition::deletedPositions
 	static void DecayPositionsWithoutDeliveryCount();
-
-	//对于只含有一个position的hotspot，修正其中心，尽量包含更多的position
-	static void AdjustRemoteHotspots();
 
 	static void SaveHotspotsToFile(int time, vector<CHotspot *> hotspots);
 
