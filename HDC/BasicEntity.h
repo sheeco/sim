@@ -128,5 +128,12 @@ public:
 		from.setX(fromX +  time * speed * cos);
 		from.setY(fromY + time * speed * sin);
 	}
+
+	//重载操作符==用于根据ID判断identical
+	bool operator == (int id)
+	{
+		return this->ID == id;
+	}
+
 };
 

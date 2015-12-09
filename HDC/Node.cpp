@@ -1,5 +1,7 @@
 #include "Node.h"
 
+int CNode::BUFFER_CAPACITY = BUFFER_CAPACITY_NODE;
+int CNode::MAX_QUEUE_SIZE = 0;
 int CNode::ID_COUNT = 0;
 double CNode::energyConsumption = 0;
 vector<CNode> CNode::nodes;
@@ -15,12 +17,12 @@ void CNode::generateData(int time)
 	for(int i = 0; i < nData; i++)
 	{
 		CData data(ID, time);
-		if(buffer.size() > capacityBuffer)
+		if(buffer.size() > BUFFER_CAPACITY)
 		{
 			cout<<"Error: CNode::generateData() buffer overflown"<<endl;
 			_PAUSE;
 		}
-		else if(buffer.size() == capacityBuffer)
+		else if(buffer.size() == BUFFER_CAPACITY)
 		{
 			buffer.erase(buffer.begin());  //如果buffer已满，删除最早的一个Data
 			CData::overflow();

@@ -189,6 +189,24 @@ void RemoveFromList(vector<E> &des, vector<E> src, bool(*comp)(E, E))
 		RemoveFromList(des, *i, comp);
 }
 
+//FIXME: 使用二重mergesort优化复杂度
+template <class E>
+static vector<E> getItemsByID(vector<E> list, vector<int> ids)
+{
+	vector<E> result;
+	for(vector<int>::iterator id = ids.begin(); id != ids.end(); id++)
+	{
+		for(vector<E>::iterator item = list.begin(); item != list.end(); item++)
+		{
+			if( *item == *id )
+			{
+				result.push_back(*item);
+				break;
+			}
+		}
+	}
+	return result;
+}
 
 ////OLD: 以下辅助函数已已转移到CPreprocessor类中
 //vector<int> RandomIntList(int min, int max, int size)
