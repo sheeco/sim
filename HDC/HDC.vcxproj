@@ -82,13 +82,16 @@
     <ClInclude Include="Algorithm.h" />
     <ClInclude Include="Data.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="Epidemic.h" />
     <ClInclude Include="FileParser.h" />
     <ClInclude Include="GeneralNode.h" />
     <ClInclude Include="GeoEntity.h" />
     <ClInclude Include="GlobalParameters.h" />
     <ClInclude Include="GreedySelection.h" />
     <ClInclude Include="HAR.h" />
+    <ClInclude Include="HDC.h" />
     <ClInclude Include="Hotspot.h" />
+    <ClInclude Include="MACProtocol.h" />
     <ClInclude Include="MANode.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="BasicEntity.h" />
@@ -104,10 +107,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Data.cpp" />
+    <ClCompile Include="Epidemic.cpp" />
     <ClCompile Include="FileParser.cpp" />
     <ClCompile Include="GreedySelection.cpp" />
     <ClCompile Include="HAR.cpp" />
+    <ClCompile Include="HDC.cpp" />
     <ClCompile Include="Hotspot.cpp" />
+    <ClCompile Include="MACProtocol.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MANode.cpp" />
     <ClCompile Include="Node.cpp" />

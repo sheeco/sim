@@ -350,18 +350,18 @@ int main(int argc, char* argv[])
 		parameters.close();
 	}
 
-	HAR har;
+	//HAR har;
 
 	while(currentTime <= RUNTIME)
 	{
-		//IHAR: Node Number Test:
-		if( TEST_DYNAMIC_NUM_NODE )
-		{
-			if(currentTime % SLOT_CHANGE_NUM_NODE == 0 && currentTime > 0)
-			{
-				har.ChangeNodeNumber();
-			}
-		}
+		////IHAR: Node Number Test:
+		//if( TEST_DYNAMIC_NUM_NODE )
+		//{
+		//	if(currentTime % SLOT_CHANGE_NUM_NODE == 0 && currentTime > 0)
+		//	{
+		//		har.ChangeNodeNumber();
+		//	}
+		//}
 
 
 		/********************************* 地理信息收集 ***********************************/
@@ -384,39 +384,39 @@ int main(int argc, char* argv[])
 
 
 			/*********************************** 贪婪选取 **************************************/
-			har.HotspotSelection();
+			//har.HotspotSelection();
 			cout << "####  [ Hotspot ]  " << CHotspot::selectedHotspots.size() << endl;
 
 
 			/*********************************** 热点分类 *************************************/
-			har.HotspotClassification();
-			cout << "####  [ MA Node ]  " << har.getNClass() << endl;
+			//har.HotspotClassification();
+			//cout << "####  [ MA Node ]  " << har.getNClass() << endl;
 
 
 			/*********************************** 路径规划 *************************************/
-			har.MANodeRouteDesign();
+			//har.MANodeRouteDesign();
 		}
 
 		if(currentTime % SLOT_MOBILITYMODEL == 0)
 		{
 			cout << endl << "########  [ " << currentTime << " ]  NODE MOVEMENT" << endl;
-			har.UpdateNodeLocations();
+			//har.UpdateNodeLocations();
 		}
 
 		if(currentTime % SLOT_DATA_GENERATE == 0)
 		{
 			cout << endl << "########  [ " << currentTime << " ]  DATA GENERATION" << endl;
-			har.GenerateData();
+			//har.GenerateData();
 		}
 
 		if(currentTime % SLOT_DATA_SEND == 0)
 		{
 			cout << endl << "########  [ " << currentTime << " ]  DATA DELIVERY" << endl;
-			har.SendData();
+			//har.SendData();
 		}
 
 		if( currentTime >= startTimeForHotspotSelection )
-			har.PrintInfo();
+			//har.PrintInfo();
 
 		currentTime += TIMESLOT;
 	}

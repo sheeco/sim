@@ -49,6 +49,8 @@ using namespace std;
 
 //data
 #define RATE_DATA_GENERATE 0.01
+#define SIZE_DATA 400
+#define SIZE_CONTROL 10
 #define CONSUMPTION_DATA_SEND 1
 #define CONSUMPTION_DATA_RECIEVE 0.5
 //#define PROB_DATA_FORWARD 1.0

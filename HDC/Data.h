@@ -46,26 +46,7 @@ private:
 		this->ID = node * ID_MASK + ID_COUNT;
 		ID_COUNT++;
 	}
-	inline bool useHOP()
-	{
-		if( MAX_HOP > 0 && MAX_TTL > 0 )
-		{
-			cout << "Error @ CData::useHOP() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
-			_PAUSE;
-		}
-		else
-			return MAX_HOP > 0;
-	}
-	inline bool useTTL()
-	{
-		if( MAX_HOP > 0 && MAX_TTL > 0 )
-		{
-			cout << "Error @ CData::useTTL() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
-			_PAUSE;
-		}
-		else
-			return MAX_TTL > 0;	
-	}
+
 
 public:
 
@@ -140,6 +121,13 @@ public:
 		return node;
 	}
 
+	//重载比较操作符，用于mergeSort
+	bool operator <= (CData rt)
+	{
+		return this->timeBirth <= rt.getTimeBirth();
+	}
+
+	//实际上只更新TTL
 	inline void updateStatus(int currentTime)
 	{
 		if( useTTL() )
@@ -153,6 +141,7 @@ public:
 		ARRIVAL_COUNT++;
 		DELAY_SUM += timeArrival - timeBirth;
 	}
+
 	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
 	//注意：数据发送方应在发送之前检查剩余HOP大于1
 	inline void arriveAnotherNode(int currentTime)
@@ -163,15 +152,45 @@ public:
 			this->TTL -= ( currentTime - time );
 		this->time = currentTime;
 	}
-	//判断是否已经超过生存期
+
+	//判断是否已经超过生存期(TTL <= 0)，超出应丢弃
 	inline bool isOverdue()
 	{
 		if( useHOP() )
-			return HOP <= 0;
+			return false;
 		else
 			return TTL <= 0;
 	}
+	
+	//判断是否允许转发（HOP > 1），不允许则不放入SV中
+	inline bool allowForward()
+	{
+		if( useTTL() )
+			return true;
+		else
+			return HOP > 1;
+	}
 
+	static bool useHOP()
+	{
+		if( MAX_HOP > 0 && MAX_TTL > 0 )
+		{
+			cout << "Error @ CData::useHOP() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
+			_PAUSE;
+		}
+		else
+			return MAX_HOP > 0;
+	}
+	static bool useTTL()
+	{
+		if( MAX_HOP > 0 && MAX_TTL > 0 )
+		{
+			cout << "Error @ CData::useTTL() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
+			_PAUSE;
+		}
+		else
+			return MAX_TTL > 0;	
+	}
 	static int getNodeByMask(int id)
 	{
 		return id / ID_MASK;

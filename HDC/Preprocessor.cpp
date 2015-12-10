@@ -144,11 +144,12 @@ bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
 	return ( ( (CHotspot *) left)->calculateRatio() ) > ( ( (CHotspot *) right)->calculateRatio() );
 }
 
-vector<int> CPreprocessor::merge(vector<int> &left, vector<int> &right, bool(*Comp)(int, int))
+template <class E>
+vector<E> CPreprocessor::merge(vector<E> &left, vector<E> &right, bool(*Comp)(E, E))
 {
-	vector<int> result;
-	vector<int>::size_type li = 0;
-	vector<int>::size_type ri = 0;
+	vector<E> result;
+	vector<E>::size_type li = 0;
+	vector<E>::size_type ri = 0;
 	while(li < left.size()
 		&& ri < right.size())
 	{
@@ -164,16 +165,53 @@ vector<int> CPreprocessor::merge(vector<int> &left, vector<int> &right, bool(*Co
 	return result;
 }
 
-vector<int> CPreprocessor::mergeSort(vector<int> &v, bool(*Comp)(int, int))
+template <class E>
+vector<E> CPreprocessor::mergeSort(vector<E> &v, bool(*Comp)(E, E))
 {
 	if(v.size() == 0)
-		return vector<int>();
+		return vector<E>();
 	if(v.size() == 1)
-		return vector<int>(1, v[0]);
+		return vector<E>(1, v[0]);
 
-	vector<int>::iterator mid = v.begin() + v.size() / 2;
-	vector<int> left(v.begin(), mid);
-	vector<int> right(mid, v.end());
+	vector<E>::iterator mid = v.begin() + v.size() / 2;
+	vector<E> left(v.begin(), mid);
+	vector<E> right(mid, v.end());
+	left = mergeSort(left, Comp);
+	right = mergeSort(right, Comp);
+
+	return merge(left, right, Comp);
+}
+
+vector<CData> CPreprocessor::merge(vector<CData> &left, vector<CData> &right, bool(*Comp)(CData, CData))
+{
+	vector<CData> result;
+	vector<CData>::size_type li = 0;
+	vector<CData>::size_type ri = 0;
+	while(li < left.size()
+		&& ri < right.size())
+	{
+		if(! Comp(left[li], right[ri]) )
+			result.push_back(right[ri++]);
+		else
+			result.push_back(left[li++]);
+	}
+	while(li < left.size())
+		result.push_back(left[li++]);
+	while(ri < right.size())
+		result.push_back(right[ri++]);
+	return result;
+}
+
+vector<CData> CPreprocessor::mergeSort(vector<CData> &v, bool(*Comp)(CData, CData))
+{
+	if(v.size() == 0)
+		return vector<CData>();
+	if(v.size() == 1)
+		return vector<CData>(1, v[0]);
+
+	vector<CData>::iterator mid = v.begin() + v.size() / 2;
+	vector<CData> left(v.begin(), mid);
+	vector<CData> right(mid, v.end());
 	left = mergeSort(left, Comp);
 	right = mergeSort(right, Comp);
 

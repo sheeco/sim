@@ -45,8 +45,13 @@ public:
 	static void freePointerVector(vector<CHotspot *> &v);	
 	
 	//用于归并排序的函数
-	static vector<int> merge(vector<int> &left, vector<int> &right, bool(*Comp)(int, int));
-	static vector<int> mergeSort(vector<int> &v, bool(*Comp)(int, int));
+	template <class E>
+	static vector<E> merge(vector<E> &left, vector<E> &right, bool(*Comp)(E, E));
+	template <class E>
+	static vector<E> mergeSort(vector<E> &v, bool(*Comp)(E, E));
+	//CData按照时间排序
+	static vector<CData> merge(vector<CData> &left, vector<CData> &right, bool(*Comp)(CData, CData));
+	static vector<CData> mergeSort(vector<CData> &v, bool(*Comp)(CData, CData));
 	//CPosition类只能按照x坐标排序，CHotspot类可以按照x坐标或者cover数排序
 	static vector<CPosition *> merge(vector<CPosition *> &left, vector<CPosition *> &right);
 	static vector<CPosition *> mergeSort(vector<CPosition *> &v);
@@ -58,7 +63,9 @@ public:
 	//用于作为参数传入mergeSort函数的Comparison函数
 	static bool ascendByLocationX(CHotspot *left, CHotspot *right);
 	static bool ascendByRatio(CHotspot *left, CHotspot *right);
-	static bool descendByInt(int left, int right){	return left > right;	};
+	static bool descend(int left, int right){	return left > right;	};
+	static bool ascendByInt(int left, int right){	return left < right;	};
+	static bool ascendByData(CData left, CData right){	return left < right;	};
 
 	/** 预处理操作函数 **/
 	//从文件中读取所有节点的当前位置，加入position列表（append）

@@ -1,5 +1,5 @@
 #include "Data.h"
-#include "MANode.h"
+#include "Node.h"
 
 int CData::ID_MASK = 10000000;
 int CData::ID_COUNT = 0;
@@ -20,5 +20,5 @@ double CData::getAverageEnergyConsumption()
 	if(ARRIVAL_COUNT == 0)
 		return 0;
 	else
-		return CNode::getEnergyConsumption() / ARRIVAL_COUNT;
+		return CNode::getSumEnergyConsumption() / ARRIVAL_COUNT;
 }

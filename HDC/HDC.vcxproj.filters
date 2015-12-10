@@ -81,6 +81,15 @@
     <ClInclude Include="NodeRepair.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Epidemic.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MACProtocol.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HDC.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Preprocessor.cpp">
@@ -123,6 +132,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="NodeRepair.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Epidemic.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MACProtocol.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="HDC.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

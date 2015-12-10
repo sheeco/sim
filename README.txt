@@ -210,3 +210,16 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 
 更改工程名及工作路径名为HDC；
 整理删除未使用的函数定义，包括GA算法相关的全局变量和处理函数；
+
+
+# 2015-12-09
+
+修改CData和CNode类以适应Epidemic路由，其中HOP或TTL的选项通过赋给相应的最大值标明，在CData类的各种操作中可以自动判断；
+
+
+# 2015-12-10
+
+继续修改CData和CNode类，CNode类中原来是针对全部Node统一统计能耗的，现在改为对于每个节点单独统计能耗，全局的Node能耗使用SUM_ENERGY_CONSUMPTION统计，但尚未添加相关操作；
+在原来的能耗统计相关宏中添加SIZE_DATA/CONTROL，用于指示单个数据包和控制包的大小；
+增加CHDC类、Epidemic类和CMacProtocol基类，原HAR类中有关热点选择的函数暂时放入CHDC类，有关路由的类暂时放入Epidemic类，其成员属性和函数仍待修改；
+*CNode类中关于Duty Cycle和工作状态的操作尚未添加；
