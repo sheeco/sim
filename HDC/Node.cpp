@@ -5,18 +5,20 @@ int CNode::ID_COUNT = 0;
 int CNode::BUFFER_CAPACITY = BUFFER_CAPACITY_NODE;
 int CNode::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
 int CNode::SPOKEN_MEMORY = 0;
-int CNode::STATE_WORK = 1;
-int CNode::STATE_REST = 0;
+double CNode::DEFAULT_DUTY_CYCLE = 0;
+double CNode::HOTSPOT_DUTY_CYCLE = 0; 
+int CNode::SLOT_TOTAL = 0;
+//int CNode::STATE_WORK = 1;
+//int CNode::STATE_REST = 0;
 double CNode::SUM_ENERGY_CONSUMPTION = 0;
-vector<CNode> CNode::nodes;
+vector<CNode*> CNode::nodes;
 vector<int> CNode::idNodes;
-
-CNode::~CNode(void)
-{
-}
 
 void CNode::dropDataIfOverflow(int currentTime)
 {
+	if( buffer.empty() )
+		return;
+
 	vector<CData> myData;
 	vector<CData> otherData;
 	for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); idata++)
@@ -40,27 +42,14 @@ void CNode::dropDataIfOverflow(int currentTime)
 	buffer = myData;
 }
 
+bool CNode::updateStatus(int currentTime)
+{
+	int timeIncre = currentTime - time;
+	state = ( state + SLOT_SLEEP + timeIncre ) % SLOT_TOTAL - SLOT_SLEEP;
 
-//vector<CData> CNode::sendData(int num)
-//{
-//	if( buffer.empty() )
-//	{
-//		vector<CData> data;
-//		return data;
-//	}
-//	//FIFO
-//	if(num > buffer.size())
-//		num = buffer.size();
-//	vector<CData>::iterator begin = buffer.begin();
-//	vector<CData> data(begin, begin + num);
-//	buffer.erase(begin, begin + num);
-//	//Consume Energy
-//	energyConsumption += num * (CONSUMPTION_DATA_SEND * 3 + CONSUMPTION_DATA_RECIEVE * 4);
-//	return data;
-//}
+	double x = 0, y = 0;
+	CFileParser::getPositionFromFile(ID, currentTime, x, y);
+	moveTo(x, y, currentTime);
 
-//void CNode::failSendData()
-//{
-//	energyConsumption += buffer.size() * (CONSUMPTION_DATA_SEND * 3 + CONSUMPTION_DATA_RECIEVE * 4);
-//}
-
+	return state >= 0;
+}

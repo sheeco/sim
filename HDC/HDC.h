@@ -15,14 +15,12 @@ using namespace std;
 extern bool DO_IHAR;
 extern bool TEST_HOTSPOT_SIMILARITY;
 
-extern int currentTime;
 extern int startTimeForHotspotSelection;
 extern double CO_HOTSPOT_HEAT_A1;
 extern double CO_HOTSPOT_HEAT_A2;
 extern double BETA;
 extern int MAX_MEMORY_TIME;
 extern int NUM_NODE;
-extern double PROB_DATA_FORWARD;
 extern int DATATIME;
 extern int RUNTIME;
 
@@ -38,8 +36,6 @@ class CHDC :
 {
 private:
 
-	vector<CHotspot *> m_hotspots;
-
 	//用于计算最终取出的热点总数的历史平均值
 	static int HOTSPOT_COST_SUM;
 	static int HOTSPOT_COST_COUNT;
@@ -52,19 +48,32 @@ private:
 	static double SIMILARITY_RATIO_SUM;
 	static int SIMILARITY_RATIO_COUNT;
 
+	////更新所有node的位置（而不是position）
+	//void UpdateNodeLocations();
+	//执行热点选取
+	static void HotspotSelection(int currentTime);
+	//比较此次热点选取的结果与上一次选取结果之间的相似度
+	static void CompareWithOldHotspots(int currentTime);
+	//打印相关信息到文件
+	static void PrintInfo(int currentTime);
+
 
 public:
+
 	CHDC(void);
 	~CHDC(void);
 
-	//更新所有node的位置（而不是position）
-	void UpdateNodeLocations();
-	//执行热点选取
-	void HotspotSelection();
-	//比较此次热点选取的结果与上一次选取结果之间的相似度
-	void CompareWithOldHotspots();
-	//打印相关信息到文件
-	void PrintInfo();
+	//检查所有Node，如果位于热点区域，更新占空比
+	static void UpdateDutyCycleForNodes(int currentTime);
+
+	static void Operate(int currentTime)
+	{
+		if( currentTime % SLOT_HOTSPOT_UPDATE )
+			HotspotSelection(currentTime);
+
+		if( currentTime >= startTimeForHotspotSelection && currentTime % SLOT_RECORD_INFO )
+			PrintInfo(currentTime);
+	}
 
 };
 

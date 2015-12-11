@@ -34,8 +34,6 @@ private:
 	static double DELAY_SUM;  //时延加和，用于计算平均时延
 	//static int OVERFLOW_COUNT;  //因节点Buffer溢出被丢弃的数据计数
 
-
-	//(注意：由于这两个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途)
 	//static int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
 	//static int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
 
@@ -122,9 +120,20 @@ public:
 	}
 
 	//重载比较操作符，用于mergeSort
-	bool operator <= (CData rt)
+	bool operator < (CData rt)
 	{
-		return this->timeBirth <= rt.getTimeBirth();
+		return this->timeBirth < rt.getTimeBirth();
+	}
+
+	//重载比较操作符，用于去重
+	bool operator == (CData rt)
+	{
+		return this->ID == rt.getID();
+	}
+
+	bool operator == (int id)
+	{
+		return this->ID == id;
 	}
 
 	//实际上只更新TTL

@@ -90,12 +90,12 @@ void CPreprocessor::CollectNewPositions(int time)
 	CPosition* tmp_pos = NULL;
 
 	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到CPosition::positions中
-	for(vector<int>::iterator i = CNode::idNodes.begin(); i != CNode::idNodes.end(); i++)
+	for(vector<int>::iterator i = CNode::getIdNodes().begin(); i != CNode::getIdNodes().end(); i++)
 	{
 		tmp_pos = new CPosition();
 		double x = 0, y = 0;
 		CFileParser::getPositionFromFile(*i, time, x, y);
-		tmp_pos->setLocation(x, y, time);
+		tmp_pos->moveTo(x, y, time);
 		tmp_pos->setNode( *i );
 		tmp_pos->generateID();
 		if(tmp_pos->getID() == -1)
@@ -248,6 +248,42 @@ vector<CPosition *> CPreprocessor::mergeSort(vector<CPosition *> &v)
 	vector<CPosition *>::iterator mid = v.begin() + v.size() / 2;
 	vector<CPosition *> left(v.begin(), mid);
 	vector<CPosition *> right(mid, v.end());
+	left = mergeSort(left);
+	right = mergeSort(right);
+
+	return merge(left, right);
+}
+
+vector<CNode *> CPreprocessor::merge(vector<CNode *> &left, vector<CNode *> &right)
+{
+	vector<CNode *> result;
+	vector<CNode *>::size_type li = 0;
+	vector<CNode *>::size_type ri = 0;
+	while(li < left.size()
+		&& ri < right.size())
+	{
+		if(*left[li] > *right[ri])
+			result.push_back(right[ri++]);
+		else
+			result.push_back(left[li++]);
+	}
+	while(li < left.size())
+		result.push_back(left[li++]);
+	while(ri < right.size())
+		result.push_back(right[ri++]);
+	return result;
+}
+
+vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> &v)
+{
+	if(v.size() == 0)
+		return vector<CNode *>();
+	if(v.size() == 1)
+		return vector<CNode *>(1, v[0]);
+
+	vector<CNode *>::iterator mid = v.begin() + v.size() / 2;
+	vector<CNode *> left(v.begin(), mid);
+	vector<CNode *> right(mid, v.end());
 	left = mergeSort(left);
 	right = mergeSort(right);
 

@@ -38,7 +38,7 @@ using namespace std;
 
 //time
 
-#define TIMESLOT 10	//time slot
+#define SLOT 10	//time slot
 #define SLOT_MOBILITYMODEL 30  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
 #define SLOT_LOCATION_UPDATE 100	//地理信息收集的slot
 #define SLOT_HOTSPOT_UPDATE 900	//更新热点和分类的slot

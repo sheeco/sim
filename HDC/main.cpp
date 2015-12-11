@@ -4,7 +4,7 @@
 #include "PostSelector.h"
 #include "NodeRepair.h"
 #include "GreedySelection.h"
-#include "HAR.h"
+#include "Epidemic.h"
 
 
 /************************************ IHAR ************************************/
@@ -290,21 +290,6 @@ int main(int argc, char* argv[])
 
 			debugInfo << RATIO_MERGE_HOTSPOT << TAB << RATIO_OLD_HOTSPOT << TAB ;
 
-			if( HEAT_RATIO_EXP )
-			{
-				parameters << "HEAT_RATIO" << TAB << "EXP" << endl << endl;
-				debugInfo << "EXP" << TAB ;
-			}
-			else if( HEAT_RATIO_LN )
-			{
-				parameters << "HEAT_RATIO" << TAB << "LN" << endl << endl;
-				debugInfo << "LN" << TAB ;
-			}
-			else
-			{
-				parameters << "HEAT_RATIO" << TAB << "FLAT" << endl << endl;
-				debugInfo << "FLAT" << TAB ;
-			}
 		}
 		else
 		{
@@ -312,20 +297,6 @@ int main(int argc, char* argv[])
 			parameters << "#HAR" << endl << endl;
 		}
 
-		if(TEST_BALANCED_RATIO)
-		{
-			logInfo += "\t#TEST_BALANCED_RATIO";
-			parameters << endl;
-			parameters << "#TEST_BALANCED_RATIO" << endl;
-		}
-		if(TEST_LEARN)
-		{
-			logInfo += "\t#TEST_LEARN";
-			parameters << endl;
-			parameters << "#TEST_LEARN" << endl;
-			parameters << "DECAY" << TAB << CO_POSITION_DECAY << endl;
-			parameters << "MAX_NUM_HOTSPOT" << TAB << MAX_NUM_HOTSPOT << endl;
-		}
 		if(TEST_DYNAMIC_NUM_NODE)
 		{
 			logInfo += "\t#TEST_DYNAMIC_NODE_NUMBER";
@@ -418,7 +389,7 @@ int main(int argc, char* argv[])
 		if( currentTime >= startTimeForHotspotSelection )
 			//har.PrintInfo();
 
-		currentTime += TIMESLOT;
+		currentTime += SLOT;
 	}
 	debugInfo.close();
 }

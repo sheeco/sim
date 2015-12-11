@@ -7,6 +7,9 @@
 
 using namespace std;
 
+extern int NUM_NODE;
+extern double PROB_DATA_FORWARD;
+
 class CNode :
 	public CGeneralNode
 {
@@ -14,17 +17,17 @@ class CNode :
 //	int ID;  //node编号
 //	double x;  //node现在的x坐标
 //	double y;  //node现在的y坐标
-//	int time;  //更新node坐标的时间戳
+//	int time;  //更新node坐标及工作状态的时间戳
 //	bool flag;
 
 private:
 	double generationRate;
-	vector<CData> buffer;
-	double energyConsumption;
 	int queueSize;  //buffer中存储的非本节点产生的Data的计数，在每次updateStatus之后更新
 	vector<int> summaryVector;
 	map<CNode *, int> spokenCache;
 	double dutyCycle;
+	int SLOT_LISTEN;  //
+	int SLOT_SLEEP;
 	int state;
 
 
@@ -32,8 +35,11 @@ private:
 	int bufferSizeSum;
 	int bufferChangeCount;
 
-	static int STATE_WORK;
-	static int STATE_REST;
+	//static int STATE_WORK;
+	//static int STATE_REST;
+	static double DEFAULT_DUTY_CYCLE;  //
+	static double HOTSPOT_DUTY_CYCLE;  //
+	static int SLOT_TOTAL;
 	static int BUFFER_CAPACITY;
 	static int MAX_QUEUE_SIZE;  //同意存储的来自其他节点的data的最大总数，超过该数目将丢弃（是否在Request之前检查？）默认值等于buffer容量
 	static int SPOKEN_MEMORY;  //在这个时间内交换过数据的节点暂时不再交换数据
@@ -41,9 +47,34 @@ private:
 	static int ID_COUNT;
 	static double SUM_ENERGY_CONSUMPTION;
 
+	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
+	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
+
+
+	CNode(void)
+	{
+		bufferSizeSum = 0;
+		bufferChangeCount = 0;
+		dutyCycle = DEFAULT_DUTY_CYCLE;
+		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+		state = 0;
+	}
+
+	CNode(double generationRate, int capacityBuffer)
+	{
+		CNode();
+		this->generationRate = generationRate;
+		this->bufferCapacity = capacityBuffer;
+	}
+
+	~CNode(void){};
+
 	//将删除过期的消息（仅当使用TTL时）
 	void dropOverdueData(int currentTime)
 	{
+		if( buffer.empty() )
+			return;
 		if( CData::useHOP() )
 			return;
 
@@ -61,7 +92,7 @@ private:
 	//注意：必须在dropOverdueData之后调用
 	void dropDataIfOverflow(int currentTime);
 
-	//注意：需要在每次收到数据之后、生成新数据之后调用此函数
+	//注意：需要在每次收到数据之后、投递数据之后、生成新数据之后调用此函数
 	void updateBufferStatus(int currentTime)
 	{
 		dropOverdueData(currentTime);
@@ -89,67 +120,71 @@ private:
 		}
 	}
 
-	//注意：需要在每次向其他节点发送SV之前、向sink投递数据之前、收到数据之后、生成新数据之后调用此函数
-	//void updateStatus(int currentTime)
-	//{
-	//	updateBufferStatus(currentTime);
-	//	updateSummaryVector();
-	//}
 
 public:
 
-	static vector<CNode> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
-	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
-
-	CNode(void)
+	//注意：必须在调用getNodes之前调用此函数，初始化工作时隙和占空比
+	static void init(int slotTotal, double defaultDutyCycle, double hotspotDutyCycle)
 	{
-		generationRate = 0;
-		energyConsumption = 0;
+		SLOT_TOTAL = slotTotal;
+		DEFAULT_DUTY_CYCLE = defaultDutyCycle;
+		HOTSPOT_DUTY_CYCLE = hotspotDutyCycle;
 	}
 
-	CNode(double generationRate, int capacityBuffer)
+	static vector<CNode *> getNodes()
 	{
-		this->generationRate = generationRate;
-		energyConsumption = 0;
-		bufferSizeSum = 0;
-		bufferChangeCount = 0;
+		if( SLOT_TOTAL == 0 || DEFAULT_DUTY_CYCLE == 0 || HOTSPOT_DUTY_CYCLE == 0 )
+		{
+			cout << "Error @ CNode::getNodes() SLOT_TOTAL & DEFAULT_DUTY_CYCLE & HOTSOT_DUTY_CYCLE = 0" << endl;
+			_PAUSE;
+		}
+
+		if( nodes.empty() )
+		{
+			for(int i = 0; i < NUM_NODE; i++)
+			{
+				double generationRate = RATE_DATA_GENERATE;
+				if(i % 5 == 0)
+					generationRate *= 5;
+				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
+				node->generateID();
+				CNode::nodes.push_back(node);
+				CNode::idNodes.push_back( node->getID() );
+			}
+		}
+		return nodes;
 	}
 
-	~CNode(void);
+	static vector<int> getIdNodes()
+	{
+		if( nodes.empty() )
+		{
+			for(int i = 0; i < NUM_NODE; i++)
+			{
+				double generationRate = RATE_DATA_GENERATE;
+				if(i % 5 == 0)
+					generationRate *= 5;
+				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
+				node->generateID();
+				CNode::nodes.push_back(node);
+				CNode::idNodes.push_back( node->getID() );
+			}
+		}
+		return idNodes;
+	}
 
 	inline double getGenerationRate()
 	{
 		return generationRate;
 	}
-	inline double getEnergyConsumption()
-	{
-		return energyConsumption;
-	}
 	static double getSumEnergyConsumption()
 	{
 		return SUM_ENERGY_CONSUMPTION;
-	}
-	inline void setSinkID()
-	{
-		this->ID = SINK_ID;
 	}
 	inline void generateID()
 	{
 		this->ID = ID_COUNT;		
 		ID_COUNT++;
-	}
-	inline void moveTo(double x, double y)
-	{
-		this->x = x;
-		this->y = y;
-	}
-	inline bool hasData()
-	{
-		return ( ! buffer.empty() );
-	}
-	inline int getBufferSize()
-	{
-		return buffer.size();
 	}
 	inline double getAverageBufferSize()
 	{
@@ -157,6 +192,43 @@ public:
 			return 0;
 		else
 			return (double)bufferSizeSum / (double)bufferChangeCount;
+	}
+
+	void raiseDutyCycle()
+	{
+		if( this->dutyCycle == HOTSPOT_DUTY_CYCLE )
+			return;
+		
+		if( state < 0 )
+			state = 0;
+		dutyCycle = HOTSPOT_DUTY_CYCLE;
+		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+
+		if( state < -SLOT_LISTEN )
+			state = -SLOT_LISTEN;
+	}
+	
+	void resetDutyCycle()
+	{
+		if( this->dutyCycle == DEFAULT_DUTY_CYCLE )
+			return;
+		
+		dutyCycle = DEFAULT_DUTY_CYCLE;
+		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+		//完成本次监听之后再休眠
+		if( state > SLOT_LISTEN )
+			state = SLOT_LISTEN;
+	}
+
+	//更新坐标和工作状态，返回是否出于工作状态
+	bool updateStatus(int currentTime);
+
+	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus
+	bool isListening()
+	{
+		return state >= 0;
 	}
 
 	bool hasSpokenRecently(CNode* node, int currentTime)
@@ -175,6 +247,8 @@ public:
 		spokenCache.insert( pair<CNode*, int>(node, t) );
 	}
 
+	//FIXME: 如果不忽略传输延迟，则以下所有send和receive函数都必须加入传输延迟的计算
+
 	vector<int> sendSummaryVector()
 	{
 		updateSummaryVector();
@@ -184,13 +258,19 @@ public:
 
 	vector<int> receiveSummaryVector(vector<int> sv)
 	{
+		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
+			return vector<int>();
+
 		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_CONTROL;
 		return sv;	
 	}
 
 	//传入对方节点的SV，计算并返回请求传输的数据ID列表
-	vector<int> calculateRequestList(vector<int> sv)
+	vector<int> sendRequestList(vector<int> sv)
 	{
+		if( sv.empty() )
+			 return vector<int>();
+
 		RemoveFromList(sv, summaryVector);
 		//待测试
 		if( MAX_QUEUE_SIZE > 0  &&  sv.size() > MAX_QUEUE_SIZE )
@@ -206,38 +286,50 @@ public:
 			}
 			sv = vector<int>( sv.begin(), id );
 		}
-		return sv;
-	}
 
-	vector<int> sendRequestList(vector<int> req)
-	{
 		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
-		return req;
+		return sv;
 	}
 	
 	vector<int> receiveRequestList(vector<int> req)
 	{
+		if( req.empty() )
+			return vector<int>();
+		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
+			return vector<int>();
+
 		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_CONTROL;
 		return req;
 	}
 
 	vector<CData> sendData(vector<int> requestList)
 	{
+		if( requestList.empty() )
+			return vector<CData>();
+
 		vector<CData> result;
 		result = getItemsByID(buffer, requestList);
 		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * result.size();
 	}
-	void receiveData(vector<CData> datas, int time)
+
+	bool receiveData(vector<CData> datas, int currentTime)
 	{
+		if( datas.empty() )
+			return false;
+		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
+			return false;
+
 		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_DATA * datas.size();
 		for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); idata++)
-			idata->arriveAnotherNode(time);
+			idata->arriveAnotherNode(currentTime);
 		buffer.insert(buffer.begin(), datas.begin(), datas.end() );
-		updateBufferStatus(time);
+		updateBufferStatus(currentTime);
+		
+		return true;
 	}
 
 	//当且仅当遇到sink时调用
-	vector<CData> sendAllData()
+	vector<CData> deliverAllData()
 	{
 		vector<CData> data = buffer;
 		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
@@ -245,17 +337,18 @@ public:
 		return data;
 	}
 
-	void generateData(int time)
+	void generateData(int currentTime)
 	{
 		int nData = generationRate * SLOT_DATA_GENERATE;
 		for(int i = 0; i < nData; i++)
 		{
-			CData data(ID, time);
+			CData data(ID, currentTime);
 			buffer.push_back(data);
 		}
-		updateBufferStatus(time);
+		updateBufferStatus(currentTime);
 	}
 
+	//更新buffer状态记录，以便计算buffer status
 	void recordBufferStatus()
 	{
 		bufferSizeSum += buffer.size();
@@ -280,13 +373,6 @@ public:
 	//			return *inode;
 	//	}
 	//}
-
-	//vector<CData> sendData(int num);
-	
-	//void failSendData();
-
-	//更新buffer状态记录，以便计算buffer status
-
 
 };
 

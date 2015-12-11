@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CAlgorithm" Collapsed="true">
+    <Position X="3" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEAAAA=</HashCode>
+      <FileName>Algorithm.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CData" Collapsed="true">
+    <Position X="5.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AWQAEAgAMKAAxACQAAYEAQAAAAgAABIAAA0gIAAABoQ=</HashCode>
+      <FileName>Data.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CEntity" Collapsed="true">
+    <Position X="6.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entity.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Epidemic" Collapsed="true">
+    <Position X="10.75" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAIAAAAAAAEgAAAAAAAAAAAAAABAAgAAAAIA=</HashCode>
+      <FileName>Epidemic.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CFileParser" Collapsed="true">
+    <Position X="2.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>FileParser.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CGeneralNode" Collapsed="true">
+    <Position X="2" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAIgAAAAAIAIAAAAAAAAAAAAAAAAAAgBAAAAAAAg=</HashCode>
+      <FileName>GeneralNode.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CGeoEntity" Collapsed="true">
+    <Position X="8.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>GeoEntity.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CGreedySelection" Collapsed="true">
+    <Position X="3" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QQAAAAEEAgAACCAEAAAABAAAAACQAAAEAAAAAAIAABA=</HashCode>
+      <FileName>GreedySelection.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CHDC" Collapsed="true">
+    <Position X="8.5" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACCAQAACAAAAAACAQEAhgAAAAAAAAAEAAAQAAQAAQEA=</HashCode>
+      <FileName>HDC.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CHotspot" Collapsed="true">
+    <Position X="7.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>SkCAIMIQEKEAQAAABQQUDAAAEQAkAABECgRmCSAAJAA=</HashCode>
+      <FileName>Hotspot.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CMacProtocol" Collapsed="true">
+    <Position X="8.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=</HashCode>
+      <FileName>MACProtocol.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CNode" Collapsed="true">
+    <Position X="1" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AATggAREAiQEDAAACAyBAAAAgAiABEosMAQIgkIJICg=</HashCode>
+      <FileName>Node.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CBasicEntity" Collapsed="true">
+    <Position X="5.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEABAAAAAAAAwACAAKAGAQIAACAAAAAACABgAGkQCAA=</HashCode>
+      <FileName>BasicEntity.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CNodeRepair" Collapsed="true">
+    <Position X="5.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAABAgAAAAAAACEAAABAAAAAAAAAAAgAAAACAAAAAAE=</HashCode>
+      <FileName>NodeRepair.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CPosition" Collapsed="true">
+    <Position X="10" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAACCACAAiAAAQAIAAAAAgAABAgAAEAAAAAAAA=</HashCode>
+      <FileName>Position.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CPostSelector" Collapsed="true">
+    <Position X="0.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QBAAAAQQAAEAQABABAAACAIoAQAIAAAAIAAAAAAgAAA=</HashCode>
+      <FileName>PostSelector.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CPreprocessor" Collapsed="true">
+    <Position X="0.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AISAAAAAQAAAAAAICCAMAAAAICgAAACAAEEAAAAGIEA=</HashCode>
+      <FileName>Preprocessor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CProcessor" Collapsed="true">
+    <Position X="1.75" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Processor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CProtocol" Collapsed="true">
+    <Position X="9.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAQA=</HashCode>
+      <FileName>Protocol.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CRoute" Collapsed="true">
+    <Position X="12.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABEAQAQBIUAAAAFGAEBAAAAQICCQAAgAAAAAAAAAA=</HashCode>
+      <FileName>Route.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CRoutingProtocol" Collapsed="true">
+    <Position X="10.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>RoutingProtocol.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSink" Collapsed="true">
+    <Position X="3.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAAAAAAAAgAAAAAAAAAAQAAAAAIAAAI=</HashCode>
+      <FileName>Sink.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

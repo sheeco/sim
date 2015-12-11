@@ -223,3 +223,11 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 在原来的能耗统计相关宏中添加SIZE_DATA/CONTROL，用于指示单个数据包和控制包的大小；
 增加CHDC类、Epidemic类和CMacProtocol基类，原HAR类中有关热点选择的函数暂时放入CHDC类，有关路由的类暂时放入Epidemic类，其成员属性和函数仍待修改；
 *CNode类中关于Duty Cycle和工作状态的操作尚未添加；
+
+
+# 2015-12-11
+
+*MAC层协议同步/异步？
+*Sync时隙、Data时隙？
+*传输延迟？
+*控制信息传输的能耗？

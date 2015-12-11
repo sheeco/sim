@@ -47,7 +47,7 @@ void  CPostSelector::includeHotspots(CHotspot *hotspot)
 void CPostSelector::findLostNodes()
 {
 	this->lostNodes.clear();
-	for(vector<int>::iterator i = CNode::idNodes.begin(); i != CNode::idNodes.end(); i++)
+	for(vector<int>::iterator i = CNode::getIdNodes().begin(); i != CNode::getIdNodes().end(); i++)
 	{
 		if(! ifExists(this->coveredNodes, *i))
 			this->lostNodes.push_back( *i );

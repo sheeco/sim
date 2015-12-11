@@ -22,7 +22,7 @@ public:
 		ID = -1;
 		x = 0;
 		y = 0;
-		time = -1;
+		time = 0;
 		flag = false;
 	}
 
@@ -112,22 +112,29 @@ public:
 		return sqrt((mx - nx) * (mx - nx) + (my - ny) * (my - ny));
 	}
 
-	//由from向to方向移动，给定时间和速度
-	static void moveTo(CBasicEntity &from, CBasicEntity to, int time, double speed)
+	inline void moveTo(double x, double y, int t)
 	{
-		double fromX, fromY, toX, toY;
-		fromX = from.getX();
-		fromY = from.getY();
-		toX = to.getX();
-		toY = to.getY();
-
-		double sin, cos, distance;
-		distance = sqrt((fromX - toX) * (fromX - toX) + (fromY - toY) * (fromY - toY));
-		cos = (toX - fromX) / distance;
-		sin = (toY - fromY) / distance;
-		from.setX(fromX +  time * speed * cos);
-		from.setY(fromY + time * speed * sin);
+		this->x = x;
+		this->y = y;
+		this->time = t;
 	}
+
+	////由from向to方向移动，给定时间和速度
+	//static void moveTo(CBasicEntity &from, CBasicEntity to, int time, double speed)
+	//{
+	//	double fromX, fromY, toX, toY;
+	//	fromX = from.getX();
+	//	fromY = from.getY();
+	//	toX = to.getX();
+	//	toY = to.getY();
+
+	//	double sin, cos, distance;
+	//	distance = sqrt((fromX - toX) * (fromX - toX) + (fromY - toY) * (fromY - toY));
+	//	cos = (toX - fromX) / distance;
+	//	sin = (toY - fromY) / distance;
+	//	from.setX(fromX +  time * speed * cos);
+	//	from.setY(fromY + time * speed * sin);
+	//}
 
 	//重载操作符==用于根据ID判断identical
 	bool operator == (int id)
