@@ -1,20 +1,13 @@
 #pragma once
 
-#include "RoutingProtocol.h"
 #include "GlobalParameters.h"
-#include "FileParser.h"
-#include "Hotspot.h"
-#include "Node.h"
-#include "Sink.h"
-#include "GreedySelection.h"
-#include "PostSelector.h"
-#include "NodeRepair.h"
-#include "HDC.h"
+#include "RoutingProtocol.h"
 
 extern int NUM_NODE;
 extern double PROB_DATA_FORWARD;
 extern int DATATIME;
 extern int RUNTIME;
+extern bool DO_HDC;
 
 extern string logInfo;
 extern ofstream debugInfo;
@@ -36,6 +29,10 @@ private:
 
 
 public:
+
+	static int MAX_QUEUE_SIZE;  //同意存储的来自其他节点的data的最大总数，超过该数目将丢弃（是否在Request之前检查？）默认值等于buffer容量
+	static int SPOKEN_MEMORY;  //在这个时间内交换过数据的节点暂时不再交换数据
+
 	Epidemic(void)
 	{
 
@@ -43,20 +40,7 @@ public:
 
 	~Epidemic(void){};
 
-	static void Operate(int currentTime)
-	{
-		if( currentTime % SLOT_MOBILITYMODEL == 0 )
-			UpdateNodeStatus(currentTime);
-		
-		if( currentTime % SLOT_DATA_GENERATE == 0 )
-			GenerateData(currentTime);
-
-		if( currentTime % SLOT_DATA_SEND == 0 )
-			SendData(currentTime);
-
-		if( currentTime % SLOT_RECORD_INFO )
-			PrintInfo(currentTime);
-	}
+	static bool Operate(int currentTime);
 
 };
 

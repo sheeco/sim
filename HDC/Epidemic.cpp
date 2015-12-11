@@ -1,12 +1,25 @@
 #include "Epidemic.h"
+#include "Node.h"
+#include "FileParser.h"
+#include "Hotspot.h"
+#include "Sink.h"
+#include "GreedySelection.h"
+#include "PostSelector.h"
+#include "NodeRepair.h"
+#include "HDC.h"
+
+int Epidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
+int Epidemic::SPOKEN_MEMORY = 0;
 
 void Epidemic::UpdateNodeStatus(int currentTime)
 {
-	//调用下层协议HDC，判断是否位于热点区域，更新占空比
-	CHDC::UpdateDutyCycleForNodes(currentTime);
-
 	for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); inode++)
+	{
 		(*inode)->updateStatus(currentTime);
+	}
+	//调用下层协议HDC，判断是否位于热点区域，更新占空比
+	if( DO_HDC )
+		CHDC::UpdateDutyCycleForNodes(currentTime);
 }
 
 void Epidemic::GenerateData(int currentTime)
@@ -33,6 +46,7 @@ void Epidemic::SendData(int currentTime)
 		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
 		{
 			//deliver data to sink
+			cout << endl << "####  [ Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink ]" << endl;
 			CSink::getSink()->receiveData( (*inode)->deliverAllData(), currentTime );
 		}
 
@@ -79,7 +93,10 @@ void Epidemic::SendData(int currentTime)
 				{
 					smaller->addToSpokenCache(greater, currentTime);
 					greater->addToSpokenCache(smaller, currentTime);			
+					cout << endl << "####  [ Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communicating ]" << endl;
 				}
+				else
+					cout << endl << "####  [ Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communicating ]" << endl;
 			}
 
 
@@ -89,7 +106,9 @@ void Epidemic::SendData(int currentTime)
 
 	//更新所有节点的buffer状态记录
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+	{
 		(*inode)->recordBufferStatus();
+	}
 
 	cout << "####  [ Delivery Ratio ]  " << CData::getDataArrivalCount() / (double)CData::getDataCount() << endl;
 
@@ -209,4 +228,40 @@ void Epidemic::PrintInfo(int currentTime)
 		debugInfo << logInfo.replace(0, 1, "");
 	}
 
+}
+
+bool Epidemic::Operate(int currentTime)
+{
+	////Node Number Test:
+	//if( TEST_DYNAMIC_NUM_NODE )
+	//{
+	//	if(currentTime % SLOT_CHANGE_NUM_NODE == 0 && currentTime > 0)
+	//	{
+	//		ChangeNodeNumber();
+	//	}
+	//}
+
+	if( ! CNode::hasNodes(currentTime) )
+		return false;
+
+	if( currentTime % SLOT_MOBILITYMODEL == 0 )
+	{
+		cout << endl << "########  [ " << currentTime << " ]  NODE LOCATION UPDATE" << endl;
+		UpdateNodeStatus(currentTime);
+	}
+
+	if( currentTime % SLOT_DATA_GENERATE == 0 )
+	{
+		cout << endl << "########  [ " << currentTime << " ]  DATA GENERATION" << endl;
+		GenerateData(currentTime);
+	}
+
+	if( currentTime % SLOT_DATA_SEND == 0 )
+	{
+		cout << endl << "########  [ " << currentTime << " ]  DATA DELIVERY" << endl;
+		SendData(currentTime);
+	}
+
+	if( currentTime % SLOT_RECORD_INFO == 0 )
+		PrintInfo(currentTime);
 }

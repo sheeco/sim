@@ -4,6 +4,7 @@
 #include "GeneralNode.h"
 #include "Data.h"
 #include <map>
+#include "Epidemic.h"
 
 using namespace std;
 
@@ -21,34 +22,28 @@ class CNode :
 //	bool flag;
 
 private:
+
 	double generationRate;
 	int queueSize;  //buffer中存储的非本节点产生的Data的计数，在每次updateStatus之后更新
 	vector<int> summaryVector;
 	map<CNode *, int> spokenCache;
 	double dutyCycle;
-	int SLOT_LISTEN;  //
-	int SLOT_SLEEP;
-	int state;
+	int SLOT_LISTEN;  //由SLOT_TOTAL和DC计算得到
+	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
+	int state;  //取值范围在[ - SLOT_TOTAL, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
+	int timeDeath;  //节点失效时间，默认值为-1
 
 
 	//用于统计输出节点的buffer状态信息
 	int bufferSizeSum;
 	int bufferChangeCount;
 
-	//static int STATE_WORK;
-	//static int STATE_REST;
-	static double DEFAULT_DUTY_CYCLE;  //
-	static double HOTSPOT_DUTY_CYCLE;  //
-	static int SLOT_TOTAL;
-	static int BUFFER_CAPACITY;
-	static int MAX_QUEUE_SIZE;  //同意存储的来自其他节点的data的最大总数，超过该数目将丢弃（是否在Request之前检查？）默认值等于buffer容量
-	static int SPOKEN_MEMORY;  //在这个时间内交换过数据的节点暂时不再交换数据
-
 	static int ID_COUNT;
 	static double SUM_ENERGY_CONSUMPTION;
 
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
 	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
+	static vector<CNode *> deadNodes;  //能量耗尽的节点
 
 
 	CNode(void)
@@ -59,6 +54,7 @@ private:
 		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
 		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
 		state = 0;
+		timeDeath = -1;
 	}
 
 	CNode(double generationRate, int capacityBuffer)
@@ -66,9 +62,23 @@ private:
 		CNode();
 		this->generationRate = generationRate;
 		this->bufferCapacity = capacityBuffer;
+		if( ENERGY > 1 )
+			this->energy = ENERGY;
 	}
 
 	~CNode(void){};
+
+
+	//不设置能量值时，始终返回true
+	bool isAlive()
+	{
+		if( energy == 0 )
+			return true;
+		else if( energy - energyConsumption <= 0 )
+			return false;
+		else
+			return true;
+	}
 
 	//将删除过期的消息（仅当使用TTL时）
 	void dropOverdueData(int currentTime)
@@ -123,13 +133,37 @@ private:
 
 public:
 
-	//注意：必须在调用getNodes之前调用此函数，初始化工作时隙和占空比
-	static void init(int slotTotal, double defaultDutyCycle, double hotspotDutyCycle)
+	static double DEFAULT_DUTY_CYCLE;  //
+	static double HOTSPOT_DUTY_CYCLE;  //
+	static int SLOT_TOTAL;
+	static int BUFFER_CAPACITY;
+	static double ENERGY;
+
+	inline double getGenerationRate()
 	{
-		SLOT_TOTAL = slotTotal;
-		DEFAULT_DUTY_CYCLE = defaultDutyCycle;
-		HOTSPOT_DUTY_CYCLE = hotspotDutyCycle;
+		return generationRate;
 	}
+	static double getSumEnergyConsumption()
+	{
+		return SUM_ENERGY_CONSUMPTION;
+	}
+	inline void generateID()
+	{
+		this->ID = ID_COUNT;		
+		ID_COUNT++;
+	}
+	inline void die(int currentTime)
+	{
+		this->timeDeath = currentTime;
+	}
+	inline double getAverageBufferSize()
+	{
+		if(bufferSizeSum == 0)
+			return 0;
+		else
+			return (double)bufferSizeSum / (double)bufferChangeCount;
+	}
+
 
 	static vector<CNode *> getNodes()
 	{
@@ -157,41 +191,29 @@ public:
 
 	static vector<int> getIdNodes()
 	{
-		if( nodes.empty() )
-		{
-			for(int i = 0; i < NUM_NODE; i++)
-			{
-				double generationRate = RATE_DATA_GENERATE;
-				if(i % 5 == 0)
-					generationRate *= 5;
-				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
-				node->generateID();
-				CNode::nodes.push_back(node);
-				CNode::idNodes.push_back( node->getID() );
-			}
-		}
+		getNodes();
 		return idNodes;
 	}
 
-	inline double getGenerationRate()
+	static bool hasNodes(int currentTime)
 	{
-		return generationRate;
-	}
-	static double getSumEnergyConsumption()
-	{
-		return SUM_ENERGY_CONSUMPTION;
-	}
-	inline void generateID()
-	{
-		this->ID = ID_COUNT;		
-		ID_COUNT++;
-	}
-	inline double getAverageBufferSize()
-	{
-		if(bufferSizeSum == 0)
-			return 0;
-		else
-			return (double)bufferSizeSum / (double)bufferChangeCount;
+		idNodes.clear();
+		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
+		{
+			if( (*inode)->isAlive() )
+			{
+				(*inode)->die( currentTime );
+				idNodes.push_back( (*inode)->getID() );
+				inode++;
+			}
+			else
+			{
+				deadNodes.push_back( *inode );
+				inode = nodes.erase( inode );
+			}
+		}
+
+		return ( ! nodes.empty() );
 	}
 
 	void raiseDutyCycle()
@@ -231,12 +253,13 @@ public:
 		return state >= 0;
 	}
 
+
 	bool hasSpokenRecently(CNode* node, int currentTime)
 	{
 		map<CNode *, int>::iterator icache = spokenCache.find( node );
 		if( icache == spokenCache.end() )
 			return false;
-		else if( ( currentTime - icache->second ) < SPOKEN_MEMORY )
+		else if( ( currentTime - icache->second ) < Epidemic::SPOKEN_MEMORY )
 			return true;
 		else
 			return false;
@@ -253,6 +276,7 @@ public:
 	{
 		updateSummaryVector();
 		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
 		return summaryVector;
 	}
 
@@ -262,6 +286,7 @@ public:
 			return vector<int>();
 
 		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_CONTROL;
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
 		return sv;	
 	}
 
@@ -273,10 +298,10 @@ public:
 
 		RemoveFromList(sv, summaryVector);
 		//待测试
-		if( MAX_QUEUE_SIZE > 0  &&  sv.size() > MAX_QUEUE_SIZE )
+		if( Epidemic::MAX_QUEUE_SIZE > 0  &&  sv.size() > Epidemic::MAX_QUEUE_SIZE )
 		{
 			vector<int>::iterator id = sv.begin();
-			for(int count = 0; id != sv.end() &&  count < MAX_QUEUE_SIZE ; )
+			for(int count = 0; id != sv.end() &&  count < Epidemic::MAX_QUEUE_SIZE ; )
 			{
 				if( CData::getNodeByMask( *id ) != this->ID )
 				{
@@ -288,6 +313,7 @@ public:
 		}
 
 		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
 		return sv;
 	}
 	
@@ -299,6 +325,7 @@ public:
 			return vector<int>();
 
 		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_CONTROL;
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
 		return req;
 	}
 
@@ -310,6 +337,7 @@ public:
 		vector<CData> result;
 		result = getItemsByID(buffer, requestList);
 		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * result.size();
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * result.size();
 	}
 
 	bool receiveData(vector<CData> datas, int currentTime)
@@ -320,6 +348,7 @@ public:
 			return false;
 
 		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_DATA * datas.size();
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * datas.size();
 		for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); idata++)
 			idata->arriveAnotherNode(currentTime);
 		buffer.insert(buffer.begin(), datas.begin(), datas.end() );
@@ -333,6 +362,7 @@ public:
 	{
 		vector<CData> data = buffer;
 		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
 		buffer.clear();
 		return data;
 	}

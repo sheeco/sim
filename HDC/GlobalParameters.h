@@ -34,7 +34,7 @@ using namespace std;
 #define BUFFER_OVERFLOW_ALLOWED false  //MA buffer已满时是否继续接收数据
 #define BUFFER_CAPACITY_NODE 20
 #define BUFFER_CAPACITY_MA 100
-#define BUFFER_CAPACITY_SINK 9999999  //无限制
+#define BUFFER_CAPACITY_SINK 99999999999  //无限制
 
 //time
 
@@ -53,6 +53,8 @@ using namespace std;
 #define SIZE_CONTROL 10
 #define CONSUMPTION_DATA_SEND 1
 #define CONSUMPTION_DATA_RECIEVE 0.5
+#define CONSUMPTION_LISTEN 13.5
+#define CONSUMPTION_SLEEP 0.015
 //#define PROB_DATA_FORWARD 1.0
 
 

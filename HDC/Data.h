@@ -22,10 +22,6 @@ private:
 	int HOP;
 	int TTL;
 
-	//跳数或TTL倒计数的初始值，在Epidemic中选择一种使用，默认值都是0，必须在main函数中或通过命令行参数赋值
-	//注意：两者不能同时取非零值，因为该值也用于该选项的所有判断
-	static bool MAX_HOP;
-	static bool MAX_TTL;
 	static int ID_MASK;
 
 	//用于统计投递率和时延的静态变量
@@ -47,6 +43,11 @@ private:
 
 
 public:
+
+	//跳数或TTL倒计数的初始值，在Epidemic中选择一种使用，默认值都是0，必须在main函数中或通过命令行参数赋值
+	//注意：两者不能同时取非零值，因为该值也用于该选项的所有判断
+	static bool MAX_HOP;
+	static bool MAX_TTL;
 
 	CData(void)
 	{

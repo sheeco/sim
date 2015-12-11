@@ -5,6 +5,7 @@
 #include "NodeRepair.h"
 #include "GreedySelection.h"
 #include "Epidemic.h"
+#include "HDC.h"
 
 
 /************************************ IHAR ************************************/
@@ -29,9 +30,10 @@ double CO_POSITION_DECAY = 1.0;
 bool HEAT_RATIO_EXP = false;
 bool HEAT_RATIO_LN = false;
 
-////merge-HAR
-////FIXME:如果需要使用到过期的position信息，则不扔掉过期的position，改为放入此vector
-//vector<CPosition *> g_overduePositions;
+
+/*********************************** HDC **************************************/
+
+bool DO_HDC = false;
 
 
 /********************************* 全局变量 ***********************************/
@@ -62,16 +64,18 @@ string logInfo;
 ofstream debugInfo("debug.txt", ios::app);
 
 string HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
-              "<mode>            -har;                -ihar;                -mhar;               -hotspot-similarity;        -dynamic-node-number;        -balanced-ratio;        -learn; \n"
-              "<time>            -time-data [];       -time-run []; \n"
-              "<parameter>       -alpha     [];       -beta     [];         -gama     [];        -heat [] [];                -prob-trans []; \n"
-              "<ihar>            -lambda    [];       -lifetime []; \n"
-              "<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;                    -max-hotspot [];        -decay [];        -min-weight []; \n\n";
+              "<mode>            -har;                  -ihar;                  -hdc;                    -hotspot-similarity;         -dynamic-node-number; \n"
+              "<time>            -time-data   [];       -time-run   []; \n"
+			  "<energy>          -node-energy []; \n"
+              "<har>             -alpha       [];       -beta       [];         -gama       [];          -heat   [] [];               -prob-trans []; \n"
+              "<ihar>            -lambda      [];       -lifetime   []; \n"
+			  "<epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
+              "<hdc>             -slot-total  [];       -default-dc [];         -hotspot-dc []; \n\n";
 
 
 int main(int argc, char* argv[])
 {
-	/********************************* 命令行参数解析 ***********************************/
+	///********************************* 命令行参数解析 ***********************************/
 	try
 	{
 		int iField = 0;
@@ -82,20 +86,23 @@ int main(int argc, char* argv[])
 			//<mode> 不带数值的布尔型参数
 			if( field == "-har" )
 			{
-				DO_IHAR = DO_MERGE_HAR = false;
+				DO_IHAR = false;
 				iField++;
 			}
 			else if( field == "-ihar" )
 			{
 				DO_IHAR = true;
-				DO_MERGE_HAR = false;
-				TEST_HOTSPOT_SIMILARITY = true;
 				iField++;
 			}
-			else if( field == "-mhar" )
+			//else if( field == "-mhar" )
+			//{
+			//	DO_MERGE_HAR = true;
+			//	DO_IHAR = false;
+			//	iField++;
+			//}
+			else if( field == "-hdc" )
 			{
-				DO_MERGE_HAR = true;
-				DO_IHAR = false;
+				DO_HDC = true;
 				iField++;
 			}
 			else if( field == "-hotspot-similarity" )
@@ -108,30 +115,13 @@ int main(int argc, char* argv[])
 				TEST_DYNAMIC_NUM_NODE = true;
 				iField++;
 			}
-			else if( field == "-heat-exp" )
-			{
-				HEAT_RATIO_EXP = true;
-				HEAT_RATIO_LN = false;
-				iField++;
-			}
-			else if( field == "-heat-ln" )
-			{
-				HEAT_RATIO_LN = true;
-				HEAT_RATIO_EXP = false;
-				iField++;
-			}
-			else if( field == "-balanced-ratio" )
-			{
-				TEST_BALANCED_RATIO = true;
-				iField++;
-			}
-			else if( field == "-learn" )
-			{
-				TEST_LEARN = true;
-				iField++;
-			}
+			//else if( field == "-balanced-ratio" )
+			//{
+			//	TEST_BALANCED_RATIO = true;
+			//	iField++;
+			//}
 
-			//关于时间的整型参数
+			//整型参数
 			else if( field == "-lifetime" )
 			{
 				if(iField < argc - 1)
@@ -150,20 +140,56 @@ int main(int argc, char* argv[])
 					RUNTIME = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-min-wait" )
+			else if( field == "-default-dc" )
 			{
 				if(iField < argc - 1)
-					MIN_WAITING_TIME = atoi( argv[ iField + 1 ] );
+					CNode::DEFAULT_DUTY_CYCLE = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-max-hotspot" )
+			else if( field == "-hotspot-dc" )
 			{
 				if(iField < argc - 1)
-					MAX_NUM_HOTSPOT = atoi( argv[ iField + 1 ] );
+					CNode::HOTSPOT_DUTY_CYCLE = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-slot-total" )
+			{
+				if(iField < argc - 1)
+					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-hop" )
+			{
+				if(iField < argc - 1)
+					CData::MAX_HOP = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-ttl" )
+			{
+				if(iField < argc - 1)
+					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-node-energy" )
+			{
+				if(iField < argc - 1)
+					CNode::ENERGY = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-queue" )
+			{
+				if(iField < argc - 1)
+					Epidemic::MAX_QUEUE_SIZE = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}			
+			else if( field == "-spoken" )
+			{
+				if(iField < argc - 1)
+					Epidemic::SPOKEN_MEMORY = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 
-			//其他double参数
+			//double参数
 			else if( field == "-alpha" )
 			{
 				if(iField < argc - 1)
@@ -188,34 +214,22 @@ int main(int argc, char* argv[])
 					LAMBDA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-merge" )
-			{
-				if(iField < argc - 1)
-					RATIO_MERGE_HOTSPOT = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-old" )
-			{
-				if(iField < argc - 1)
-					RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
+			//else if( field == "-merge" )
+			//{
+			//	if(iField < argc - 1)
+			//		RATIO_MERGE_HOTSPOT = atof( argv[ iField + 1 ] );
+			//	iField += 2;
+			//}
+			//else if( field == "-old" )
+			//{
+			//	if(iField < argc - 1)
+			//		RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
+			//	iField += 2;
+			//}
 			else if( field == "-prob-trans" )
 			{
 				if(iField < argc - 1)
 					PROB_DATA_FORWARD = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-decay" )
-			{
-				if(iField < argc - 1)
-					CO_POSITION_DECAY = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-min-weight" )
-			{
-				if(iField < argc - 1)
-					MIN_POSITION_WEIGHT = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 
@@ -267,7 +281,7 @@ int main(int argc, char* argv[])
 		ofstream parameters("parameters.txt", ios::app);
 		parameters << endl << endl << "#" << logtime << endl;
 
-		debugInfo << ALPHA << TAB << BETA << TAB << MIN_WAITING_TIME << TAB ;
+		debugInfo << ALPHA << TAB << BETA << TAB ;
 
 		if(DO_IHAR)
 		{
@@ -279,18 +293,20 @@ int main(int argc, char* argv[])
 
 			debugInfo << LAMBDA << TAB << MAX_MEMORY_TIME << TAB ;
 		}
-		else if(DO_MERGE_HAR)
-		{
-			logInfo += "#merge-HAR";
-			parameters << endl;
-			parameters << "#merge-HAR" << endl << endl;
-			parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
-			parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
-			parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl;
 
-			debugInfo << RATIO_MERGE_HOTSPOT << TAB << RATIO_OLD_HOTSPOT << TAB ;
+		//else if(DO_MERGE_HAR)
+		//{
+		//	logInfo += "#merge-HAR";
+		//	parameters << endl;
+		//	parameters << "#merge-HAR" << endl << endl;
+		//	parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
+		//	parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
+		//	parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl;
 
-		}
+		//	debugInfo << RATIO_MERGE_HOTSPOT << TAB << RATIO_OLD_HOTSPOT << TAB ;
+
+		//}
+
 		else
 		{
 			logInfo += "#HAR";
@@ -313,10 +329,20 @@ int main(int argc, char* argv[])
 		parameters << "GAMA" << TAB << GAMA << endl;
 		parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
 		parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
-		parameters << "MIN_WAITING_TIME" << TAB << MIN_WAITING_TIME << endl;
-		parameters << "PROB_DATA_FORWARD" << TAB << PROB_DATA_FORWARD << endl;
-		parameters << "DATA GENERATION TIME" << TAB << DATATIME << endl;
+
+		parameters << "DEFAULT DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
+		parameters << "HOTSPOT DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
+		parameters << "SLOT TOTAL" << TAB << CNode::SLOT_TOTAL << endl;
+
+		parameters << "HOP" << TAB << CData::MAX_HOP << endl;
+		parameters << "TTL" << TAB << CData::MAX_TTL << endl;
+		parameters << "NODE ENERGY" << TAB << CNode::ENERGY << endl;
+		parameters << "MAX QUEUE SIZE" << TAB << Epidemic::MAX_QUEUE_SIZE << endl;
+		parameters << "SPOKEN MEMORY" << TAB << Epidemic::SPOKEN_MEMORY << endl;
+
+		parameters << "DATA TIME" << TAB << DATATIME << endl;
 		parameters << "RUN TIME" << TAB << RUNTIME << endl;
+		parameters << "PROB DATA FORWARD" << TAB << PROB_DATA_FORWARD << endl;
 
 		parameters.close();
 	}
@@ -325,71 +351,21 @@ int main(int argc, char* argv[])
 
 	while(currentTime <= RUNTIME)
 	{
-		////IHAR: Node Number Test:
-		//if( TEST_DYNAMIC_NUM_NODE )
-		//{
-		//	if(currentTime % SLOT_CHANGE_NUM_NODE == 0 && currentTime > 0)
-		//	{
-		//		har.ChangeNodeNumber();
-		//	}
-		//}
 
+		if( DO_HDC )
+			CHDC::Operate(currentTime);
 
-		/********************************* 地理信息收集 ***********************************/
-		if( currentTime % SLOT_LOCATION_UPDATE == 0)
-		{
-			cout << endl << "########  [ " << currentTime << " ]  LOCATION UPDATE" << endl;
-			CPreprocessor::CollectNewPositions(currentTime);
-		}
+		bool dead = false;
 
+		dead = ! Epidemic::Operate(currentTime);
 
-		/*********************************** 热点选取 *************************************/
-		if( currentTime % SLOT_HOTSPOT_UPDATE == 0 
-			&& currentTime >= startTimeForHotspotSelection )
-		{
-			cout  <<  endl <<"########  [ " << currentTime << " ]  HOTSPOT SELECTTION" << endl;
-
-
-			/******************************** 构建候选热点集合 *********************************/
-			CPreprocessor::BuildCandidateHotspots(currentTime);
-
-
-			/*********************************** 贪婪选取 **************************************/
-			//har.HotspotSelection();
-			cout << "####  [ Hotspot ]  " << CHotspot::selectedHotspots.size() << endl;
-
-
-			/*********************************** 热点分类 *************************************/
-			//har.HotspotClassification();
-			//cout << "####  [ MA Node ]  " << har.getNClass() << endl;
-
-
-			/*********************************** 路径规划 *************************************/
-			//har.MANodeRouteDesign();
-		}
-
-		if(currentTime % SLOT_MOBILITYMODEL == 0)
-		{
-			cout << endl << "########  [ " << currentTime << " ]  NODE MOVEMENT" << endl;
-			//har.UpdateNodeLocations();
-		}
-
-		if(currentTime % SLOT_DATA_GENERATE == 0)
-		{
-			cout << endl << "########  [ " << currentTime << " ]  DATA GENERATION" << endl;
-			//har.GenerateData();
-		}
-
-		if(currentTime % SLOT_DATA_SEND == 0)
-		{
-			cout << endl << "########  [ " << currentTime << " ]  DATA DELIVERY" << endl;
-			//har.SendData();
-		}
-
-		if( currentTime >= startTimeForHotspotSelection )
-			//har.PrintInfo();
+		if( dead )
+			break;
 
 		currentTime += SLOT;
+
 	}
+
 	debugInfo.close();
+
 }

@@ -19,13 +19,14 @@
 
 ### 参数格式
 
-                                                  !!!!!! ALL CASE SENSITIVE !!!!!!
-
-<mode>            -har;                -ihar;                -mhar;               -hotspot-similarity;        -dynamic-node-number;        -balanced-ratio;        -learn;
-<time>            -time-data [];       -time-run [];
-<parameter>       -alpha     [];       -beta     [];         -gama     [];        -heat [] [];                -prob-trans [];
-<ihar>            -lambda    [];       -lifetime [];
-<mhar>            -merge     [];       -old      [];         -min-wait [];        -heat-exp;                  -heat-ln;                    -max-hotspot [];        -decay [];        -min-weight [];
+                                        !!!!!! ALL CASE SENSITIVE !!!!!!
+<mode>            -har;                  -ihar;                  -hdc;                    -hotspot-similarity;         -dynamic-node-number;
+<time>            -time-data   [];       -time-run   [];
+<energy>          -node-energy [];"
+<har>             -alpha       [];       -beta       [];         -gama       [];          -heat   [] [];               -prob-trans [];
+<ihar>            -lambda      [];       -lifetime   [];
+<epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken [];
+<hdc>             -slot-total  [];       -default-dc [];         -hotspot-dc []; 
 
 
 
@@ -222,12 +223,15 @@ delivery-hotspot.txt中的信息改为降序排序之后再输出，便于分析
 继续修改CData和CNode类，CNode类中原来是针对全部Node统一统计能耗的，现在改为对于每个节点单独统计能耗，全局的Node能耗使用SUM_ENERGY_CONSUMPTION统计，但尚未添加相关操作；
 在原来的能耗统计相关宏中添加SIZE_DATA/CONTROL，用于指示单个数据包和控制包的大小；
 增加CHDC类、Epidemic类和CMacProtocol基类，原HAR类中有关热点选择的函数暂时放入CHDC类，有关路由的类暂时放入Epidemic类，其成员属性和函数仍待修改；
-*CNode类中关于Duty Cycle和工作状态的操作尚未添加；
 
 
 # 2015-12-11
 
-*MAC层协议同步/异步？
-*Sync时隙、Data时隙？
-*传输延迟？
-*控制信息传输的能耗？
+用CNode::state标识和计算节点的工作状态，取值范围在[ - SLOT_TOTAL, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态；
+按照通信成功率，多次往返通信时一旦有一次通信失败，之后的通信都不再成立；
+节点的通信成功率和能量损耗，都已内置在CNode类内所有的数据收发操作中；
+传感器节点的能量损耗来源包括：监听能耗、休眠能耗、数据发送能耗、数据接收能耗；
+添加节点的总能量属性，以及相应的节点失效、网络运行终止的判定，默认为0即无限能量，可以通过命令行参数-node-energy赋值；
+对于HDC中的热点选取操作：暂时只提供HAR和IHAR可选，参数可通过命令行参数修改；
+基本修改完毕，各类参数待测试：Epidemic路由的相关参数、能耗参数、数据生成速率及大小参数、时隙及占空比参数；
+MAC协议的无关内容：网络初始假定所有节点时隙同步、忽略Listen时隙内的Sync时隙即全部视作Data时隙、忽略传输延迟（之后也可以加入计算）；

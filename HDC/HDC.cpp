@@ -33,10 +33,6 @@ void CHDC::HotspotSelection(int currentTime)
 {
 	CGreedySelection greedySelection;
 
-	//TEST： 
-	if( TEST_LEARN )
-		CPreprocessor::DecayPositionsWithoutDeliveryCount();
-
 	/**************************** 热点归并过程(merge-HAR) *****************************/
 	//merge-HAR: 
 	if( DO_MERGE_HAR )
@@ -59,6 +55,8 @@ void CHDC::HotspotSelection(int currentTime)
 		CHotspot::selectedHotspots = repair.RepairPoorNodes();
 		CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
 	}
+
+	cout << "####  [ Hotspots ]  " << CHotspot::selectedHotspots.size() << endl;
 
 	//比较相邻两次热点选取的相似度
 	if(TEST_HOTSPOT_SIMILARITY)

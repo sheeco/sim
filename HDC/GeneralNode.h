@@ -10,6 +10,7 @@ class CGeneralNode :
 protected:
 	vector<CData> buffer;
 	int bufferCapacity;
+	double energy;
 	double energyConsumption;
 
 
@@ -17,6 +18,8 @@ public:
 	CGeneralNode(void)
 	{
 		this->bufferCapacity = 0;
+		this->energy = 0;
+		this->energyConsumption = 0;
 	}
 
 	~CGeneralNode(void){};
