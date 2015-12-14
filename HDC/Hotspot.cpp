@@ -1,6 +1,8 @@
 #include "Hotspot.h"
 #include "Preprocessor.h"
 
+extern int TRANS_RANGE;
+
 int CHotspot::ID_COUNT = 0;
 int CHotspot::nHotspotCandidates = 0;
 vector<CHotspot *> CHotspot::hotspotCandidates;
@@ -128,8 +130,8 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots)
 {
 	//Sort by Coordinate X to save time
-	CPreprocessor::mergeSort(oldHotspots, CPreprocessor::ascendByLocationX);
-	CPreprocessor::mergeSort(newHotspots, CPreprocessor::ascendByLocationX);
+	oldHotspots = CPreprocessor::mergeSort(oldHotspots, CPreprocessor::ascendByLocationX);
+	newHotspots = CPreprocessor::mergeSort(newHotspots, CPreprocessor::ascendByLocationX);
 
 	vector<CHotspot *>::iterator iOld, iNew;
 	double sumArea = 0;
@@ -139,7 +141,7 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 		{
 			if( (*iOld)->getID() == (*iNew)->getID() )
 			{
-				sumArea += AREA_SINGE_HOTSPOT;
+				sumArea += AREA_SINGLE_HOTSPOT;
 				continue;
 			}
 
@@ -160,5 +162,5 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 
 double CHotspot::getOverlapArea(vector<CHotspot *> hotspots)
 {
-	return getOverlapArea(hotspots, hotspots) - AREA_SINGE_HOTSPOT * hotspots.size();
+	return getOverlapArea(hotspots, hotspots) - AREA_SINGLE_HOTSPOT * hotspots.size();
 }

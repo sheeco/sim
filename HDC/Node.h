@@ -46,7 +46,9 @@ private:
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
 
 
-	CNode(void)
+	CNode(void){};
+
+	CNode(double generationRate, int capacityBuffer)
 	{
 		bufferSizeSum = 0;
 		bufferChangeCount = 0;
@@ -55,11 +57,7 @@ private:
 		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
 		state = 0;
 		timeDeath = -1;
-	}
 
-	CNode(double generationRate, int capacityBuffer)
-	{
-		CNode();
 		this->generationRate = generationRate;
 		this->bufferCapacity = capacityBuffer;
 		if( ENERGY > 1 )
@@ -94,6 +92,8 @@ private:
 			//如果TTL过期，丢弃
 			if( idata->isOverdue() )
 				idata = buffer.erase( idata );
+			else
+				idata++;
 		}
 	}	
 	
@@ -110,7 +110,7 @@ private:
 	}
 
 	//更新SV（HOP <= 1的消息不会放入SV）
-	//注意：应确保调用之前buffer状态为最新，且需要在每次向其他节点发送SV之前调用此函数
+	//注意：应确保调用之前buffer状态为最新，且需要在每次发送SV、收到SV并计算requestList之前调用此函数
 	void updateSummaryVector()
 	{
 		if( buffer.size() > BUFFER_CAPACITY )
@@ -156,6 +156,10 @@ public:
 	{
 		this->timeDeath = currentTime;
 	}
+	inline bool useHotspotDutyCycle()
+	{
+		return dutyCycle == HOTSPOT_DUTY_CYCLE;
+	}
 	inline double getAverageBufferSize()
 	{
 		if(bufferSizeSum == 0)
@@ -164,16 +168,9 @@ public:
 			return (double)bufferSizeSum / (double)bufferChangeCount;
 	}
 
-
-	static vector<CNode *> getNodes()
+	static void initNodes()
 	{
-		if( SLOT_TOTAL == 0 || DEFAULT_DUTY_CYCLE == 0 || HOTSPOT_DUTY_CYCLE == 0 )
-		{
-			cout << "Error @ CNode::getNodes() SLOT_TOTAL & DEFAULT_DUTY_CYCLE & HOTSOT_DUTY_CYCLE = 0" << endl;
-			_PAUSE;
-		}
-
-		if( nodes.empty() )
+		if( nodes.empty() && deadNodes.empty() )
 		{
 			for(int i = 0; i < NUM_NODE; i++)
 			{
@@ -186,28 +183,45 @@ public:
 				CNode::idNodes.push_back( node->getID() );
 			}
 		}
+	}
+
+	static vector<CNode *>& getNodes()
+	{
+		if( SLOT_TOTAL == 0 || DEFAULT_DUTY_CYCLE == 0 || HOTSPOT_DUTY_CYCLE == 0 )
+		{
+			cout << "Error @ CNode::getNodes() SLOT_TOTAL & DEFAULT_DUTY_CYCLE & HOTSOT_DUTY_CYCLE = 0" << endl;
+			_PAUSE;
+		}
+
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
 		return nodes;
 	}
 
 	static vector<int> getIdNodes()
 	{
-		getNodes();
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
 		return idNodes;
 	}
 
 	static bool hasNodes(int currentTime)
 	{
-		idNodes.clear();
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
+		else
+			idNodes.clear();
+		
 		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
 		{
 			if( (*inode)->isAlive() )
 			{
-				(*inode)->die( currentTime );
 				idNodes.push_back( (*inode)->getID() );
 				inode++;
 			}
 			else
 			{
+				(*inode)->die( currentTime );
 				deadNodes.push_back( *inode );
 				inode = nodes.erase( inode );
 			}
@@ -296,6 +310,7 @@ public:
 		if( sv.empty() )
 			 return vector<int>();
 
+		updateSummaryVector();
 		RemoveFromList(sv, summaryVector);
 		//待测试
 		if( Epidemic::MAX_QUEUE_SIZE > 0  &&  sv.size() > Epidemic::MAX_QUEUE_SIZE )
@@ -338,6 +353,8 @@ public:
 		result = getItemsByID(buffer, requestList);
 		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * result.size();
 		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * result.size();
+
+		return result;
 	}
 
 	bool receiveData(vector<CData> datas, int currentTime)

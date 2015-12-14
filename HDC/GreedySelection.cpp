@@ -180,7 +180,7 @@ void CGreedySelection::mergeHotspots(int time)
 	stringstream tmp;
 
 	//sort new hotspots by x coordinates
-	CPreprocessor::mergeSort(CHotspot::hotspotCandidates, CPreprocessor::ascendByLocationX);
+	CHotspot::hotspotCandidates = CPreprocessor::mergeSort(CHotspot::hotspotCandidates, CPreprocessor::ascendByLocationX);
 
 	for(vector<CHotspot *>::iterator iOld = CHotspot::oldSelectedHotspots.begin(); iOld != CHotspot::oldSelectedHotspots.end(); /* iOld++*/ )
 	{

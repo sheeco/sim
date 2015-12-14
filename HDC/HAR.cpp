@@ -904,8 +904,8 @@
 //		return ;
 //
 //	double overlapArea = CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots, CHotspot::selectedHotspots);
-//	double oldArea = CHotspot::oldSelectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots);
-//	double newArea = CHotspot::selectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
+//	double oldArea = CHotspot::oldSelectedHotspots.size() * AREA_SINGLE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots);
+//	double newArea = CHotspot::selectedHotspots.size() * AREA_SINGLE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
 //
 //	ofstream similarity("similarity.txt", ios::app);
 //	if( currentTime == startTimeForHotspotSelection + SLOT_HOTSPOT_UPDATE )

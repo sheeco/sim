@@ -3,6 +3,7 @@
 #include "GlobalParameters.h"
 #include "RoutingProtocol.h"
 
+extern int TRANS_RANGE;
 extern int NUM_NODE;
 extern double PROB_DATA_FORWARD;
 extern int DATATIME;

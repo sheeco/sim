@@ -20,42 +20,37 @@ using namespace std;
 
 //#define NUM_NODE 29  //OLD: sensor数目，现已改用NUM_NODE_INIT
 #define SINK_ID 99  
-#define SINK_X 0.0
-#define SINK_Y 0.0
-#define TRANS_RANGE 100	//transmission range
+//#define SINK_X 0.0
+//#define SINK_Y 0.0
+//#define TRANS_RANGE 1000	//transmission range
 #define SPEED_MANODE 30
-//#define ALPHA 0.03  //ratio for post selection
-//#define BETA 0.0025  //ratio for true hotspot
-//#define CO_HOTSPOT_HEAT_A1 1
-//#define CO_HOTSPOT_HEAT_A2 30
 
 //buffer
 #define INFINITE_BUFFER false  //MA buffer是否是无限大的
 #define BUFFER_OVERFLOW_ALLOWED false  //MA buffer已满时是否继续接收数据
-#define BUFFER_CAPACITY_NODE 20
+#define BUFFER_CAPACITY_NODE 100
 #define BUFFER_CAPACITY_MA 100
 #define BUFFER_CAPACITY_SINK 99999999999  //无限制
 
 //time
 
-#define SLOT 10	//time slot
+#define SLOT 5	// ( s )
 #define SLOT_MOBILITYMODEL 30  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
 #define SLOT_LOCATION_UPDATE 100	//地理信息收集的slot
 #define SLOT_HOTSPOT_UPDATE 900	//更新热点和分类的slot
-#define SLOT_DATA_GENERATE 180	//数据产生slot
+#define SLOT_DATA_GENERATE 60	//数据产生slot
 #define SLOT_DATA_SEND 30	//数据发送slot
 #define SLOT_RECORD_INFO 100  //记录数据投递率和数据投递时延的slot
 #define SLOT_CHANGE_NUM_NODE 5 * SLOT_HOTSPOT_UPDATE  //动态节点个数测试时，节点个数发生变化的周期
 
 //data
-#define RATE_DATA_GENERATE 0.01
-#define SIZE_DATA 400
+#define RATE_DATA_GENERATE 1.0 / 300.0
+#define SIZE_DATA 400  //( Byte )
 #define SIZE_CONTROL 10
-#define CONSUMPTION_DATA_SEND 1
-#define CONSUMPTION_DATA_RECIEVE 0.5
-#define CONSUMPTION_LISTEN 13.5
+#define CONSUMPTION_DATA_SEND 0.008  //( mJ / Byte )
+#define CONSUMPTION_DATA_RECIEVE 0.004
+#define CONSUMPTION_LISTEN 13.5  // ( mJ / s )
 #define CONSUMPTION_SLEEP 0.015
-//#define PROB_DATA_FORWARD 1.0
 
 
 /********************************* IHAR **********************************/
@@ -78,7 +73,7 @@ using namespace std;
 #define TAB "\t"
 #define _PAUSE system("pause")
 #define PI 3.1415926535
-#define AREA_SINGE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
+#define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
 
 /****************************** Global的辅助函数 *******************************/
 //Randomly product a float number between min and max

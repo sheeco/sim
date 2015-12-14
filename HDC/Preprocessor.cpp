@@ -145,7 +145,7 @@ bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
 }
 
 template <class E>
-vector<E> CPreprocessor::merge(vector<E> &left, vector<E> &right, bool(*Comp)(E, E))
+vector<E> CPreprocessor::merge(vector<E> left, vector<E> right, bool(*Comp)(E, E))
 {
 	vector<E> result;
 	vector<E>::size_type li = 0;
@@ -166,7 +166,7 @@ vector<E> CPreprocessor::merge(vector<E> &left, vector<E> &right, bool(*Comp)(E,
 }
 
 template <class E>
-vector<E> CPreprocessor::mergeSort(vector<E> &v, bool(*Comp)(E, E))
+vector<E> CPreprocessor::mergeSort(vector<E> v, bool(*Comp)(E, E))
 {
 	if(v.size() == 0)
 		return vector<E>();
@@ -182,7 +182,7 @@ vector<E> CPreprocessor::mergeSort(vector<E> &v, bool(*Comp)(E, E))
 	return merge(left, right, Comp);
 }
 
-vector<CData> CPreprocessor::merge(vector<CData> &left, vector<CData> &right, bool(*Comp)(CData, CData))
+vector<CData> CPreprocessor::merge(vector<CData> left, vector<CData> right, bool(*Comp)(CData, CData))
 {
 	vector<CData> result;
 	vector<CData>::size_type li = 0;
@@ -202,7 +202,7 @@ vector<CData> CPreprocessor::merge(vector<CData> &left, vector<CData> &right, bo
 	return result;
 }
 
-vector<CData> CPreprocessor::mergeSort(vector<CData> &v, bool(*Comp)(CData, CData))
+vector<CData> CPreprocessor::mergeSort(vector<CData> v, bool(*Comp)(CData, CData))
 {
 	if(v.size() == 0)
 		return vector<CData>();
@@ -218,7 +218,7 @@ vector<CData> CPreprocessor::mergeSort(vector<CData> &v, bool(*Comp)(CData, CDat
 	return merge(left, right, Comp);
 }
 
-vector<CPosition *> CPreprocessor::merge(vector<CPosition *> &left, vector<CPosition *> &right)
+vector<CPosition *> CPreprocessor::merge(vector<CPosition *> left, vector<CPosition *> right)
 {
 	vector<CPosition *> result;
 	vector<CPosition *>::size_type li = 0;
@@ -238,7 +238,7 @@ vector<CPosition *> CPreprocessor::merge(vector<CPosition *> &left, vector<CPosi
 	return result;
 }
 
-vector<CPosition *> CPreprocessor::mergeSort(vector<CPosition *> &v)
+vector<CPosition *> CPreprocessor::mergeSort(vector<CPosition *> v)
 {
 	if(v.size() == 0)
 		return vector<CPosition *>();
@@ -254,7 +254,7 @@ vector<CPosition *> CPreprocessor::mergeSort(vector<CPosition *> &v)
 	return merge(left, right);
 }
 
-vector<CNode *> CPreprocessor::merge(vector<CNode *> &left, vector<CNode *> &right)
+vector<CNode *> CPreprocessor::merge(vector<CNode *> left, vector<CNode *> right)
 {
 	vector<CNode *> result;
 	vector<CNode *>::size_type li = 0;
@@ -274,7 +274,7 @@ vector<CNode *> CPreprocessor::merge(vector<CNode *> &left, vector<CNode *> &rig
 	return result;
 }
 
-vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> &v)
+vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> v)
 {
 	if(v.size() == 0)
 		return vector<CNode *>();
@@ -290,7 +290,7 @@ vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> &v)
 	return merge(left, right);
 }
 
-vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> &left, vector<CHotspot *> &right, bool(*Comp)(CHotspot *, CHotspot *))
+vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *))
 {
 	vector<CHotspot *> result;
 	vector<CHotspot *>::size_type li = 0;
@@ -310,7 +310,7 @@ vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> &left, vector<CHotspo
 	return result;
 }
 
-vector<CHotspot *> CPreprocessor::mergeSort(vector<CHotspot *> &v, bool(*Comp)(CHotspot *, CHotspot *))
+vector<CHotspot *> CPreprocessor::mergeSort(vector<CHotspot *> v, bool(*Comp)(CHotspot *, CHotspot *))
 {
 	if(v.size() == 0)
 		return vector<CHotspot *>();
@@ -326,7 +326,7 @@ vector<CHotspot *> CPreprocessor::mergeSort(vector<CHotspot *> &v, bool(*Comp)(C
 	return merge(left, right, Comp);
 }
 
-vector<CHotspot> CPreprocessor::mergeByDeliveryCount(vector<CHotspot> &left, vector<CHotspot> &right, int endTime)
+vector<CHotspot> CPreprocessor::mergeByDeliveryCount(vector<CHotspot> left, vector<CHotspot> right, int endTime)
 {
 	vector<CHotspot> result;
 	vector<CHotspot>::size_type li = 0;
@@ -348,7 +348,7 @@ vector<CHotspot> CPreprocessor::mergeByDeliveryCount(vector<CHotspot> &left, vec
 	return result;
 }
 
-vector<CHotspot> CPreprocessor::mergeSortByDeliveryCount(vector<CHotspot> &v, int endTime)
+vector<CHotspot> CPreprocessor::mergeSortByDeliveryCount(vector<CHotspot> v, int endTime)
 {
 	if(v.size() == 0)
 		return vector<CHotspot>();

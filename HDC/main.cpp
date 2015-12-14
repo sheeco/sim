@@ -47,6 +47,10 @@ bool TEST_LEARN = false;
 int MAX_NUM_HOTSPOT = 9999;
 double MIN_POSITION_WEIGHT = 0;
 
+double SINK_X = 0.0;
+double SINK_Y = 0.0;
+int TRANS_RANGE = 1000;  //transmission range
+
 double ALPHA = 0.03;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
 double GAMA = 0.5;  //ratio for HotspotsAboveAverage
@@ -66,7 +70,7 @@ ofstream debugInfo("debug.txt", ios::app);
 string HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
               "<mode>            -har;                  -ihar;                  -hdc;                    -hotspot-similarity;         -dynamic-node-number; \n"
               "<time>            -time-data   [];       -time-run   []; \n"
-			  "<energy>          -node-energy []; \n"
+			  "<node>            -node-energy [];       -sink       [] [];      -range      []; \n"
               "<har>             -alpha       [];       -beta       [];         -gama       [];          -heat   [] [];               -prob-trans []; \n"
               "<ihar>            -lambda      [];       -lifetime   []; \n"
 			  "<epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
@@ -75,6 +79,18 @@ string HELP = "\n                                                  !!!!!! ALL CA
 
 int main(int argc, char* argv[])
 {
+
+	//"<epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
+	//	"<hdc>             -slot-total  [];       -default-dc [];         -hotspot-dc []; \n\n";
+
+	//CData::MAX_HOP = 20;
+	CData::MAX_TTL = 2000;
+	Epidemic::SPOKEN_MEMORY = 3 * CNode::SLOT_TOTAL;
+	CNode::SLOT_TOTAL = 2 * SLOT_MOBILITYMODEL;
+	CNode::DEFAULT_DUTY_CYCLE = 0.2;
+	CNode::HOTSPOT_DUTY_CYCLE = 0.4;
+
+
 	///********************************* 命令行参数解析 ***********************************/
 	try
 	{
@@ -188,6 +204,12 @@ int main(int argc, char* argv[])
 					Epidemic::SPOKEN_MEMORY = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-range" )
+			{
+				if(iField < argc - 1)
+					TRANS_RANGE = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
 
 			//double参数
 			else if( field == "-alpha" )
@@ -240,6 +262,15 @@ int main(int argc, char* argv[])
 				{
 					CO_HOTSPOT_HEAT_A1 = atof( argv[ iField + 1 ] );
 					CO_HOTSPOT_HEAT_A2 = atof( argv[ iField + 2 ] );
+				}
+				iField += 3;
+			}
+			else if( field == "-sink" )
+			{
+				if(iField < argc - 2)
+				{
+					SINK_X = atof( argv[ iField + 1 ] );
+					SINK_Y = atof( argv[ iField + 2 ] );
 				}
 				iField += 3;
 			}

@@ -6,6 +6,9 @@
 
 using namespace std;
 
+extern double SINK_X;
+extern double SINK_Y;
+
 class CSink :
 	public CGeneralNode
 {
@@ -22,14 +25,10 @@ private:
 
 	CSink(void)
 	{
-		if(sink == NULL)
-		{
-			sink = new CSink();
-			sink->ID = SINK_ID;
-			sink->x = SINK_X;
-			sink->y = SINK_Y;		
-			sink->bufferCapacity = BUFFER_CAPACITY_SINK;
-		}
+		this->ID = SINK_ID;
+		this->x = SINK_X;
+		this->y = SINK_Y;		
+		this->bufferCapacity = BUFFER_CAPACITY_SINK;
 	}
 
 	~CSink(void){};

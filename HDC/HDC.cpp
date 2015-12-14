@@ -72,8 +72,8 @@ void CHDC::CompareWithOldHotspots(int currentTime)
 		return ;
 
 	double overlapArea = CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots, CHotspot::selectedHotspots);
-	double oldArea = CHotspot::oldSelectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots);
-	double newArea = CHotspot::selectedHotspots.size() * AREA_SINGE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
+	double oldArea = CHotspot::oldSelectedHotspots.size() * AREA_SINGLE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots);
+	double newArea = CHotspot::selectedHotspots.size() * AREA_SINGLE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
 
 	ofstream similarity("similarity.txt", ios::app);
 	if( currentTime == startTimeForHotspotSelection + SLOT_HOTSPOT_UPDATE )
@@ -188,24 +188,35 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		return;
 
 	vector<CNode *> nodes = CNode::getNodes();
-	CPreprocessor::mergeSort( nodes );
-	CPreprocessor::mergeSort( hotspots, CPreprocessor::ascendByLocationX );
+	nodes = CPreprocessor::mergeSort( nodes );
+	hotspots = CPreprocessor::mergeSort( hotspots, CPreprocessor::ascendByLocationX );
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
 	{
-		(*inode)->resetDutyCycle();
+		CHotspot *atHotspot = NULL;
+
 		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ihotspot++)
 		{
 			if( (*ihotspot)->getX() + TRANS_RANGE < (*inode)->getX() )
 				continue;
 			if( (*inode)->getX() + TRANS_RANGE < (*ihotspot)->getX() )
 				break;
-			if( CBasicEntity::getDistance( **inode, **ihotspot ) <= TRANS_RANGE )
+			if( CBasicEntity::getDistance( **inode, **ihotspot ) <= TRANS_RANGE )		
 			{
-				//update duty cycle
-				(*inode)->raiseDutyCycle();
-
+				atHotspot = *ihotspot;
 				break;
 			}
+		}
+
+		//update duty cycle
+		if( (*inode)->useHotspotDutyCycle() && atHotspot == NULL )
+		{
+			cout << endl << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << atHotspot->getID() << " )" << endl;
+			(*inode)->resetDutyCycle();
+		}
+		else if( ! (*inode)->useHotspotDutyCycle() && atHotspot != NULL )
+		{
+			cout << endl << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )" << endl;
+			(*inode)->raiseDutyCycle();
 		}
 	}
 }

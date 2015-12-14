@@ -32,9 +32,17 @@ void Epidemic::GenerateData(int currentTime)
 
 void Epidemic::SendData(int currentTime)
 {
+	ofstream sink("sink.txt", ios::app);
+	if(currentTime == 0)
+	{
+		sink << logInfo;
+		sink << "#Time" << TAB << "#EncounterAtSink" << endl;
+	}
+
+	int nEncounterAtSink = 0;
 	//本地将所有node按照x坐标排序
 	vector<CNode *> nodes = CNode::getNodes();
-	CPreprocessor::mergeSort(nodes);
+	nodes = CPreprocessor::mergeSort(nodes);
 
 	//判断工作状态，向sink投递数据，节点间通信
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
@@ -46,15 +54,15 @@ void Epidemic::SendData(int currentTime)
 		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
 		{
 			//deliver data to sink
-			cout << endl << "####  [ Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink ]" << endl;
+			cout << endl << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )" << endl;
 			CSink::getSink()->receiveData( (*inode)->deliverAllData(), currentTime );
+			nEncounterAtSink++;
 		}
 
 		//scan other nodes and forward data
-		for(vector<CNode *>::iterator jnode = nodes.begin(); jnode != nodes.end(); jnode++)
+		//inode < jnode，即任何节点对只有一次通信机会
+		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); jnode++)
 		{
-			if( inode == jnode )
-				continue;
 			if( (*jnode)->getX() + TRANS_RANGE < (*inode)->getX() )
 				continue;
 			if( (*inode)->getX() + TRANS_RANGE < (*jnode)->getX() )
@@ -64,41 +72,78 @@ void Epidemic::SendData(int currentTime)
 
 			//if spoken recently, skip
 			if( (*inode)->hasSpokenRecently( (*jnode), currentTime) )
+			{
+				cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )" << endl;
 				continue;
-
+			}
 			//init by node with smaller id
 			CNode *smaller, *greater = NULL;
 			smaller = (*inode)->getID() < (*jnode)->getID() ? *inode : *jnode ;
 			greater = (*inode)->getID() > (*jnode)->getID() ? *inode : *jnode ;
 
-			bool succeed = false;
-			//forward data
-			succeed = greater->receiveData(
-				smaller->sendData(
-				smaller->receiveRequestList(
-				greater->sendRequestList( 
-				greater->receiveSummaryVector( 
-				smaller->sendSummaryVector() ) ) ) ) , currentTime) ;
+			bool fail = false;
+			bool skip = false;
+			vector<int> sv;
+			vector<int> req;
 
-			if( succeed )
-			{
-				succeed = smaller->receiveData(
-					greater->sendData(
-					greater->receiveRequestList(
-					smaller->sendRequestList( 
-					smaller->receiveSummaryVector( 
-					greater->sendSummaryVector() ) ) ) ) , currentTime) ;
+			//forward data
 			
-				if( succeed )
+			sv = smaller->sendSummaryVector();
+
+			if( sv.empty() )
+				skip = true;
+			else
+			{
+				sv = greater->receiveSummaryVector( sv );
+				if( sv.empty() )
+					fail = true;
+				else
+				{
+					req = greater->sendRequestList( sv );
+					if( req.empty() )
+						skip = true;
+					else
+						fail = ! greater->receiveData(
+							smaller->sendData(
+							smaller->receiveRequestList( req ) ) , currentTime) ;
+				}
+			}
+			if( ! fail )
+			{
+				sv = greater->sendSummaryVector();
+				if( sv.empty() && skip )
+					skip = true;
+				else
+				{
+					skip = false;
+					sv = smaller->receiveSummaryVector( sv );
+					if( sv.empty() )
+						fail = true;
+					else
+					{
+						req = smaller->sendRequestList( sv );
+						if( req.empty() )
+							skip = true;
+						else
+							fail = ! smaller->receiveData(
+								greater->sendData(
+								greater->receiveRequestList( req ) ) , currentTime) ;
+					}
+				}
+				if( ! fail )
 				{
 					smaller->addToSpokenCache(greater, currentTime);
 					greater->addToSpokenCache(smaller, currentTime);			
-					cout << endl << "####  [ Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communicating ]" << endl;
+					if( skip )
+						cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )" << endl;
+					else
+						cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )" << endl;
 				}
 				else
-					cout << endl << "####  [ Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communicating ]" << endl;
+					cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )" << endl;
 			}
-
+			else
+				cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )" << endl;
 
 		}
 
@@ -110,7 +155,9 @@ void Epidemic::SendData(int currentTime)
 		(*inode)->recordBufferStatus();
 	}
 
-	cout << "####  [ Delivery Ratio ]  " << CData::getDataArrivalCount() / (double)CData::getDataCount() << endl;
+	cout << endl << "####  [ Delivery Ratio ]  " << CData::getDataArrivalCount() / (double)CData::getDataCount() * 100 << " % " << endl;
+	sink << currentTime << TAB << nEncounterAtSink << endl;
+	sink.close();
 
 }
 
@@ -250,7 +297,7 @@ bool Epidemic::Operate(int currentTime)
 		UpdateNodeStatus(currentTime);
 	}
 
-	if( currentTime % SLOT_DATA_GENERATE == 0 )
+	if( currentTime % SLOT_DATA_GENERATE == 0 && currentTime <= DATATIME )
 	{
 		cout << endl << "########  [ " << currentTime << " ]  DATA GENERATION" << endl;
 		GenerateData(currentTime);
@@ -264,4 +311,6 @@ bool Epidemic::Operate(int currentTime)
 
 	if( currentTime % SLOT_RECORD_INFO == 0 )
 		PrintInfo(currentTime);
+
+	return true;
 }
