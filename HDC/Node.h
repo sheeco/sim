@@ -5,6 +5,7 @@
 #include "Data.h"
 #include <map>
 #include "Epidemic.h"
+#include "Hotspot.h"
 
 using namespace std;
 
@@ -24,7 +25,6 @@ class CNode :
 private:
 
 	double generationRate;
-	int queueSize;  //buffer中存储的非本节点产生的Data的计数，在每次updateStatus之后更新
 	vector<int> summaryVector;
 	map<CNode *, int> spokenCache;
 	double dutyCycle;
@@ -32,6 +32,7 @@ private:
 	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
 	int state;  //取值范围在[ - SLOT_TOTAL, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
 	int timeDeath;  //节点失效时间，默认值为-1
+	CHotspot *atHotspot;
 
 
 	//用于统计输出节点的buffer状态信息
@@ -57,6 +58,7 @@ private:
 		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
 		state = 0;
 		timeDeath = -1;
+		atHotspot = NULL;
 
 		this->generationRate = generationRate;
 		this->bufferCapacity = capacityBuffer;
@@ -143,6 +145,14 @@ public:
 	{
 		return generationRate;
 	}
+	inline CHotspot* getAtHotspot()
+	{
+		return atHotspot;
+	}
+	inline void setAtHotspot(CHotspot* atHotspot)
+	{
+		this->atHotspot = atHotspot;
+	}
 	static double getSumEnergyConsumption()
 	{
 		return SUM_ENERGY_CONSUMPTION;
@@ -198,7 +208,7 @@ public:
 		return nodes;
 	}
 
-	static vector<int> getIdNodes()
+	static vector<int>& getIdNodes()
 	{
 		if( nodes.empty() && deadNodes.empty() )
 			initNodes();

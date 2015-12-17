@@ -69,16 +69,16 @@ public:
 	static void Operate(int currentTime)
 	{
 
-		if( currentTime % SLOT_LOCATION_UPDATE == 0 )
+		if( currentTime % SLOT_LOCATION_UPDATE == 0 && currentTime > 0 )
 			CPreprocessor::CollectNewPositions(currentTime);
 
-		if( currentTime % SLOT_HOTSPOT_UPDATE == 0 )
+		if( currentTime % SLOT_HOTSPOT_UPDATE == 0 && currentTime >= startTimeForHotspotSelection )
 		{
 			cout  <<  endl <<"########  [ " << currentTime << " ]  HOTSPOT SELECTTION" << endl;
 			HotspotSelection(currentTime);
 		}
 
-		if( currentTime >= startTimeForHotspotSelection && currentTime % SLOT_RECORD_INFO == 0 )
+		if( currentTime % SLOT_RECORD_INFO == 0 && currentTime >= startTimeForHotspotSelection )
 			PrintInfo(currentTime);
 	}
 

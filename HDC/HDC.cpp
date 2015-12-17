@@ -31,6 +31,9 @@ CHDC::~CHDC(void)
 
 void CHDC::HotspotSelection(int currentTime)
 {
+	/**************************** 热点归并过程(merge-HAR) *****************************/
+	CPreprocessor::BuildCandidateHotspots(currentTime);
+
 	CGreedySelection greedySelection;
 
 	/**************************** 热点归并过程(merge-HAR) *****************************/
@@ -210,12 +213,14 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		//update duty cycle
 		if( (*inode)->useHotspotDutyCycle() && atHotspot == NULL )
 		{
-			cout << endl << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << atHotspot->getID() << " )" << endl;
+			cout << endl << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )" << endl;
+			(*inode)->setAtHotspot(NULL);
 			(*inode)->resetDutyCycle();
 		}
 		else if( ! (*inode)->useHotspotDutyCycle() && atHotspot != NULL )
 		{
 			cout << endl << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )" << endl;
+			(*inode)->setAtHotspot(atHotspot);
 			(*inode)->raiseDutyCycle();
 		}
 	}

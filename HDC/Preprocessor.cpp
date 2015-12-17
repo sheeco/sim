@@ -91,6 +91,8 @@ void CPreprocessor::CollectNewPositions(int time)
 
 	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到CPosition::positions中
 	for(vector<int>::iterator i = CNode::getIdNodes().begin(); i != CNode::getIdNodes().end(); i++)
+	//vector<int> idNodes = CNode::getIdNodes();
+	//for(vector<int>::iterator i = idNodes.begin(); i != idNodes.end(); i++)
 	{
 		tmp_pos = new CPosition();
 		double x = 0, y = 0;

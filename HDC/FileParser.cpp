@@ -15,7 +15,7 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 
 		if( file == 0)
 		{
-			cout << "Error: Cannot find file \"" << nodeID << ".newlocation\" ! " << endl;
+			cout << "Error @ CFileParser::getPositionFromFile : Cannot find file \"" << nodeID << ".newlocation\" ! " << endl;
 			_PAUSE;
 			exit(1);
 		}

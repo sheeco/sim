@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 	//CData::MAX_HOP = 20;
 	CData::MAX_TTL = 2000;
 	Epidemic::SPOKEN_MEMORY = 3 * CNode::SLOT_TOTAL;
-	CNode::SLOT_TOTAL = 2 * SLOT_MOBILITYMODEL;
+	CNode::SLOT_TOTAL = 5 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 0.2;
 	CNode::HOTSPOT_DUTY_CYCLE = 0.4;
 
