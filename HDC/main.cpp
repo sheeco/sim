@@ -159,13 +159,13 @@ int main(int argc, char* argv[])
 			else if( field == "-default-dc" )
 			{
 				if(iField < argc - 1)
-					CNode::DEFAULT_DUTY_CYCLE = atoi( argv[ iField + 1 ] );
+					CNode::DEFAULT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-hotspot-dc" )
 			{
 				if(iField < argc - 1)
-					CNode::HOTSPOT_DUTY_CYCLE = atoi( argv[ iField + 1 ] );
+					CNode::HOTSPOT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-slot-total" )
