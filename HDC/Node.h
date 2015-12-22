@@ -240,29 +240,62 @@ public:
 		return ( ! nodes.empty() );
 	}
 
+	//在热点处提高 dc
 	void raiseDutyCycle()
 	{
-		if( this->dutyCycle == HOTSPOT_DUTY_CYCLE )
-			return;
+		//hotspot dc 为较高值时，在热点处降低到该 dc 值
+		if( DEFAULT_DUTY_CYCLE < HOTSPOT_DUTY_CYCLE )
+		{
+			if( this->dutyCycle == HOTSPOT_DUTY_CYCLE )
+				return;
 		
-		if( state < 0 )
-			state = 0;
-		dutyCycle = HOTSPOT_DUTY_CYCLE;
-		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+			if( state < 0 )
+				state = 0;
+			dutyCycle = HOTSPOT_DUTY_CYCLE;
+			SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+			SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+		}
+		//
+		else
+		{
+			if( this->dutyCycle == DEFAULT_DUTY_CYCLE )
+				return;
+		
+			if( state < 0 )
+				state = 0;
+			dutyCycle = DEFAULT_DUTY_CYCLE;
+			SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+			SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+		}
 
 		if( state < -SLOT_LISTEN )
 			state = -SLOT_LISTEN;
 	}
 	
+	//在非热点处降低 dc
 	void resetDutyCycle()
 	{
-		if( this->dutyCycle == DEFAULT_DUTY_CYCLE )
-			return;
+		//hotspot dc 为较高值时，在非热点处降低到默认 dc 值
+		if( DEFAULT_DUTY_CYCLE < HOTSPOT_DUTY_CYCLE )
+		{
+			if( this->dutyCycle == DEFAULT_DUTY_CYCLE )
+				return;
 		
-		dutyCycle = DEFAULT_DUTY_CYCLE;
-		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+			dutyCycle = DEFAULT_DUTY_CYCLE;
+			SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+			SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+		}
+		//hotspot dc 为较低值时，在非热点处降低到该 dc 值
+		else
+		{
+			if( this->dutyCycle == HOTSPOT_DUTY_CYCLE )
+				return;
+		
+			dutyCycle = HOTSPOT_DUTY_CYCLE;
+			SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+			SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+		}
+
 		//完成本次监听之后再休眠
 		if( state > SLOT_LISTEN )
 			state = SLOT_LISTEN;
