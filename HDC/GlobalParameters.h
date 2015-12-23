@@ -70,6 +70,7 @@ using namespace std;
 #define TYPE_OLD_HOTSPOT 3
 
 #define ROUND(x) (x - floor(x) >= 0.5) ? (int)ceil(x) : (int)floor(x)
+#define ZERO(x) fabs(x) < 0.000001
 #define TAB "\t"
 #define _PAUSE system("pause")
 #define PI 3.1415926535

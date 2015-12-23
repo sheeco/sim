@@ -53,10 +53,7 @@ private:
 	{
 		bufferSizeSum = 0;
 		bufferChangeCount = 0;
-		if( DEFAULT_DUTY_CYCLE < HOTSPOT_DUTY_CYCLE )
-			dutyCycle = DEFAULT_DUTY_CYCLE;
-		else
-			dutyCycle = HOTSPOT_DUTY_CYCLE;
+		dutyCycle = DEFAULT_DUTY_CYCLE;
 		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
 		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
 		state = 0;
@@ -169,12 +166,9 @@ public:
 	{
 		this->timeDeath = currentTime;
 	}
-	inline bool useHighDutyCycle()
+	inline bool useHotspotDutyCycle()
 	{
-		if( DEFAULT_DUTY_CYCLE < HOTSPOT_DUTY_CYCLE )
-			return fabs( dutyCycle - HOTSPOT_DUTY_CYCLE ) < 0.000001;
-		else
-			return fabs( dutyCycle - DEFAULT_DUTY_CYCLE ) < 0.000001;
+		return ZERO( dutyCycle - HOTSPOT_DUTY_CYCLE );
 	}
 	inline double getAverageBufferSize()
 	{
@@ -203,9 +197,9 @@ public:
 
 	static vector<CNode *>& getNodes()
 	{
-		if( SLOT_TOTAL == 0 || DEFAULT_DUTY_CYCLE == 0 || HOTSPOT_DUTY_CYCLE == 0 )
+		if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
 		{
-			cout << "Error @ CNode::getNodes() SLOT_TOTAL & DEFAULT_DUTY_CYCLE & HOTSOT_DUTY_CYCLE = 0" << endl;
+			cout << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
 			_PAUSE;
 		}
 
@@ -249,30 +243,14 @@ public:
 	//在热点处提高 dc
 	void raiseDutyCycle()
 	{
-		//hotspot dc 为较高值时，在热点处降低到该 dc 值
-		if( DEFAULT_DUTY_CYCLE < HOTSPOT_DUTY_CYCLE )
-		{
-			if( this->dutyCycle == HOTSPOT_DUTY_CYCLE )
-				return;
-		
-			if( state < 0 )
-				state = 0;
-			dutyCycle = HOTSPOT_DUTY_CYCLE;
-			SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-			SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-		}
-		//
-		else
-		{
-			if( this->dutyCycle == DEFAULT_DUTY_CYCLE )
-				return;
-		
-			if( state < 0 )
-				state = 0;
-			dutyCycle = DEFAULT_DUTY_CYCLE;
-			SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-			SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-		}
+		if( ZERO( this->dutyCycle - HOTSPOT_DUTY_CYCLE ) )
+			return;
+
+		if( state < 0 )
+			state = 0;
+		dutyCycle = HOTSPOT_DUTY_CYCLE;
+		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
 
 		if( state < -SLOT_LISTEN )
 			state = -SLOT_LISTEN;
@@ -281,26 +259,12 @@ public:
 	//在非热点处降低 dc
 	void resetDutyCycle()
 	{
-		//hotspot dc 为较高值时，在非热点处降低到默认 dc 值
-		if( DEFAULT_DUTY_CYCLE < HOTSPOT_DUTY_CYCLE )
-		{
-			if( this->dutyCycle == DEFAULT_DUTY_CYCLE )
-				return;
-		
-			dutyCycle = DEFAULT_DUTY_CYCLE;
-			SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-			SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-		}
-		//hotspot dc 为较低值时，在非热点处降低到该 dc 值
-		else
-		{
-			if( this->dutyCycle == HOTSPOT_DUTY_CYCLE )
-				return;
-		
-			dutyCycle = HOTSPOT_DUTY_CYCLE;
-			SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-			SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-		}
+		if( ZERO( this->dutyCycle - DEFAULT_DUTY_CYCLE ) )
+			return;
+
+		dutyCycle = DEFAULT_DUTY_CYCLE;
+		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
+		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
 
 		//完成本次监听之后再休眠
 		if( state > SLOT_LISTEN )
@@ -313,6 +277,9 @@ public:
 	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus
 	bool isListening()
 	{
+		if( ZERO(dutyCycle) )
+			return false;
+
 		return state >= 0;
 	}
 
