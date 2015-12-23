@@ -164,23 +164,22 @@ void Epidemic::SendData(int currentTime)
 void Epidemic::PrintInfo(int currentTime)
 {
 	//Energy Consumption、节点buffer状态 ...
-	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0 
-		&& currentTime >= startTimeForHotspotSelection )
+	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0 )
 	{
 
 		//平均能耗
 		ofstream energy_consumption("energy-consumption.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
+		if(currentTime == 0)
 		{
 			energy_consumption << logInfo;
 			energy_consumption << "#Time" << TAB << "#AvgEnergyConsumption" << endl;
 		}
-		energy_consumption << currentTime << TAB << ( CData::getAverageEnergyConsumption() * 100 ) << endl;
+		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() / 1000 << endl;
 		energy_consumption.close();
 
 		//每个节点buffer状态的历史平均值
 		ofstream buffer("buffer-node-statistics.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
+		if(currentTime == 0)
 		{
 			buffer << logInfo;
 			buffer << "#Time" << TAB << "#AvgBufferStateInHistoryOfEachNode" << endl;
@@ -193,14 +192,24 @@ void Epidemic::PrintInfo(int currentTime)
 
 		//数据投递率-900（用于debug）
 		ofstream delivery_ratio("delivery-ratio-900.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
+		if(currentTime == 0)
 		{
 			delivery_ratio << logInfo;
 			delivery_ratio << "#Time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
 		}
 		delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
-		
+
+		//数据投递延迟
+		ofstream delay("delay.txt", ios::app);
+		if(currentTime == 0)
+		{
+			delay << logInfo;
+			delay << "#Time" << TAB << "#AvgDelay" << endl;
+		}
+		delay << currentTime << TAB << CData::getAverageDelay() << endl;
+		delay.close();
+
 	}
 
 	//数据投递率、数据投递时延
@@ -209,7 +218,7 @@ void Epidemic::PrintInfo(int currentTime)
 	{
 		//数据投递率-100（用于绘制曲线）
 		ofstream delivery_ratio("delivery-ratio-100.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
+		if(currentTime == 0)
 		{
 			delivery_ratio << logInfo;
 			delivery_ratio << "#Time" << TAB << "#DeliveryRatio" << endl;
@@ -217,19 +226,9 @@ void Epidemic::PrintInfo(int currentTime)
 		delivery_ratio << currentTime << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
-		//数据投递延迟
-		ofstream delay("delay.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
-		{
-			delay << logInfo;
-			delay << "#Time" << TAB << "#AvgDelay" << endl;
-		}
-		delay << currentTime << TAB << CData::getAverageDelay() << endl;
-		delay.close();
-
 		//每个节点的当前buffer状态
 		ofstream node("buffer-node.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
+		if(currentTime == 0)
 		{
 			node << logInfo;
 			node << "#Time" << TAB << "#BufferStateOfEachNode" << endl;
@@ -242,35 +241,10 @@ void Epidemic::PrintInfo(int currentTime)
 
 	}
 
-	//数据投递率、数据投递时延
-	if(currentTime % SLOT_RECORD_INFO == 0
-		|| currentTime == RUNTIME)
-	{
-		//数据投递率-100（用于绘制曲线）
-		ofstream delivery_ratio("delivery-ratio-100.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
-		{
-			delivery_ratio << logInfo;
-			delivery_ratio << "#Time" << TAB << "#DeliveryRatio" << endl;
-		}
-		delivery_ratio << currentTime << TAB << CData::getDeliveryRatio() << endl;
-		delivery_ratio.close();
-
-		//数据投递延迟
-		ofstream delay("delay.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
-		{
-			delay << logInfo;
-			delay << "#Time" << TAB << "#AvgDelay" << endl;
-		}
-		delay << currentTime << TAB << CData::getAverageDelay() << endl;
-		delay.close();
-	}
-
 	////最终debug输出
 	if( currentTime == RUNTIME )
 	{
-		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB ;
+		debugInfo << CNode::DEFAULT_DUTY_CYCLE << TAB << CNode::HOTSPOT_DUTY_CYCLE << TAB << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() / 1000 << TAB ;
 		//debugInfo << CData::getDeliveryAtHotspotPercent() << TAB ;
 		debugInfo << logInfo.replace(0, 1, "");
 	}

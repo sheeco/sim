@@ -44,7 +44,7 @@ using namespace std;
 #define SLOT_CHANGE_NUM_NODE 5 * SLOT_HOTSPOT_UPDATE  //动态节点个数测试时，节点个数发生变化的周期
 
 //data
-#define RATE_DATA_GENERATE 1.0 / 300.0
+#define RATE_DATA_GENERATE 1.0 / 300.0  //( package / s )
 #define SIZE_DATA 400  //( Byte )
 #define SIZE_CONTROL 10
 #define CONSUMPTION_DATA_SEND 0.008  //( mJ / Byte )

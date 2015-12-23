@@ -83,6 +83,7 @@ int main(int argc, char* argv[])
 	//"<epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
 	//	"<hdc>             -slot-total  [];       -default-dc [];         -hotspot-dc []; \n\n";
 
+	/************************************ 参数默认值 *************************************/
 	//CData::MAX_HOP = 20;
 	CData::MAX_TTL = 2000;
 	Epidemic::SPOKEN_MEMORY = 3 * CNode::SLOT_TOTAL;
@@ -91,7 +92,7 @@ int main(int argc, char* argv[])
 	CNode::HOTSPOT_DUTY_CYCLE = 0.4;
 
 
-	///********************************* 命令行参数解析 ***********************************/
+	/********************************** 命令行参数解析 ***********************************/
 	try
 	{
 		int iField = 0;
