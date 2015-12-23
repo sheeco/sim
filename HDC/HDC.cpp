@@ -211,13 +211,17 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		}
 
 		//update duty cycle
-		if( (*inode)->useHotspotDutyCycle() && atHotspot == NULL )
+		if( (*inode)->useHighDutyCycle() && atHotspot == NULL )
 		{
+			//if( (*inode)->getAtHotspot() == NULL )
+			//	cout << endl << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )" << endl;
+			//else
+			//	cout << endl << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )" << endl;
 			cout << endl << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )" << endl;
 			(*inode)->setAtHotspot(NULL);
 			(*inode)->resetDutyCycle();
 		}
-		else if( ! (*inode)->useHotspotDutyCycle() && atHotspot != NULL )
+		else if( ! (*inode)->useHighDutyCycle() && atHotspot != NULL )
 		{
 			cout << endl << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )" << endl;
 			(*inode)->setAtHotspot(atHotspot);

@@ -53,7 +53,10 @@ private:
 	{
 		bufferSizeSum = 0;
 		bufferChangeCount = 0;
-		dutyCycle = DEFAULT_DUTY_CYCLE;
+		if( DEFAULT_DUTY_CYCLE < HOTSPOT_DUTY_CYCLE )
+			dutyCycle = DEFAULT_DUTY_CYCLE;
+		else
+			dutyCycle = HOTSPOT_DUTY_CYCLE;
 		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
 		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
 		state = 0;
@@ -166,9 +169,12 @@ public:
 	{
 		this->timeDeath = currentTime;
 	}
-	inline bool useHotspotDutyCycle()
+	inline bool useHighDutyCycle()
 	{
-		return dutyCycle == HOTSPOT_DUTY_CYCLE;
+		if( DEFAULT_DUTY_CYCLE < HOTSPOT_DUTY_CYCLE )
+			return fabs( dutyCycle - HOTSPOT_DUTY_CYCLE ) < 0.000001;
+		else
+			return fabs( dutyCycle - DEFAULT_DUTY_CYCLE ) < 0.000001;
 	}
 	inline double getAverageBufferSize()
 	{
