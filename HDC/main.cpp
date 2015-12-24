@@ -85,11 +85,11 @@ int main(int argc, char* argv[])
 
 	/************************************ 参数默认值 *************************************/
 	//CData::MAX_HOP = 20;
-	CData::MAX_TTL = 2000;
-	Epidemic::SPOKEN_MEMORY = 1 * CNode::SLOT_TOTAL;
-	CNode::SLOT_TOTAL = 5 * SLOT_MOBILITYMODEL;
-	CNode::DEFAULT_DUTY_CYCLE = 0.2;
-	CNode::HOTSPOT_DUTY_CYCLE = 0.4;
+	//CData::MAX_TTL = 2000;
+	//Epidemic::SPOKEN_MEMORY = 1 * CNode::SLOT_TOTAL;
+	//CNode::SLOT_TOTAL = 5 * SLOT_MOBILITYMODEL;
+	//CNode::DEFAULT_DUTY_CYCLE = 0.2;
+	//CNode::HOTSPOT_DUTY_CYCLE = 0.4;
 
 
 	/********************************** 命令行参数解析 ***********************************/
@@ -311,39 +311,75 @@ int main(int argc, char* argv[])
 		logInfo = "\n#" + logtime + TAB;
 	
 		ofstream parameters("parameters.txt", ios::app);
-		parameters << endl << endl << "#" << logtime << endl;
+		parameters << endl << endl << "#" << logtime << endl << endl;
 
-		debugInfo << ALPHA << TAB << BETA << TAB ;
+		parameters << "SLOT TOTAL" << TAB << CNode::SLOT_TOTAL << endl;
+		parameters << "DEFAULT DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
+		if( DO_HDC )
+			parameters << "HOTSPOT DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
 
-		if(DO_IHAR)
-		{
-			logInfo += "#IHAR";
-			parameters << endl;
-			parameters << "#IHAR" << endl << endl;
-			parameters << "LAMBDA" << TAB << LAMBDA << endl;
-			parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
-
-			debugInfo << LAMBDA << TAB << MAX_MEMORY_TIME << TAB ;
-		}
-
-		//else if(DO_MERGE_HAR)
-		//{
-		//	logInfo += "#merge-HAR";
-		//	parameters << endl;
-		//	parameters << "#merge-HAR" << endl << endl;
-		//	parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
-		//	parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
-		//	parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl;
-
-		//	debugInfo << RATIO_MERGE_HOTSPOT << TAB << RATIO_OLD_HOTSPOT << TAB ;
-
-		//}
-
+		if( CData::useHOP() )
+			parameters << "HOP" << TAB << CData::MAX_HOP << endl;
 		else
+			parameters << "TTL" << TAB << CData::MAX_TTL << endl;
+		parameters << "NODE ENERGY" << TAB << CNode::ENERGY << endl;
+		parameters << "MAX QUEUE SIZE" << TAB << Epidemic::MAX_QUEUE_SIZE << endl;
+		parameters << "SPOKEN MEMORY" << TAB << Epidemic::SPOKEN_MEMORY << endl;
+
+		parameters << "DATA TIME" << TAB << DATATIME << endl;
+		parameters << "RUN TIME" << TAB << RUNTIME << endl;
+		parameters << "PROB DATA FORWARD" << TAB << PROB_DATA_FORWARD << endl;
+		debugInfo << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
+
+		if(DO_HDC)
 		{
-			logInfo += "#HAR";
-			parameters << "#HAR" << endl << endl;
+			logInfo += "#HDC\t";
+
+			if(DO_IHAR)
+			{
+				logInfo += "#IHAR";
+				parameters << endl;
+				parameters << "#HDC\t#IHAR" << endl << endl;
+				parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
+				parameters << "LAMBDA" << TAB << LAMBDA << endl;
+
+				debugInfo << ALPHA << TAB << BETA << TAB << MAX_MEMORY_TIME << TAB << LAMBDA << TAB ;
+			}
+
+			//else if(DO_MERGE_HAR)
+			//{
+			//	logInfo += "#merge-HAR";
+			//	parameters << endl;
+			//	parameters << "#merge-HAR" << endl << endl;
+			//	parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
+			//	parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
+			//	parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl;
+
+			//	debugInfo << RATIO_MERGE_HOTSPOT << TAB << RATIO_OLD_HOTSPOT << TAB ;
+
+			//}
+
+			else
+			{
+				debugInfo << ALPHA << TAB << BETA << TAB ;
+				logInfo += "#HAR";
+				parameters << endl;
+				parameters << "#HDC\t#HAR" << endl << endl;
+			}
+
+			parameters << "ALPHA" << TAB << ALPHA << endl;
+			parameters << "BETA" << TAB << BETA << endl;
+			parameters << "GAMA" << TAB << GAMA << endl;
+			parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
+			parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
+			debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB ;
 		}
+
+		if( CData::useHOP() )
+			debugInfo << CData::MAX_HOP << TAB ;
+		else 
+			debugInfo << CData::MAX_TTL << TAB ;
+		debugInfo << Epidemic::SPOKEN_MEMORY << TAB << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD ;
 
 		if(TEST_DYNAMIC_NUM_NODE)
 		{
@@ -352,29 +388,8 @@ int main(int argc, char* argv[])
 			parameters << "#TEST_DYNAMIC_NODE_NUMBER" << endl;
 		}
 
-
 		logInfo += "\n";
 		parameters << endl;
-
-		parameters << "ALPHA" << TAB << ALPHA << endl;
-		parameters << "BETA" << TAB << BETA << endl;
-		parameters << "GAMA" << TAB << GAMA << endl;
-		parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
-		parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
-
-		parameters << "DEFAULT DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
-		parameters << "HOTSPOT DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
-		parameters << "SLOT TOTAL" << TAB << CNode::SLOT_TOTAL << endl;
-
-		parameters << "HOP" << TAB << CData::MAX_HOP << endl;
-		parameters << "TTL" << TAB << CData::MAX_TTL << endl;
-		parameters << "NODE ENERGY" << TAB << CNode::ENERGY << endl;
-		parameters << "MAX QUEUE SIZE" << TAB << Epidemic::MAX_QUEUE_SIZE << endl;
-		parameters << "SPOKEN MEMORY" << TAB << Epidemic::SPOKEN_MEMORY << endl;
-
-		parameters << "DATA TIME" << TAB << DATATIME << endl;
-		parameters << "RUN TIME" << TAB << RUNTIME << endl;
-		parameters << "PROB DATA FORWARD" << TAB << PROB_DATA_FORWARD << endl;
 
 		parameters.close();
 	}
