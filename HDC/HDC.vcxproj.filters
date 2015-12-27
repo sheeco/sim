@@ -154,7 +154,7 @@
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\README.txt">
+    <Text Include="..\README.md">
       <Filter>资源文件</Filter>
     </Text>
   </ItemGroup>

@@ -125,7 +125,7 @@
     <ClCompile Include="Sink.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\README.txt" />
+    <Text Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitattributes" />

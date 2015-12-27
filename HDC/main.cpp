@@ -379,7 +379,7 @@ int main(int argc, char* argv[])
 			debugInfo << CData::MAX_HOP << TAB ;
 		else 
 			debugInfo << CData::MAX_TTL << TAB ;
-		debugInfo << Epidemic::SPOKEN_MEMORY << TAB << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD ;
+		debugInfo << Epidemic::SPOKEN_MEMORY << TAB << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB ;
 
 		if(TEST_DYNAMIC_NUM_NODE)
 		{

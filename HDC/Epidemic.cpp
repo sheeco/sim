@@ -244,7 +244,7 @@ void Epidemic::PrintInfo(int currentTime)
 	////×îÖÕdebugÊä³ö
 	if( currentTime == RUNTIME )
 	{
-		debugInfo << CNode::DEFAULT_DUTY_CYCLE << TAB << CNode::HOTSPOT_DUTY_CYCLE << TAB << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() / 1000 << TAB ;
+		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() / 1000 << TAB ;
 		//debugInfo << CData::getDeliveryAtHotspotPercent() << TAB ;
 		debugInfo << logInfo.replace(0, 1, "");
 	}
