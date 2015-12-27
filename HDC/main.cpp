@@ -49,7 +49,7 @@ double MIN_POSITION_WEIGHT = 0;
 
 double SINK_X = 0.0;
 double SINK_Y = 0.0;
-int TRANS_RANGE = 1000;  //transmission range
+int TRANS_RANGE = 100;  //transmission range
 
 double ALPHA = 0.03;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
@@ -59,8 +59,8 @@ double CO_HOTSPOT_HEAT_A2 = 30;
 int MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
 
 double PROB_DATA_FORWARD = 1.0;
-int DATATIME = 15300;
-int RUNTIME = 20000;
+int DATATIME = 0;
+int RUNTIME = 0;
 int currentTime = 0;
 int startTimeForHotspotSelection = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 
@@ -90,6 +90,11 @@ int main(int argc, char* argv[])
 	//CNode::SLOT_TOTAL = 5 * SLOT_MOBILITYMODEL;
 	//CNode::DEFAULT_DUTY_CYCLE = 0.2;
 	//CNode::HOTSPOT_DUTY_CYCLE = 0.4;
+	SINK_X = 200;
+	SINK_Y = 200;
+	TRANS_RANGE = 250;
+	DATATIME = 15000;
+	RUNTIME = 15000;
 
 
 	/********************************** 命令行参数解析 ***********************************/
@@ -329,6 +334,13 @@ int main(int argc, char* argv[])
 		parameters << "DATA TIME" << TAB << DATATIME << endl;
 		parameters << "RUN TIME" << TAB << RUNTIME << endl;
 		parameters << "PROB DATA FORWARD" << TAB << PROB_DATA_FORWARD << endl;
+
+		debugInfo << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB << Epidemic::SPOKEN_MEMORY << TAB ;
+		if( CData::useHOP() )
+			debugInfo << CData::MAX_HOP << TAB ;
+		else 
+			debugInfo << CData::MAX_TTL << TAB ;
+
 		debugInfo << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
 		if(DO_HDC)
@@ -343,7 +355,7 @@ int main(int argc, char* argv[])
 				parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
 				parameters << "LAMBDA" << TAB << LAMBDA << endl;
 
-				debugInfo << ALPHA << TAB << BETA << TAB << MAX_MEMORY_TIME << TAB << LAMBDA << TAB ;
+				debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << ALPHA << TAB << BETA << TAB << MAX_MEMORY_TIME << TAB << LAMBDA << TAB ;
 			}
 
 			//else if(DO_MERGE_HAR)
@@ -361,7 +373,7 @@ int main(int argc, char* argv[])
 
 			else
 			{
-				debugInfo << ALPHA << TAB << BETA << TAB ;
+				debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << ALPHA << TAB << BETA << TAB ;
 				logInfo += "#HAR";
 				parameters << endl;
 				parameters << "#HDC\t#HAR" << endl << endl;
@@ -372,14 +384,7 @@ int main(int argc, char* argv[])
 			parameters << "GAMA" << TAB << GAMA << endl;
 			parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
 			parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
-			debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB ;
 		}
-
-		if( CData::useHOP() )
-			debugInfo << CData::MAX_HOP << TAB ;
-		else 
-			debugInfo << CData::MAX_TTL << TAB ;
-		debugInfo << Epidemic::SPOKEN_MEMORY << TAB << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB ;
 
 		if(TEST_DYNAMIC_NUM_NODE)
 		{

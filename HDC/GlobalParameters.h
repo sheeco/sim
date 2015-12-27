@@ -88,7 +88,6 @@ inline double RandomFloat(double min, double max)
 		max = min;
 		min = temp;
 	}
-	//srand( (unsigned)time(NULL));
 	return min + (double)rand() / RAND_MAX * (max - min);
 }
 
@@ -103,7 +102,6 @@ inline int RandomInt(int min, int max)
 		max = min;
 		min = temp;
 	}
-	//srand( (unsigned)time(NULL)); 
 	return min + rand() % (max - min);
 }
 
