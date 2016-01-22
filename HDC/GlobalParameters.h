@@ -19,7 +19,7 @@
 using namespace std;
 
 //#define NUM_NODE 29  //OLD: sensor数目，现已改用NUM_NODE_INIT
-#define SINK_ID 99  
+#define SINK_ID 0  //0为sink节点预留，传感器节点ID从1开始
 //#define SINK_X 0.0
 //#define SINK_Y 0.0
 //#define TRANS_RANGE 1000	//transmission range
@@ -54,7 +54,6 @@ using namespace std;
 
 
 /********************************* IHAR **********************************/
-//#define DO_IHAR false
 
 //IHAR: Node Number Test
 //#define TEST_DYNAMIC_NUM_NODE false
@@ -63,7 +62,6 @@ using namespace std;
 #define NUM_NODE_INIT 29
 
 /********************************* merge-HAR *********************************/
-//#define DO_MERGE_HAR true
 
 #define TYPE_MERGE_HOTSPOT 1
 #define TYPE_NEW_HOTSPOT 2

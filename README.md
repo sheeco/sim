@@ -16,7 +16,7 @@
     <mode>            -har;                  -ihar;                  -hdc;                    -hotspot-similarity;         -dynamic-node-number;
     <time>            -time-data   [];       -time-run   [];
     <energy>          -node-energy [];
-    <har>             -alpha       [];       -beta       [];         -gama       [];          -heat   [] [];               -prob-trans [];
+    <har>             -alpha       [];       -beta       [];         -gamma       [];          -heat   [] [];               -prob-trans [];
     <ihar>            -lambda      [];       -lifetime   [];
     <epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken [];
     <hdc>             -slot-total  [];       -default-dc [];         -hotspot-dc []; 
@@ -32,7 +32,7 @@
     
     alpha                         0.03
     beta                          0.0025
-    gama                          0.5
+    gamma                          0.5
     heat                          1, 30
     prob_trans                    1.0
     
@@ -239,3 +239,8 @@
 
 #### 2015-12-28
 * 将`README.txt`改为 MarkDown 文档`README.md`，并调整结构和格式；
+
+
+#### 2016-01-22
+* 将sink节点ID改为0（从而在map中排在最前方便查找），`CData`、`CPosition`、`CNode`、`CHotspot`的ID都改为从1开始，值仍然等于实例总数；
+* 添加`Prophet`类，主要包括`CNode::DeliveryPreds`及相关操作函数，Prophet路由中使用的数据索引仍然使用Epidemic路由中的`CNode::SummaryVector`来实现，具体函数待测试；

@@ -100,6 +100,7 @@
     <ClInclude Include="PostSelector.h" />
     <ClInclude Include="Preprocessor.h" />
     <ClInclude Include="Processor.h" />
+    <ClInclude Include="Prophet.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="Route.h" />
     <ClInclude Include="RoutingProtocol.h" />
@@ -121,7 +122,9 @@
     <ClCompile Include="Position.cpp" />
     <ClCompile Include="PostSelector.cpp" />
     <ClCompile Include="Preprocessor.cpp" />
+    <ClCompile Include="Prophet.cpp" />
     <ClCompile Include="Route.cpp" />
+    <ClCompile Include="RoutingProtocol.cpp" />
     <ClCompile Include="Sink.cpp" />
   </ItemGroup>
   <ItemGroup>

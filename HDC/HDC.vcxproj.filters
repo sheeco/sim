@@ -90,6 +90,9 @@
     <ClInclude Include="HDC.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Prophet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Preprocessor.cpp">
@@ -141,6 +144,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="HDC.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Prophet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RoutingProtocol.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

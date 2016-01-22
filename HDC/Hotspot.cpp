@@ -3,7 +3,7 @@
 
 extern int TRANS_RANGE;
 
-int CHotspot::ID_COUNT = 0;
+int CHotspot::ID_COUNT = 0;  //从1开始，数值等于热点总数
 int CHotspot::nHotspotCandidates = 0;
 vector<CHotspot *> CHotspot::hotspotCandidates;
 vector<CHotspot *> CHotspot::selectedHotspots;

@@ -245,8 +245,8 @@ public:
 	{
 		//if(this->ID != -1)
 		//	return;
-		this->ID = ID_COUNT;
 		ID_COUNT++;
+		this->ID = ID_COUNT;
 	}
 
 	//从覆盖列表中删除多个position，只有贪婪算法会用到

@@ -37,8 +37,8 @@ private:
 	//ID = node_id * 10 000 000 + data_counter ，用于在SV中识别Data来源
 	inline void generateID()
 	{
-		this->ID = node * ID_MASK + ID_COUNT;
 		ID_COUNT++;
+		this->ID = node * ID_MASK + ID_COUNT;
 	}
 
 

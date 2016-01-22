@@ -63,8 +63,8 @@ public:
 	{
 		//if(this->ID != -1)
 		//	return;
-		this->ID = ID_COUNT;
 		ID_COUNT++;
+		this->ID = ID_COUNT;
 	}
 };
 

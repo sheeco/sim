@@ -13,7 +13,13 @@ using namespace std;
 class CRoutingProtocol :
 	public CProtocol
 {
+protected:
+	
+	static void GenerateData(int currentTime);
+
+
 public:
+
 	CRoutingProtocol(void){};
 	~CRoutingProtocol(void){};
 };

@@ -1,17 +1,10 @@
-#include "Epidemic.h"
-#include "Node.h"
-#include "FileParser.h"
-#include "Hotspot.h"
-#include "Sink.h"
-#include "GreedySelection.h"
-#include "PostSelector.h"
-#include "NodeRepair.h"
+#include "Prophet.h"
+#include "GlobalParameters.h"
 #include "HDC.h"
+#include "Node.h"
 
-int Epidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
-int Epidemic::SPOKEN_MEMORY = 0;
 
-void Epidemic::UpdateNodeStatus(int currentTime)
+void Prophet::UpdateNodeStatus(int currentTime)
 {
 	for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); inode++)
 	{
@@ -22,12 +15,12 @@ void Epidemic::UpdateNodeStatus(int currentTime)
 		CHDC::UpdateDutyCycleForNodes(currentTime);
 }
 
-void Epidemic::GenerateData(int currentTime)
+void Prophet::GenerateData(int currentTime)
 {
 	CRoutingProtocol::GenerateData(currentTime);
 }
 
-void Epidemic::SendData(int currentTime)
+void Prophet::SendData(int currentTime)
 {
 	ofstream sink("sink.txt", ios::app);
 	if(currentTime == 0)
@@ -53,6 +46,7 @@ void Epidemic::SendData(int currentTime)
 			//deliver data to sink
 			cout << endl << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )" << endl;
 			CSink::getSink()->receiveData( (*inode)->sendAllData(false), currentTime );
+			(*inode)->updateDeliveryPredsWithSink();
 			nEncounterAtSink++;
 		}
 
@@ -67,12 +61,6 @@ void Epidemic::SendData(int currentTime)
 			if( CBasicEntity::getDistance( **inode, **jnode ) > TRANS_RANGE )
 				continue;
 
-			//if spoken recently, skip
-			if( (*inode)->hasSpokenRecently( (*jnode), currentTime) )
-			{
-				cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )" << endl;
-				continue;
-			}
 			//init by node with smaller id
 			CNode *smaller, *greater = NULL;
 			smaller = (*inode)->getID() < (*jnode)->getID() ? *inode : *jnode ;
@@ -80,57 +68,54 @@ void Epidemic::SendData(int currentTime)
 
 			bool fail = false;
 			bool skip = false;
+			map<int, double> preds;
 			vector<int> sv;
-			vector<int> req;
+			vector<CData> data;
 
 			//forward data
 			
+			preds = smaller->sendDeliveryPreds(currentTime);
 			sv = smaller->sendSummaryVector();
 
-			if( sv.empty() )
+			if( preds.empty() )
 				skip = true;
 			else
 			{
-				sv = greater->receiveSummaryVector( sv );
-				if( sv.empty() )
+				preds = greater->receiveDeliveryPredsAndSV( smaller->getID(), preds, sv );
+				if( preds.empty() )
 					fail = true;
 				else
 				{
-					req = greater->sendRequestList( sv );
-					if( req.empty() )
+					data = greater->sendDataByPredsAndSV( smaller, preds, sv );
+					if( data.empty() )
 						skip = true;
 					else
-						fail = ! greater->receiveData(
-							smaller->sendDataByRequestList(
-							smaller->receiveRequestList( req ) ) , currentTime) ;
+						fail = ! greater->receiveData( data, currentTime) ;
 				}
 			}
 			if( ! fail )
 			{
+				preds = greater->sendDeliveryPreds(currentTime);
 				sv = greater->sendSummaryVector();
-				if( sv.empty() && skip )
+				if( preds.empty() && skip )
 					skip = true;
 				else
 				{
 					skip = false;
-					sv = smaller->receiveSummaryVector( sv );
-					if( sv.empty() )
+					preds = smaller->receiveDeliveryPredsAndSV( greater->getID(), preds, sv );
+					if( preds.empty() )
 						fail = true;
 					else
 					{
-						req = smaller->sendRequestList( sv );
-						if( req.empty() )
+						data = smaller->sendDataByPredsAndSV( greater, preds, sv );
+						if( data.empty() )
 							skip = true;
 						else
-							fail = ! smaller->receiveData(
-								greater->sendDataByRequestList(
-								greater->receiveRequestList( req ) ) , currentTime) ;
+							fail = ! smaller->receiveData( data , currentTime) ;
 					}
 				}
 				if( ! fail )
-				{
-					smaller->addToSpokenCache(greater, currentTime);
-					greater->addToSpokenCache(smaller, currentTime);			
+				{	
 					if( skip )
 						cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )" << endl;
 					else
@@ -158,7 +143,7 @@ void Epidemic::SendData(int currentTime)
 
 }
 
-void Epidemic::PrintInfo(int currentTime)
+void Prophet::PrintInfo(int currentTime)
 {
 	//Energy Consumption¡¢½Úµãbuffer×´Ì¬ ...
 	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0 )
@@ -248,7 +233,7 @@ void Epidemic::PrintInfo(int currentTime)
 
 }
 
-bool Epidemic::Operate(int currentTime)
+bool Prophet::Operate(int currentTime)
 {
 	////Node Number Test:
 	//if( TEST_DYNAMIC_NUM_NODE )

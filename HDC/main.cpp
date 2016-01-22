@@ -53,7 +53,7 @@ int TRANS_RANGE = 100;  //transmission range
 
 double ALPHA = 0.03;  //ratio for post selection
 double BETA = 0.0025;  //ratio for true hotspot
-double GAMA = 0.5;  //ratio for HotspotsAboveAverage
+double GAMMA = 0.5;  //ratio for HotspotsAboveAverage
 double CO_HOTSPOT_HEAT_A1 = 1;
 double CO_HOTSPOT_HEAT_A2 = 30;
 int MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
@@ -71,7 +71,7 @@ string HELP = "\n                                                  !!!!!! ALL CA
               "<mode>            -har;                  -ihar;                  -hdc;                    -hotspot-similarity;         -dynamic-node-number; \n"
               "<time>            -time-data   [];       -time-run   []; \n"
 			  "<node>            -node-energy [];       -sink       [] [];      -range      []; \n"
-              "<har>             -alpha       [];       -beta       [];         -gama       [];          -heat   [] [];               -prob-trans []; \n"
+              "<har>             -alpha       [];       -beta       [];         -gamma       [];          -heat   [] [];               -prob-trans []; \n"
               "<ihar>            -lambda      [];       -lifetime   []; \n"
 			  "<epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
               "<hdc>             -slot-total  [];       -default-dc [];         -hotspot-dc []; \n\n";
@@ -230,10 +230,10 @@ int main(int argc, char* argv[])
 					BETA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-gama" )
+			else if( field == "-gamma" )
 			{
 				if(iField < argc - 1)
-					GAMA = atof( argv[ iField + 1 ] );
+					GAMMA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}			
 			else if( field == "-lambda" )
@@ -381,7 +381,7 @@ int main(int argc, char* argv[])
 
 			parameters << "ALPHA" << TAB << ALPHA << endl;
 			parameters << "BETA" << TAB << BETA << endl;
-			parameters << "GAMA" << TAB << GAMA << endl;
+			parameters << "GAMMA" << TAB << GAMMA << endl;
 			parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
 			parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
 		}

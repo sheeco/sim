@@ -19,21 +19,19 @@ class CNode :
 //	int ID;  //node编号
 //	double x;  //node现在的x坐标
 //	double y;  //node现在的y坐标
-//	int time;  //更新node坐标及工作状态的时间戳
+//	int time;  //更新node坐标、工作状态（、Prophet中的衰减）的时间戳
 //	bool flag;
 
 private:
 
 	double generationRate;
-	vector<int> summaryVector;
-	map<CNode *, int> spokenCache;
 	double dutyCycle;
+
 	int SLOT_LISTEN;  //由SLOT_TOTAL和DC计算得到
 	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
 	int state;  //取值范围在[ - SLOT_TOTAL, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
 	int timeDeath;  //节点失效时间，默认值为-1
 	CHotspot *atHotspot;
-
 
 	//用于统计输出节点的buffer状态信息
 	int bufferSizeSum;
@@ -45,6 +43,15 @@ private:
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
 	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
+
+	/*************************************  Epidemic  *************************************/
+
+	vector<int> summaryVector;
+	map<CNode *, int> spokenCache;
+
+	/**************************************  Prophet  *************************************/
+
+	map<int, double> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
 
 
 	CNode(void){};
@@ -64,6 +71,11 @@ private:
 		this->bufferCapacity = capacityBuffer;
 		if( ENERGY > 1 )
 			this->energy = ENERGY;
+
+		/**************************************  Prophet  *************************************/
+
+		for(int id = 0; id <= NUM_NODE; id++)
+			deliveryPreds[id] = INIT_DELIVERY_PRED;
 	}
 
 	~CNode(void){};
@@ -79,6 +91,8 @@ private:
 		else
 			return true;
 	}
+
+	/*************************************  Epidemic  *************************************/
 
 	//将删除过期的消息（仅当使用TTL时）
 	void dropOverdueData(int currentTime)
@@ -99,6 +113,7 @@ private:
 		}
 	}	
 	
+	//队列管理
 	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
 	//超出MAX_QUEUE_SIZE时从前端丢弃数据，溢出时将从从前端丢弃数据
 	//注意：必须在dropOverdueData之后调用
@@ -132,14 +147,53 @@ private:
 		}
 	}
 
+	/**************************************  Prophet  *************************************/
+
+	void decayDeliveryPreds(int currentTime)
+	{
+		for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); imap++)
+			deliveryPreds[ imap->first ] = imap->second * pow( DECAY_RATIO, ( currentTime - time ) / SLOT_MOBILITYMODEL );
+	}
+	
+	void updateDeliveryPredsWith(int node, map<int, double> preds)
+	{
+		double oldPred, transPred, dstPred = 0;
+		if( deliveryPreds.find(node) == deliveryPreds.end() )
+			deliveryPreds[node] = INIT_DELIVERY_PRED;
+
+		oldPred = this->deliveryPreds[ node ];
+		deliveryPreds[ node ] = transPred = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
+
+		for(map<int, double>::iterator imap = preds.begin(); imap != preds.end(); imap++)
+		{
+			int dst = imap->first;
+			if( dst == this->ID )
+				continue;
+			if( deliveryPreds.find(node) == deliveryPreds.end() )
+				deliveryPreds[node] = INIT_DELIVERY_PRED;
+
+			oldPred = this->deliveryPreds[ dst ];
+			dstPred = imap->second;
+			deliveryPreds[ dst ] = oldPred + ( 1 - oldPred ) * transPred * dstPred * TRANS_RATIO;
+		}
+		
+	}
+
 
 public:
 
-	static double DEFAULT_DUTY_CYCLE;  //
-	static double HOTSPOT_DUTY_CYCLE;  //
+	static double DEFAULT_DUTY_CYCLE;  //不使用HDC，或者HDC中不在热点区域内时的占空比
+	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
 	static int SLOT_TOTAL;
 	static int BUFFER_CAPACITY;
 	static double ENERGY;
+
+	/**************************************  Prophet  *************************************/
+
+	static double INIT_DELIVERY_PRED;
+	static double DECAY_RATIO;
+	static double TRANS_RATIO;
+
 
 	inline double getGenerationRate()
 	{
@@ -159,8 +213,8 @@ public:
 	}
 	inline void generateID()
 	{
-		this->ID = ID_COUNT;		
 		ID_COUNT++;
+		this->ID = ID_COUNT;		
 	}
 	inline void die(int currentTime)
 	{
@@ -178,67 +232,6 @@ public:
 			return (double)bufferSizeSum / (double)bufferChangeCount;
 	}
 
-	static void initNodes()
-	{
-		if( nodes.empty() && deadNodes.empty() )
-		{
-			for(int i = 0; i < NUM_NODE; i++)
-			{
-				double generationRate = RATE_DATA_GENERATE;
-				if(i % 5 == 0)
-					generationRate *= 5;
-				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
-				node->generateID();
-				CNode::nodes.push_back(node);
-				CNode::idNodes.push_back( node->getID() );
-			}
-		}
-	}
-
-	static vector<CNode *>& getNodes()
-	{
-		if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
-		{
-			cout << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
-			_PAUSE;
-		}
-
-		if( nodes.empty() && deadNodes.empty() )
-			initNodes();
-		return nodes;
-	}
-
-	static vector<int>& getIdNodes()
-	{
-		if( nodes.empty() && deadNodes.empty() )
-			initNodes();
-		return idNodes;
-	}
-
-	static bool hasNodes(int currentTime)
-	{
-		if( nodes.empty() && deadNodes.empty() )
-			initNodes();
-		else
-			idNodes.clear();
-		
-		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
-		{
-			if( (*inode)->isAlive() )
-			{
-				idNodes.push_back( (*inode)->getID() );
-				inode++;
-			}
-			else
-			{
-				(*inode)->die( currentTime );
-				deadNodes.push_back( *inode );
-				inode = nodes.erase( inode );
-			}
-		}
-
-		return ( ! nodes.empty() );
-	}
 
 	//在热点处提高 dc
 	void raiseDutyCycle()
@@ -283,6 +276,72 @@ public:
 		return state >= 0;
 	}
 
+	//bool参数指示节点自身是否保留副本
+	vector<CData> sendAllData(bool COPY)
+	{
+		vector<CData> data = buffer;
+		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
+		if(! COPY)
+			buffer.clear();
+		return data;
+	}
+
+	void generateData(int currentTime)
+	{
+		int nData = generationRate * SLOT_DATA_GENERATE;
+		for(int i = 0; i < nData; i++)
+		{
+			CData data(ID, currentTime);
+			buffer.push_back(data);
+		}
+		updateBufferStatus(currentTime);
+	}
+
+	//更新buffer状态记录，以便计算buffer status
+	void recordBufferStatus()
+	{
+		bufferSizeSum += buffer.size();
+		bufferChangeCount++;
+	}
+
+	bool receiveData(vector<CData> datas, int currentTime)
+	{
+		if( datas.empty() )
+			return false;
+		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
+			return false;
+
+		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_DATA * datas.size();
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * datas.size();
+		for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); idata++)
+			idata->arriveAnotherNode(currentTime);
+		buffer.insert(buffer.begin(), datas.begin(), datas.end() );
+		updateBufferStatus(currentTime);
+		
+		return true;
+	}
+	
+	//static bool ifNodeExists(int id)
+	//{
+	//	for(vector<CNode>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+	//	{
+	//		if(inode->getID() == id)
+	//			return true;
+	//	}
+	//	return false;
+	//}
+	////该节点不存在时无返回值所以将出错，所以必须在每次调用之前调用函数ifNodeExists()进行检查
+	//static CNode getNodeByID(int id)
+	//{
+	//	for(vector<CNode>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+	//	{
+	//		if(inode->getID() == id)
+	//			return *inode;
+	//	}
+	//}
+
+	/*************************************  Epidemic  *************************************/
 
 	bool hasSpokenRecently(CNode* node, int currentTime)
 	{
@@ -360,7 +419,7 @@ public:
 		return req;
 	}
 
-	vector<CData> sendData(vector<int> requestList)
+	vector<CData> sendDataByRequestList(vector<int> requestList)
 	{
 		if( requestList.empty() )
 			return vector<CData>();
@@ -373,69 +432,116 @@ public:
 		return result;
 	}
 
-	bool receiveData(vector<CData> datas, int currentTime)
+
+	/**************************************  Prophet  *************************************/
+
+	void updateDeliveryPredsWithSink()
 	{
-		if( datas.empty() )
-			return false;
+		double oldPred = deliveryPreds[SINK_ID];
+		deliveryPreds[SINK_ID] = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
+	}
+
+	map<int, double> sendDeliveryPreds(int currentTime)
+	{
+		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+
+		return deliveryPreds;
+	}
+
+	map<int, double> receiveDeliveryPredsAndSV(int node, map<int, double> preds, vector<int> &sv)
+	{
+		if( preds.empty() )
+			return map<int, double>();
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
-			return false;
+			return map<int, double>();
 
-		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_DATA * datas.size();
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * datas.size();
-		for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); idata++)
-			idata->arriveAnotherNode(currentTime);
-		buffer.insert(buffer.begin(), datas.begin(), datas.end() );
-		updateBufferStatus(currentTime);
-		
-		return true;
+		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_CONTROL;
+		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		return preds;
 	}
 
-	//当且仅当遇到sink时调用
-	vector<CData> deliverAllData()
+	vector<CData> sendDataByPredsAndSV(CNode *node, map<int, double> preds, vector<int> &sv)
 	{
-		vector<CData> data = buffer;
-		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
-		buffer.clear();
-		return data;
-	}
+		if( preds.empty() )
+			return vector<CData>();
 
-	void generateData(int currentTime)
-	{
-		int nData = generationRate * SLOT_DATA_GENERATE;
-		for(int i = 0; i < nData; i++)
-		{
-			CData data(ID, currentTime);
-			buffer.push_back(data);
+		if( preds.find(SINK_ID)->second > this->deliveryPreds.find(SINK_ID)->second )
+		{		
+			updateDeliveryPredsWith(node->getID(), preds);
+			vector<int> req = summaryVector;
+			RemoveFromList(req, sv);
+			return sendDataByRequestList( req );
 		}
-		updateBufferStatus(currentTime);
+		else
+		{
+			updateDeliveryPredsWith(node->getID(), preds);
+			return vector<CData>();
+		}
 	}
 
-	//更新buffer状态记录，以便计算buffer status
-	void recordBufferStatus()
+
+	static void initNodes()
 	{
-		bufferSizeSum += buffer.size();
-		bufferChangeCount++;
+		if( nodes.empty() && deadNodes.empty() )
+		{
+			for(int i = 0; i < NUM_NODE; i++)
+			{
+				double generationRate = RATE_DATA_GENERATE;
+				if(i % 5 == 0)
+					generationRate *= 5;
+				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
+				node->generateID();
+				CNode::nodes.push_back(node);
+				CNode::idNodes.push_back( node->getID() );
+			}
+		}
 	}
-	
-	//static bool ifNodeExists(int id)
-	//{
-	//	for(vector<CNode>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
-	//	{
-	//		if(inode->getID() == id)
-	//			return true;
-	//	}
-	//	return false;
-	//}
-	////该节点不存在时无返回值所以将出错，所以必须在每次调用之前调用函数ifNodeExists()进行检查
-	//static CNode getNodeByID(int id)
-	//{
-	//	for(vector<CNode>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
-	//	{
-	//		if(inode->getID() == id)
-	//			return *inode;
-	//	}
-	//}
+
+	static vector<CNode *>& getNodes()
+	{
+		if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
+		{
+			cout << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
+			_PAUSE;
+		}
+
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
+		return nodes;
+	}
+
+	static vector<int>& getIdNodes()
+	{
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
+		return idNodes;
+	}
+
+	static bool hasNodes(int currentTime)
+	{
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
+		else
+			idNodes.clear();
+		
+		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
+		{
+			if( (*inode)->isAlive() )
+			{
+				idNodes.push_back( (*inode)->getID() );
+				inode++;
+			}
+			else
+			{
+				(*inode)->die( currentTime );
+				deadNodes.push_back( *inode );
+				inode = nodes.erase( inode );
+			}
+		}
+
+		return ( ! nodes.empty() );
+	}
 
 };
 

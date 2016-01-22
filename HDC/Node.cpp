@@ -1,7 +1,7 @@
 #include "Node.h"
 #include "Preprocessor.h"
 
-int CNode::ID_COUNT = 0;
+int CNode::ID_COUNT = 0;  //从1开始，数值等于节点总数
 int CNode::BUFFER_CAPACITY = BUFFER_CAPACITY_NODE;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
@@ -11,6 +11,12 @@ double CNode::SUM_ENERGY_CONSUMPTION = 0;
 vector<CNode*> CNode::nodes;
 vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
+
+/**************************************  Prophet  *************************************/
+double CNode::INIT_DELIVERY_PRED = 0;  //0.75
+double CNode::DECAY_RATIO = 0;  //0.98(/s)
+double CNode::TRANS_RATIO = 0;  //0.25
+
 
 void CNode::dropDataIfOverflow(int currentTime)
 {
@@ -80,6 +86,10 @@ bool CNode::updateStatus(int currentTime)
 	timeSleep = timeIncre - timeListen;
 	energyConsumption += timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP;
 	SUM_ENERGY_CONSUMPTION += timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP;
+
+	/**************************************  Prophet  *************************************/
+
+	decayDeliveryPreds(currentTime);
 
 	//更新坐标
 	double x = 0, y = 0;

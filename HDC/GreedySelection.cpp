@@ -45,7 +45,7 @@ void CGreedySelection::UpdateStatus()
 		//merge-HAR: ratio
 		ratio *= pow( unselectedHotspots[i]->getCoByCandidateType(), unselectedHotspots[i]->getAge() );
 
-		if( ratio / max_ratio < GAMA)
+		if( ratio / max_ratio < GAMMA)
 			break;
 		else
 			hotspotsAboveAverage.push_back(unselectedHotspots[i]);
@@ -60,7 +60,7 @@ void CGreedySelection::GreedySelect(int time)
 
 		int index_best_hotspot = -1;
 		double best_ratio = 0;
-		//遍历所有ratio高于GAMA水平(1/2)的hotspot，调整其中心
+		//遍历所有ratio高于GAMMA水平(1/2)的hotspot，调整其中心
 		for(int i = 0; i < hotspotsAboveAverage.size(); i++)
 		{
 			bool modified = false;
@@ -109,7 +109,7 @@ void CGreedySelection::GreedySelect(int time)
 		{
 			//cout<<"Error: CGreedySelection::GreedySelection() index_max_hotspot == -1"<<endl;
 			
-			//在merge-HAR中可能出现此情况，剩余的未选中热点中有一部分由于是旧热点，系数得到累积之后达不到GAMA指示的水平
+			//在merge-HAR中可能出现此情况，剩余的未选中热点中有一部分由于是旧热点，系数得到累积之后达不到GAMMA指示的水平
 			//此时，直接选中ratio最大的候选热点
 			index_best_hotspot = unselectedHotspots.size() - 1;
 			best_hotspot = unselectedHotspots[index_best_hotspot];

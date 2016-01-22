@@ -6,7 +6,7 @@
 using namespace std;
 
 extern bool DO_MERGE_HAR;
-extern double GAMA;
+extern double GAMMA;
 extern int startTimeForHotspotSelection;
 
 extern string logInfo;
