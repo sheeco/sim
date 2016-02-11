@@ -357,7 +357,7 @@
 //			if( new_buffer > BUFFER_CAPACITY_MA
 //				&& route.getNWayPoints() == 1)
 //			{
-//				//cout<<"Error: HAR::HotspotClassification() a singe hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
+//				//cout<<"Error @ HAR::HotspotClassification() a singe hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
 //				//_PAUSE;
 //				route.AddPoint(max_front, tmp_hotspots[max_hotspot]);
 //				vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin() + max_hotspot;

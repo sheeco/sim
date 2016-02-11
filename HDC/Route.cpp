@@ -4,7 +4,7 @@ void CRoute::updateLength()
 {
 	if(waypoints.size() < 2)
 	{
-		cout<<"Error: CRoute::updateLength() this route is empty"<<endl;
+		cout<<"Error @ CRoute::updateLength() this route is empty"<<endl;
 		_PAUSE;
 	}
 	length = 0;

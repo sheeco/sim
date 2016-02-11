@@ -69,8 +69,10 @@ using namespace std;
 
 #define ROUND(x) (x - floor(x) >= 0.5) ? (int)ceil(x) : (int)floor(x)
 #define ZERO(x) fabs(x) < 0.000001
-#define TAB "\t"
-#define _PAUSE system("pause")
+#define TAB '\t'
+#define CR '\r'  //用于控制台输出时同行改写的转义字符
+#define _PAUSE _ALERT; system("pause")
+#define _ALERT cout << '\a'
 #define PI 3.1415926535
 #define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
 
@@ -251,7 +253,7 @@ static vector<E> getItemsByID(vector<E> list, vector<int> ids)
 //		}while(duplicate);
 //		if(tmp < 0)
 //		{
-//			cout << "Error: RandomIntList() tmp < 0" << endl;
+//			cout << "Error @ RandomIntList() tmp < 0" << endl;
 //			_PAUSE;
 //		}
 //		else

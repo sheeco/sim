@@ -44,7 +44,8 @@ void Prophet::SendData(int currentTime)
 		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
 		{
 			//deliver data to sink
-			cout << endl << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )" << endl;
+			cout << CR ;			
+			cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                " ;
 			CSink::getSink()->receiveData( (*inode)->sendAllData(false), currentTime );
 			(*inode)->updateDeliveryPredsWithSink();
 			nEncounterAtSink++;
@@ -86,11 +87,12 @@ void Prophet::SendData(int currentTime)
 					fail = true;
 				else
 				{
+					greater->updateDeliveryPredsWith(smaller->getID(), preds);
 					data = greater->sendDataByPredsAndSV( smaller, preds, sv );
 					if( data.empty() )
 						skip = true;
 					else
-						fail = ! greater->receiveData( data, currentTime) ;
+						fail = ! smaller->receiveData( data, currentTime) ;
 				}
 			}
 			if( ! fail )
@@ -107,26 +109,38 @@ void Prophet::SendData(int currentTime)
 						fail = true;
 					else
 					{
+						smaller->updateDeliveryPredsWith(greater->getID(), preds);
 						data = smaller->sendDataByPredsAndSV( greater, preds, sv );
 						if( data.empty() )
 							skip = true;
 						else
-							fail = ! smaller->receiveData( data , currentTime) ;
+							fail = ! greater->receiveData( data , currentTime) ;
 					}
 				}
 				if( ! fail )
 				{	
 					if( skip )
-						cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )" << endl;
+					{
+						cout << CR ;
+						cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )          " ;
+					}
 					else
-						cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )" << endl;
+					{
+						cout << CR ;
+						cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )          " ;
+					}
 				}
 				else
-					cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )" << endl;
+				{
+					cout << CR ;
+					cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )          " ;
+				}
 			}
 			else
-				cout << endl << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )" << endl;
-
+			{
+				cout << CR ;
+				cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )          " ;
+			}
 		}
 
 	}
@@ -137,7 +151,11 @@ void Prophet::SendData(int currentTime)
 		(*inode)->recordBufferStatus();
 	}
 
-	cout << endl << "####  [ Delivery Ratio ]  " << CData::getDataArrivalCount() / (double)CData::getDataCount() * 100 << " % " << endl;
+	cout << CR ;
+	//控制台输出时保留一位小数
+	double deliveryRatio = ROUND( CData::getDataArrivalCount() / (double)CData::getDataCount() * 1000 );
+	deliveryRatio = deliveryRatio / (double)10;
+	cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                  " << endl;
 	sink << currentTime << TAB << nEncounterAtSink << endl;
 	sink.close();
 
@@ -146,7 +164,8 @@ void Prophet::SendData(int currentTime)
 void Prophet::PrintInfo(int currentTime)
 {
 	//Energy Consumption、节点buffer状态 ...
-	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0 )
+	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0
+		|| currentTime == RUNTIME )
 	{
 
 		//平均能耗
@@ -229,6 +248,7 @@ void Prophet::PrintInfo(int currentTime)
 		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() / 1000 << TAB ;
 		//debugInfo << CData::getDeliveryAtHotspotPercent() << TAB ;
 		debugInfo << logInfo.replace(0, 1, "");
+		debugInfo.flush();
 	}
 
 }
@@ -249,19 +269,19 @@ bool Prophet::Operate(int currentTime)
 
 	if( currentTime % SLOT_MOBILITYMODEL == 0 )
 	{
-		cout << endl << "########  [ " << currentTime << " ]  NODE LOCATION UPDATE" << endl;
+		cout << endl << "########  < " << currentTime << " >  NODE LOCATION UPDATE" ;
 		UpdateNodeStatus(currentTime);
 	}
 
 	if( currentTime % SLOT_DATA_GENERATE == 0 && currentTime <= DATATIME )
 	{
-		cout << endl << "########  [ " << currentTime << " ]  DATA GENERATION" << endl;
+		cout << endl << "########  < " << currentTime << " >  DATA GENERATION" ;
 		GenerateData(currentTime);
 	}
 
 	if( currentTime % SLOT_DATA_SEND == 0 )
 	{
-		cout << endl << "########  [ " << currentTime << " ]  DATA DELIVERY" << endl;
+		cout << endl << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 		SendData(currentTime);
 	}
 

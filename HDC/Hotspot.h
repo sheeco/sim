@@ -207,7 +207,7 @@ public:
 		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
 		if( i < 0 || i > deliveryCounts.size() )
 		{
-			cout << "Error: CHotspot:: getDeliveryCount(" << untilTime << ") " << i << " exceeds (0," << deliveryCounts.size() - 1 << ") !" << endl;
+			cout << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") " << i << " exceeds (0," << deliveryCounts.size() - 1 << ") !" << endl;
 			_PAUSE;
 		}
 		return deliveryCounts.at( i );
@@ -231,7 +231,7 @@ public:
 		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
 		if( i < 0 || i > waitingTimes.size() )
 		{
-			cout << "Error: CHotspot:: getDeliveryCount(" << untilTime << ") " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
+			cout << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
 			_PAUSE;
 		}		return waitingTimes.at( i );
 	}

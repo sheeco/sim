@@ -29,7 +29,7 @@ extern double RATIO_NEW_HOTSPOT;
 extern double RATIO_OLD_HOTSPOT;
 
 //extern string logInfo;
-//extern ofstream debugInfo;
+//extern fstream debugInfo;
 
 class CHDC :
 	public CMacProtocol
@@ -74,7 +74,7 @@ public:
 
 		if( currentTime % SLOT_HOTSPOT_UPDATE == 0 && currentTime >= startTimeForHotspotSelection )
 		{
-			cout  <<  endl <<"########  [ " << currentTime << " ]  HOTSPOT SELECTTION" << endl;
+			cout  <<  endl <<"########  < " << currentTime << " >  HOTSPOT SELECTTION" << endl ;
 			HotspotSelection(currentTime);
 		}
 

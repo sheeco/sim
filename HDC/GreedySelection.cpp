@@ -54,6 +54,9 @@ void CGreedySelection::UpdateStatus()
 
 void CGreedySelection::GreedySelect(int time)
 {
+	cout << CR ;
+	cout << "####  ( GREEDY SELECT )          " ;
+
 	do
 	{
 		this->UpdateStatus();
@@ -107,7 +110,7 @@ void CGreedySelection::GreedySelect(int time)
 		CHotspot *best_hotspot;
 		if( index_best_hotspot == -1 || index_best_hotspot == unselectedHotspots.size() )
 		{
-			//cout<<"Error: CGreedySelection::GreedySelection() index_max_hotspot == -1"<<endl;
+			//cout<<"Error @ CGreedySelection::GreedySelection() index_max_hotspot == -1"<<endl;
 			
 			//在merge-HAR中可能出现此情况，剩余的未选中热点中有一部分由于是旧热点，系数得到累积之后达不到GAMMA指示的水平
 			//此时，直接选中ratio最大的候选热点
@@ -174,6 +177,9 @@ string CGreedySelection::toString()
 
 void CGreedySelection::mergeHotspots(int time)
 {
+	cout << CR ;
+	cout << "####  ( HOTSPOT MERGE )          " ;
+
 	vector<CHotspot *> mergeResult;
 	int mergeCount = 0;
 	int oldCount = 0;

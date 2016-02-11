@@ -4,7 +4,7 @@
 #include "PostSelector.h"
 #include "NodeRepair.h"
 #include "GreedySelection.h"
-#include "Epidemic.h"
+#include "Prophet.h"
 #include "HDC.h"
 
 
@@ -70,18 +70,17 @@ ofstream debugInfo("debug.txt", ios::app);
 string HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
               "<mode>            -har;                  -ihar;                  -hdc;                    -hotspot-similarity;         -dynamic-node-number; \n"
               "<time>            -time-data   [];       -time-run   []; \n"
-			  "<node>            -node-energy [];       -sink       [] [];      -range      []; \n"
-              "<har>             -alpha       [];       -beta       [];         -gamma       [];          -heat   [] [];               -prob-trans []; \n"
+			  "<node>            -energy      [];       -sink       [] [];      -range      []; \n"
+              "<har>             -alpha       [];       -beta       [];         -gamma      [];          -heat   [] [];               -prob-trans []; \n"
               "<ihar>            -lambda      [];       -lifetime   []; \n"
-			  "<epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
-              "<hdc>             -slot-total  [];       -default-dc [];         -hotspot-dc []; \n\n";
+			  "<prophet>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
+              "<hdc>             -cycle       [];       -dc-default [];         -dc-default []; \n\n" ;
 
+string DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Period	#DefaultDC	(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log \n" ;
 
 int main(int argc, char* argv[])
 {
 
-	//"<epidemic>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
-	//	"<hdc>             -slot-total  [];       -default-dc [];         -hotspot-dc []; \n\n";
 
 	/************************************ 参数默认值 *************************************/
 	//CData::MAX_HOP = 20;
@@ -162,19 +161,19 @@ int main(int argc, char* argv[])
 					RUNTIME = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-default-dc" )
+			else if( field == "-dc-default" )
 			{
 				if(iField < argc - 1)
 					CNode::DEFAULT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-hotspot-dc" )
+			else if( field == "-dc-hotspot" )
 			{
 				if(iField < argc - 1)
 					CNode::HOTSPOT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-slot-total" )
+			else if( field == "-cycle" )
 			{
 				if(iField < argc - 1)
 					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
@@ -192,7 +191,7 @@ int main(int argc, char* argv[])
 					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-node-energy" )
+			else if( field == "-energy" )
 			{
 				if(iField < argc - 1)
 					CNode::ENERGY = atoi( argv[ iField + 1 ] );
@@ -296,7 +295,7 @@ int main(int argc, char* argv[])
 	}
 	catch(exception e)
 	{
-		cout << "Error: main() Wrong Parameter Format!" << endl;
+		cout << "Error @ main() Wrong Parameter Format!" << endl;
 		cout << HELP;
 		_PAUSE;
 		exit(1);
@@ -335,7 +334,12 @@ int main(int argc, char* argv[])
 		parameters << "RUN TIME" << TAB << RUNTIME << endl;
 		parameters << "PROB DATA FORWARD" << TAB << PROB_DATA_FORWARD << endl;
 
-		debugInfo << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB << Epidemic::SPOKEN_MEMORY << TAB ;
+		//输出文件为空时，输出文件头
+		debugInfo.seekp(0, ios::end);
+		if( ! debugInfo.tellp() )
+			debugInfo << DEBUG ;
+
+		debugInfo << endl << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB << Epidemic::SPOKEN_MEMORY << TAB ;
 		if( CData::useHOP() )
 			debugInfo << CData::MAX_HOP << TAB ;
 		else 
@@ -355,7 +359,7 @@ int main(int argc, char* argv[])
 				parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
 				parameters << "LAMBDA" << TAB << LAMBDA << endl;
 
-				debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << ALPHA << TAB << BETA << TAB << MAX_MEMORY_TIME << TAB << LAMBDA << TAB ;
+				debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << ALPHA << TAB << BETA << TAB << MAX_MEMORY_TIME << TAB ;
 			}
 
 			//else if(DO_MERGE_HAR)
@@ -385,6 +389,7 @@ int main(int argc, char* argv[])
 			parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
 			parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
 		}
+		debugInfo.flush();
 
 		if(TEST_DYNAMIC_NUM_NODE)
 		{
@@ -409,7 +414,7 @@ int main(int argc, char* argv[])
 
 		bool dead = false;
 
-		dead = ! Epidemic::Operate(currentTime);
+		dead = ! Prophet::Operate(currentTime);
 
 		if( dead )
 			break;
@@ -419,5 +424,5 @@ int main(int argc, char* argv[])
 	}
 
 	debugInfo.close();
-
+	_ALERT;
 }

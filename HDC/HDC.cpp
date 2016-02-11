@@ -59,7 +59,8 @@ void CHDC::HotspotSelection(int currentTime)
 		CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
 	}
 
-	cout << "####  [ Hotspots ]  " << CHotspot::selectedHotspots.size() << endl;
+	cout << CR ;
+	cout << "####  [ Hotspots ]  " << CHotspot::selectedHotspots.size() ;
 
 	//比较相邻两次热点选取的相似度
 	if(TEST_HOTSPOT_SIMILARITY)
@@ -97,8 +98,9 @@ void CHDC::CompareWithOldHotspots(int currentTime)
 void CHDC::PrintInfo(int currentTime)
 {
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、节点buffer状态 ...
-	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0 
+	if( ( currentTime % SLOT_HOTSPOT_UPDATE  == 0 
 		&& currentTime >= startTimeForHotspotSelection )
+		|| currentTime == RUNTIME )
 	{
 		//热点个数
 		ofstream hotspot("hotspot.txt", ios::app);
@@ -213,13 +215,15 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		//update duty cycle
 		if( (*inode)->useHotspotDutyCycle() && atHotspot == NULL )
 		{
-			cout << endl << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )" << endl;
+			cout << CR ;
+			cout << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )     " ;			
 			(*inode)->setAtHotspot(NULL);
 			(*inode)->resetDutyCycle();
 		}
 		else if( ! (*inode)->useHotspotDutyCycle() && atHotspot != NULL )
 		{
-			cout << endl << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )" << endl;
+			cout << CR ;
+			cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )     " ;
 			(*inode)->setAtHotspot(atHotspot);
 			(*inode)->raiseDutyCycle();
 		}

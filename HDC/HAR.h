@@ -35,7 +35,7 @@
 //extern double RATIO_OLD_HOTSPOT;
 //
 //extern string logInfo;
-//extern ofstream debugInfo;
+//extern fstream debugInfo;
 //
 //class HAR : 
 //	public CRoutingProtocol

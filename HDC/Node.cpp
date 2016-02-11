@@ -13,9 +13,9 @@ vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
 
 /**************************************  Prophet  *************************************/
-double CNode::INIT_DELIVERY_PRED = 0;  //0.75
-double CNode::DECAY_RATIO = 0;  //0.98(/s)
-double CNode::TRANS_RATIO = 0;  //0.25
+double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
+double CNode::DECAY_RATIO = 0.90;  //0.98(/s)
+double CNode::TRANS_RATIO = 0.20;  //0.25
 
 
 void CNode::dropDataIfOverflow(int currentTime)
@@ -50,7 +50,8 @@ void CNode::dropDataIfOverflow(int currentTime)
 	//如果总长度溢出
 	if( myData.size() > bufferCapacity )
 	{
-		cout << endl << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )" << endl;
+		cout << CR ;
+		cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )     " ;
 		myData = vector<CData>( myData.end() - BUFFER_CAPACITY, myData.end() );
 	}
 	buffer = myData;

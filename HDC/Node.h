@@ -71,11 +71,6 @@ private:
 		this->bufferCapacity = capacityBuffer;
 		if( ENERGY > 1 )
 			this->energy = ENERGY;
-
-		/**************************************  Prophet  *************************************/
-
-		for(int id = 0; id <= NUM_NODE; id++)
-			deliveryPreds[id] = INIT_DELIVERY_PRED;
 	}
 
 	~CNode(void){};
@@ -149,34 +144,22 @@ private:
 
 	/**************************************  Prophet  *************************************/
 
+	void initDeliveryPreds()
+	{
+		if( ! deliveryPreds.empty() )
+			return;
+
+		for(int id = 0; id <= NUM_NODE; id++)
+		{
+			if( id != ID )
+				deliveryPreds[id] = INIT_DELIVERY_PRED;
+		}
+	}
+
 	void decayDeliveryPreds(int currentTime)
 	{
 		for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); imap++)
 			deliveryPreds[ imap->first ] = imap->second * pow( DECAY_RATIO, ( currentTime - time ) / SLOT_MOBILITYMODEL );
-	}
-	
-	void updateDeliveryPredsWith(int node, map<int, double> preds)
-	{
-		double oldPred, transPred, dstPred = 0;
-		if( deliveryPreds.find(node) == deliveryPreds.end() )
-			deliveryPreds[node] = INIT_DELIVERY_PRED;
-
-		oldPred = this->deliveryPreds[ node ];
-		deliveryPreds[ node ] = transPred = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
-
-		for(map<int, double>::iterator imap = preds.begin(); imap != preds.end(); imap++)
-		{
-			int dst = imap->first;
-			if( dst == this->ID )
-				continue;
-			if( deliveryPreds.find(node) == deliveryPreds.end() )
-				deliveryPreds[node] = INIT_DELIVERY_PRED;
-
-			oldPred = this->deliveryPreds[ dst ];
-			dstPred = imap->second;
-			deliveryPreds[ dst ] = oldPred + ( 1 - oldPred ) * transPred * dstPred * TRANS_RATIO;
-		}
-		
 	}
 
 
@@ -434,6 +417,30 @@ public:
 
 
 	/**************************************  Prophet  *************************************/
+		
+	void updateDeliveryPredsWith(int node, map<int, double> preds)
+	{
+		double oldPred = 0, transPred = 0, dstPred = 0;
+		if( deliveryPreds.find(node) == deliveryPreds.end() )
+			deliveryPreds[ node ] = INIT_DELIVERY_PRED;
+
+		oldPred = this->deliveryPreds[ node ];
+		deliveryPreds[ node ] = transPred = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
+
+		for(map<int, double>::iterator imap = preds.begin(); imap != preds.end(); imap++)
+		{
+			int dst = imap->first;
+			if( dst == this->ID )
+				continue;
+			if( deliveryPreds.find(node) == deliveryPreds.end() )
+				deliveryPreds[ node ] = INIT_DELIVERY_PRED;
+
+			oldPred = this->deliveryPreds[ dst ];
+			dstPred = imap->second;
+			deliveryPreds[ dst ] = oldPred + ( 1 - oldPred ) * transPred * dstPred * TRANS_RATIO;
+		}
+		
+	}
 
 	void updateDeliveryPredsWithSink()
 	{
@@ -468,16 +475,12 @@ public:
 
 		if( preds.find(SINK_ID)->second > this->deliveryPreds.find(SINK_ID)->second )
 		{		
-			updateDeliveryPredsWith(node->getID(), preds);
 			vector<int> req = summaryVector;
 			RemoveFromList(req, sv);
 			return sendDataByRequestList( req );
 		}
 		else
-		{
-			updateDeliveryPredsWith(node->getID(), preds);
 			return vector<CData>();
-		}
 	}
 
 
@@ -492,6 +495,7 @@ public:
 					generationRate *= 5;
 				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
 				node->generateID();
+				node->initDeliveryPreds();
 				CNode::nodes.push_back(node);
 				CNode::idNodes.push_back( node->getID() );
 			}

@@ -54,7 +54,7 @@ vector<int> CPreprocessor::RandomIntList(int min, int max, int size)
 		}while(duplicate);
 		if(tmp < 0)
 		{
-			cout<<"Error: RandomIntList() tmp < 0"<<endl;
+			cout<<"Error @ RandomIntList() tmp < 0"<<endl;
 			_PAUSE;
 		}
 		else
@@ -102,7 +102,7 @@ void CPreprocessor::CollectNewPositions(int time)
 		tmp_pos->generateID();
 		if(tmp_pos->getID() == -1)
 		{
-			cout<<endl<<"Error: CPreprocessor::BuildCandidateHotspots() 文件解析出错！"<<endl;
+			cout<<endl<<"Error @ CPreprocessor::BuildCandidateHotspots() 文件解析出错！"<<endl;
 			_PAUSE;
 			break;
 		}
@@ -517,6 +517,9 @@ void CPreprocessor::DecayPositionsWithoutDeliveryCount()
 
 void CPreprocessor::BuildCandidateHotspots(int time)
 {
+	cout << CR ;
+	cout << "####  ( CANDIDATE BUILDING )     " ;
+
 	//释放上一轮选取中未被选中的废弃热点
 	if(! CHotspot::hotspotCandidates.empty())
 		freePointerVector(CHotspot::hotspotCandidates);
