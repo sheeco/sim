@@ -35,7 +35,7 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 	}
 	catch(exception e)
 	{
-		cout<<endl<<"Error @ CFileParser::getPositionFromFile()"<<endl;
+		cout<<endl<<"Error @ CFileParser::getPositionFromFile() : Unknown error without assumption"<<endl;
 		_PAUSE;
 	}
 }
@@ -107,7 +107,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //	}
 //	catch(exception e)
 //	{
-//		cout<<endl<<"Error @ CFileParser::getHotspotFromFile() Wrong Format"<<endl;
+//		cout<<endl<<"Error @ CFileParser::getHotspotFromFile() : Wrong Format"<<endl;
 //		_PAUSE;
 //	}
 //	file.close();
@@ -130,7 +130,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //			writeHotspotToFile(filename, *it, withDetail);
 //		else
 //		{
-//			cout<<"Error @ CFileParser::writeHotspotToFile() list_hotspot has a NULL"<<endl;
+//			cout<<"Error @ CFileParser::writeHotspotToFile() : list_hotspot has a NULL"<<endl;
 //			_PAUSE;
 //		}
 //	}
@@ -148,7 +148,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //		}
 //		else
 //		{
-//			cout<<"Error @ CFileParser::writeHotspotToFile() list_hotspot has a NULL"<<endl;
+//			cout<<"Error @ CFileParser::writeHotspotToFile() : list_hotspot has a NULL"<<endl;
 //			_PAUSE;
 //		}
 //	}

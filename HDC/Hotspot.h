@@ -6,6 +6,7 @@
 extern bool TEST_BALANCED_RATIO;
 extern bool TEST_LEARN;
 extern int NUM_NODE;
+extern int TRANS_RANGE;
 extern int currentTime;
 extern double RATIO_MERGE_HOTSPOT;
 extern double RATIO_NEW_HOTSPOT;
@@ -68,22 +69,113 @@ public:
 		this->ratio = 0;
 	}
 
-	//从某个Position的位置生成一个hotspot
+	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
 	CHotspot(CPosition* pos, int time)  //time应当是当前time，而不是pos的time
 	{
-		this->x = pos->getX();
-		this->y = pos->getY();
-		this->ID = -1;
-		this->time = time;
-		this->heat = 0;
-		//merge_HAR
-		this->candidateType = TYPE_NEW_HOTSPOT;
-		this->age = 0;
-		this->deliveryCounts.push_back(0);
-		this->waitingTimes.push_back(0);
-		this->ratio = 0;
+		//this->x = pos->getX();
+		//this->y = pos->getY();
+		//this->ID = -1;
+		//this->time = time;
+		//this->heat = 0;
+		////merge_HAR
+		//this->candidateType = TYPE_NEW_HOTSPOT;
+		//this->age = 0;
+		//this->deliveryCounts.push_back(0);
+		//this->waitingTimes.push_back(0);
+		//this->ratio = 0;
 
-		addPosition(pos);
+		//addPosition(pos);
+
+		this->generateID();
+
+		//重置flag
+		for(int i = 0; i < CPosition::nPositions; i++)
+			CPosition::positions[i]->setFlag(false);
+		pos->setFlag(true);
+
+		int index_pos = CPosition::getIndexOfPosition(pos);
+		bool modified;
+		//循环，直到没有新的position被加入
+		do
+		{
+			modified = false;
+			//对新的hotspot重心，再次遍历position
+			for(int i = index_pos - 1; i >= 0; i--)
+			{
+				if(CPosition::positions[i]->getFlag())
+					continue;
+				//若水平距离已超出range，则可以直接停止搜索
+				if(fabs(this->getX() - CPosition::positions[i]->getX()) > TRANS_RANGE)
+					break;
+				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= TRANS_RANGE)
+				{
+					this->addPosition(CPosition::positions[i]);
+					CPosition::positions[i]->setFlag(true);
+					modified = true;
+				}
+			}
+			for(int i = index_pos + 1; i < CPosition::nPositions; i++)
+			{
+				if(CPosition::positions[i]->getFlag())
+					continue;
+				//若水平距离已超出range，则可以直接停止搜索
+				if(fabs(CPosition::positions[i]->getX() - this->getX()) > TRANS_RANGE)
+					break;
+				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= TRANS_RANGE)
+				{
+					this->addPosition(CPosition::positions[i]);
+					CPosition::positions[i]->setFlag(true);
+					modified = true;
+				}
+			}
+
+			//重新计算hotspot的重心
+			if(modified)
+				this->recalculateCenter();
+		}while(modified);
+
+	}
+
+	//由merge函数调用
+	CHotspot(double x, double y, int time)
+	{
+		this->setX(x);
+		this->setY(y);
+		this->setTime(time);
+		this->generateID();
+
+		//重置flag
+		for(int i = 0; i < CPosition::nPositions; i++)
+			CPosition::positions[i]->setFlag(false);
+
+		bool modified;
+		//循环，直到没有新的position被加入
+		do
+		{
+			modified = false;
+			//对新的hotspot重心，再次遍历position
+			for(int i = 0; i < CPosition::nPositions; i++)
+			{
+				if(CPosition::positions[i]->getFlag())
+					continue;
+				if( CPosition::positions[i]->getX() + TRANS_RANGE < this->getX() )
+					continue;
+				//若水平距离已超出range，则可以直接停止搜索
+				if( this->getX() + TRANS_RANGE < CPosition::positions[i]->getX() )
+					break;
+				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= TRANS_RANGE)
+				{
+					this->addPosition(CPosition::positions[i]);
+					CPosition::positions[i]->setFlag(true);
+					modified = true;
+				}
+			}
+
+			//重新计算hotspot的重心
+			if(modified)
+				this->recalculateCenter();
+		}while(modified);
+	
 	}
 
 	~CHotspot(){};
@@ -207,7 +299,7 @@ public:
 		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
 		if( i < 0 || i > deliveryCounts.size() )
 		{
-			cout << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") " << i << " exceeds (0," << deliveryCounts.size() - 1 << ") !" << endl;
+			cout << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") : " << i << " exceeds (0," << deliveryCounts.size() - 1 << ") !" << endl;
 			_PAUSE;
 		}
 		return deliveryCounts.at( i );
@@ -231,7 +323,7 @@ public:
 		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
 		if( i < 0 || i > waitingTimes.size() )
 		{
-			cout << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
+			cout << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") : " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
 			_PAUSE;
 		}		return waitingTimes.at( i );
 	}
@@ -264,7 +356,9 @@ public:
 
 	//生成包含该热点的时间、年龄、ID、坐标、cover数等信息的字符串
 	string toString(bool withDetails);
-	
+		
+	/****************************************   merge-HAR   ****************************************/ 
+
 	//计算两个热点集合中所有热点pair的重叠面积之和（如有三个或更多个热点共同重叠，重叠部分的面积将多次计入，以度量相似程度）
 	static double getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots);
 	//计算一个热点集合内的重叠面积，用于更准确的计算集合间重叠面积

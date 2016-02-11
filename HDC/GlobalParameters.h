@@ -73,6 +73,7 @@ using namespace std;
 #define CR '\r'  //用于控制台输出时同行改写的转义字符
 #define _PAUSE _ALERT; system("pause")
 #define _ALERT cout << '\a'
+#define flash_cout cout << CR  //控制台输出位置回到行首，在动态显示的输出时使用 flash_cout 代替 cout 即可
 #define PI 3.1415926535
 #define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
 
@@ -253,7 +254,7 @@ static vector<E> getItemsByID(vector<E> list, vector<int> ids)
 //		}while(duplicate);
 //		if(tmp < 0)
 //		{
-//			cout << "Error @ RandomIntList() tmp < 0" << endl;
+//			cout << "Error @ CPreprocessorRandomIntList() : tmp < 0" << endl;
 //			_PAUSE;
 //		}
 //		else

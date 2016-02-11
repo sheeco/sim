@@ -12,36 +12,37 @@
 //#include "RoutingProtocol.h"
 //#include "NodeRepair.h"
 //
-//extern bool DO_IHAR;
-//extern bool TEST_HOTSPOT_SIMILARITY;
-//extern bool TEST_LEARN;
-//extern bool HEAT_RATIO_EXP;
-//extern bool HEAT_RATIO_LN;
 //
-//extern int currentTime;
+//extern bool TEST_HOTSPOT_SIMILARITY;
+//extern int NUM_NODE;
+//extern int RUNTIME;
+//extern int DATATIME;
+//extern double PROB_DATA_FORWARD;
+//extern int MAX_MEMORY_TIME;
+//
+///***************************** xHAR ********************************/
+//extern bool DO_IHAR;
 //extern int startTimeForHotspotSelection;
-//extern double CO_HOTSPOT_HEAT_A1;
-//extern double CO_HOTSPOT_HEAT_A2;
 //extern double BETA;
 //extern int MIN_WAITING_TIME;
-//extern int MAX_MEMORY_TIME;
-//extern int NUM_NODE;
-//extern double PROB_DATA_FORWARD;
-//extern int DATATIME;
-//extern int RUNTIME;
+//extern double CO_HOTSPOT_HEAT_A1;
+//extern double CO_HOTSPOT_HEAT_A2;
 //
 //extern double RATIO_MERGE_HOTSPOT;
 //extern double RATIO_NEW_HOTSPOT;
 //extern double RATIO_OLD_HOTSPOT;
+//extern bool HEAT_RATIO_EXP;
+//extern bool HEAT_RATIO_LN;
+//extern bool TEST_LEARN;
 //
-//extern string logInfo;
-//extern fstream debugInfo;
+//extern int currentTime;
+//extern string INFO_LOG;
+//extern ofstream debugInfo;
 //
 //class HAR : 
 //	public CRoutingProtocol
 //{
 //private:
-//	CSink* m_sink;
 //	vector<CHotspot *> m_hotspots;
 //	vector<CRoute> m_routes;  //¼´hotspot class
 //	vector<CMANode> m_MANodes;
@@ -124,26 +125,9 @@
 //
 //
 //public:
-//	HAR(void)
-//	{
-//		for(int i = 0; i < NUM_NODE; i++)
-//		{
-//			double generationRate = RATE_DATA_GENERATE;
-//			if(i % 5 == 0)
-//				generationRate *= 5;
-//			CNode node(generationRate, BUFFER_CAPACITY_NODE);
-//			node.generateID();
-//			CNode::nodes.push_back(node);
-//			CNode::idNodes.push_back( node.getID() );
-//		}
-//		CNode sink(0, BUFFER_CAPACITY_SINK);
-//		sink.setSinkID();
-//		sink.setLocation(SINK_X, SINK_Y, 0);
-//		m_sink = CSink::getSink();
-//	}
+//	HAR(void){};
 //
-//	~HAR(void)
-//	{}
+//	~HAR(void){};
 //
 //	inline int getNClass()
 //	{

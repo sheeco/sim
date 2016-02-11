@@ -15,7 +15,7 @@ extern vector<CPosition*> g_tmpPositions;
 
 extern int g_old_nPositions;
 extern int g_old_nHotspots;
-extern string logInfo;
+extern string INFO_LOG;
 
 class CPostSelector : 
 	public CAlgorithm

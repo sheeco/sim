@@ -51,7 +51,7 @@ public:
 			return NULL;
 		else if(waypoints[0]->getID() != SINK_ID)
 		{
-			cout<<"Error @ CRoute::getSink() waypoints[0] is not sink"<<endl;
+			cout<<"Error @ CRoute::getSink() : waypoints[0] is not sink"<<endl;
 			_PAUSE;
 			return NULL;
 		}
@@ -82,7 +82,7 @@ public:
 			|| toPoint < 0 
 			|| ( ( waypoints[toPoint]->getID() != SINK_ID ) && ( ( (CHotspot *)waypoints[toPoint] )->getCandidateType() > 3 ) ) )
 		{
-			cout << "Error @ toPoint exceeds the range " << endl;
+			cout << "Error @ CBasicEntity::getToPoint : toPoint exceeds the range " << endl;
 			_PAUSE;
 		}
 		return waypoints[toPoint];

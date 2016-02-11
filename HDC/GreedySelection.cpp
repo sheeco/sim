@@ -52,10 +52,94 @@ void CGreedySelection::UpdateStatus()
 	}
 }
 
+void CGreedySelection::CollectNewPositions(int time)
+{
+	CPosition* tmp_pos = NULL;
+
+	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到CPosition::positions中
+	for(vector<int>::iterator i = CNode::getIdNodes().begin(); i != CNode::getIdNodes().end(); i++)
+	//vector<int> idNodes = CNode::getIdNodes();
+	//for(vector<int>::iterator i = idNodes.begin(); i != idNodes.end(); i++)
+	{
+		tmp_pos = new CPosition();
+		double x = 0, y = 0;
+		CFileParser::getPositionFromFile(*i, time, x, y);
+		tmp_pos->moveTo(x, y, time);
+		tmp_pos->setNode( *i );
+		tmp_pos->generateID();
+		if(tmp_pos->getID() == -1)
+		{
+			cout<<endl<<"Error @ CPreprocessor::BuildCandidateHotspots() : Wrong Format"<<endl;
+			_PAUSE;
+			break;
+		}
+		else
+		{
+			CPosition::positions.push_back(tmp_pos);
+		}
+	}
+	
+	//IHAR: 删除过期的position记录
+	if(DO_IHAR)
+	{
+		int threshold = time - MAX_MEMORY_TIME;
+		if(threshold > 0)
+		{
+			for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
+			{
+				if((*ipos)->getTime() < threshold)
+				{
+					delete *ipos;
+					ipos = CPosition::positions.erase(ipos);
+				}
+				else
+					ipos++;
+			}
+		}
+	}
+
+	CPosition::nPositions = CPosition::positions.size();
+}
+
+void CGreedySelection::BuildCandidateHotspots(int time)
+{
+	flash_cout << "####  ( CANDIDATE BUILDING )     " ;
+
+	//释放上一轮选取中未被选中的废弃热点
+	if(! CHotspot::hotspotCandidates.empty())
+		CPreprocessor::freePointerVector(CHotspot::hotspotCandidates);
+
+	/************ 注意：不论执行HAR, IHAR, merge-HAR，都缓存上一轮热点选取的结果；
+	              HAR中不会使用到，IHAR中将用于比较前后两轮选取的热点的相似度，
+			      merge-HAR中将用于热点归并。                            ********************/
+
+	//将上一轮选中的热点集合保存到CHotspot::oldSelectedHotspots
+	//并释放旧的CHotspot::oldSelectedHotspots
+	if(! CHotspot::oldSelectedHotspots.empty())
+		CPreprocessor::freePointerVector(CHotspot::oldSelectedHotspots);
+	CHotspot::oldSelectedHotspots = CHotspot::selectedHotspots;
+	//仅清空g_selectedHotspot，不释放内存
+	CHotspot::selectedHotspots.erase(CHotspot::selectedHotspots.begin(), CHotspot::selectedHotspots.end());
+
+
+	//将所有position按x坐标排序，以便简化遍历操作
+	CPosition::positions = CPreprocessor::mergeSort(CPosition::positions);
+
+	//从每个position出发生成一个候选hotspot
+	for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); ipos++)
+		CHotspot::hotspotCandidates.push_back(new CHotspot(*ipos, time));
+
+	////将所有候选hotspot按x坐标排序
+	//CHotspot::hotspotCandidates = mergeSort(CHotspot::hotspotCandidates, ascendByLocationX);
+
+	//将所有候选hotspot按ratio排序，由小到大
+	CHotspot::hotspotCandidates = CPreprocessor::mergeSort(CHotspot::hotspotCandidates, CPreprocessor::ascendByRatio);
+
+}
+
 void CGreedySelection::GreedySelect(int time)
 {
-	cout << CR ;
-	cout << "####  ( GREEDY SELECT )          " ;
+	flash_cout << "####  ( GREEDY SELECT )          " ;
 
 	do
 	{
@@ -110,7 +194,7 @@ void CGreedySelection::GreedySelect(int time)
 		CHotspot *best_hotspot;
 		if( index_best_hotspot == -1 || index_best_hotspot == unselectedHotspots.size() )
 		{
-			//cout<<"Error @ CGreedySelection::GreedySelection() index_max_hotspot == -1"<<endl;
+			//cout<<"Error @ CGreedySelection::GreedySelection() : index_max_hotspot == -1"<<endl;
 			
 			//在merge-HAR中可能出现此情况，剩余的未选中热点中有一部分由于是旧热点，系数得到累积之后达不到GAMMA指示的水平
 			//此时，直接选中ratio最大的候选热点
@@ -177,8 +261,7 @@ string CGreedySelection::toString()
 
 void CGreedySelection::mergeHotspots(int time)
 {
-	cout << CR ;
-	cout << "####  ( HOTSPOT MERGE )          " ;
+	flash_cout << "####  ( HOTSPOT MERGE )          " ;
 
 	vector<CHotspot *> mergeResult;
 	int mergeCount = 0;
@@ -207,7 +290,7 @@ void CGreedySelection::mergeHotspots(int time)
 			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * TRANS_RANGE)
 			{
 				//FIXE: time copied from old or new ?
-				CHotspot *merge = CPreprocessor::GenerateHotspotFromCoordinates( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 ,
+				CHotspot *merge = new CHotspot( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 ,
 																				 ( (*iOld)->getY() + (*iNew)->getY() ) / 2 ,
 																				   time );
 				//for merge statistics

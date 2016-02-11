@@ -20,7 +20,7 @@ double CPostSelector::getRatioForHotspot(CHotspot *hotspot)
 {
 	if(maxRatio == 0)
 	{
-		cout<<"Error @ CPostSelector::getRatioForHotspot() maxRatio = 0"<<endl;
+		cout<<"Error @ CPostSelector::getRatioForHotspot() : maxRatio = 0"<<endl;
 		_PAUSE;
 		return -1;
 	}
@@ -115,8 +115,7 @@ bool CPostSelector::verifyCompleted()
 
 vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 {
-	cout << CR ;
-	cout << "####  ( POST SELECT )          " ;
+	flash_cout << "####  ( POST SELECT )          " ;
 
 	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ihotspot++)
 	{
@@ -162,7 +161,7 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 	}
 	if(! verifyCompleted())
 	{
-		cout<<"Error @ CPostSelector::PostSelect() not completed"<<endl;
+		cout<<"Error @ CPostSelector::PostSelect() : not completed"<<endl;
 		_PAUSE;
 	}
 

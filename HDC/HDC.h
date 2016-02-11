@@ -28,7 +28,7 @@ extern double RATIO_MERGE_HOTSPOT;
 extern double RATIO_NEW_HOTSPOT;
 extern double RATIO_OLD_HOTSPOT;
 
-//extern string logInfo;
+//extern string INFO_LOG;
 //extern fstream debugInfo;
 
 class CHDC :
@@ -70,7 +70,7 @@ public:
 	{
 
 		if( currentTime % SLOT_LOCATION_UPDATE == 0 && currentTime > 0 )
-			CPreprocessor::CollectNewPositions(currentTime);
+			CGreedySelection::CollectNewPositions(currentTime);
 
 		if( currentTime % SLOT_HOTSPOT_UPDATE == 0 && currentTime >= startTimeForHotspotSelection )
 		{

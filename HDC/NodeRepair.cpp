@@ -54,7 +54,7 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 	}
 	//if(result == NULL)
 	//{
-	//	cout<<"Error @ CNodeRepair::findMaxCoverHotspotForNode() result = NULL"<<endl;
+	//	cout<<"Error @ CNodeRepair::findMaxCoverHotspotForNode() : result = NULL"<<endl;
 	//	_PAUSE;
 	//}
 	return result;
@@ -62,8 +62,7 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 
 vector<CHotspot *> CNodeRepair::RepairPoorNodes()
 {
-	cout << CR ;
-	cout << "####  ( POOR NODE REPAIR )          " ;
+	flash_cout << "####  ( POOR NODE REPAIR )          " ;
 
 	while(! poorNodes.empty())
 	{

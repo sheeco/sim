@@ -305,7 +305,7 @@
 //	while(! tmp_hotspots.empty())
 //	{
 //		//构造一个hotspot class
-//		CRoute route(m_sink);
+//		CRoute route(CSink::getSink());
 //		double current_time_cost = 0;
 //		double current_buffer = 0;
 //		while(true)
@@ -357,7 +357,7 @@
 //			if( new_buffer > BUFFER_CAPACITY_MA
 //				&& route.getNWayPoints() == 1)
 //			{
-//				//cout<<"Error @ HAR::HotspotClassification() a singe hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
+//				//cout<<"Error @ HAR::HotspotClassification() : A single hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
 //				//_PAUSE;
 //				route.AddPoint(max_front, tmp_hotspots[max_hotspot]);
 //				vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin() + max_hotspot;
@@ -378,20 +378,20 @@
 //		newRoutes.push_back(route);
 //	}
 //	//将得到的新的hotspot class放入sink的route列表
-//	m_sink->setNewRoutes(newRoutes);
+//	CSink::getSink()->setNewRoutes(newRoutes);
 //}
 //
 //
 //void HAR::MANodeRouteDesign()
 //{
-//	vector<CRoute> routes = m_sink->getNewRoutes();
+//	vector<CRoute> routes = CSink::getSink()->getNewRoutes();
 //	//对每个分类的路线用最近邻居算法进行优化
 //	for(vector<CRoute>::iterator iroute = routes.begin(); iroute != routes.end(); iroute++)
 //	{
 //		OptimizeRoute( *iroute );
 //	}
 //	m_routes = routes;
-//	m_sink->setNewRoutes(routes);
+//	CSink::getSink()->setNewRoutes(routes);
 //
 //	//通知当前的所有MA路线已过期，立即返回
 //	for(vector<CMANode>::iterator iMANode = m_MANodes.begin(); iMANode != m_MANodes.end(); iMANode++)
@@ -405,7 +405,7 @@
 //		int num_newMANodes = routes.size() - m_MANodes.size();
 //		for(int i = 0; i < num_newMANodes; i++)
 //		{
-//			CMANode ma(m_sink->popRoute(), currentTime);
+//			CMANode ma(CSink::getSink()->popRoute(), currentTime);
 //			m_MANodes.push_back(ma);
 //		}
 //	}
@@ -433,7 +433,7 @@
 //	ofstream waiting_time("waiting-time.txt", ios::app);
 //	if( currentTime == startTimeForHotspotSelection )
 //	{
-//		waiting_time << logInfo;
+//		waiting_time << INFO_LOG;
 //		waiting_time << "#Time" << TAB << "#MANodeID" << TAB << "#HotspotID" << TAB << "#HotspotType/HotspotAge" << TAB 
 //					 << "#Cover" << TAB << "#Heat" << TAB << "#WaitingTime" << endl;
 //	}
@@ -441,7 +441,7 @@
 //	ofstream delivery_hotspot("delivery-hotspot.txt", ios::app);
 //	if( currentTime == startTimeForHotspotSelection )
 //	{
-//		delivery_hotspot << endl << logInfo;
+//		delivery_hotspot << endl << INFO_LOG;
 //		delivery_hotspot << "#Time" << TAB << "#DeliveryCountForSingleHotspotInThisSlot ..." << endl;
 //	}
 //	//用于存储hotspot及其投递计数的静态拷贝
@@ -450,14 +450,14 @@
 //	ofstream delivery_statistics("delivery-statistics.txt", ios::app);
 //	if( currentTime == startTimeForHotspotSelection )
 //	{
-//		delivery_statistics << endl << logInfo;
+//		delivery_statistics << endl << INFO_LOG;
 //		delivery_statistics << "#Time" << TAB << "#DeliveryAtHotspotCount" << TAB << "#DeliveryTotalCount" << TAB << "#DeliveryAtHotspotPercent" << endl;
 //	}
 //	//用于测试投递计数为0的热点信息，按照投递计数降序输出所有热点的覆盖的position数、node数、ratio、投递计数
 //	ofstream hotspot_rank("hotspot-rank.txt", ios::app);
 //	if( currentTime == startTimeForHotspotSelection )
 //	{
-//		hotspot_rank << endl << logInfo;
+//		hotspot_rank << endl << INFO_LOG;
 //		hotspot_rank << "#WorkTime" << TAB << "#ID" << TAB << "#Location" << TAB << "#nPosition, nNode" << TAB << "#Ratio" << TAB << "#Tw" << TAB << "#DeliveryCount" << endl;
 //	}
 //	//用于统计过期热点的投递计数时判断是否应当输出时间
@@ -473,12 +473,12 @@
 //		{
 //			iMANode->updateLocation(currentTime);
 //			//如果到达sink，投递MA的所有数据
-//			if( CBasicEntity::getDistance( *iMANode, *m_sink) <= TRANS_RANGE )
+//			if( CBasicEntity::getDistance( *iMANode, *CSink::getSink()) <= TRANS_RANGE )
 //			{
 //				if(iMANode->getBufferSize() > 0)
 //				{
 //					cout << "####  [ MA " << iMANode->getID() << " Sends " << iMANode->getBufferSize() << " Data ]" << endl; 
-//					m_sink->receiveData(iMANode->sendAllData(), currentTime);
+//					CSink::getSink()->receiveData(iMANode->sendAllData(), currentTime);
 //				}
 //				if( iMANode->routeIsOverdue() )
 //				{
@@ -486,7 +486,7 @@
 //					vector<CBasicEntity *> overdueHotspots = iMANode->getRoute()->getWayPoints();
 //
 //					//更新路线，取得新的热点集合
-//					if( m_sink->hasMoreNewRoutes() )
+//					if( CSink::getSink()->hasMoreNewRoutes() )
 //					{
 //						//热点集合发生更新，输出已完成统计的热点投递计数集合，和上一轮热点选取的时间
 //						if( ! hasMoreNewRoutes )
@@ -513,7 +513,7 @@
 //							hasMoreNewRoutes = true;
 //						}
 //
-//						iMANode->setRoute(m_sink->popRoute());
+//						iMANode->setRoute(CSink::getSink()->popRoute());
 //						cout << "####  [ MA " << iMANode->getID() << " Updates Its Route ]" << endl;
 //					}
 //					//FIXME: 若路线数目变少，删除多余的MA
@@ -535,7 +535,7 @@
 //					if( ! iMANode->getFlag() )
 //						break;
 //				}
-//				else if( ! m_sink->hasMoreNewRoutes() )
+//				else if( ! CSink::getSink()->hasMoreNewRoutes() )
 //				{
 //					//热点集合更新结束，重置flag
 //					hasMoreNewRoutes = false;
@@ -667,7 +667,7 @@
 //		ofstream hotspot("hotspot.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			hotspot << logInfo;
+//			hotspot << INFO_LOG;
 //			hotspot << "#Time" << TAB << "#HotspotCount" << endl;
 //		}
 //		hotspot << currentTime << TAB << m_hotspots.size() << endl; 
@@ -681,7 +681,7 @@
 //		ofstream hotspot_statistics("hotspot-statistics.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			hotspot_statistics << logInfo;
+//			hotspot_statistics << INFO_LOG;
 //			hotspot_statistics << "#Time" << TAB << "#CoverSum" << TAB << "#HotspotCount" << TAB << "#AvgCover" << endl;
 //		}
 //		int sumCover = 0;
@@ -701,10 +701,10 @@
 //
 //			if(currentTime == startTimeForHotspotSelection)
 //			{
-//				merge << logInfo;
+//				merge << INFO_LOG;
 //				merge << "#Time" << TAB << "#MergeHotspotCount" << TAB << "#MergeHotspotPercent" << TAB << "#OldHotspotCount" << TAB 
 //					  << "#OldHotspotPercent" << TAB << "#NewHotspotCount" << TAB << "#NewHotspotPercent" << endl;
-//				merge_details << logInfo;
+//				merge_details << INFO_LOG;
 //				merge_details << "#Time" << TAB << "#HotspotType/#MergeAge ..." << endl;
 //			}
 //			merge_details << currentTime << TAB;
@@ -748,7 +748,7 @@
 //		ofstream ma("ma.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			ma << logInfo;
+//			ma << INFO_LOG;
 //			ma << "#Time" << TAB << "#MACount" << TAB << "#AvgMAWayPointCount" << endl;
 //		}
 //		ma << currentTime << TAB << m_routes.size() << TAB << ( (double)m_hotspots.size() / (double)m_routes.size() ) << endl;
@@ -765,7 +765,7 @@
 //		ofstream ed("ed.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			ed << logInfo;
+//			ed << INFO_LOG;
 //			ed << "#Time" << TAB << "#EstimatedDelay" << endl;
 //		}
 //		ed << currentTime << TAB << calculateEDTime() << endl;
@@ -775,7 +775,7 @@
 //		ofstream energy_consumption("energy-consumption.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			energy_consumption << logInfo;
+//			energy_consumption << INFO_LOG;
 //			energy_consumption << "#Time" << TAB << "#AvgEnergyConsumption" << endl;
 //		}
 //		energy_consumption << currentTime << TAB << ( CData::getAverageEnergyConsumption() * 100 ) << endl;
@@ -785,7 +785,7 @@
 //		ofstream buffer("buffer-node-statistics.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			buffer << logInfo;
+//			buffer << INFO_LOG;
 //			buffer << "#Time" << TAB << "#AvgBufferStateInHistoryOfEachNode" << endl;
 //		}
 //		buffer << currentTime << TAB;
@@ -798,7 +798,7 @@
 //		ofstream delivery_ratio("delivery-ratio-900.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			delivery_ratio << logInfo;
+//			delivery_ratio << INFO_LOG;
 //			delivery_ratio << "#Time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
 //		}
 //		delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
@@ -814,7 +814,7 @@
 //		ofstream delivery_ratio("delivery-ratio-100.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			delivery_ratio << logInfo;
+//			delivery_ratio << INFO_LOG;
 //			delivery_ratio << "#Time" << TAB << "#DeliveryRatio" << endl;
 //		}
 //		delivery_ratio << currentTime << TAB << CData::getDeliveryRatio() << endl;
@@ -824,7 +824,7 @@
 //		ofstream delay("delay.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			delay << logInfo;
+//			delay << INFO_LOG;
 //			delay << "#Time" << TAB << "#AvgDelay" << endl;
 //		}
 //		delay << currentTime << TAB << CData::getAverageDelay() << endl;
@@ -834,7 +834,7 @@
 //		ofstream encounter("encounter.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			encounter << logInfo;
+//			encounter << INFO_LOG;
 //			encounter << "#Time" << TAB << "#EncounterAtHotspot" << TAB << "#Encounter" << TAB << "#EncounterPercentAtHotspot" << endl;
 //		}
 //		encounter << currentTime << TAB << CMANode::getEncounterAtHotspot() << TAB << CMANode::getEncounter() << TAB << CMANode::getEncounterPercentAtHotspot() << endl;
@@ -850,7 +850,7 @@
 //		ofstream ma("buffer-ma.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			ma << logInfo;
+//			ma << INFO_LOG;
 //			ma << "#Time" << TAB << "#BufferStateOfEachMA" << endl;
 //		}
 //		ma << currentTime << TAB;
@@ -863,7 +863,7 @@
 //		ofstream node("buffer-node.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			node << logInfo;
+//			node << INFO_LOG;
 //			node << "#Time" << TAB << "#BufferStateOfEachNode" << endl;
 //		}
 //		node << currentTime << TAB;
@@ -876,7 +876,7 @@
 //		ofstream overflow("overflow.txt", ios::app);
 //		if(currentTime == startTimeForHotspotSelection)
 //		{
-//			overflow << logInfo;
+//			overflow << INFO_LOG;
 //			overflow << "#Time" << TAB << "#OverflowCount" << endl;
 //		}
 //		overflow << currentTime << TAB << CData::getOverflowCount() << endl;
@@ -892,7 +892,7 @@
 //		debugInfo << getAverageMACost() << TAB ;
 //		if(TEST_HOTSPOT_SIMILARITY)
 //			debugInfo << getAverageSimilarityRatio() << TAB ;
-//		debugInfo << CData::getDeliveryAtHotspotPercent() << TAB << logInfo.replace(0, 1, "");
+//		debugInfo << CData::getDeliveryAtHotspotPercent() << TAB << INFO_LOG.replace(0, 1, "");
 //	}
 //
 //}
@@ -910,7 +910,7 @@
 //	ofstream similarity("similarity.txt", ios::app);
 //	if( currentTime == startTimeForHotspotSelection + SLOT_HOTSPOT_UPDATE )
 //	{
-//		similarity << logInfo;
+//		similarity << INFO_LOG;
 //		similarity << "#Time" << TAB << "#Overlap/Old" << TAB << "#Overlap/New" << TAB
 //				   << "#OverlapArea" << TAB << "#OldArea" << TAB << "#NewArea" << endl;
 //	}

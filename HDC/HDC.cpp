@@ -32,7 +32,7 @@ CHDC::~CHDC(void)
 void CHDC::HotspotSelection(int currentTime)
 {
 	/**************************** 热点归并过程(merge-HAR) *****************************/
-	CPreprocessor::BuildCandidateHotspots(currentTime);
+	CGreedySelection::BuildCandidateHotspots(currentTime);
 
 	CGreedySelection greedySelection;
 
@@ -59,8 +59,7 @@ void CHDC::HotspotSelection(int currentTime)
 		CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
 	}
 
-	cout << CR ;
-	cout << "####  [ Hotspots ]  " << CHotspot::selectedHotspots.size() ;
+	flash_cout << "####  [ Hotspots ]  " << CHotspot::selectedHotspots.size() ;
 
 	//比较相邻两次热点选取的相似度
 	if(TEST_HOTSPOT_SIMILARITY)
@@ -82,7 +81,7 @@ void CHDC::CompareWithOldHotspots(int currentTime)
 	ofstream similarity("similarity.txt", ios::app);
 	if( currentTime == startTimeForHotspotSelection + SLOT_HOTSPOT_UPDATE )
 	{
-		similarity << logInfo;
+		similarity << INFO_LOG;
 		similarity << "#Time" << TAB << "#Overlap/Old" << TAB << "#Overlap/New" << TAB
 				   << "#OverlapArea" << TAB << "#OldArea" << TAB << "#NewArea" << endl;
 	}
@@ -106,7 +105,7 @@ void CHDC::PrintInfo(int currentTime)
 		ofstream hotspot("hotspot.txt", ios::app);
 		if(currentTime == startTimeForHotspotSelection)
 		{
-			hotspot << logInfo;
+			hotspot << INFO_LOG;
 			hotspot << "#Time" << TAB << "#HotspotCount" << endl;
 		}
 		hotspot << currentTime << TAB << CHotspot::selectedHotspots.size() << endl; 
@@ -120,7 +119,7 @@ void CHDC::PrintInfo(int currentTime)
 		ofstream hotspot_statistics("hotspot-statistics.txt", ios::app);
 		if(currentTime == startTimeForHotspotSelection)
 		{
-			hotspot_statistics << logInfo;
+			hotspot_statistics << INFO_LOG;
 			hotspot_statistics << "#Time" << TAB << "#CoverSum" << TAB << "#HotspotCount" << TAB << "#AvgCover" << endl;
 		}
 		int sumCover = 0;
@@ -140,10 +139,10 @@ void CHDC::PrintInfo(int currentTime)
 
 			if(currentTime == startTimeForHotspotSelection)
 			{
-				merge << logInfo;
+				merge << INFO_LOG;
 				merge << "#Time" << TAB << "#MergeHotspotCount" << TAB << "#MergeHotspotPercent" << TAB << "#OldHotspotCount" << TAB 
 					  << "#OldHotspotPercent" << TAB << "#NewHotspotCount" << TAB << "#NewHotspotPercent" << endl;
-				merge_details << logInfo;
+				merge_details << INFO_LOG;
 				merge_details << "#Time" << TAB << "#HotspotType/#MergeAge ..." << endl;
 			}
 			merge_details << currentTime << TAB;
@@ -188,6 +187,9 @@ void CHDC::PrintInfo(int currentTime)
 
 void CHDC::UpdateDutyCycleForNodes(int currentTime)
 {
+	if( ! currentTime % SLOT_MOBILITYMODEL == 0 )
+		return;
+
 	vector<CHotspot *> hotspots = CHotspot::selectedHotspots;
 	if( hotspots.empty() )
 		return;
@@ -215,15 +217,13 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		//update duty cycle
 		if( (*inode)->useHotspotDutyCycle() && atHotspot == NULL )
 		{
-			cout << CR ;
-			cout << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )     " ;			
+			flash_cout << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )     " ;			
 			(*inode)->setAtHotspot(NULL);
 			(*inode)->resetDutyCycle();
 		}
 		else if( ! (*inode)->useHotspotDutyCycle() && atHotspot != NULL )
 		{
-			cout << CR ;
-			cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )     " ;
+			flash_cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )     " ;
 			(*inode)->setAtHotspot(atHotspot);
 			(*inode)->raiseDutyCycle();
 		}

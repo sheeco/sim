@@ -4,29 +4,19 @@
 #include "Node.h"
 
 
-void Prophet::UpdateNodeStatus(int currentTime)
-{
-	for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); inode++)
-	{
-		(*inode)->updateStatus(currentTime);
-	}
-	//调用下层协议HDC，判断是否位于热点区域，更新占空比
-	if( DO_HDC )
-		CHDC::UpdateDutyCycleForNodes(currentTime);
-}
-
-void Prophet::GenerateData(int currentTime)
-{
-	CRoutingProtocol::GenerateData(currentTime);
-}
+string INFO_SINK = "#Time	#EncounterAtSink \n";
 
 void Prophet::SendData(int currentTime)
 {
+	if( ! currentTime % SLOT_DATA_SEND == 0 )
+		return;
+	cout << endl << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
+
 	ofstream sink("sink.txt", ios::app);
 	if(currentTime == 0)
 	{
-		sink << logInfo;
-		sink << "#Time" << TAB << "#EncounterAtSink" << endl;
+		sink << INFO_LOG ;
+		sink << INFO_SINK ;
 	}
 
 	int nEncounterAtSink = 0;
@@ -44,8 +34,7 @@ void Prophet::SendData(int currentTime)
 		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
 		{
 			//deliver data to sink
-			cout << CR ;			
-			cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                " ;
+			flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
 			CSink::getSink()->receiveData( (*inode)->sendAllData(false), currentTime );
 			(*inode)->updateDeliveryPredsWithSink();
 			nEncounterAtSink++;
@@ -121,25 +110,21 @@ void Prophet::SendData(int currentTime)
 				{	
 					if( skip )
 					{
-						cout << CR ;
-						cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )          " ;
+						flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )          " ;
 					}
 					else
 					{
-						cout << CR ;
-						cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )          " ;
+						flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )          " ;
 					}
 				}
 				else
 				{
-					cout << CR ;
-					cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )          " ;
+					flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )          " ;
 				}
 			}
 			else
 			{
-				cout << CR ;
-				cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )          " ;
+				flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )          " ;
 			}
 		}
 
@@ -147,109 +132,14 @@ void Prophet::SendData(int currentTime)
 
 	//更新所有节点的buffer状态记录
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
-	{
 		(*inode)->recordBufferStatus();
-	}
 
-	cout << CR ;
 	//控制台输出时保留一位小数
 	double deliveryRatio = ROUND( CData::getDataArrivalCount() / (double)CData::getDataCount() * 1000 );
 	deliveryRatio = deliveryRatio / (double)10;
-	cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                  " << endl;
+	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                    " << endl;
 	sink << currentTime << TAB << nEncounterAtSink << endl;
 	sink.close();
-
-}
-
-void Prophet::PrintInfo(int currentTime)
-{
-	//Energy Consumption、节点buffer状态 ...
-	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0
-		|| currentTime == RUNTIME )
-	{
-
-		//平均能耗
-		ofstream energy_consumption("energy-consumption.txt", ios::app);
-		if(currentTime == 0)
-		{
-			energy_consumption << logInfo;
-			energy_consumption << "#Time" << TAB << "#AvgEnergyConsumption" << endl;
-		}
-		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() / 1000 << endl;
-		energy_consumption.close();
-
-		//每个节点buffer状态的历史平均值
-		ofstream buffer("buffer-node-statistics.txt", ios::app);
-		if(currentTime == 0)
-		{
-			buffer << logInfo;
-			buffer << "#Time" << TAB << "#AvgBufferStateInHistoryOfEachNode" << endl;
-		}
-		buffer << currentTime << TAB;
-		for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); inode++)
-			 buffer << (*inode)->getAverageBufferSize() << TAB;
-		buffer << endl;
-		buffer.close();
-
-		//数据投递率-900（用于debug）
-		ofstream delivery_ratio("delivery-ratio-900.txt", ios::app);
-		if(currentTime == 0)
-		{
-			delivery_ratio << logInfo;
-			delivery_ratio << "#Time" << TAB << "#ArrivalCount" << TAB << "#TotalCount" << TAB << "#DeliveryRatio" << endl;
-		}
-		delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
-		delivery_ratio.close();
-
-		//数据投递延迟
-		ofstream delay("delay.txt", ios::app);
-		if(currentTime == 0)
-		{
-			delay << logInfo;
-			delay << "#Time" << TAB << "#AvgDelay" << endl;
-		}
-		delay << currentTime << TAB << CData::getAverageDelay() << endl;
-		delay.close();
-
-	}
-
-	//数据投递率、数据投递时延
-	if(currentTime % SLOT_RECORD_INFO == 0
-		|| currentTime == RUNTIME)
-	{
-		//数据投递率-100（用于绘制曲线）
-		ofstream delivery_ratio("delivery-ratio-100.txt", ios::app);
-		if(currentTime == 0)
-		{
-			delivery_ratio << logInfo;
-			delivery_ratio << "#Time" << TAB << "#DeliveryRatio" << endl;
-		}
-		delivery_ratio << currentTime << TAB << CData::getDeliveryRatio() << endl;
-		delivery_ratio.close();
-
-		//每个节点的当前buffer状态
-		ofstream node("buffer-node.txt", ios::app);
-		if(currentTime == 0)
-		{
-			node << logInfo;
-			node << "#Time" << TAB << "#BufferStateOfEachNode" << endl;
-		}
-		node << currentTime << TAB;
-		for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); inode++)
-			node << (*inode)->getBufferSize() << "  " ;
-		node << endl;
-		node.close();
-
-	}
-
-	////最终debug输出
-	if( currentTime == RUNTIME )
-	{
-		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() / 1000 << TAB ;
-		//debugInfo << CData::getDeliveryAtHotspotPercent() << TAB ;
-		debugInfo << logInfo.replace(0, 1, "");
-		debugInfo.flush();
-	}
 
 }
 
@@ -267,26 +157,17 @@ bool Prophet::Operate(int currentTime)
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
 
-	if( currentTime % SLOT_MOBILITYMODEL == 0 )
-	{
-		cout << endl << "########  < " << currentTime << " >  NODE LOCATION UPDATE" ;
-		UpdateNodeStatus(currentTime);
-	}
+	UpdateNodeStatus(currentTime);
 
-	if( currentTime % SLOT_DATA_GENERATE == 0 && currentTime <= DATATIME )
-	{
-		cout << endl << "########  < " << currentTime << " >  DATA GENERATION" ;
-		GenerateData(currentTime);
-	}
+	//调用下层协议HDC，判断是否位于热点区域，更新占空比
+	if( DO_HDC )
+		CHDC::UpdateDutyCycleForNodes(currentTime);
 
-	if( currentTime % SLOT_DATA_SEND == 0 )
-	{
-		cout << endl << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
-		SendData(currentTime);
-	}
+	GenerateData(currentTime);
 
-	if( currentTime % SLOT_RECORD_INFO == 0 )
-		PrintInfo(currentTime);
+	SendData(currentTime);
+
+	PrintInfo(currentTime);
 
 	return true;
 }

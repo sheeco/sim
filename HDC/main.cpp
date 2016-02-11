@@ -64,10 +64,10 @@ int RUNTIME = 0;
 int currentTime = 0;
 int startTimeForHotspotSelection = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 
-string logInfo;
+string INFO_LOG;
 ofstream debugInfo("debug.txt", ios::app);
 
-string HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
+string INFO_HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
               "<mode>            -har;                  -ihar;                  -hdc;                    -hotspot-similarity;         -dynamic-node-number; \n"
               "<time>            -time-data   [];       -time-run   []; \n"
 			  "<node>            -energy      [];       -sink       [] [];      -range      []; \n"
@@ -76,7 +76,7 @@ string HELP = "\n                                                  !!!!!! ALL CA
 			  "<prophet>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
               "<hdc>             -cycle       [];       -dc-default [];         -dc-default []; \n\n" ;
 
-string DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Period	#DefaultDC	(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log \n" ;
+string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Period	#DefaultDC	(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log \n" ;
 
 int main(int argc, char* argv[])
 {
@@ -283,7 +283,7 @@ int main(int argc, char* argv[])
 			//输出help信息
 			else if( field == "-help" )
 			{
-				cout << HELP;
+				cout << INFO_HELP;
 				_PAUSE;
 				exit(1);
 			}
@@ -295,8 +295,8 @@ int main(int argc, char* argv[])
 	}
 	catch(exception e)
 	{
-		cout << "Error @ main() Wrong Parameter Format!" << endl;
-		cout << HELP;
+		cout << "Error @ main() : Wrong Parameter Format!" << endl;
+		cout << INFO_HELP;
 		_PAUSE;
 		exit(1);
 	}
@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
 		t = time(NULL); //获取目前秒时间  
 		strftime(buffer, 64, "%Y-%m-%d %H:%M:%S", localtime(&t));  
 		logtime = string(buffer);
-		logInfo = "\n#" + logtime + TAB;
+		INFO_LOG = "\n#" + logtime + TAB;
 	
 		ofstream parameters("parameters.txt", ios::app);
 		parameters << endl << endl << "#" << logtime << endl << endl;
@@ -337,7 +337,7 @@ int main(int argc, char* argv[])
 		//输出文件为空时，输出文件头
 		debugInfo.seekp(0, ios::end);
 		if( ! debugInfo.tellp() )
-			debugInfo << DEBUG ;
+			debugInfo << INFO_DEBUG ;
 
 		debugInfo << endl << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB << Epidemic::SPOKEN_MEMORY << TAB ;
 		if( CData::useHOP() )
@@ -349,11 +349,11 @@ int main(int argc, char* argv[])
 
 		if(DO_HDC)
 		{
-			logInfo += "#HDC\t";
+			INFO_LOG += "#HDC\t";
 
 			if(DO_IHAR)
 			{
-				logInfo += "#IHAR";
+				INFO_LOG += "#IHAR";
 				parameters << endl;
 				parameters << "#HDC\t#IHAR" << endl << endl;
 				parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
@@ -364,7 +364,7 @@ int main(int argc, char* argv[])
 
 			//else if(DO_MERGE_HAR)
 			//{
-			//	logInfo += "#merge-HAR";
+			//	INFO_LOG += "#merge-HAR";
 			//	parameters << endl;
 			//	parameters << "#merge-HAR" << endl << endl;
 			//	parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
@@ -378,7 +378,7 @@ int main(int argc, char* argv[])
 			else
 			{
 				debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << ALPHA << TAB << BETA << TAB ;
-				logInfo += "#HAR";
+				INFO_LOG += "#HAR";
 				parameters << endl;
 				parameters << "#HDC\t#HAR" << endl << endl;
 			}
@@ -393,12 +393,12 @@ int main(int argc, char* argv[])
 
 		if(TEST_DYNAMIC_NUM_NODE)
 		{
-			logInfo += "\t#TEST_DYNAMIC_NODE_NUMBER";
+			INFO_LOG += "\t#TEST_DYNAMIC_NODE_NUMBER";
 			parameters << endl;
 			parameters << "#TEST_DYNAMIC_NODE_NUMBER" << endl;
 		}
 
-		logInfo += "\n";
+		INFO_LOG += "\n";
 		parameters << endl;
 
 		parameters.close();

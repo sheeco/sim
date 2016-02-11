@@ -11,7 +11,7 @@
 //{
 //	if(buffer.size() > BUFFER_CAPACITY_MA)
 //	{
-//		cout<<"Error @ CMANode::receiveData() buffer overflown"<<endl;
+//		cout<<"Error @ CMANode::receiveData() : buffer overflown"<<endl;
 //		_PAUSE;
 //		return;
 //	}

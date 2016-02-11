@@ -9,7 +9,7 @@ extern bool DO_MERGE_HAR;
 extern double GAMMA;
 extern int startTimeForHotspotSelection;
 
-extern string logInfo;
+extern string INFO_LOG;
 
 //HAR中原始的贪婪hotspot选取方法的包装
 class CGreedySelection :
@@ -41,6 +41,14 @@ public:
 	//CGreedySelection(vector<CHotspot *> &hotspotsCandidates, vector<CHotspot *> &oldSelectedHotspots);
 
 	~CGreedySelection(void);
+
+	//从文件中读取所有节点的当前位置，加入position列表（append）
+	//由main函数，在每个地理位置信息收集时隙上调用
+	static void CollectNewPositions(int time);
+
+	//根据到目前为止的所有position记录，构建候选hotspot列表
+	//由main函数，在每个hotspot更新时隙上调用
+	static void BuildCandidateHotspots(int time);
 
 	//执行贪婪选取过程，返回选取结果
 	//注意：返回的信息将在CGreedySelection类析构之后失效，应及时保存

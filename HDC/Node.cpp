@@ -50,8 +50,7 @@ void CNode::dropDataIfOverflow(int currentTime)
 	//如果总长度溢出
 	if( myData.size() > bufferCapacity )
 	{
-		cout << CR ;
-		cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )     " ;
+		flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )     " ;
 		myData = vector<CData>( myData.end() - BUFFER_CAPACITY, myData.end() );
 	}
 	buffer = myData;

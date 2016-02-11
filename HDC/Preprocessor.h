@@ -26,20 +26,16 @@ class CPreprocessor :
 	public CProcessor
 {
 private:
+
 	CPreprocessor(void);
 	~CPreprocessor(void);
 
-	//根据position指针得到它在全局变量CPosition::positions中的下标
-	//应在CPosition::positions完成排序之后调用，并且此后不能再改变其中的元素顺序
-	static int getIndexOfPosition(CPosition* pos);
-
-	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
-	static CHotspot* GenerateHotspotFromPosition(CPosition *pos, int time);
 
 public:
+
 	/** 辅助函数 **/
 	//在min到max的范围内生成size个不重复的随机数
-	static vector<int> CPreprocessor::RandomIntList(int min, int max, int size);
+	static vector<int> RandomIntList(int min, int max, int size);
 
 	//释放指针vector
 	static void freePointerVector(vector<CPosition *> &v);
@@ -73,20 +69,8 @@ public:
 	static bool ascendByData(CData left, CData right){	return left < right;	};
 
 	/** 预处理操作函数 **/
-	//从文件中读取所有节点的当前位置，加入position列表（append）
-	//由main函数，在每个地理位置信息收集时隙上调用
-	static void CollectNewPositions(int time);
-
-	//merge-HAR: 
-	//由merge函数调用
-	static CHotspot* GenerateHotspotFromCoordinates(double x, double y, int time);
-
-	//根据到目前为止的所有position记录，构建候选hotspot列表
-	//由main函数，在每个hotspot更新时隙上调用
-	static void BuildCandidateHotspots(int time);
 
 	/** Optional Functions，由main函数调用**/
-	/** 注意：都必须在调用BuildCandidateHotspots之后再调用 **/
 
 	//在每一次贪婪选择之前调用，将从CHotspot::oldSelectedHotspots中寻找投递计数为0的热点删除放入CHotspot::deletedHotspots
 	//并删除其对应的所有position放入CPosition::deletedPositions
