@@ -18,7 +18,7 @@ private:
 	vector<CHotspot*> selectedHotspots;  //选中的hotspot集合，即整个贪婪算法的输出
 
 	//hotspot集合中覆盖的属于某一节点的position数目
-	int countForNode(vector<CHotspot *> hotspots, int n);
+	int countForNode(vector<CHotspot *> hotspots, int n) const;
 	CHotspot* findMaxCoverHotspotForNode(int inode);
 
 public:

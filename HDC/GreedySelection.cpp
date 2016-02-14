@@ -1,5 +1,6 @@
 #include "GreedySelection.h"
 #include "FileParser.h"
+#include <sstream>
 
 vector<CHotspot *> CGreedySelection::copy_hotspotCandidates;
 vector<CPosition *> CGreedySelection::uncoveredPositions;
@@ -16,7 +17,7 @@ CGreedySelection::CGreedySelection()
 void CGreedySelection::updateHotspotCandidates()
 {
 	//制作候选hotspot集的副本
-	if(! CHotspot::hotspotCandidates.empty())
+	if( ! CHotspot::hotspotCandidates.empty())
 	{
 		for(vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); ++ihotspot)
 		{
@@ -31,7 +32,7 @@ void CGreedySelection::updateHotspotCandidates()
 
 CGreedySelection::~CGreedySelection(void)
 {
-	//if(! copy_hotspotCandidates.empty())
+	//if( ! copy_hotspotCandidates.empty())
 	//	CPreprocessor::freePointerVector(copy_hotspotCandidates);
 }
 
@@ -119,7 +120,7 @@ void CGreedySelection::BuildCandidateHotspots(int time)
 	flash_cout << "####  ( CANDIDATE BUILDING )     " ;
 
 	//释放上一轮选取中未被选中的废弃热点
-	if(! CHotspot::hotspotCandidates.empty())
+	if( ! CHotspot::hotspotCandidates.empty())
 		CPreprocessor::freePointerVector(CHotspot::hotspotCandidates);
 
 	/************ 注意：不论执行HAR, IHAR, merge-HAR，都缓存上一轮热点选取的结果；
@@ -128,7 +129,7 @@ void CGreedySelection::BuildCandidateHotspots(int time)
 
 	//将上一轮选中的热点集合保存到CHotspot::oldSelectedHotspots
 	//并释放旧的CHotspot::oldSelectedHotspots
-	if(! CHotspot::oldSelectedHotspots.empty())
+	if( ! CHotspot::oldSelectedHotspots.empty())
 		CPreprocessor::freePointerVector(CHotspot::oldSelectedHotspots);
 	CHotspot::oldSelectedHotspots = CHotspot::selectedHotspots;
 	//仅清空g_selectedHotspot，不释放内存

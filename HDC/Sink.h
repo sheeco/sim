@@ -3,6 +3,7 @@
 #include "BasicEntity.h"
 #include "Data.h"
 #include "Route.h"
+#include "GeneralNode.h"
 
 using namespace std;
 

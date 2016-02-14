@@ -2,6 +2,8 @@
 #include "Node.h"
 #include "Sink.h"
 #include "HDC.h"
+#include "Preprocessor.h"
+
 
 int Epidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
 int Epidemic::SPOKEN_MEMORY = 0;
@@ -148,10 +150,10 @@ void Epidemic::SendData(int currentTime)
 	//控制台输出时保留一位小数
 	double deliveryRatio = 0;
 	if( CData::getDataArrivalCount() > 0 )
-		deliveryRatio = CData::getDataArrivalCount() / (double)( CData::getDataCount() ) * 1000;
+		deliveryRatio = CData::getDataArrivalCount() / double(CData::getDataCount()) * 1000;
 	deliveryRatio = ROUND( deliveryRatio );
-	deliveryRatio = deliveryRatio / static_cast<double>( 10 );
-	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                    " << endl;
+	deliveryRatio = deliveryRatio / double( 10 );
+	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl;
 	sink << currentTime << TAB << nEncounterAtSink << endl;
 	sink.close();
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Hotspot.h"
-#include "Node.h"
 #include "Processor.h"
 
 using namespace std;

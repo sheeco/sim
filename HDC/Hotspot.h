@@ -2,6 +2,7 @@
 
 #include "Position.h"
 #include "GeoEntity.h"
+#include <iostream>
 
 extern bool TEST_BALANCED_RATIO;
 extern bool TEST_LEARN;
@@ -41,7 +42,7 @@ private:
 
 
 	//检查某个node是否在覆盖列表中，必须在generateCoveredNodes之后调用
-	bool ifNodeExists(int inode);	
+	bool ifNodeExists(int inode) const;
 
 	//计算两个热点的重叠面积，如无重叠则返回0
 	static double getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot);
@@ -196,13 +197,13 @@ public:
 	{
 		if( TEST_BALANCED_RATIO )
 		{
-			ratio = coveredPositions.size() * static_cast<double>(NUM_NODE - coveredNodes.size() + 1) / static_cast<double>(NUM_NODE);
+			ratio = coveredPositions.size() * double(NUM_NODE - coveredNodes.size() + 1) / double(NUM_NODE);
 			return ratio;
 		}
 		else if( TEST_LEARN )
 		{
 			ratio = 0;
-			for(vector<CPosition*>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ipos++)
+			for(vector<CPosition*>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
 				ratio += (*ipos)->getWeight();
 			return ratio;
 
@@ -223,7 +224,7 @@ public:
 
 	int getNCoveredPositionsForNode(int inode);	
 	
-	double getCoByCandidateType()
+	double getCoByCandidateType() const
 	{
 		switch( this->candidateType )
 		{

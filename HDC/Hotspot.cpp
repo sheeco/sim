@@ -15,7 +15,7 @@ bool CHotspot::ifPositionExists(CPosition* pos)
 		return false;
 
 	vector<CPosition *>::iterator ipos;
-	for(ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ipos++)
+	for(ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
 	{
 		if(*ipos == pos)
 			return true;
@@ -25,11 +25,11 @@ bool CHotspot::ifPositionExists(CPosition* pos)
 
 void CHotspot::removePosition(CPosition* pos)
 {
-	if(! ifPositionExists(pos))
+	if( ! ifPositionExists(pos))
 		return;
 
 	vector<CPosition *>::iterator ipos;
-	for(ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ipos++)
+	for(ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
 	{
 		if(*ipos == pos)
 		{
@@ -45,7 +45,7 @@ void CHotspot::removePositionList(vector<CPosition *> positions)
 		return;
 
 	vector<CPosition *>::iterator ipos;
-	for(ipos = positions.begin(); ipos != positions.end(); ipos++)
+	for(ipos = positions.begin(); ipos != positions.end(); ++ipos)
 	{
 		removePosition(*ipos);
 	}		
@@ -67,7 +67,7 @@ void CHotspot::recalculateCenter()
 	double sum_x = 0;
 	double sum_y = 0;
 	vector<CPosition *>::iterator ipos;
-	for(ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ipos++)
+	for(ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
 	{
 		sum_x += (*ipos)->getX();
 		sum_y += (*ipos)->getY();
@@ -80,7 +80,7 @@ void CHotspot::recalculateCenter()
 int CHotspot::getNCoveredPositionsForNode(int inode)
 {
 	int count = 0;
-	for(vector<CPosition *>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ipos++)
+	for(vector<CPosition *>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
 	{
 		if((*ipos)->getNode() == inode)
 			count++;
@@ -88,7 +88,7 @@ int CHotspot::getNCoveredPositionsForNode(int inode)
 	return count;
 }
 
-bool CHotspot::ifNodeExists(int inode)
+bool CHotspot::ifNodeExists(int inode) const
 {
 	return ( ifExists(coveredNodes, inode) );
 }
@@ -96,7 +96,7 @@ bool CHotspot::ifNodeExists(int inode)
 void CHotspot::generateCoveredNodes()
 {
 	this->coveredNodes.clear();
-	for(vector<CPosition *>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ipos++)
+	for(vector<CPosition *>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
 	{
 		addToListUniquely(coveredNodes, (*ipos)->getNode());
 	}
@@ -123,9 +123,9 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 
 	vector<CHotspot *>::iterator iOld, iNew;
 	double sumArea = 0;
-	for(iOld = oldHotspots.begin(); iOld != oldHotspots.end(); iOld++)
+	for(iOld = oldHotspots.begin(); iOld != oldHotspots.end(); ++iOld)
 	{
-		for(iNew = newHotspots.begin(); iNew != newHotspots.end(); iNew++)
+		for(iNew = newHotspots.begin(); iNew != newHotspots.end(); ++iNew)
 		{
 			if( (*iOld)->getID() == (*iNew)->getID() )
 			{

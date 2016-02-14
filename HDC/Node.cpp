@@ -1,15 +1,15 @@
 #include "Node.h"
 #include "Preprocessor.h"
 #include "FileParser.h"
-#include "MANode.h"
 
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 int CNode::BUFFER_CAPACITY = BUFFER_CAPACITY_NODE;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
-int CNode::encounter = 0;
 int CNode::encounterAtHotspot = 0;
 int CNode::encounterOnRoute = 0;
+int CNode::visiterAtHotspot = 0;
+int CNode::visiterOnRoute = 0;
 
 int CNode::SLOT_TOTAL = 0;
 double CNode::ENERGY = 0;

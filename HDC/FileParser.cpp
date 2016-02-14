@@ -13,7 +13,7 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 		sprintf(filename, "%d.newlocation", nodeID);  //新的location文件，将time和坐标信息都包含在内
 		file = fopen(filename,"rb");
 
-		if( file == 0)
+		if( file == nullptr)
 		{
 			cout << "Error @ CFileParser::getPositionFromFile : Cannot find file \"" << nodeID << ".newlocation\" ! " << endl;
 			_PAUSE;
@@ -23,7 +23,7 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 		{
 			fscanf(file, "%lf %lf %lf", &tmp_time, &tmp_x, &tmp_y);
 
-			if((int)(time - tmp_time) < SLOT_MOBILITYMODEL)  
+			if(int(time - tmp_time) < SLOT_MOBILITYMODEL)  
 				break;
 		}
 
@@ -42,7 +42,7 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 
 CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 {
-	for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ipos++)
+	for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 	{
 		if((*ipos)->getID() == ID)
 			return *ipos;

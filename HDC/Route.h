@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Hotspot.h"
-#include "Preprocessor.h"
 #include "Entity.h"
 
 using namespace std;
@@ -42,11 +41,11 @@ public:
 	~CRoute(void)
 	{}
 
-	inline vector<CBasicEntity *> getWayPoints()
+	inline vector<CBasicEntity *> getWayPoints() const
 	{
 		return waypoints;
 	}
-	inline vector<int> getCoveredNodes()
+	inline vector<int> getCoveredNodes() const
 	{
 		return coveredNodes;
 	}
@@ -65,7 +64,7 @@ public:
 			return waypoints[0];
 	}
 
-	inline bool isOverdue()
+	inline bool isOverdue() const
 	{
 		return overdue;
 	}
@@ -73,11 +72,11 @@ public:
 	{
 		this->overdue = overdue;
 	}
-	inline int getNWayPoints()
+	inline int getNWayPoints() const
 	{
 		return waypoints.size();
 	}
-	inline double getLength()
+	inline double getLength() const
 	{
 		return length;
 	}
@@ -105,14 +104,14 @@ public:
 	void AddPoint(CBasicEntity *hotspot)
 	{
 		waypoints.push_back(hotspot);
-		addToListUniquely(coveredNodes, ((CHotspot *) hotspot)->getCoveredNodes());
+		addToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
 	}
 	//将给定hotspot插入到路径中给定的位置
 	void AddPoint(int front, CBasicEntity *hotspot)
 	{
 		vector<CBasicEntity *>::iterator ipoint = waypoints.begin() + front + 1;
 		waypoints.insert(ipoint, hotspot);
-		addToListUniquely(coveredNodes, ((CHotspot *) hotspot)->getCoveredNodes());
+		addToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
 	}
 
 	//对给定插入计算路径增量
@@ -127,6 +126,5 @@ public:
 	//计算路径长度，应该在路径更改或更新之后手动后调用
 	void updateLength();
 
-	string toString();
 };
 

@@ -74,7 +74,7 @@ string INFO_HELP = "\n                                                  !!!!!! A
 			  "<prophet>         -spoken      [];       -queue      []; \n"
               "<test>            -dynamic-node-number;  -hotspot-similarity;   -balanced-ratio; \n\n" ;
 
-string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log \n" ;
+string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#Energy	#EncounterAtHotspot	#Log \n" ;
 
 int main(int argc, char* argv[])
 {

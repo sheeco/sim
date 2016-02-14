@@ -2,7 +2,6 @@
 
 #include "Hotspot.h"
 #include "Position.h"
-#include "Preprocessor.h"
 #include "Algorithm.h"
 
 using namespace std;
@@ -29,7 +28,7 @@ private:
 	vector<CHotspot *> selectedHotspots;
 
 	/** 辅助函数 **/
-	double getRatioForHotspot(CHotspot *hotspot);
+	double getRatioForHotspot(CHotspot *hotspot) const;
 	void includeHotspots(CHotspot *hotspot);
 	void findLostNodes();
 	CHotspot* findBestHotspotForNode(int inode);
@@ -42,10 +41,10 @@ public:
 	~CPostSelector(void);
 
 	//选取hotspot完成后，将被覆盖的每一个position分配到唯一一个hotspot
-	vector<CHotspot *> assignPositionsToHotspots(vector<CHotspot *> hotspots);	
+	vector<CHotspot *> assignPositionsToHotspots(vector<CHotspot *> hotspots) const;	
 	//执行hotspot选取，返回得到的hotspot集合
 	vector<CHotspot *> PostSelect(int currentTime);
-	int getNCoveredPositions();
+	int getNCoveredPositions() const;
 	
 };
 

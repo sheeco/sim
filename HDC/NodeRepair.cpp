@@ -5,11 +5,11 @@ CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *>
 {	
 	this->time = time;
 	this->selectedHotspots = selectedHotspots;
-	if(! hotspotCandidates.empty())
+	if( ! hotspotCandidates.empty())
 	{
-		for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ihotspot++)
+		for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
 		{
-			if(! ifExists(this->selectedHotspots, *ihotspot, CHotspot::identical))
+			if( ! ifExists(this->selectedHotspots, *ihotspot, CHotspot::identical))
 				unselectedHotspots.push_back(*ihotspot);
 		}
 	}
@@ -17,13 +17,13 @@ CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *>
 	poorNodes.insert( poorNodes.begin(), CNode::getIdNodes().begin(), CNode::getIdNodes().end() );
 }
 
-int CNodeRepair::countForNode(vector<CHotspot *> hotspots, int n)
+int CNodeRepair::countForNode(vector<CHotspot *> hotspots, int n) const
 {
 	int count = 0;
-	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ihotspot++)
+	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 	{
 		vector<CPosition *> positions = (*ihotspot)->getCoveredPositions();	
-		for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ipos++)
+		for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 		{
 			if((*ipos)->getNode() == n)
 				count++;
@@ -41,7 +41,7 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 		CHotspot *ihotspot = unselectedHotspots[i];
 		int coverCount = 0;
 		vector<CPosition *> positions = ihotspot->getCoveredPositions();
-		for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ipos++)
+		for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 		{
 			if((*ipos)->getNode() == inode)
 				coverCount++;

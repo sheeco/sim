@@ -2,7 +2,6 @@
 #include "GreedySelection.h"
 #include "PostSelector.h"
 #include "NodeRepair.h"
-#include "FileParser.h"
 #include "Sink.h"
 #include "MANode.h"
 
@@ -63,7 +62,7 @@ double HAR::getWaitingTime(CHotspot *hotspot)
 		}
 
 		nCoveredPositionsForNode.push_back( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) );
-		tmp = static_cast<double>( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / static_cast<double>( tmp_time + SLOT_HOTSPOT_UPDATE );
+		tmp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( tmp_time + SLOT_HOTSPOT_UPDATE );
 
 		//merge-HAR: ratio
 		tmp *= pow( hotspot->getCoByCandidateType(), hotspot->getAge() );
@@ -79,7 +78,7 @@ double HAR::getWaitingTime(CHotspot *hotspot)
 		return MIN_WAITING_TIME;
 	double prob = exp( -1 / hotspot->getHeat() );
 	result = prob / result;
-	result = pow(result, ( 1 / static_cast<double>( count_trueHotspot ) ) );
+	result = pow(result, ( 1 / double( count_trueHotspot ) ) );
 
 	return result + MIN_WAITING_TIME;
 }
@@ -151,7 +150,7 @@ double HAR::calculateEDTime()
 	pmh = sum_waitingTime / (sum_length / SPEED_MANODE + sum_waitingTime);
 	EM = (1 - pmh) * ( ( (1 - avg_pw) / avg_pw) * avg_u + (avg_length / (2 * SPEED_MANODE) + avg_waitingTime) ) + pmh * ( ( (1 - avg_pw) / avg_pw) * avg_u + avg_waitingTime);
 	EIM = avg_u / avg_pw;
-	ED = EM + ( (1 - PROB_DATA_FORWARD) / PROB_DATA_FORWARD ) * EIM + ( static_cast<double>( m_hotspots.size() ) / (2 * m_routes.size()) ) * avg_u;
+	ED = EM + ( (1 - PROB_DATA_FORWARD) / PROB_DATA_FORWARD ) * EIM + ( double( m_hotspots.size() ) / (2 * m_routes.size()) ) * avg_u;
 
 	return ED;
 }
@@ -202,7 +201,6 @@ void HAR::HotspotSelection(int currentTime)
 		CGreedySelection::BuildCandidateHotspots(currentTime);
 
 		/**************************** 热点归并过程(merge-HAR) *****************************/
-		//merge-HAR: 
 		if( HOTSPOT_SELECT == _merge )
 			CGreedySelection::MergeHotspots(currentTime);
 
@@ -216,7 +214,6 @@ void HAR::HotspotSelection(int currentTime)
 
 	
 		/***************************** 疏漏节点修复过程(IHAR) ******************************/
-		//IHAR: POOR NODE REPAIR
 		if( HOTSPOT_SELECT == _improved )
 		{
 			CNodeRepair repair(CHotspot::selectedHotspots, CHotspot::hotspotCandidates, currentTime);
@@ -224,7 +221,7 @@ void HAR::HotspotSelection(int currentTime)
 			CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
 		}
 
-		cout  <<  endl <<"####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << " " << endl ;
+		flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " ;
 
 		//比较相邻两次热点选取的相似度
 		if(TEST_HOTSPOT_SIMILARITY)
@@ -312,7 +309,7 @@ void HAR::HotspotClassification(int currentTime)
 			else
 			{
 				current_time_cost += max_time_increment;
-				current_buffer = new_buffer;
+				//current_buffer = new_buffer;
 				route.AddPoint(max_front, tmp_hotspots[max_hotspot]);
 				vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin() + max_hotspot;
 				tmp_hotspots.erase(ihotspot);
@@ -584,10 +581,10 @@ void HAR::SendData(int currentTime)
 	//控制台输出时保留一位小数
 	double deliveryRatio = 0;
 	if( CData::getDataArrivalCount() > 0 )
-		deliveryRatio = CData::getDataArrivalCount() / (double)( CData::getDataCount() ) * 1000;
+		deliveryRatio = CData::getDataArrivalCount() / double(CData::getDataCount()) * 1000;
 	deliveryRatio = ROUND( deliveryRatio );
-	deliveryRatio = deliveryRatio / static_cast<double>( 10 );
-	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                         " << endl;
+	deliveryRatio = deliveryRatio / double( 10 );
+	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl;
 	delivery_hotspot.close();
 }
 
@@ -602,7 +599,7 @@ void HAR::PrintInfo(int currentTime)
 {
 	CRoutingProtocol::PrintInfo(currentTime);
 
-	if( ! currentTime % SLOT_RECORD_INFO == 0 )
+	if( ! ( currentTime % SLOT_RECORD_INFO == 0 ) )
 		return;
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、节点buffer状态 ...
@@ -624,7 +621,7 @@ void HAR::PrintInfo(int currentTime)
 		int sumCover = 0;
 		for(vector<CHotspot *>::iterator it = m_hotspots.begin(); it != m_hotspots.end(); ++it)
 			sumCover += (*it)->getNCoveredPosition();
-		hotspot_statistics << currentTime << TAB << sumCover << TAB << m_hotspots.size() << TAB << static_cast<double>( sumCover ) / static_cast<double>( m_hotspots.size() ) << endl;
+		hotspot_statistics << currentTime << TAB << sumCover << TAB << m_hotspots.size() << TAB << double( sumCover ) / double( m_hotspots.size() ) << endl;
 		hotspot_statistics.close();
 
 		//热点归并过程统计信息（在最终选取出的热点集合中）
@@ -667,13 +664,13 @@ void HAR::PrintInfo(int currentTime)
 
 			//三种热点所占的比例
 			int total = m_hotspots.size();
-			merge << currentTime << TAB << mergeCount << TAB << static_cast<double>( mergeCount ) / static_cast<double>( total ) << TAB << oldCount << TAB 
-				  << static_cast<double>( oldCount ) / static_cast<double>( total ) << TAB << newCount << TAB << static_cast<double>( newCount ) / static_cast<double>( total ) << endl;
+			merge << currentTime << TAB << mergeCount << TAB << double( mergeCount ) / double( total ) << TAB << oldCount << TAB 
+				  << double( oldCount ) / double( total ) << TAB << newCount << TAB << double( newCount ) / double( total ) << endl;
 
 			//用于计算归并热点和旧热点所占比例的历史平均值信息
-			MERGE_PERCENT_SUM += static_cast<double>( mergeCount ) / static_cast<double>( total );
+			MERGE_PERCENT_SUM += double( mergeCount ) / double( total );
 			MERGE_PERCENT_COUNT++;
-			OLD_PERCENT_SUM += static_cast<double>( oldCount ) / static_cast<double>( total );
+			OLD_PERCENT_SUM += double( oldCount ) / double( total );
 			OLD_PERCENT_COUNT++;
 
 			merge.close();
@@ -687,14 +684,14 @@ void HAR::PrintInfo(int currentTime)
 			ma << INFO_LOG ;
 			ma << INFO_MA ;
 		}
-		ma << currentTime << TAB << m_routes.size() << TAB << ( static_cast<double>( m_hotspots.size() ) / static_cast<double>( m_routes.size() ) ) << endl;
+		ma << currentTime << TAB << m_routes.size() << TAB << ( double( m_hotspots.size() ) / double( m_routes.size() ) ) << endl;
 		ma.close();
 
 		//用于计算MA节点个数的历史平均值信息
 		MA_COST_SUM += m_routes.size();
 		MA_COST_COUNT++;
 		//用于计算MA路点（热点）平均个数的历史平均值信息
-		MA_WAYPOINT_SUM += static_cast<double>( m_hotspots.size() ) / static_cast<double>( m_routes.size() );
+		MA_WAYPOINT_SUM += double( m_hotspots.size() ) / double( m_routes.size() );
 		MA_WAYPOINT_COUNT++;
 
 		//ED即平均投递延迟的理论值

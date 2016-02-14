@@ -55,7 +55,7 @@ void CRoutingProtocol::UpdateNodeStatus(int currentTime)
 	if( ! ( currentTime % SLOT_MOBILITYMODEL == 0 ) )
 		return;
 
-	cout << endl << "########  < " << currentTime << " >  NODE LOCATION UPDATE" ;
+	//cout << endl << "########  < " << currentTime << " >  NODE LOCATION UPDATE" ;
 	for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
 		(*inode)->updateStatus(currentTime);
 }
@@ -152,7 +152,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 				encounter << INFO_LOG ;
 				encounter << INFO_ENCOUNTER ;
 			}
-			encounter << currentTime << TAB << CNode::getEncounterAtHotspot() << TAB << CNode::getEncounter() << TAB << CNode::getEncounterPercentAtHotspot() << endl;
+			encounter << currentTime << TAB << CNode::getEncounterAtHotspot() << TAB << CNode::getEncounter() << TAB << CNode::getEncounterAtHotspotPercent() << endl;
 			encounter.close();
 
 		}
@@ -197,7 +197,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 				debugInfo << HAR::getAverageHotspotCost() << TAB << HAR::getAverageMergePercent() << TAB << HAR::getAverageOldPercent() << TAB ;
 			if(TEST_HOTSPOT_SIMILARITY)
 				debugInfo << HAR::getAverageSimilarityRatio() << TAB ;
-			debugInfo << CData::getDeliveryAtHotspotPercent() << TAB ;
+			debugInfo << CNode::getEncounterAtHotspotPercent() << TAB ;
 		}
 		debugInfo.flush();
 	}

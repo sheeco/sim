@@ -1,19 +1,18 @@
 #pragma once
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <afx.h>
-#include <tchar.h>
+#include <time.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <list>
+#include <tchar.h>
+#include <string>
 #include <vector>
 #include <cmath>
 #include <algorithm>
-#include <string.h>
 #include <iomanip>
-#include <stdlib.h>
-#include <time.h>
 #include <map>
 
 using namespace std;
@@ -67,6 +66,7 @@ using namespace std;
 #define TYPE_OLD_HOTSPOT 3
 
 #define ROUND(x) (x - floor(x) >= 0.5) ? (int)ceil(x) : (int)floor(x)
+#define EQUAL(x, y) fabs( x - y ) < 0.000001
 #define ZERO(x) fabs(x) < 0.000001
 #define TAB '\t'
 #define CR '\r'  //用于控制台输出时同行改写的转义字符
@@ -115,7 +115,7 @@ inline double RandomFloat(double min, double max)
 		max = min;
 		min = temp;
 	}
-	return min + static_cast<double>( rand() ) / RAND_MAX * (max - min);
+	return min + double( rand() ) / RAND_MAX * (max - min);
 }
 
 //Randomly product a int number between min and max (cannot reach max)
@@ -163,7 +163,7 @@ void addToListUniquely(vector<E> &list, E n)
 	//	if(*i == n)
 	//		return ;
 	//}
-	if(! ifExists(list, n))
+	if( ! ifExists(list, n))
 		list.push_back(n);
 }
 

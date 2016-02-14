@@ -106,7 +106,7 @@ vector<E> CPreprocessor::merge(vector<E> left, vector<E> right, bool(*Comp)(E, E
 	while(li < left.size()
 		&& ri < right.size())
 	{
-		if(! Comp(left[li], right[ri]) )
+		if( ! Comp(left[li], right[ri]) )
 			result.push_back(right[ri++]);
 		else
 			result.push_back(left[li++]);
@@ -143,7 +143,7 @@ vector<CData> CPreprocessor::merge(vector<CData> left, vector<CData> right, bool
 	while(li < left.size()
 		&& ri < right.size())
 	{
-		if(! Comp(left[li], right[ri]) )
+		if( ! Comp(left[li], right[ri]) )
 			result.push_back(right[ri++]);
 		else
 			result.push_back(left[li++]);

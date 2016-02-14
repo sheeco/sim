@@ -3,6 +3,7 @@
 #include "HDC.h"
 #include "Node.h"
 #include "Sink.h"
+#include "Preprocessor.h"
 
 extern bool TEST_DYNAMIC_NUM_NODE;
 extern MacProtocol MAC_PROTOCOL;
@@ -145,10 +146,10 @@ void Prophet::SendData(int currentTime)
 	//控制台输出时保留一位小数
 	double deliveryRatio = 0;
 	if( CData::getDataArrivalCount() > 0 )
-		deliveryRatio = CData::getDataArrivalCount() / (double)( CData::getDataCount() ) * 1000;
+		deliveryRatio = CData::getDataArrivalCount() / double(CData::getDataCount()) * 1000;
 	deliveryRatio = ROUND( deliveryRatio );
-	deliveryRatio = deliveryRatio / static_cast<double>( 10 );
-	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                    " << endl;
+	deliveryRatio = deliveryRatio / double( 10 );
+	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl;
 	sink << currentTime << TAB << nEncounterAtSink << endl;
 	sink.close();
 

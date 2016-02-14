@@ -38,9 +38,10 @@ private:
 	//用于统计输出节点的buffer状态信息
 	int bufferSizeSum;
 	int bufferChangeCount;
-	static int encounter;
 	static int encounterAtHotspot;
 	static int encounterOnRoute;
+	static int visiterAtHotspot;
+	static int visiterOnRoute;;
 
 	static int ID_COUNT;
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
@@ -349,7 +350,7 @@ public:
 	inline bool isAtHotspot() const
 	{
 		if( MAC_PROTOCOL == _hdc )
-			return dutyCycle == HOTSPOT_DUTY_CYCLE;
+			return EQUAL( dutyCycle, HOTSPOT_DUTY_CYCLE );
 		else if( ROUTING_PROTOCOL == _har )
 			return atHotspot != nullptr;
 		else
@@ -371,16 +372,12 @@ public:
 	{
 		this->timeDeath = currentTime;
 	}
-	inline bool useHotspotDutyCycle() const
-	{
-		return ZERO( dutyCycle - HOTSPOT_DUTY_CYCLE );
-	}
 	inline double getAverageBufferSize() const
 	{
 		if(bufferSizeSum == 0)
 			return 0;
 		else
-			return static_cast<double>(bufferSizeSum) / static_cast<double>(bufferChangeCount);
+			return double(bufferSizeSum) / double(bufferChangeCount);
 	}
 
 
@@ -445,30 +442,52 @@ public:
 		bufferChangeCount++;
 	}
 
-	//相遇计数
-	inline static double getEncounterPercentAtHotspot()
+	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
+	inline static double getEncounterAtHotspotPercent()
 	{
-		return static_cast<double>(encounterAtHotspot) / static_cast<double>(encounter);
+		if(encounterAtHotspot == 0)
+			return 0.0;
+		return double(encounterAtHotspot) / double(encounterAtHotspot + encounterOnRoute);
 	}
 	inline static int getEncounter()
 	{
-		return encounter;
+		return encounterAtHotspot + encounterOnRoute;
 	}
 	inline static int getEncounterAtHotspot()
 	{
 		return encounterAtHotspot;
 	}
-
-	//用于记录MA节点与sensor的相遇计数
 	inline static void encountAtHotspot()
 	{
 		encounterAtHotspot++;
-		encounter++;
 	}
 	inline static void encountOnRoute()
 	{
 		encounterOnRoute++;
-		encounter++;
+	}
+
+	//访问计数：用于统计节点位于热点内的百分比
+	inline static double getVisiterAtHotspotPercent()
+	{
+		if(visiterAtHotspot == 0)
+			return 0.0;
+		return double(visiterAtHotspot) / double(visiterAtHotspot + visiterOnRoute);
+	}
+	inline static int getVisiter()
+	{
+		return visiterAtHotspot + visiterOnRoute;
+	}
+	inline static int getVisiterAtHotspot()
+	{
+		return visiterAtHotspot;
+	}
+	inline static void visitAtHotspot()
+	{
+		visiterAtHotspot++;
+	}
+	inline static void visitOnRoute()
+	{
+		visiterOnRoute++;
 	}
 
 	vector<CData> sendAllData(Mode mode) override

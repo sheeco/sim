@@ -186,6 +186,11 @@ public:
 			return capacity;
 		else if( BUFFER_MODE == BUFFER::LOOSE )
 			return bufferCapacity;
+		else
+		{
+			cout << endl << "Error @ CMANode::getBufferCapacity() : BUFFER_MODE = " << BUFFER_MODE << endl;
+			_PAUSE;
+		}
 	}
 
 	vector<CData>  sendAllData(Mode mode) override

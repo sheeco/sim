@@ -4,7 +4,7 @@
 #include "Hotspot.h"
 #include "Route.h"
 #include "RoutingProtocol.h"
-#include "GreedySelection.h"
+#include "Node.h"
 
 using namespace std;
 
@@ -77,7 +77,7 @@ private:
 		if( MA_COST_COUNT == 0 )
 			return -1;
 		else
-			return static_cast<double>(MA_COST_SUM) / static_cast<double>(MA_COST_COUNT);
+			return double(MA_COST_SUM) / double(MA_COST_COUNT);
 	}
 
 	static inline double getAverageMAWaypoint()
@@ -119,13 +119,13 @@ public:
 		if( HOTSPOT_COST_COUNT == 0 )
 			return -1;
 		else
-			return static_cast<double>(HOTSPOT_COST_SUM) / static_cast<double>(HOTSPOT_COST_COUNT);
+			return double(HOTSPOT_COST_SUM) / double(HOTSPOT_COST_COUNT);
 	}
 
 	static inline double getAverageMergePercent()
 	{
 		if( MERGE_PERCENT_COUNT == 0 )
-			return -1;
+			return 0.0;
 		else
 			return MERGE_PERCENT_SUM / MERGE_PERCENT_COUNT;
 	}
@@ -133,7 +133,7 @@ public:
 	static inline double getAverageOldPercent()
 	{
 		if( OLD_PERCENT_COUNT == 0 )
-			return -1;
+			return 0.0;
 		else
 			return OLD_PERCENT_SUM / OLD_PERCENT_COUNT;
 	}

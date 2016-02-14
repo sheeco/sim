@@ -86,7 +86,9 @@ public:
 	}
 	static double getDeliveryAtHotspotPercent()
 	{
-		return static_cast<double>(DELIVERY_AT_HOTSPOT_COUNT) / static_cast<double>( DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT );
+		if(DELIVERY_AT_HOTSPOT_COUNT == 0)
+			return 0.0;
+		return double(DELIVERY_AT_HOTSPOT_COUNT) / double( DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT );
 	}
 
 	//static inline void overflow()
@@ -218,7 +220,7 @@ public:
 		if(ID_COUNT == 0)
 			return 0;
 		else
-			return static_cast<double>(ARRIVAL_COUNT) / static_cast<double>(ID_COUNT);
+			return double(ARRIVAL_COUNT) / double(ID_COUNT);
 	}
 	static double getAverageDelay()
 	{
