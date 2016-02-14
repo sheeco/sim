@@ -12,7 +12,7 @@ class CGeneralNode :
 protected:
 	vector<CData> buffer;
 	int bufferCapacity;
-	double energy;
+	int energy;
 	double energyConsumption;
 
 

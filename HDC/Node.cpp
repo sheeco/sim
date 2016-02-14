@@ -12,7 +12,7 @@ int CNode::visiterAtHotspot = 0;
 int CNode::visiterOnRoute = 0;
 
 int CNode::SLOT_TOTAL = 0;
-double CNode::ENERGY = 0;
+int CNode::ENERGY = 0;
 vector<CNode*> CNode::nodes;
 vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
@@ -27,6 +27,16 @@ double CNode::DECAY_RATIO = 0.90;  //0.98(/s)
 double CNode::TRANS_RATIO = 0.20;  //0.25
 
 extern RoutingProtocol ROUTING_PROTOCOL;
+
+vector<CNode *> CNode::getAllNodes()
+{
+	vector<CNode *> allNodes = CNode::getNodes();
+	allNodes.insert(allNodes.end(), deadNodes.begin(), deadNodes.end());
+	allNodes.insert(allNodes.end(), deletedNodes.begin(), deletedNodes.end());
+
+	allNodes = CPreprocessor::mergeSort(allNodes, CPreprocessor::ascendByID);
+	return allNodes;
+}
 
 void CNode::dropDataIfOverflow(int currentTime)
 {

@@ -51,6 +51,9 @@ public:
 	//CNode类按照x坐标排序
 	static vector<CNode *> merge(vector<CNode *> left, vector<CNode *> right);
 	static vector<CNode *> mergeSort(vector<CNode *> v);
+	//CNode类按照ID排序
+	static vector<CNode *> merge(vector<CNode *> left, vector<CNode *> right, bool(*Comp)(CNode *, CNode *));
+	static vector<CNode *> mergeSort(vector<CNode *> v, bool(*Comp)(CNode *, CNode *));
 	//CHotspot类按照x坐标或者ratio排序
 	static vector<CHotspot *> merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *));
 	static vector<CHotspot *> mergeSort(vector<CHotspot *> v, bool(*Comp)(CHotspot *, CHotspot *));
@@ -63,6 +66,8 @@ public:
 	static bool descendByInt(int left, int right){	return left > right;	};
 	static bool ascendByInt(int left, int right){	return left < right;	};
 	static bool ascendByData(CData left, CData right){	return left < right;	};
+	static bool ascendByID(CNode *left, CNode *right){	return left->getID() < right->getID();	};
+
 
 	/** 预处理操作函数 **/
 

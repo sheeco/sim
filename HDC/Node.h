@@ -62,13 +62,14 @@ private:
 	{
 		generationRate = 0;
 		atHotspot = nullptr;
-		dutyCycle = DEFAULT_DUTY_CYCLE;
 		SLOT_LISTEN = 0;
 		SLOT_SLEEP = 0;
 		state = 0;
 		timeDeath = 0;
 		bufferSizeSum = 0;
 		bufferChangeCount = 0;
+		dutyCycle = DEFAULT_DUTY_CYCLE;
+		energy = ENERGY;
 	}
 
 	CNode(void)
@@ -176,7 +177,7 @@ public:
 	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
 	static int SLOT_TOTAL;
 	static int BUFFER_CAPACITY;
-	static double ENERGY;
+	static int ENERGY;
 	static Mode BUFFER_MODE;
 	static Mode COPY_MODE;
 	static Mode SEND_MODE;
@@ -222,6 +223,9 @@ public:
 		return nodes;
 	}
 
+	//包括已经失效的节点和删除的节点，按照ID排序
+	static vector<CNode *> getAllNodes();
+
 	static vector<int>& getIdNodes()
 	{
 		if( nodes.empty() && deadNodes.empty() )
@@ -229,13 +233,24 @@ public:
 		return idNodes;
 	}
 
+	inline double getEnergy() const
+	{
+		if( ! isAlive() )
+			return 0;
+		return energy - energyConsumption;
+	}
+
 	static bool hasNodes(int currentTime)
 	{
 		if( nodes.empty() && deadNodes.empty() )
+		{
 			initNodes();
+			return true;
+		}
 		else
 			idNodes.clear();
 		
+		bool death = false;
 		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
 		{
 			if( (*inode)->isAlive() )
@@ -248,8 +263,12 @@ public:
 				(*inode)->die( currentTime );
 				deadNodes.push_back( *inode );
 				inode = nodes.erase( inode );
+				death = true;
 			}
 		}
+
+		if(death)
+			cout << "####  [ Node ]  " << CNode::getNodes().size() << endl;
 
 		return ( ! nodes.empty() );
 	}

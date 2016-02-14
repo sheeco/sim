@@ -17,7 +17,7 @@ void Epidemic::SendData(int currentTime)
 {
 	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 		return;
-	cout << endl << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
+	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 
 	ofstream sink("sink.txt", ios::app);
 	if(currentTime == 0)
@@ -153,7 +153,7 @@ void Epidemic::SendData(int currentTime)
 		deliveryRatio = CData::getDataArrivalCount() / double(CData::getDataCount()) * 1000;
 	deliveryRatio = ROUND( deliveryRatio );
 	deliveryRatio = deliveryRatio / double( 10 );
-	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl;
+	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
 	sink << currentTime << TAB << nEncounterAtSink << endl;
 	sink.close();
 

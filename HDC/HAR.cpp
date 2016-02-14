@@ -196,7 +196,7 @@ void HAR::HotspotSelection(int currentTime)
 
 	if( currentTime >= startTimeForHotspotSelection )
 	{
-		cout  <<  endl <<"########  < " << currentTime << " >  HOTSPOT SELECTTION" << endl ;
+		cout << "########  < " << currentTime << " >  HOTSPOT SELECTTION" << endl ;
 
 		CGreedySelection::BuildCandidateHotspots(currentTime);
 
@@ -221,7 +221,7 @@ void HAR::HotspotSelection(int currentTime)
 			CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
 		}
 
-		flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " ;
+		flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
 
 		//比较相邻两次热点选取的相似度
 		if(TEST_HOTSPOT_SIMILARITY)
@@ -350,7 +350,7 @@ void HAR::MANodeRouteDesign(int currentTime)
 	}
 
 	for(vector<CRoute>::iterator iroute = m_routes.begin(); iroute != m_routes.end(); ++iroute)
-		cout << "####  [ MA ]  " << routes.size() << "                      " << endl;
+		cout << "####  [ MA ]  " << routes.size() << endl;
 }
 
 
@@ -368,6 +368,10 @@ void HAR::GenerateData(int currentTime)
 
 void HAR::SendData(int currentTime)
 {
+	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
+		return;
+	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
+
 	//记录waiting time信息
 	ofstream waiting_time("waiting-time.txt", ios::app);
 	if( currentTime == startTimeForHotspotSelection )
@@ -584,7 +588,7 @@ void HAR::SendData(int currentTime)
 		deliveryRatio = CData::getDataArrivalCount() / double(CData::getDataCount()) * 1000;
 	deliveryRatio = ROUND( deliveryRatio );
 	deliveryRatio = deliveryRatio / double( 10 );
-	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl;
+	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
 	delivery_hotspot.close();
 }
 

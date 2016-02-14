@@ -158,7 +158,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	vector<CHotspot *> hotspots = CHotspot::selectedHotspots;
 	if( hotspots.empty() )
 		return;
-	cout << endl << "########  < " << currentTime << " >  DUTY CYCLE UPDATE" << endl ;
+	cout << "########  < " << currentTime << " >  DUTY CYCLE UPDATE" << endl ;
 
 	int atHotspotCount = 0;
 	vector<CNode *> nodes = CNode::getNodes();
@@ -208,7 +208,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	double encounterRatio = CNode::getEncounterAtHotspotPercent() * 1000;
 	encounterRatio = ROUND( encounterRatio );
 	encounterRatio = encounterRatio / double( 10 );
-	flash_cout << "####  [ Hotspot Encounter ]  " << encounterRatio << " %                                           " ;
+	flash_cout << "####  [ Hotspot Encounter ]  " << encounterRatio << " %                                           " << endl;
 	//flash_cout << "####  [ At Hotspot ]  " << atHotspotCount << " / " << CNode::getNodes().size() << "                              " ;
 
 }

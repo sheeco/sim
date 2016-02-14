@@ -71,7 +71,7 @@ void CRoutingProtocol::GenerateData(int currentTime)
 }
 
 
-string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEnergyConsumption \n" ;
+string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEnergyConsumption (#NodeCount	#CurrentEnergy...) \n" ;
 string INFO_BUFFER_STATISTICS =  "#Time	#AvgBufferStateInHistoryOfEachNode \n" ;
 string INFO_DELIVERY_RATIO = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio \n" ;
 string INFO_DELAY = "#Time	#AvgDelay \n" ;
@@ -97,7 +97,16 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			energy_consumption << INFO_LOG ; 
 			energy_consumption << INFO_ENERGY_CONSUMPTION ;
 		}
-		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() / 1000 << endl;
+		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() / 1000 ;
+		if( CNode::ENERGY > 0 )
+		{			
+			//节点剩余能量
+			energy_consumption << TAB << CNode::getNodes().size() << TAB;
+			vector<CNode *> allNodes = CNode::getAllNodes();
+			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
+				energy_consumption << (*inode)->getEnergy() / 1000 << TAB;
+		}
+		energy_consumption << endl;
 		energy_consumption.close();
 
 		//每个节点buffer状态的历史平均值
@@ -132,6 +141,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		}
 		delay << currentTime << TAB << CData::getAverageDelay() << endl;
 		delay.close();
+
 
 		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
 		{

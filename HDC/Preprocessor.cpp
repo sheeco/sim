@@ -243,6 +243,42 @@ vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> v)
 	return merge(left, right);
 }
 
+vector<CNode *> CPreprocessor::merge(vector<CNode *> left, vector<CNode *> right, bool(*Comp)(CNode *, CNode *))
+{
+	vector<CNode *> result;
+	vector<CNode *>::size_type li = 0;
+	vector<CNode *>::size_type ri = 0;
+	while(li < left.size()
+		&& ri < right.size())
+	{
+		if( Comp(left[li], right[ri]) )
+			result.push_back(right[ri++]);
+		else
+			result.push_back(left[li++]);
+	}
+	while(li < left.size())
+		result.push_back(left[li++]);
+	while(ri < right.size())
+		result.push_back(right[ri++]);
+	return result;
+}
+
+vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> v, bool(*Comp)(CNode *, CNode *))
+{
+	if(v.size() == 0)
+		return vector<CNode *>();
+	if(v.size() == 1)
+		return vector<CNode *>(1, v[0]);
+
+	vector<CNode *>::iterator mid = v.begin() + v.size() / 2;
+	vector<CNode *> left(v.begin(), mid);
+	vector<CNode *> right(mid, v.end());
+	left = mergeSort(left, Comp);
+	right = mergeSort(right, Comp);
+
+	return merge(left, right);
+}
+
 vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *))
 {
 	vector<CHotspot *> result;

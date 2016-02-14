@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 	TRANS_RANGE = 250;
 	DATATIME = 15000;
 	RUNTIME = 15000;
-	CData::MAX_TTL = RUNTIME;
+	CData::MAX_TTL = 0;
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
 
@@ -349,40 +349,52 @@ int main(int argc, char* argv[])
 
 		debugInfo << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
+		parameters << endl;
 		if( MAC_PROTOCOL == _hdc )
 		{
-			INFO_LOG += "#HDC\t";
+			INFO_LOG += "-HDC ";
+			parameters << "-HDC ";
+		}
 
+		if( ROUTING_PROTOCOL == _epidemic )
+		{
+			INFO_LOG += "-Epidemic ";
+			parameters << "-Epidemic ";
+		}
+		else if( ROUTING_PROTOCOL == _prophet )
+		{
+			INFO_LOG += "-Prophet ";
+			parameters << "-Prophet ";
+		}
+
+		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
+		{
 			if( HOTSPOT_SELECT == _improved )
 			{
-				INFO_LOG += "#IHAR";
-				parameters << endl;
-				parameters << "#HDC\t#IHAR" << endl << endl;
+				INFO_LOG += "-IHAR ";
+				parameters << "-IHAR " << endl << endl;
 				parameters << "LIFETIME" << TAB << MAX_MEMORY_TIME << endl << endl;
-				parameters << "LAMBDA" << TAB << LAMBDA << endl;
 
 				debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << ALPHA << TAB << BETA << TAB << MAX_MEMORY_TIME << TAB ;
 			}
 
-			//else if( HOTSPOT_SELECT == merge )
-			//{
-			//	INFO_LOG += "#merge-HAR";
-			//	parameters << endl;
-			//	parameters << "#merge-HAR" << endl << endl;
-			//	parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
-			//	parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
-			//	parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl;
+			else if( HOTSPOT_SELECT == _merge )
+			{
+				INFO_LOG += "-mHAR ";
+				parameters << "-mHAR " << endl << endl;
+				parameters << "RATIO_MERGE" << TAB << RATIO_MERGE_HOTSPOT << endl;
+				parameters << "RATIO_NEW" << TAB << RATIO_NEW_HOTSPOT << endl;
+				parameters << "RATIO_OLD" << TAB << RATIO_OLD_HOTSPOT << endl;
 
-			//	debugInfo << RATIO_MERGE_HOTSPOT << TAB << RATIO_OLD_HOTSPOT << TAB ;
+				debugInfo << RATIO_MERGE_HOTSPOT << TAB << RATIO_OLD_HOTSPOT << TAB ;
 
-			//}
+			}
 
 			else
 			{
 				debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << ALPHA << TAB << BETA << TAB ;
-				INFO_LOG += "#HAR";
-				parameters << endl;
-				parameters << "#HDC\t#HAR" << endl << endl;
+				INFO_LOG += "-HAR ";
+				parameters << "-HAR " << endl << endl;
 			}
 
 			parameters << "ALPHA" << TAB << ALPHA << endl;
@@ -395,9 +407,9 @@ int main(int argc, char* argv[])
 
 		if(TEST_DYNAMIC_NUM_NODE)
 		{
-			INFO_LOG += "\t#TEST_DYNAMIC_NODE_NUMBER";
+			INFO_LOG += "-TEST_DYNAMIC_NODE_NUMBER";
 			parameters << endl;
-			parameters << "#TEST_DYNAMIC_NODE_NUMBER" << endl;
+			parameters << "-TEST_DYNAMIC_NODE_NUMBER" << endl;
 		}
 
 		INFO_LOG += "\n";
