@@ -28,10 +28,12 @@ private:
 	static int ID_COUNT;  //数值等于data的总数
 	static int ARRIVAL_COUNT;  //到达的数据计数
 	static double DELAY_SUM;  //时延加和，用于计算平均时延
-	//static int OVERFLOW_COUNT;  //因节点Buffer溢出被丢弃的数据计数
 
-	//static int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
-	//static int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
+	static int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
+	static int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
+
+	CData(void): 
+		node(0), timeBirth(0), timeArrival(-1), HOP(0), TTL(0) {};
 
 	//自动生成ID
 	//ID = node_id * 10 000 000 + data_counter ，用于在SV中识别Data来源
@@ -49,52 +51,43 @@ public:
 	static int MAX_HOP;
 	static int MAX_TTL;
 
-	CData(void)
-	{
-		ID = -1;
-		node = -1;
-		timeBirth = 0;
-		flag = false;
-	}
-
 	CData(int node, int timeBirth)
 	{
+		CData();
 		this->node = node;
 		this->timeBirth = timeBirth;
 		this->time = timeBirth;
-		this->timeArrival = -1;  //初始值-1
 		this->generateID();
-		this->flag = false;
 		this->HOP = MAX_HOP;
 		this->TTL = MAX_TTL;
 	}
 
 	~CData(void);
 
-	//static void deliverAtHotspot(int n)
-	//{
-	//	DELIVERY_AT_HOTSPOT_COUNT += n;
-	//}
-	//static void deliverOnRoute(int n)
-	//{
-	//	DELIVERY_ON_ROUTE_COUNT += n;
-	//}
-	////该函数应当在MA的路径更新时调用输出统计结果
-	////注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
-	//static int getDeliveryAtHotspotCount()
-	//{
-	//	return DELIVERY_AT_HOTSPOT_COUNT;
-	//}
-	////该函数应当在MA的路径更新时调用输出统计结果
-	////注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
-	//static int getDeliveryTotalCount()
-	//{
-	//	return DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT;
-	//}
-	//static double getDeliveryAtHotspotPercent()
-	//{
-	//	return (double)DELIVERY_AT_HOTSPOT_COUNT / (double)( DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT );
-	//}
+	static void deliverAtHotspot(int n)
+	{
+		DELIVERY_AT_HOTSPOT_COUNT += n;
+	}
+	static void deliverOnRoute(int n)
+	{
+		DELIVERY_ON_ROUTE_COUNT += n;
+	}
+	//该函数应当在MA的路径更新时调用输出统计结果
+	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
+	static int getDeliveryAtHotspotCount()
+	{
+		return DELIVERY_AT_HOTSPOT_COUNT;
+	}
+	//该函数应当在MA的路径更新时调用输出统计结果
+	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
+	static int getDeliveryTotalCount()
+	{
+		return DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT;
+	}
+	static double getDeliveryAtHotspotPercent()
+	{
+		return static_cast<double>(DELIVERY_AT_HOTSPOT_COUNT) / static_cast<double>( DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT );
+	}
 
 	//static inline void overflow()
 	//{
@@ -109,32 +102,33 @@ public:
 	{
 		this->node = node;
 	}
-	inline int getTimeBirth()
+	inline int getTimeBirth() const
 	{
 		return timeBirth;
 	}
-	inline int getTimeArrival()
+	inline int getTimeArrival() const
 	{
 		return timeArrival;
 	}
-	inline int getNode()
+	inline int getNode() const
 	{
 		return node;
 	}
 
 	//重载比较操作符，用于mergeSort
-	bool operator < (CData rt)
+	bool operator < (CData rt) const
 	{
 		return this->timeBirth < rt.getTimeBirth();
 	}
 
 	//重载比较操作符，用于去重
-	bool operator == (CData rt)
+	bool operator == (CData rt) const
 	{
 		return this->ID == rt.getID();
 	}
 
-	bool operator == (int id)
+	//重载操作符==用于根据ID判断identical
+	bool operator == (int id) const
 	{
 		return this->ID == id;
 	}
@@ -166,7 +160,7 @@ public:
 	}
 
 	//判断是否已经超过生存期(TTL <= 0)，超出应丢弃
-	inline bool isOverdue()
+	inline bool isOverdue() const
 	{
 		if( useHOP() )
 			return false;
@@ -175,7 +169,7 @@ public:
 	}
 	
 	//判断是否允许转发（HOP > 1），不允许则不放入SV中
-	inline bool allowForward()
+	inline bool allowForward() const
 	{
 		if( useTTL() )
 			return true;
@@ -189,6 +183,7 @@ public:
 		{
 			cout << "Error @ CData::useHOP() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
 			_PAUSE;
+			return false;
 		}
 		else
 			return MAX_HOP > 0;
@@ -199,6 +194,7 @@ public:
 		{
 			cout << "Error @ CData::useTTL() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
 			_PAUSE;
+			return false;
 		}
 		else
 			return MAX_TTL > 0;	
@@ -222,7 +218,7 @@ public:
 		if(ID_COUNT == 0)
 			return 0;
 		else
-			return (double)ARRIVAL_COUNT / (double)ID_COUNT;
+			return static_cast<double>(ARRIVAL_COUNT) / static_cast<double>(ID_COUNT);
 	}
 	static double getAverageDelay()
 	{

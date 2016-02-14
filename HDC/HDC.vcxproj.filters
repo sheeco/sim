@@ -140,9 +140,6 @@
     <ClCompile Include="Epidemic.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MACProtocol.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="HDC.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -160,7 +157,6 @@
     <None Include="..\.gitignore">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\README.md">

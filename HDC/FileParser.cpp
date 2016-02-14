@@ -47,7 +47,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 		if((*ipos)->getID() == ID)
 			return *ipos;
 	}
-	return NULL;
+	return nullptr;
 }
 
 //vector<CHotspot *> CFileParser::getHotspotFromFile(char *filename, int time, vector<CPosition *> positions)
@@ -55,7 +55,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //	ifstream file;
 //	vector<CHotspot *> hotspots;
 //	int tmp_time = 0;
-//	int tmp_id = 0;
+//	int tmp_id = -1;
 //	double tmp_x = 0;
 //	double tmp_y = 0;
 //	int tmp_n_position = 0;
@@ -66,7 +66,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //
 //		if( file.good() )
 //		{
-//			CHotspot *hotspot = NULL;
+//			CHotspot *hotspot = nullptr;
 //			while( ! file.eof() )
 //			{
 //				file >> tmp_time;
@@ -97,10 +97,10 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //					hotspot->addPosition(position);
 //				}
 //
-//				if(hotspot != NULL)
+//				if(hotspot != nullptr)
 //				{
 //					hotspots.push_back(hotspot);
-//					hotspot = NULL;
+//					hotspot = nullptr;
 //				}			
 //			}
 //		}
@@ -126,11 +126,11 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //{
 //	for(vector<CHotspot *>::iterator it = list_hotspot.begin(); it != list_hotspot.end(); it++)
 //	{
-//		if(*it != NULL)
+//		if(*it != nullptr)
 //			writeHotspotToFile(filename, *it, withDetail);
 //		else
 //		{
-//			cout<<"Error @ CFileParser::writeHotspotToFile() : list_hotspot has a NULL"<<endl;
+//			cout<<"Error @ CFileParser::writeHotspotToFile() : list_hotspot has a nullptr"<<endl;
 //			_PAUSE;
 //		}
 //	}
@@ -142,13 +142,13 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //	ofstream file(filename, ios::app);
 //	for(vector<CHotspot *>::iterator it = list_hotspot.begin(); it != list_hotspot.end(); it++)
 //	{
-//		if(*it != NULL)
+//		if(*it != nullptr)
 //		{
 //			coverSum += (*it)->getNCoveredPosition();
 //		}
 //		else
 //		{
-//			cout<<"Error @ CFileParser::writeHotspotToFile() : list_hotspot has a NULL"<<endl;
+//			cout<<"Error @ CFileParser::writeHotspotToFile() : list_hotspot has a nullptr"<<endl;
 //			_PAUSE;
 //		}
 //	}

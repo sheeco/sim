@@ -3,8 +3,7 @@
 
 extern int TRANS_RANGE;
 
-int CHotspot::ID_COUNT = 0;  //从1开始，数值等于热点总数
-int CHotspot::nHotspotCandidates = 0;
+int CHotspot::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 vector<CHotspot *> CHotspot::hotspotCandidates;
 vector<CHotspot *> CHotspot::selectedHotspots;
 vector<CHotspot *> CHotspot::oldSelectedHotspots;
@@ -103,17 +102,6 @@ void CHotspot::generateCoveredNodes()
 	}
 }
 
-string CHotspot::toString(bool withDetails)
-{
-	ostringstream os;
-	os << this->time << TAB << this->age << TAB << this->ID << TAB << this->x << TAB << this->y << TAB << coveredPositions.size() << TAB ;
-	if(withDetails)
-	{
-		for(int i = 0; i < coveredPositions.size(); i++)
-			os << coveredPositions[i]->getID() << TAB ;
-	}
-	return os.str();
-}
 
 double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 {

@@ -114,7 +114,6 @@
     <ClCompile Include="HAR.cpp" />
     <ClCompile Include="HDC.cpp" />
     <ClCompile Include="Hotspot.cpp" />
-    <ClCompile Include="MACProtocol.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MANode.cpp" />
     <ClCompile Include="Node.cpp" />
@@ -133,7 +132,6 @@
   <ItemGroup>
     <None Include="..\.gitattributes" />
     <None Include="..\.gitignore" />
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

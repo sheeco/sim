@@ -66,9 +66,9 @@ vector<int> CPreprocessor::RandomIntList(int min, int max, int size)
 void CPreprocessor::freePointerVector(vector<CPosition *> &v)
 {
 	vector<CPosition *>::iterator it;
-	for(it = v.begin(); it != v.end(); it++)
+	for(it = v.begin(); it != v.end(); ++it)
 	{
-		if(*it != NULL)
+		if(*it != nullptr)
 			delete *it;
 	}
 	v.clear();
@@ -77,9 +77,9 @@ void CPreprocessor::freePointerVector(vector<CPosition *> &v)
 void CPreprocessor::freePointerVector(vector<CHotspot *> &v)
 {
 	vector<CHotspot *>::iterator it;
-	for(it = v.begin(); it != v.end(); it++)
+	for(it = v.begin(); it != v.end(); ++it)
 	{
-		if(*it != NULL)
+		if(*it != nullptr)
 			delete *it;
 	}
 	v.clear();
@@ -94,15 +94,15 @@ bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
 {
 	//将执行强制类型转换，只能传入CHotspot类
 	//包括ratio的计算
-	return ( ( (CHotspot *) left)->calculateRatio() ) > ( ( (CHotspot *) right)->calculateRatio() );
+	return ( static_cast<CHotspot *>(left)->calculateRatio() ) > ( static_cast<CHotspot *>(right)->calculateRatio() );
 }
 
 template <class E>
 vector<E> CPreprocessor::merge(vector<E> left, vector<E> right, bool(*Comp)(E, E))
 {
 	vector<E> result;
-	vector<E>::size_type li = 0;
-	vector<E>::size_type ri = 0;
+	typename vector<E>::size_type li = 0;
+	typename vector<E>::size_type ri = 0;
 	while(li < left.size()
 		&& ri < right.size())
 	{
@@ -126,7 +126,7 @@ vector<E> CPreprocessor::mergeSort(vector<E> v, bool(*Comp)(E, E))
 	if(v.size() == 1)
 		return vector<E>(1, v[0]);
 
-	vector<E>::iterator mid = v.begin() + v.size() / 2;
+	typename vector<E>::iterator mid = v.begin() + v.size() / 2;
 	vector<E> left(v.begin(), mid);
 	vector<E> right(mid, v.end());
 	left = mergeSort(left, Comp);
@@ -317,50 +317,9 @@ vector<CHotspot> CPreprocessor::mergeSortByDeliveryCount(vector<CHotspot> v, int
 	return mergeByDeliveryCount(left, right, endTime);
 }
 
-void CPreprocessor::DecayPositionsWithoutDeliveryCount()
-{
-	vector<CPosition*> badPositions;
-	if( CHotspot::oldSelectedHotspots.empty() )
-		return;
-
-	for(vector<CHotspot*>::iterator ihotspot = CHotspot::oldSelectedHotspots.begin(); ihotspot != CHotspot::oldSelectedHotspots.end(); )
-	{
-		if( (*ihotspot)->getDeliveryCount(currentTime) == 0 )
-		{
-			addToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
-			//free(*ihotspot);
-			//在mHAR中，应该考虑是否将这些热点排除在归并之外
-			//CHotspot::deletedHotspots.push_back(*ihotspot);
-			//ihotspot = CHotspot::oldSelectedHotspots.erase(ihotspot);
-			ihotspot++;
-		}
-		else
-			ihotspot++;
-	}
-	for(vector<CPosition*>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
-	{
-		if( ifExists(badPositions, *ipos) )
-		{
-			(*ipos)->decayWeight();
-			//Reduce complexity
-			RemoveFromList(badPositions, *ipos);
-			//如果权值低于最小值，直接删除，MIN_POSITION_WEIGHT默认值为1，即不会删除任何position
-			if( (*ipos)->getWeight() < MIN_POSITION_WEIGHT )
-			{
-				CPosition::deletedPositions.push_back(*ipos);
-				ipos = CPosition::positions.erase(ipos);
-			}
-			else
-				ipos++;
-		}
-		else
-			ipos++;
-	}
-}
-
 void CPreprocessor::SaveHotspotsToFile(int time, vector<CHotspot *> hotspots)
 {
 	ofstream toFile("hotspots.txt");
-	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ihotspot++)
+	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 		toFile<<time<< TAB <<(*ihotspot)->getX()<< TAB <<(*ihotspot)->getY()<< TAB <<(*ihotspot)->getID()<< TAB <<(*ihotspot)->getNCoveredPosition()<<endl;
 }

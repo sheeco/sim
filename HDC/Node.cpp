@@ -1,22 +1,32 @@
 #include "Node.h"
 #include "Preprocessor.h"
+#include "FileParser.h"
+#include "MANode.h"
 
-int CNode::ID_COUNT = 0;  //从1开始，数值等于节点总数
+int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 int CNode::BUFFER_CAPACITY = BUFFER_CAPACITY_NODE;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
+int CNode::encounter = 0;
+int CNode::encounterAtHotspot = 0;
+int CNode::encounterOnRoute = 0;
+
 int CNode::SLOT_TOTAL = 0;
 double CNode::ENERGY = 0;
-double CNode::SUM_ENERGY_CONSUMPTION = 0;
 vector<CNode*> CNode::nodes;
 vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
+vector<CNode *> CNode::deletedNodes;
+Mode CNode::BUFFER_MODE = BUFFER::LOOSE;
+Mode CNode::COPY_MODE = SEND::DUMP;
+Mode CNode::SEND_MODE = SEND::FIFO;
 
 /**************************************  Prophet  *************************************/
 double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
 double CNode::DECAY_RATIO = 0.90;  //0.98(/s)
 double CNode::TRANS_RATIO = 0.20;  //0.25
 
+extern RoutingProtocol ROUTING_PROTOCOL;
 
 void CNode::dropDataIfOverflow(int currentTime)
 {
@@ -50,7 +60,7 @@ void CNode::dropDataIfOverflow(int currentTime)
 	//如果总长度溢出
 	if( myData.size() > bufferCapacity )
 	{
-		flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )     " ;
+		//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )                 " ;
 		myData = vector<CData>( myData.end() - BUFFER_CAPACITY, myData.end() );
 	}
 	buffer = myData;
@@ -85,11 +95,10 @@ bool CNode::updateStatus(int currentTime)
 	}
 	timeSleep = timeIncre - timeListen;
 	energyConsumption += timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP;
-	SUM_ENERGY_CONSUMPTION += timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP;
 
 	/**************************************  Prophet  *************************************/
-
-	decayDeliveryPreds(currentTime);
+	if( ROUTING_PROTOCOL == _prophet )
+		decayDeliveryPreds(currentTime);
 
 	//更新坐标
 	double x = 0, y = 0;

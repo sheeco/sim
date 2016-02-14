@@ -1,4 +1,4 @@
 #include "Sink.h"
 
-CSink* CSink::sink = NULL;
+CSink* CSink::sink = nullptr;
 

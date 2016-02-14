@@ -35,7 +35,7 @@ int CNodeRepair::countForNode(vector<CHotspot *> hotspots, int n)
 CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 {
 	int maxCoverCount = 0;
-	CHotspot *result = NULL;
+	CHotspot *result = nullptr;
 	for(int i = unselectedHotspots.size() - 1; i >= 0; i--)
 	{
 		CHotspot *ihotspot = unselectedHotspots[i];
@@ -52,9 +52,9 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 			result = ihotspot;
 		}
 	}
-	//if(result == NULL)
+	//if(result == nullptr)
 	//{
-	//	cout<<"Error @ CNodeRepair::findMaxCoverHotspotForNode() : result = NULL"<<endl;
+	//	cout<<"Error @ CNodeRepair::findMaxCoverHotspotForNode() : result = nullptr"<<endl;
 	//	_PAUSE;
 	//}
 	return result;
@@ -70,7 +70,7 @@ vector<CHotspot *> CNodeRepair::RepairPoorNodes()
 		while(countForNode(selectedHotspots, inode) < LAMBDA * min(time, MAX_MEMORY_TIME) )
 		{
 			CHotspot *hotspot = findMaxCoverHotspotForNode(inode);
-			if(hotspot != NULL)
+			if(hotspot != nullptr)
 			{
 				selectedHotspots.push_back(hotspot);
 				RemoveFromList(unselectedHotspots, hotspot, CHotspot::identical);

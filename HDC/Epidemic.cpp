@@ -1,27 +1,27 @@
 #include "Epidemic.h"
 #include "Node.h"
-#include "FileParser.h"
-#include "Hotspot.h"
 #include "Sink.h"
-#include "GreedySelection.h"
-#include "PostSelector.h"
-#include "NodeRepair.h"
 #include "HDC.h"
 
 int Epidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
 int Epidemic::SPOKEN_MEMORY = 0;
 
+extern bool TEST_DYNAMIC_NUM_NODE;
+extern MacProtocol MAC_PROTOCOL;
+extern RoutingProtocol ROUTING_PROTOCOL;
+extern string INFO_SINK;
+
 void Epidemic::SendData(int currentTime)
 {
-	if( ! currentTime % SLOT_DATA_SEND == 0 )
+	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 		return;
 	cout << endl << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 
 	ofstream sink("sink.txt", ios::app);
 	if(currentTime == 0)
 	{
-		sink << INFO_LOG;
-		sink << "#Time" << TAB << "#EncounterAtSink" << endl;
+		sink << INFO_LOG ;
+		sink << INFO_SINK ;
 	}
 
 	int nEncounterAtSink = 0;
@@ -30,7 +30,7 @@ void Epidemic::SendData(int currentTime)
 	nodes = CPreprocessor::mergeSort(nodes);
 
 	//判断工作状态，向sink投递数据，节点间通信
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
 		//如果处于休眠状态，直接跳过
 		if( ! (*inode)->isListening() )
@@ -39,14 +39,14 @@ void Epidemic::SendData(int currentTime)
 		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
 		{
 			//deliver data to sink
-			flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                    " ;
-			CSink::getSink()->receiveData( (*inode)->sendAllData(false), currentTime );
+			flash_cout << "####  ( Node " << (*inode)->getID() << " deliver " << (*inode)->getBufferSize() << " data to Sink )                    " ;
+			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(SEND::DUMP) );
 			nEncounterAtSink++;
 		}
 
 		//scan other nodes and forward data
 		//inode < jnode，即任何节点对只有一次通信机会
-		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); jnode++)
+		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); ++jnode)
 		{
 			if( (*jnode)->getX() + TRANS_RANGE < (*inode)->getX() )
 				continue;
@@ -55,6 +55,11 @@ void Epidemic::SendData(int currentTime)
 			if( CBasicEntity::getDistance( **inode, **jnode ) > TRANS_RANGE )
 				continue;
 
+			if( (*inode)->isAtHotspot() || (*jnode)->isAtHotspot() )
+				CNode::encountAtHotspot();
+			else
+				CNode::encountOnRoute();
+
 			//if spoken recently, skip
 			if( (*inode)->hasSpokenRecently( (*jnode), currentTime) )
 			{
@@ -62,7 +67,7 @@ void Epidemic::SendData(int currentTime)
 				continue;
 			}
 			//init by node with smaller id
-			CNode *smaller, *greater = NULL;
+			CNode *smaller, *greater = nullptr;
 			smaller = (*inode)->getID() < (*jnode)->getID() ? *inode : *jnode ;
 			greater = (*inode)->getID() > (*jnode)->getID() ? *inode : *jnode ;
 
@@ -88,9 +93,9 @@ void Epidemic::SendData(int currentTime)
 					if( req.empty() )
 						skip = true;
 					else
-						fail = ! greater->receiveData(
+						fail = ! greater->receiveData( currentTime, 
 							smaller->sendDataByRequestList(
-							smaller->receiveRequestList( req ) ) , currentTime) ;
+							smaller->receiveRequestList( req ) ) ) ;
 				}
 			}
 			if( ! fail )
@@ -110,9 +115,9 @@ void Epidemic::SendData(int currentTime)
 						if( req.empty() )
 							skip = true;
 						else
-							fail = ! smaller->receiveData(
+							fail = ! smaller->receiveData(currentTime, 
 								greater->sendDataByRequestList(
-								greater->receiveRequestList( req ) ) , currentTime) ;
+								greater->receiveRequestList( req ) ) ) ;
 					}
 				}
 				if( ! fail )
@@ -135,14 +140,17 @@ void Epidemic::SendData(int currentTime)
 	}
 
 	//更新所有节点的buffer状态记录
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
 		(*inode)->recordBufferStatus();
 	}
 
 	//控制台输出时保留一位小数
-	double deliveryRatio = ROUND( CData::getDataArrivalCount() / (double)CData::getDataCount() * 1000 );
-	deliveryRatio = deliveryRatio / (double)10;
+	double deliveryRatio = 0;
+	if( CData::getDataArrivalCount() > 0 )
+		deliveryRatio = CData::getDataArrivalCount() / (double)( CData::getDataCount() ) * 1000;
+	deliveryRatio = ROUND( deliveryRatio );
+	deliveryRatio = deliveryRatio / static_cast<double>( 10 );
 	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                    " << endl;
 	sink << currentTime << TAB << nEncounterAtSink << endl;
 	sink.close();
@@ -151,19 +159,21 @@ void Epidemic::SendData(int currentTime)
 
 bool Epidemic::Operate(int currentTime)
 {
-	////Node Number Test:
-	//if( TEST_DYNAMIC_NUM_NODE )
-	//{
-	//	if(currentTime % SLOT_CHANGE_NUM_NODE == 0 && currentTime > 0)
-	//	{
-	//		ChangeNodeNumber();
-	//	}
-	//}
+	if( ROUTING_PROTOCOL != _epidemic )
+		return false;
+
+	//Node Number Test:
+	if( TEST_DYNAMIC_NUM_NODE )
+		ChangeNodeNumber(currentTime);
 
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
 
 	UpdateNodeStatus(currentTime);
+
+	//调用下层协议HDC，判断是否位于热点区域，更新占空比
+	if( MAC_PROTOCOL == _hdc )
+		CHDC::UpdateDutyCycleForNodes(currentTime);
 
 	GenerateData(currentTime);
 

@@ -6,7 +6,7 @@ class CMacProtocol :
 	public CProtocol
 {
 public:
-	CMacProtocol(void);
-	virtual ~CMacProtocol(void);
+	CMacProtocol(void){};
+	virtual ~CMacProtocol(void){};
 };
 

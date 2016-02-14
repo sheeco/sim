@@ -7,6 +7,12 @@
 #include "Prophet.h"
 #include "HDC.h"
 
+using namespace std;
+
+MacProtocol MAC_PROTOCOL = _smac;
+RoutingProtocol ROUTING_PROTOCOL = _prophet;
+HotspotSelect HOTSPOT_SELECT = _original;
+
 
 /************************************ IHAR ************************************/
 
@@ -27,25 +33,16 @@ double RATIO_NEW_HOTSPOT = 1.0;
 double RATIO_OLD_HOTSPOT = 1.0;
 double CO_POSITION_DECAY = 1.0;
 
-bool HEAT_RATIO_EXP = false;
-bool HEAT_RATIO_LN = false;
-
-
-/*********************************** HDC **************************************/
-
-bool DO_HDC = false;
+bool TEST_LEARN = false;
+int MAX_NUM_HOTSPOT = 999999;
+double MIN_POSITION_WEIGHT = 0;
 
 
 /********************************* 全局变量 ***********************************/
 
-bool DO_IHAR = false;
-bool DO_MERGE_HAR = false;
 bool TEST_BALANCED_RATIO = false;
-bool TEST_HOTSPOT_SIMILARITY = true;
+bool TEST_HOTSPOT_SIMILARITY = false;
 bool TEST_DYNAMIC_NUM_NODE = false;
-bool TEST_LEARN = false;
-int MAX_NUM_HOTSPOT = 9999;
-double MIN_POSITION_WEIGHT = 0;
 
 double SINK_X = 0.0;
 double SINK_Y = 0.0;
@@ -58,45 +55,45 @@ double CO_HOTSPOT_HEAT_A1 = 1;
 double CO_HOTSPOT_HEAT_A2 = 30;
 int MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
 
+int startTimeForHotspotSelection = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 double PROB_DATA_FORWARD = 1.0;
 int DATATIME = 0;
 int RUNTIME = 0;
 int currentTime = 0;
-int startTimeForHotspotSelection = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 
 string INFO_LOG;
 ofstream debugInfo("debug.txt", ios::app);
 
 string INFO_HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
-              "<mode>            -har;                  -ihar;                  -hdc;                    -hotspot-similarity;         -dynamic-node-number; \n"
-              "<time>            -time-data   [];       -time-run   []; \n"
-			  "<node>            -energy      [];       -sink       [] [];      -range      []; \n"
-              "<har>             -alpha       [];       -beta       [];         -gamma      [];          -heat   [] [];               -prob-trans []; \n"
+              "<mac>             -hdc;                  -cycle      [];        -dc-default  [];         -dc-hotspot []; \n"
+			  "<route>           -epidemic;             -prophet;              -har;                    -hop        [];        -ttl        [];\n"
+              "<hs>              -ihar；                -mhar；                 -alpha       [];         -beta       [];        -heat    [] []; \n"
               "<ihar>            -lambda      [];       -lifetime   []; \n"
-			  "<prophet>        -hop         [];       -ttl        [];         -queue      [];          -spoken []; \n"
-              "<hdc>             -cycle       [];       -dc-default [];         -dc-default []; \n\n" ;
+			  "<mhar>            -merge       [];       -old        []; \n"
+			  "<node>            -sink     [] [];       -range      [];        -prob-trans  [];         -energy      [];       -time-data  [];       -time-run   []; \n"
+			  "<prophet>         -spoken      [];       -queue      []; \n"
+              "<test>            -dynamic-node-number;  -hotspot-similarity;   -balanced-ratio; \n\n" ;
 
-string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Period	#DefaultDC	(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log \n" ;
+string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log \n" ;
 
 int main(int argc, char* argv[])
 {
 
 
 	/************************************ 参数默认值 *************************************/
-	//CData::MAX_HOP = 20;
-	//CData::MAX_TTL = 2000;
-	//Epidemic::SPOKEN_MEMORY = 1 * CNode::SLOT_TOTAL;
-	//CNode::SLOT_TOTAL = 5 * SLOT_MOBILITYMODEL;
-	//CNode::DEFAULT_DUTY_CYCLE = 0.2;
-	//CNode::HOTSPOT_DUTY_CYCLE = 0.4;
-	SINK_X = 200;
+
+	SINK_X = -200;
 	SINK_Y = 200;
 	TRANS_RANGE = 250;
 	DATATIME = 15000;
 	RUNTIME = 15000;
+	CData::MAX_TTL = RUNTIME;
+	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
+	CNode::DEFAULT_DUTY_CYCLE = 1.0;
 
 
 	/********************************** 命令行参数解析 ***********************************/
+
 	try
 	{
 		int iField = 0;
@@ -105,25 +102,34 @@ int main(int argc, char* argv[])
 			string field = argv[iField];
 
 			//<mode> 不带数值的布尔型参数
-			if( field == "-har" )
+			if( field == "-hdc" )
 			{
-				DO_IHAR = false;
+				MAC_PROTOCOL = _hdc;
+				iField++;
+			}
+			else if( field == "-prophet" )
+			{
+				ROUTING_PROTOCOL = _prophet;
+				iField++;
+			}
+			else if( field == "-epidemic" )
+			{
+				ROUTING_PROTOCOL = _epidemic;
+				iField++;
+			}
+			else if( field == "-har" )
+			{
+				ROUTING_PROTOCOL = _har;
 				iField++;
 			}
 			else if( field == "-ihar" )
 			{
-				DO_IHAR = true;
+				HOTSPOT_SELECT = _improved;
 				iField++;
 			}
-			//else if( field == "-mhar" )
-			//{
-			//	DO_MERGE_HAR = true;
-			//	DO_IHAR = false;
-			//	iField++;
-			//}
-			else if( field == "-hdc" )
+			else if( field == "-mhar" )
 			{
-				DO_HDC = true;
+				HOTSPOT_SELECT = _merge;
 				iField++;
 			}
 			else if( field == "-hotspot-similarity" )
@@ -136,13 +142,19 @@ int main(int argc, char* argv[])
 				TEST_DYNAMIC_NUM_NODE = true;
 				iField++;
 			}
-			//else if( field == "-balanced-ratio" )
-			//{
-			//	TEST_BALANCED_RATIO = true;
-			//	iField++;
-			//}
+			else if( field == "-balanced-ratio" )
+			{
+				TEST_BALANCED_RATIO = true;
+				iField++;
+			}
 
 			//整型参数
+			else if( field == "-range" )
+			{
+				if(iField < argc - 1)
+					TRANS_RANGE = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}			
 			else if( field == "-lifetime" )
 			{
 				if(iField < argc - 1)
@@ -161,6 +173,12 @@ int main(int argc, char* argv[])
 					RUNTIME = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-cycle" )
+			{
+				if(iField < argc - 1)
+					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-dc-default" )
 			{
 				if(iField < argc - 1)
@@ -171,12 +189,6 @@ int main(int argc, char* argv[])
 			{
 				if(iField < argc - 1)
 					CNode::HOTSPOT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-cycle" )
-			{
-				if(iField < argc - 1)
-					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-hop" )
@@ -194,7 +206,7 @@ int main(int argc, char* argv[])
 			else if( field == "-energy" )
 			{
 				if(iField < argc - 1)
-					CNode::ENERGY = atoi( argv[ iField + 1 ] );
+					CNode::ENERGY = 1000 * atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-queue" )
@@ -209,12 +221,7 @@ int main(int argc, char* argv[])
 					Epidemic::SPOKEN_MEMORY = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-range" )
-			{
-				if(iField < argc - 1)
-					TRANS_RANGE = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
+
 
 			//double参数
 			else if( field == "-alpha" )
@@ -228,12 +235,6 @@ int main(int argc, char* argv[])
 				if(iField < argc - 1)
 					BETA = atof( argv[ iField + 1 ] );
 				iField += 2;
-			}
-			else if( field == "-gamma" )
-			{
-				if(iField < argc - 1)
-					GAMMA = atof( argv[ iField + 1 ] );
-				iField += 2;
 			}			
 			else if( field == "-lambda" )
 			{
@@ -241,18 +242,18 @@ int main(int argc, char* argv[])
 					LAMBDA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			//else if( field == "-merge" )
-			//{
-			//	if(iField < argc - 1)
-			//		RATIO_MERGE_HOTSPOT = atof( argv[ iField + 1 ] );
-			//	iField += 2;
-			//}
-			//else if( field == "-old" )
-			//{
-			//	if(iField < argc - 1)
-			//		RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
-			//	iField += 2;
-			//}
+			else if( field == "-merge" )
+			{
+				if(iField < argc - 1)
+					RATIO_MERGE_HOTSPOT = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-old" )
+			{
+				if(iField < argc - 1)
+					RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-prob-trans" )
 			{
 				if(iField < argc - 1)
@@ -261,6 +262,15 @@ int main(int argc, char* argv[])
 			}
 
 			//带两个或以上数值的参数
+			else if( field == "-sink" )
+			{
+				if(iField < argc - 2)
+				{
+					SINK_X = atof( argv[ iField + 1 ] );
+					SINK_Y = atof( argv[ iField + 2 ] );
+				}
+				iField += 3;
+			}			
 			else if( field == "-heat" )
 			{
 				if(iField < argc - 2)
@@ -270,15 +280,7 @@ int main(int argc, char* argv[])
 				}
 				iField += 3;
 			}
-			else if( field == "-sink" )
-			{
-				if(iField < argc - 2)
-				{
-					SINK_X = atof( argv[ iField + 1 ] );
-					SINK_Y = atof( argv[ iField + 2 ] );
-				}
-				iField += 3;
-			}
+
 
 			//输出help信息
 			else if( field == "-help" )
@@ -301,7 +303,7 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
-	srand( (unsigned) time(NULL) ); 
+	srand( static_cast<unsigned>(time(nullptr)) ); 
   
 	/********************************* 将log信息和参数信息写入文件 ***********************************/
 	if(currentTime == 0)
@@ -309,7 +311,7 @@ int main(int argc, char* argv[])
 		string logtime;  
 		time_t t;  //秒时间  
 		char buffer[65];
-		t = time(NULL); //获取目前秒时间  
+		t = time(nullptr); //获取目前秒时间  
 		strftime(buffer, 64, "%Y-%m-%d %H:%M:%S", localtime(&t));  
 		logtime = string(buffer);
 		INFO_LOG = "\n#" + logtime + TAB;
@@ -319,7 +321,7 @@ int main(int argc, char* argv[])
 
 		parameters << "SLOT TOTAL" << TAB << CNode::SLOT_TOTAL << endl;
 		parameters << "DEFAULT DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
-		if( DO_HDC )
+		if( MAC_PROTOCOL == _hdc )
 			parameters << "HOTSPOT DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
 
 		if( CData::useHOP() )
@@ -347,11 +349,11 @@ int main(int argc, char* argv[])
 
 		debugInfo << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
-		if(DO_HDC)
+		if( MAC_PROTOCOL == _hdc )
 		{
 			INFO_LOG += "#HDC\t";
 
-			if(DO_IHAR)
+			if( HOTSPOT_SELECT == _improved )
 			{
 				INFO_LOG += "#IHAR";
 				parameters << endl;
@@ -362,7 +364,7 @@ int main(int argc, char* argv[])
 				debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << ALPHA << TAB << BETA << TAB << MAX_MEMORY_TIME << TAB ;
 			}
 
-			//else if(DO_MERGE_HAR)
+			//else if( HOTSPOT_SELECT == merge )
 			//{
 			//	INFO_LOG += "#merge-HAR";
 			//	parameters << endl;
@@ -409,7 +411,7 @@ int main(int argc, char* argv[])
 	while(currentTime <= RUNTIME)
 	{
 
-		if( DO_HDC )
+		if( MAC_PROTOCOL == _hdc )
 			CHDC::Operate(currentTime);
 
 		bool dead = false;
@@ -422,6 +424,9 @@ int main(int argc, char* argv[])
 		currentTime += SLOT;
 
 	}
+
+	debugInfo << INFO_LOG.replace(0, 1, "");
+	debugInfo.flush();
 
 	debugInfo.close();
 	_ALERT;

@@ -8,7 +8,6 @@ extern int NUM_NODE;
 extern double PROB_DATA_FORWARD;
 extern int DATATIME;
 extern int RUNTIME;
-extern bool DO_HDC;
 
 extern string INFO_LOG;
 extern ofstream debugInfo;

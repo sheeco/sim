@@ -12,6 +12,6 @@ class CProtocol
 {
 public:
 	CProtocol(void){};
-	~CProtocol(void){};
+	virtual ~CProtocol(void){};
 };
 

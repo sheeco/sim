@@ -1,14 +1,10 @@
 #pragma once
 
 #include "Hotspot.h"
-#include "FileParser.h"
 #include "Processor.h"
 #include "Node.h"
 
 using namespace std;
-
-extern bool DO_IHAR;
-extern bool DO_MERGE_HAR;
 
 extern int NUM_NODE;
 extern int MAX_MEMORY_TIME;
@@ -71,10 +67,6 @@ public:
 	/** 预处理操作函数 **/
 
 	/** Optional Functions，由main函数调用**/
-
-	//在每一次贪婪选择之前调用，将从CHotspot::oldSelectedHotspots中寻找投递计数为0的热点删除放入CHotspot::deletedHotspots
-	//并删除其对应的所有position放入CPosition::deletedPositions
-	static void DecayPositionsWithoutDeliveryCount();
 
 	static void SaveHotspotsToFile(int time, vector<CHotspot *> hotspots);
 

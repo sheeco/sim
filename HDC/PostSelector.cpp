@@ -29,7 +29,7 @@ double CPostSelector::getRatioForHotspot(CHotspot *hotspot)
 		//merge-HAR: ratio
 		double ratioForMerge = pow( hotspot->getCoByCandidateType(), hotspot->getAge() );
 		//FIXME: balanced ratio for post selection
-		return ratioForMerge * ( hotspot->getRatio() ) / (double)( maxRatio );
+		return ratioForMerge * ( hotspot->getRatio() ) / static_cast<double>( maxRatio );
 	}
 }
 
@@ -57,7 +57,7 @@ void CPostSelector::findLostNodes()
 CHotspot* CPostSelector::findBestHotspotForNode(int inode)
 {
 	int maxCoverCount = 0;
-	CHotspot *result = NULL;
+	CHotspot *result = nullptr;
 	for(int i = hotspotCandidates.size() - 1; i >= 0; i--)
 	{
 		CHotspot *ihotspot = hotspotCandidates[i];
@@ -146,7 +146,7 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 	for(vector<int>::iterator inode = lostNodes.begin(); inode != lostNodes.end(); inode++)
 	{
 		CHotspot* hotspot = findBestHotspotForNode(*inode);
-		if(hotspot != NULL)
+		if(hotspot != nullptr)
 			includeHotspots(hotspot);
 		//将选中的热点从候选集中删除
 		for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ihotspot++)

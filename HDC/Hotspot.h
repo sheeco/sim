@@ -7,7 +7,6 @@ extern bool TEST_BALANCED_RATIO;
 extern bool TEST_LEARN;
 extern int NUM_NODE;
 extern int TRANS_RANGE;
-extern int currentTime;
 extern double RATIO_MERGE_HOTSPOT;
 extern double RATIO_NEW_HOTSPOT;
 extern double RATIO_OLD_HOTSPOT;
@@ -47,98 +46,21 @@ private:
 	//计算两个热点的重叠面积，如无重叠则返回0
 	static double getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot);
 
-public:
-
-	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
-	static vector<CHotspot *> hotspotCandidates;
-	static vector<CHotspot *> selectedHotspots;
-	//上一次贪婪选取最终得到的热点集合，保留
-	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
-	static vector<CHotspot *> oldSelectedHotspots;
-	static int nHotspotCandidates;
-	//
-	static vector<CHotspot *> deletedHotspots;
-
-	CHotspot()
+	void init()
 	{
+		this->heat = 0;
+		this->waitingTimes.push_back(0);
+		this->ratio = 0;		
+		
 		//merge_HAR
 		this->candidateType = TYPE_NEW_HOTSPOT;
 		this->age = 0;
-		this->deliveryCounts.push_back(0);
-		this->waitingTimes.push_back(0);
-		this->ratio = 0;
+		this->deliveryCounts.push_back(0);		
 	}
 
-	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
-	CHotspot(CPosition* pos, int time)  //time应当是当前time，而不是pos的time
+	void generateHotspot(double x, double y, int time)
 	{
-		//this->x = pos->getX();
-		//this->y = pos->getY();
-		//this->ID = -1;
-		//this->time = time;
-		//this->heat = 0;
-		////merge_HAR
-		//this->candidateType = TYPE_NEW_HOTSPOT;
-		//this->age = 0;
-		//this->deliveryCounts.push_back(0);
-		//this->waitingTimes.push_back(0);
-		//this->ratio = 0;
-
-		//addPosition(pos);
-
-		this->generateID();
-
-		//重置flag
-		for(int i = 0; i < CPosition::nPositions; i++)
-			CPosition::positions[i]->setFlag(false);
-		pos->setFlag(true);
-
-		int index_pos = CPosition::getIndexOfPosition(pos);
-		bool modified;
-		//循环，直到没有新的position被加入
-		do
-		{
-			modified = false;
-			//对新的hotspot重心，再次遍历position
-			for(int i = index_pos - 1; i >= 0; i--)
-			{
-				if(CPosition::positions[i]->getFlag())
-					continue;
-				//若水平距离已超出range，则可以直接停止搜索
-				if(fabs(this->getX() - CPosition::positions[i]->getX()) > TRANS_RANGE)
-					break;
-				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= TRANS_RANGE)
-				{
-					this->addPosition(CPosition::positions[i]);
-					CPosition::positions[i]->setFlag(true);
-					modified = true;
-				}
-			}
-			for(int i = index_pos + 1; i < CPosition::nPositions; i++)
-			{
-				if(CPosition::positions[i]->getFlag())
-					continue;
-				//若水平距离已超出range，则可以直接停止搜索
-				if(fabs(CPosition::positions[i]->getX() - this->getX()) > TRANS_RANGE)
-					break;
-				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= TRANS_RANGE)
-				{
-					this->addPosition(CPosition::positions[i]);
-					CPosition::positions[i]->setFlag(true);
-					modified = true;
-				}
-			}
-
-			//重新计算hotspot的重心
-			if(modified)
-				this->recalculateCenter();
-		}while(modified);
-
-	}
-
-	//由merge函数调用
-	CHotspot(double x, double y, int time)
-	{
+		init();
 		this->setX(x);
 		this->setY(y);
 		this->setTime(time);
@@ -175,21 +97,52 @@ public:
 			if(modified)
 				this->recalculateCenter();
 		}while(modified);
-	
+		
+	}
+
+	CHotspot()
+	{
+		init();
+	}
+
+
+public:
+
+	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
+	static vector<CHotspot *> hotspotCandidates;
+	static vector<CHotspot *> selectedHotspots;
+	//上一次贪婪选取最终得到的热点集合，保留
+	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
+	static vector<CHotspot *> oldSelectedHotspots;
+	static vector<CHotspot *> deletedHotspots;
+
+
+	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
+	//time应当是当前time，而不是pos的time
+	CHotspot(CPosition* pos, int time)
+	{
+		addPosition(pos);
+		generateHotspot(x, y, time);
+	}
+
+	//由merge函数调用
+	CHotspot(double x, double y, int time)
+	{
+		generateHotspot(x, y, time);
 	}
 
 	~CHotspot(){};
 
 	//setters & getters
-	inline int getNCoveredPosition()
+	inline int getNCoveredPosition() const
 	{
 		return coveredPositions.size();
 	}
-	inline vector<CPosition *> getCoveredPositions()
+	inline vector<CPosition *> getCoveredPositions() const
 	{
 		return coveredPositions;
 	}
-	inline double getHeat()
+	inline double getHeat() const
 	{
 		return heat;
 	}
@@ -197,13 +150,14 @@ public:
 	{
 		this->heat = heat;
 	}
+	//用于在ifExists和RemoveFromList等函数中作为判断参数传入
 	inline static bool identical(CHotspot *x, CHotspot *y)
 	{
 		return x->getID() == y->getID();
 	}
 
 	//merge_HAR
-	inline int getCandidateType()
+	inline int getCandidateType() const
 	{
 		return this->candidateType;
 	}
@@ -211,7 +165,7 @@ public:
 	{
 		this->candidateType = candidateType;
 	}
-	inline int getAge()
+	inline int getAge() const
 	{
 		return this->age;
 	}
@@ -224,15 +178,15 @@ public:
 		while( waitingTimes.size() < age + 1 )
 			waitingTimes.push_back(0);
 	}
-	inline int getNCoveredNodes()
+	inline int getNCoveredNodes() const
 	{
 		return coveredNodes.size();
 	}
-	inline vector<int> getCoveredNodes()
+	inline vector<int> getCoveredNodes() const
 	{
 		return coveredNodes;
 	}
-	inline double getRatio()
+	inline double getRatio() const
 	{
 		return ratio;
 	}
@@ -242,7 +196,7 @@ public:
 	{
 		if( TEST_BALANCED_RATIO )
 		{
-			ratio = coveredPositions.size() * (double)( NUM_NODE - coveredNodes.size() + 1 ) / (double)NUM_NODE;
+			ratio = coveredPositions.size() * static_cast<double>(NUM_NODE - coveredNodes.size() + 1) / static_cast<double>(NUM_NODE);
 			return ratio;
 		}
 		else if( TEST_LEARN )
@@ -335,8 +289,6 @@ public:
 	//自动生成ID，需手动调用，为了确保热点ID的唯一性，制作临时拷贝时不应调用此函数
 	inline void generateID()
 	{
-		//if(this->ID != -1)
-		//	return;
 		ID_COUNT++;
 		this->ID = ID_COUNT;
 	}
@@ -353,9 +305,6 @@ public:
 
 	//确定覆盖的node列表，在hotspot选取结束后手动调用
 	void generateCoveredNodes();
-
-	//生成包含该热点的时间、年龄、ID、坐标、cover数等信息的字符串
-	string toString(bool withDetails);
 		
 	/****************************************   merge-HAR   ****************************************/ 
 

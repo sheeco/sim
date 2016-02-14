@@ -12,6 +12,7 @@ class CEntity
 {
 public:
 	CEntity(void){};
-	~CEntity(void){};
+
+	virtual ~CEntity(void){};
 };
 

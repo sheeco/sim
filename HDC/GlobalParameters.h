@@ -26,9 +26,8 @@ using namespace std;
 #define SPEED_MANODE 30
 
 //buffer
-#define INFINITE_BUFFER false  //MA buffer是否是无限大的
-#define BUFFER_OVERFLOW_ALLOWED false  //MA buffer已满时是否继续接收数据
-#define BUFFER_CAPACITY_NODE 100
+//#define BUFFER_OVERFLOW_ALLOWED false  //MA buffer已满时是否继续接收数据
+#define BUFFER_CAPACITY_NODE 200
 #define BUFFER_CAPACITY_MA 100
 #define BUFFER_CAPACITY_SINK 99999999999  //无限制
 
@@ -38,17 +37,17 @@ using namespace std;
 #define SLOT_MOBILITYMODEL 30  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
 #define SLOT_LOCATION_UPDATE 100	//地理信息收集的slot
 #define SLOT_HOTSPOT_UPDATE 900	//更新热点和分类的slot
-#define SLOT_DATA_GENERATE 60	//数据产生slot
+#define SLOT_DATA_GENERATE 150	//数据产生slot
 #define SLOT_DATA_SEND 30	//数据发送slot
 #define SLOT_RECORD_INFO 100  //记录数据投递率和数据投递时延的slot
 #define SLOT_CHANGE_NUM_NODE 5 * SLOT_HOTSPOT_UPDATE  //动态节点个数测试时，节点个数发生变化的周期
 
 //data
-#define RATE_DATA_GENERATE 1.0 / 300.0  //( package / s )
-#define SIZE_DATA 400  //( Byte )
-#define SIZE_CONTROL 10
-#define CONSUMPTION_DATA_SEND 0.008  //( mJ / Byte )
-#define CONSUMPTION_DATA_RECIEVE 0.004
+#define RATE_DATA_GENERATE 1.0 / 150.0  //( package / s )
+#define BYTE_PER_DATA 400  //( Byte )
+#define BYTE_PER_CTRL 10
+#define CONSUMPTION_BYTE_SEND 0.008  //( mJ / Byte )
+#define CONSUMPTION_BYTE_RECIEVE 0.004
 #define CONSUMPTION_LISTEN 13.5  // ( mJ / s )
 #define CONSUMPTION_SLEEP 0.015
 
@@ -77,6 +76,33 @@ using namespace std;
 #define PI 3.1415926535
 #define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
 
+
+/********************************* const *********************************/
+
+typedef char Mode;
+
+class SEND
+{
+public:
+	static const char COPY = 'C';  //发送数据时，保留自身副本
+	static const char DUMP = 'D';  //发送数据时，删除自身副本
+	static const char FIFO = 'H';  //可发送配额有限时，优先从头部发送
+	static const char LIFO = 'S';  //可发送配额有限时，优先从尾部发送
+};
+
+class BUFFER
+{
+public:
+	static const char LOOSE = 'L';  //MA buffer已满时，仍允许继续接收数据
+	static const char SELFISH = 'F';  //MA buffer已满时，不再从其他节点接收数据
+};
+
+typedef enum MacProtocol { _smac, _hdc } MacProtocol;
+typedef enum RoutingProtocol { _har, _prophet, _epidemic } RoutingProtocol;
+typedef enum HotspotSelect { _original, _improved, _merge } HotspotSelect;
+
+
+
 /****************************** Global的辅助函数 *******************************/
 //Randomly product a float number between min and max
 inline double RandomFloat(double min, double max)
@@ -89,7 +115,7 @@ inline double RandomFloat(double min, double max)
 		max = min;
 		min = temp;
 	}
-	return min + (double)rand() / RAND_MAX * (max - min);
+	return min + static_cast<double>( rand() ) / RAND_MAX * (max - min);
 }
 
 //Randomly product a int number between min and max (cannot reach max)
@@ -110,7 +136,7 @@ inline int RandomInt(int min, int max)
 template <class E>
 bool ifExists(vector<E> list, E elem)
 {
-	for(vector<E>::iterator i = list.begin(); i != list.end(); i++)
+	for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 	{
 		if(*i == elem)
 			return true;
@@ -121,7 +147,7 @@ bool ifExists(vector<E> list, E elem)
 template <class E>
 bool ifExists(vector<E> list, E elem, bool(*comp)(E, E))
 {
-	for(vector<E>::iterator i = list.begin(); i != list.end(); i++)
+	for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 	{
 		if(comp(*i, elem))
 			return true;
@@ -144,14 +170,14 @@ void addToListUniquely(vector<E> &list, E n)
 template <class E>
 void addToListUniquely(vector<E> &des, vector<E> src)
 {
-	for(vector<E>::iterator i = src.begin(); i != src.end(); i++)
+	for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
 		addToListUniquely(des, *i);
 }
 
 template <class E>
 void RemoveFromList(vector<E> &list, E elem)
 {
-	for(vector<E>::iterator i = list.begin(); i != list.end(); i++)
+	for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 	{
 		if(*i == elem)
 		{
@@ -164,7 +190,7 @@ void RemoveFromList(vector<E> &list, E elem)
 template <class E>
 void RemoveFromList(vector<E> &list, E elem, bool(*comp)(E, E))
 {
-	for(vector<E>::iterator i = list.begin(); i != list.end(); i++)
+	for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 	{
 		if(comp(*i, elem))
 		{
@@ -177,14 +203,14 @@ void RemoveFromList(vector<E> &list, E elem, bool(*comp)(E, E))
 template <class E>
 void RemoveFromList(vector<E> &des, vector<E> src)
 {
-	for(vector<E>::iterator i = src.begin(); i != src.end(); i++)
+	for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
 		RemoveFromList(des, *i);
 }
 
 template <class E>
 void RemoveFromList(vector<E> &des, vector<E> src, bool(*comp)(E, E))
 {
-	for(vector<E>::iterator i = src.begin(); i != src.end(); i++)
+	for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
 		RemoveFromList(des, *i, comp);
 }
 
@@ -193,9 +219,9 @@ template <class E>
 static vector<E> getItemsByID(vector<E> list, vector<int> ids)
 {
 	vector<E> result;
-	for(vector<int>::iterator id = ids.begin(); id != ids.end(); id++)
+	for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
 	{
-		for(vector<E>::iterator item = list.begin(); item != list.end(); item++)
+		for(typename vector<E>::iterator item = list.begin(); item != list.end(); ++item)
 		{
 			if( *item == *id )
 			{
@@ -206,59 +232,3 @@ static vector<E> getItemsByID(vector<E> list, vector<int> ids)
 	}
 	return result;
 }
-
-////OLD: 以下辅助函数已已转移到CPreprocessor类中
-//vector<int> RandomIntList(int min, int max, int size)
-//{
-//	vector<int> result;
-//	int tmp = -1;
-//	if(size > (max - min))
-//	{
-//		vector<int> tmp_order;
-//		for(int i = min; i < max; i++)
-//		{
-//			tmp_order.push_back(i);
-//		}
-//		while(! tmp_order.empty())
-//		{
-//			vector<int>::iterator it = tmp_order.begin();
-//			int bet = RandomInt(0, tmp_order.size());
-//			tmp = tmp_order.at(bet);
-//			result.push_back(tmp);
-//			tmp_order.erase(it + bet);
-//		}
-//		return result;
-//	}
-//
-//	bool duplicate;
-//	if(size == 1)
-//	{
-//		result.push_back(min);
-//		return result;
-//	}
-//
-//	for(int i = 0; i < size; i++)
-//	{
-//		do
-//		{
-//			duplicate = false;
-//			tmp = RandomInt(min, max);
-//			for(int j = 0; j < result.size(); j++)
-//			{
-//				if(result[j] == tmp)
-//				{
-//					duplicate = true;
-//					break;
-//				}
-//			}
-//		}while(duplicate);
-//		if(tmp < 0)
-//		{
-//			cout << "Error @ CPreprocessorRandomIntList() : tmp < 0" << endl;
-//			_PAUSE;
-//		}
-//		else
-//			result.push_back(tmp);
-//	}
-//	return result;
-//}

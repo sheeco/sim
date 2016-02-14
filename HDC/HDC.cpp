@@ -1,4 +1,6 @@
 #include "HDC.h"
+#include "PostSelector.h"
+#include "NodeRepair.h"
 
 int CHDC::HOTSPOT_COST_SUM = 0;
 int CHDC::HOTSPOT_COST_COUNT = 0;
@@ -9,68 +11,14 @@ int CHDC::OLD_PERCENT_COUNT = 0;
 double CHDC::SIMILARITY_RATIO_SUM = 0;
 int CHDC::SIMILARITY_RATIO_COUNT = 0;
 
+extern HotspotSelect HOTSPOT_SELECT;
+
 CHDC::CHDC(void)
 {
 }
 
-
-CHDC::~CHDC(void)
-{
-}
-
-//void CHDC::UpdateNodeLocations()
-//{
-//	//node
-//	for(int i = 0; i < CNode::nodes.size(); i++)
-//	{
-//		double x = 0, y = 0;
-//		CFileParser::getPositionFromFile(i, currentTime, x, y);
-//		CNode::nodes[i].moveTo(x, y, currentTime);
-//	}
-//}
-
-void CHDC::HotspotSelection(int currentTime)
-{
-	/**************************** 热点归并过程(merge-HAR) *****************************/
-	CGreedySelection::BuildCandidateHotspots(currentTime);
-
-	CGreedySelection greedySelection;
-
-	/**************************** 热点归并过程(merge-HAR) *****************************/
-	//merge-HAR: 
-	if( DO_MERGE_HAR )
-		greedySelection.mergeHotspots(currentTime);
-
-	/********************************** 贪婪选取 *************************************/
-	greedySelection.GreedySelect(currentTime);
-
-
-	/********************************* 后续选取过程 ***********************************/
-	CPostSelector postSelector(CHotspot::selectedHotspots);
-	CHotspot::selectedHotspots = postSelector.PostSelect(currentTime);
-
-	
-	/***************************** 疏漏节点修复过程(IHAR) ******************************/
-	//IHAR: POOR NODE REPAIR
-	if(DO_IHAR)
-	{
-		CNodeRepair repair(CHotspot::selectedHotspots, CHotspot::hotspotCandidates, currentTime);
-		CHotspot::selectedHotspots = repair.RepairPoorNodes();
-		CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
-	}
-
-	flash_cout << "####  [ Hotspots ]  " << CHotspot::selectedHotspots.size() ;
-
-	//比较相邻两次热点选取的相似度
-	if(TEST_HOTSPOT_SIMILARITY)
-	{
-		CompareWithOldHotspots(currentTime);
-	}
-}
-
 void CHDC::CompareWithOldHotspots(int currentTime)
 {
-	static double sumSimilarityRatio = 0;
 	if( CHotspot::oldSelectedHotspots.empty() )
 		return ;
 
@@ -96,10 +44,13 @@ void CHDC::CompareWithOldHotspots(int currentTime)
 
 void CHDC::PrintInfo(int currentTime)
 {
+	if( ! currentTime % SLOT_RECORD_INFO == 0 )
+		return ;
+
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、节点buffer状态 ...
 	if( ( currentTime % SLOT_HOTSPOT_UPDATE  == 0 
-		&& currentTime >= startTimeForHotspotSelection )
-		|| currentTime == RUNTIME )
+		  && currentTime >= startTimeForHotspotSelection )
+		  || currentTime == RUNTIME )
 	{
 		//热点个数
 		ofstream hotspot("hotspot.txt", ios::app);
@@ -123,13 +74,13 @@ void CHDC::PrintInfo(int currentTime)
 			hotspot_statistics << "#Time" << TAB << "#CoverSum" << TAB << "#HotspotCount" << TAB << "#AvgCover" << endl;
 		}
 		int sumCover = 0;
-		for(vector<CHotspot *>::iterator it = CHotspot::selectedHotspots.begin(); it != CHotspot::selectedHotspots.end(); it++)
+		for(vector<CHotspot *>::iterator it = CHotspot::selectedHotspots.begin(); it != CHotspot::selectedHotspots.end(); ++it)
 			sumCover += (*it)->getNCoveredPosition();
-		hotspot_statistics << currentTime << TAB << sumCover << TAB << CHotspot::selectedHotspots.size() << TAB << (double)sumCover / (double)CHotspot::selectedHotspots.size() << endl;
+		hotspot_statistics << currentTime << TAB << sumCover << TAB << CHotspot::selectedHotspots.size() << TAB << static_cast<double>( sumCover ) / static_cast<double>( CHotspot::selectedHotspots.size() ) << endl;
 		hotspot_statistics.close();
 
 		//热点归并过程统计信息（在最终选取出的热点集合中）
-		if( DO_MERGE_HAR )
+		if( HOTSPOT_SELECT == _merge )
 		{
 			int mergeCount = 0;
 			int oldCount = 0;
@@ -148,7 +99,7 @@ void CHDC::PrintInfo(int currentTime)
 			merge_details << currentTime << TAB;
 
 			//热点类型及年龄统计信息
-			for(vector<CHotspot *>::iterator ihotspot = CHotspot::selectedHotspots.begin(); ihotspot != CHotspot::selectedHotspots.end(); ihotspot++)
+			for(vector<CHotspot *>::iterator ihotspot = CHotspot::selectedHotspots.begin(); ihotspot != CHotspot::selectedHotspots.end(); ++ihotspot)
 			{
 				if( (*ihotspot)->getCandidateType() == TYPE_MERGE_HOTSPOT )
 				{
@@ -169,13 +120,13 @@ void CHDC::PrintInfo(int currentTime)
 
 			//三种热点所占的比例
 			int total = CHotspot::selectedHotspots.size();
-			merge << currentTime << TAB << mergeCount << TAB << (double)mergeCount / (double)total << TAB << oldCount << TAB 
-				  << (double)oldCount / (double)total << TAB << newCount << TAB << (double)newCount / (double)total << endl;
+			merge << currentTime << TAB << mergeCount << TAB << static_cast<double>( mergeCount ) / static_cast<double>( total ) << TAB << oldCount << TAB 
+				  << static_cast<double>( oldCount ) / static_cast<double>( total ) << TAB << newCount << TAB << static_cast<double>( newCount ) / static_cast<double>( total ) << endl;
 
 			//用于计算归并热点和旧热点所占比例的历史平均值信息
-			MERGE_PERCENT_SUM += (double)mergeCount / (double)total;
+			MERGE_PERCENT_SUM += static_cast<double>( mergeCount ) / static_cast<double>( total );
 			MERGE_PERCENT_COUNT++;
-			OLD_PERCENT_SUM += (double)oldCount / (double)total;
+			OLD_PERCENT_SUM += static_cast<double>( oldCount ) / static_cast<double>( total );
 			OLD_PERCENT_COUNT++;
 
 			merge.close();
@@ -197,11 +148,11 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	vector<CNode *> nodes = CNode::getNodes();
 	nodes = CPreprocessor::mergeSort( nodes );
 	hotspots = CPreprocessor::mergeSort( hotspots, CPreprocessor::ascendByLocationX );
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
-		CHotspot *atHotspot = NULL;
+		CHotspot *atHotspot = nullptr;
 
-		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ihotspot++)
+		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 		{
 			if( (*ihotspot)->getX() + TRANS_RANGE < (*inode)->getX() )
 				continue;
@@ -215,13 +166,13 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		}
 
 		//update duty cycle
-		if( (*inode)->useHotspotDutyCycle() && atHotspot == NULL )
+		if( (*inode)->useHotspotDutyCycle() && atHotspot == nullptr )
 		{
 			flash_cout << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )     " ;			
-			(*inode)->setAtHotspot(NULL);
+			(*inode)->setAtHotspot(nullptr);
 			(*inode)->resetDutyCycle();
 		}
-		else if( ! (*inode)->useHotspotDutyCycle() && atHotspot != NULL )
+		else if( ! (*inode)->useHotspotDutyCycle() && atHotspot != nullptr )
 		{
 			flash_cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )     " ;
 			(*inode)->setAtHotspot(atHotspot);

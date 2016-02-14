@@ -2,17 +2,12 @@
 
 #include "GlobalParameters.h"
 #include "FileParser.h"
-#include "Hotspot.h"
-#include "Node.h"
-#include "Sink.h"
 #include "GreedySelection.h"
-#include "PostSelector.h"
-#include "NodeRepair.h"
 #include "MacProtocol.h"
+#include "HAR.h"
 
 using namespace std;
 
-extern bool DO_IHAR;
 extern bool TEST_HOTSPOT_SIMILARITY;
 
 extern int startTimeForHotspotSelection;
@@ -50,8 +45,6 @@ private:
 
 	////更新所有node的位置（而不是position）
 	//void UpdateNodeLocations();
-	//执行热点选取
-	static void HotspotSelection(int currentTime);
 	//比较此次热点选取的结果与上一次选取结果之间的相似度
 	static void CompareWithOldHotspots(int currentTime);
 	//打印相关信息到文件
@@ -61,25 +54,18 @@ private:
 public:
 
 	CHDC(void);
-	~CHDC(void);
+	~CHDC(void){};
 
 	//检查所有Node，如果位于热点区域，更新占空比
 	static void UpdateDutyCycleForNodes(int currentTime);
 
-	static void Operate(int currentTime)
+	static bool Operate(int currentTime)
 	{
+		HAR::HotspotSelection(currentTime);
 
-		if( currentTime % SLOT_LOCATION_UPDATE == 0 && currentTime > 0 )
-			CGreedySelection::CollectNewPositions(currentTime);
+		PrintInfo(currentTime);
 
-		if( currentTime % SLOT_HOTSPOT_UPDATE == 0 && currentTime >= startTimeForHotspotSelection )
-		{
-			cout  <<  endl <<"########  < " << currentTime << " >  HOTSPOT SELECTTION" << endl ;
-			HotspotSelection(currentTime);
-		}
-
-		if( currentTime % SLOT_RECORD_INFO == 0 && currentTime >= startTimeForHotspotSelection )
-			PrintInfo(currentTime);
+		return true;
 	}
 
 };

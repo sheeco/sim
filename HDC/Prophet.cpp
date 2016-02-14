@@ -2,13 +2,16 @@
 #include "GlobalParameters.h"
 #include "HDC.h"
 #include "Node.h"
+#include "Sink.h"
 
-
-string INFO_SINK = "#Time	#EncounterAtSink \n";
+extern bool TEST_DYNAMIC_NUM_NODE;
+extern MacProtocol MAC_PROTOCOL;
+extern RoutingProtocol ROUTING_PROTOCOL;
+extern string INFO_SINK;
 
 void Prophet::SendData(int currentTime)
 {
-	if( ! currentTime % SLOT_DATA_SEND == 0 )
+	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 		return;
 	cout << endl << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 
@@ -25,7 +28,7 @@ void Prophet::SendData(int currentTime)
 	nodes = CPreprocessor::mergeSort(nodes);
 
 	//判断工作状态，向sink投递数据，节点间通信
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
 		//如果处于休眠状态，直接跳过
 		if( ! (*inode)->isListening() )
@@ -35,14 +38,14 @@ void Prophet::SendData(int currentTime)
 		{
 			//deliver data to sink
 			flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
-			CSink::getSink()->receiveData( (*inode)->sendAllData(false), currentTime );
+			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(SEND::DUMP) );
 			(*inode)->updateDeliveryPredsWithSink();
 			nEncounterAtSink++;
 		}
 
 		//scan other nodes and forward data
 		//inode < jnode，即任何节点对只有一次通信机会
-		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); jnode++)
+		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); ++jnode)
 		{
 			if( (*jnode)->getX() + TRANS_RANGE < (*inode)->getX() )
 				continue;
@@ -51,8 +54,13 @@ void Prophet::SendData(int currentTime)
 			if( CBasicEntity::getDistance( **inode, **jnode ) > TRANS_RANGE )
 				continue;
 
+			if( (*inode)->isAtHotspot() || (*jnode)->isAtHotspot() )
+				CNode::encountAtHotspot();
+			else
+				CNode::encountOnRoute();
+
 			//init by node with smaller id
-			CNode *smaller, *greater = NULL;
+			CNode *smaller, *greater = nullptr;
 			smaller = (*inode)->getID() < (*jnode)->getID() ? *inode : *jnode ;
 			greater = (*inode)->getID() > (*jnode)->getID() ? *inode : *jnode ;
 
@@ -81,7 +89,7 @@ void Prophet::SendData(int currentTime)
 					if( data.empty() )
 						skip = true;
 					else
-						fail = ! smaller->receiveData( data, currentTime) ;
+						fail = ! smaller->receiveData(currentTime, data) ;
 				}
 			}
 			if( ! fail )
@@ -103,7 +111,7 @@ void Prophet::SendData(int currentTime)
 						if( data.empty() )
 							skip = true;
 						else
-							fail = ! greater->receiveData( data , currentTime) ;
+							fail = ! greater->receiveData( currentTime, data ) ;
 					}
 				}
 				if( ! fail )
@@ -131,12 +139,15 @@ void Prophet::SendData(int currentTime)
 	}
 
 	//更新所有节点的buffer状态记录
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
+	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 		(*inode)->recordBufferStatus();
 
 	//控制台输出时保留一位小数
-	double deliveryRatio = ROUND( CData::getDataArrivalCount() / (double)CData::getDataCount() * 1000 );
-	deliveryRatio = deliveryRatio / (double)10;
+	double deliveryRatio = 0;
+	if( CData::getDataArrivalCount() > 0 )
+		deliveryRatio = CData::getDataArrivalCount() / (double)( CData::getDataCount() ) * 1000;
+	deliveryRatio = ROUND( deliveryRatio );
+	deliveryRatio = deliveryRatio / static_cast<double>( 10 );
 	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                    " << endl;
 	sink << currentTime << TAB << nEncounterAtSink << endl;
 	sink.close();
@@ -145,14 +156,12 @@ void Prophet::SendData(int currentTime)
 
 bool Prophet::Operate(int currentTime)
 {
-	////Node Number Test:
-	//if( TEST_DYNAMIC_NUM_NODE )
-	//{
-	//	if(currentTime % SLOT_CHANGE_NUM_NODE == 0 && currentTime > 0)
-	//	{
-	//		ChangeNodeNumber();
-	//	}
-	//}
+	if( ROUTING_PROTOCOL != _prophet )
+		return false;
+
+	//Node Number Test:
+	if( TEST_DYNAMIC_NUM_NODE )
+		ChangeNodeNumber(currentTime);
 
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
@@ -160,7 +169,7 @@ bool Prophet::Operate(int currentTime)
 	UpdateNodeStatus(currentTime);
 
 	//调用下层协议HDC，判断是否位于热点区域，更新占空比
-	if( DO_HDC )
+	if( MAC_PROTOCOL == _hdc )
 		CHDC::UpdateDutyCycleForNodes(currentTime);
 
 	GenerateData(currentTime);

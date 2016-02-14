@@ -15,22 +15,28 @@ private:
 	double length;
 	//MANode正在向toPoint移动的路上
 	//vector<CBasicEntity *>::iterator fromPoint;
-	int toPoint;
+	int toPoint;  //前往的点再数组waypoints中下标
 	bool overdue;  //是否过期
+
+	void init()
+	{
+		length = 0;
+		toPoint = -1;
+		overdue = false;		
+	}
+
 
 public:
 	CRoute(void)
 	{
-		length = 0;
-		toPoint = 0;
-		overdue = false;
+		init();
 	}
+
 	CRoute(CBasicEntity *sink)
 	{
+		init();
 		waypoints.push_back(sink);
-		length = 0;
 		toPoint = 0;  //初始化为sink
-		overdue = false;
 	}
 
 	~CRoute(void)
@@ -48,12 +54,12 @@ public:
 	inline CBasicEntity* getSink()
 	{
 		if(waypoints.empty())
-			return NULL;
+			return nullptr;
 		else if(waypoints[0]->getID() != SINK_ID)
 		{
 			cout<<"Error @ CRoute::getSink() : waypoints[0] is not sink"<<endl;
 			_PAUSE;
-			return NULL;
+			return nullptr;
 		}
 		else
 			return waypoints[0];
@@ -78,9 +84,11 @@ public:
 	//取得移动目标，即下一个point
 	inline CBasicEntity* getToPoint()
 	{
+		if(toPoint == -1)
+			return nullptr;
+
 		if( toPoint > waypoints.size() - 1 
-			|| toPoint < 0 
-			|| ( ( waypoints[toPoint]->getID() != SINK_ID ) && ( ( (CHotspot *)waypoints[toPoint] )->getCandidateType() > 3 ) ) )
+			|| toPoint < 0  )
 		{
 			cout << "Error @ CBasicEntity::getToPoint : toPoint exceeds the range " << endl;
 			_PAUSE;

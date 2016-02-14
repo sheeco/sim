@@ -11,6 +11,8 @@ using namespace std;
 
 extern int NUM_NODE;
 extern double PROB_DATA_FORWARD;
+extern MacProtocol MAC_PROTOCOL;
+extern RoutingProtocol ROUTING_PROTOCOL;
 
 class CNode :
 	public CGeneralNode
@@ -36,13 +38,15 @@ private:
 	//用于统计输出节点的buffer状态信息
 	int bufferSizeSum;
 	int bufferChangeCount;
+	static int encounter;
+	static int encounterAtHotspot;
+	static int encounterOnRoute;
 
 	static int ID_COUNT;
-	static double SUM_ENERGY_CONSUMPTION;
-
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
 	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
+	static vector<CNode *> deletedNodes;  //用于暂存Node个数动态变化时被暂时移出的节点
 
 	/*************************************  Epidemic  *************************************/
 
@@ -53,31 +57,33 @@ private:
 
 	map<int, double> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
 
-
-	CNode(void){};
-
-	CNode(double generationRate, int capacityBuffer)
+	void init()
 	{
+		generationRate = 0;
+		atHotspot = nullptr;
+		dutyCycle = DEFAULT_DUTY_CYCLE;
+		SLOT_LISTEN = 0;
+		SLOT_SLEEP = 0;
+		state = 0;
+		timeDeath = 0;
 		bufferSizeSum = 0;
 		bufferChangeCount = 0;
-		dutyCycle = DEFAULT_DUTY_CYCLE;
-		SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-		SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-		state = 0;
-		timeDeath = -1;
-		atHotspot = NULL;
-
-		this->generationRate = generationRate;
-		this->bufferCapacity = capacityBuffer;
-		if( ENERGY > 1 )
-			this->energy = ENERGY;
 	}
 
-	~CNode(void){};
+	CNode(void)
+	{
+		init();
+	}
 
+	CNode(double generationRate, int bufferCapacity)
+	{
+		init();
+		this->generationRate = generationRate;
+		this->bufferCapacity = bufferCapacity;
+	}
 
 	//不设置能量值时，始终返回true
-	bool isAlive()
+	bool isAlive() const
 	{
 		if( energy == 0 )
 			return true;
@@ -104,7 +110,7 @@ private:
 			if( idata->isOverdue() )
 				idata = buffer.erase( idata );
 			else
-				idata++;
+				++idata;
 		}
 	}	
 	
@@ -132,7 +138,7 @@ private:
 		}
 
 		summaryVector.clear();
-		for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); idata++)
+		for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); ++idata)
 		{
 
 			if( CData::useHOP() && ( ! idata->allowForward() ) )
@@ -158,7 +164,7 @@ private:
 
 	void decayDeliveryPreds(int currentTime)
 	{
-		for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); imap++)
+		for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap)
 			deliveryPreds[ imap->first ] = imap->second * pow( DECAY_RATIO, ( currentTime - time ) / SLOT_MOBILITYMODEL );
 	}
 
@@ -170,6 +176,9 @@ public:
 	static int SLOT_TOTAL;
 	static int BUFFER_CAPACITY;
 	static double ENERGY;
+	static Mode BUFFER_MODE;
+	static Mode COPY_MODE;
+	static Mode SEND_MODE;
 
 	/**************************************  Prophet  *************************************/
 
@@ -178,11 +187,158 @@ public:
 	static double TRANS_RATIO;
 
 
-	inline double getGenerationRate()
+
+	static void initNodes()
+	{
+		if( nodes.empty() && deadNodes.empty() )
+		{
+			for(int i = 0; i < NUM_NODE; i++)
+			{
+				double generationRate = RATE_DATA_GENERATE;
+				if(i % 5 == 0)
+					generationRate *= 5;
+				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
+				node->generateID();
+				node->initDeliveryPreds();
+				CNode::nodes.push_back(node);
+				CNode::idNodes.push_back( node->getID() );
+			}
+		}
+	}
+
+	~CNode(void){};
+
+	static vector<CNode *>& getNodes()
+	{
+		if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
+		{
+			cout << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
+			_PAUSE;
+		}
+
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
+		return nodes;
+	}
+
+	static vector<int>& getIdNodes()
+	{
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
+		return idNodes;
+	}
+
+	static bool hasNodes(int currentTime)
+	{
+		if( nodes.empty() && deadNodes.empty() )
+			initNodes();
+		else
+			idNodes.clear();
+		
+		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
+		{
+			if( (*inode)->isAlive() )
+			{
+				idNodes.push_back( (*inode)->getID() );
+				++inode;
+			}
+			else
+			{
+				(*inode)->die( currentTime );
+				deadNodes.push_back( *inode );
+				inode = nodes.erase( inode );
+			}
+		}
+
+		return ( ! nodes.empty() );
+	}
+
+	static void newNodes(int n)
+	{
+		//优先恢复之前被删除的节点
+		for(int i = NUM_NODE; i < NUM_NODE + n; i++)
+		{
+			if( deletedNodes.empty() )
+				break;
+
+			CNode::nodes.push_back(deletedNodes[0]);
+			CNode::idNodes.push_back( deletedNodes[0]->getID() );
+			++NUM_NODE;
+			--n;
+		}
+		//如果仍不足数，构造新的节点
+		for(int i = NUM_NODE; i < NUM_NODE + n; i++)
+		{
+			double generationRate = RATE_DATA_GENERATE;
+			if(i % 5 == 0)
+				generationRate *= 5;
+			CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
+			node->generateID();
+			node->initDeliveryPreds();
+			CNode::nodes.push_back(node);
+			CNode::idNodes.push_back( node->getID() );
+			++NUM_NODE;
+			--n;
+		}			
+	}
+
+	static void removeNodes(int n)
+	{
+		//FIXME: Random selected ?
+		vector<CNode *>::iterator start = nodes.begin();
+		vector<CNode *>::iterator end = nodes.end();
+		vector<CNode *>::iterator fence = nodes.begin();
+		fence += NUM_NODE + n;
+		vector<CNode *> leftNodes(start, fence);
+
+		//Remove invalid positoins belonging to the deleted nodes
+		vector<CNode *> deletedNodes(fence, end);
+		vector<int> deletedIDs;
+		for(auto inode = deletedNodes.begin(); inode != deletedNodes.end(); ++inode)
+			deletedIDs.push_back( (*inode)->getID() );
+
+		for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
+		{
+			if( ifExists(deletedIDs, (*ipos)->getNode()) )
+				ipos = CPosition::positions.erase(ipos);
+			else
+				++ipos;
+		}
+
+		nodes = leftNodes;
+		NUM_NODE = nodes.size();
+		idNodes.clear();
+		for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
+			idNodes.push_back( (*inode)->getID() );
+		CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
+	}
+
+	static bool ifNodeExists(int id)
+	{
+		for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
+		{
+			if((*inode)->getID() == id)
+				return true;
+		}
+		return false;
+	}
+
+	//该节点不存在时无返回值所以将出错，所以必须在每次调用之前调用函数ifNodeExists()进行检查
+	static CNode* getNodeByID(int id)
+	{
+		for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
+		{
+			if((*inode)->getID() == id)
+				return *inode;
+		}
+		return nullptr;
+	}
+
+	inline double getGenerationRate() const
 	{
 		return generationRate;
 	}
-	inline CHotspot* getAtHotspot()
+	inline CHotspot* getAtHotspot() const
 	{
 		return atHotspot;
 	}
@@ -190,9 +346,21 @@ public:
 	{
 		this->atHotspot = atHotspot;
 	}
+	inline bool isAtHotspot() const
+	{
+		if( MAC_PROTOCOL == _hdc )
+			return dutyCycle == HOTSPOT_DUTY_CYCLE;
+		else if( ROUTING_PROTOCOL == _har )
+			return atHotspot != nullptr;
+		else
+			return false;
+	}
 	static double getSumEnergyConsumption()
 	{
-		return SUM_ENERGY_CONSUMPTION;
+		double sumEnergyConsumption = 0;
+		for(auto inode = getNodes().begin(); inode != getNodes().end(); ++inode)
+			sumEnergyConsumption += (*inode)->getEnergyConsumption();
+		return sumEnergyConsumption;
 	}
 	inline void generateID()
 	{
@@ -203,16 +371,16 @@ public:
 	{
 		this->timeDeath = currentTime;
 	}
-	inline bool useHotspotDutyCycle()
+	inline bool useHotspotDutyCycle() const
 	{
 		return ZERO( dutyCycle - HOTSPOT_DUTY_CYCLE );
 	}
-	inline double getAverageBufferSize()
+	inline double getAverageBufferSize() const
 	{
 		if(bufferSizeSum == 0)
 			return 0;
 		else
-			return (double)bufferSizeSum / (double)bufferChangeCount;
+			return static_cast<double>(bufferSizeSum) / static_cast<double>(bufferChangeCount);
 	}
 
 
@@ -251,23 +419,12 @@ public:
 	bool updateStatus(int currentTime);
 
 	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus
-	bool isListening()
+	bool isListening() const
 	{
 		if( ZERO(dutyCycle) )
 			return false;
 
 		return state >= 0;
-	}
-
-	//bool参数指示节点自身是否保留副本
-	vector<CData> sendAllData(bool COPY)
-	{
-		vector<CData> data = buffer;
-		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * buffer.size();
-		if(! COPY)
-			buffer.clear();
-		return data;
 	}
 
 	void generateData(int currentTime)
@@ -288,41 +445,77 @@ public:
 		bufferChangeCount++;
 	}
 
-	bool receiveData(vector<CData> datas, int currentTime)
+	//相遇计数
+	inline static double getEncounterPercentAtHotspot()
+	{
+		return static_cast<double>(encounterAtHotspot) / static_cast<double>(encounter);
+	}
+	inline static int getEncounter()
+	{
+		return encounter;
+	}
+	inline static int getEncounterAtHotspot()
+	{
+		return encounterAtHotspot;
+	}
+
+	//用于记录MA节点与sensor的相遇计数
+	inline static void encountAtHotspot()
+	{
+		encounterAtHotspot++;
+		encounter++;
+	}
+	inline static void encountOnRoute()
+	{
+		encounterOnRoute++;
+		encounter++;
+	}
+
+	vector<CData> sendAllData(Mode mode) override
+	{
+		return CGeneralNode::sendAllData(mode);
+	}
+
+	vector<CData> sendData(int n)
+	{
+		if( n >= buffer.size() )
+			return sendAllData(SEND::DUMP);
+
+		double bet = RandomFloat(0, 1);
+		if(bet > PROB_DATA_FORWARD)
+		{
+			energyConsumption += n * BYTE_PER_DATA * CONSUMPTION_BYTE_SEND;
+			return vector<CData>();
+		}
+
+		vector<CData> data;
+		if( SEND_MODE == SEND::FIFO )
+		{
+			data.insert(data.begin(), buffer.begin(), buffer.begin() + n);
+		}
+		else if( SEND_MODE == SEND::LIFO )
+		{
+			data.insert(data.begin(), buffer.end() - n, buffer.end());
+		}
+		return data;
+	}
+
+	bool receiveData(int time, vector<CData> datas) override
 	{
 		if( datas.empty() )
 			return false;
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
 			return false;
 
-		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_DATA * datas.size();
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * datas.size();
-		for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); idata++)
-			idata->arriveAnotherNode(currentTime);
+		energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_DATA * datas.size();
+		for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); ++idata)
+			idata->arriveAnotherNode(time);
 		buffer.insert(buffer.begin(), datas.begin(), datas.end() );
-		updateBufferStatus(currentTime);
+		updateBufferStatus(time);
 		
 		return true;
 	}
 	
-	//static bool ifNodeExists(int id)
-	//{
-	//	for(vector<CNode>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
-	//	{
-	//		if(inode->getID() == id)
-	//			return true;
-	//	}
-	//	return false;
-	//}
-	////该节点不存在时无返回值所以将出错，所以必须在每次调用之前调用函数ifNodeExists()进行检查
-	//static CNode getNodeByID(int id)
-	//{
-	//	for(vector<CNode>::iterator inode = nodes.begin(); inode != nodes.end(); inode++)
-	//	{
-	//		if(inode->getID() == id)
-	//			return *inode;
-	//	}
-	//}
 
 	/*************************************  Epidemic  *************************************/
 
@@ -347,8 +540,7 @@ public:
 	vector<int> sendSummaryVector()
 	{
 		updateSummaryVector();
-		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		energyConsumption += CONSUMPTION_BYTE_SEND * BYTE_PER_CTRL;
 		return summaryVector;
 	}
 
@@ -357,8 +549,7 @@ public:
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
 			return vector<int>();
 
-		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_CONTROL;
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_CTRL;
 		return sv;	
 	}
 
@@ -379,14 +570,13 @@ public:
 				if( CData::getNodeByMask( *id ) != this->ID )
 				{
 					count++;
-					id++;
+					++id;
 				}
 			}
 			sv = vector<int>( sv.begin(), id );
 		}
 
-		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		energyConsumption += CONSUMPTION_BYTE_SEND * BYTE_PER_CTRL;
 		return sv;
 	}
 	
@@ -397,8 +587,7 @@ public:
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
 			return vector<int>();
 
-		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_CONTROL;
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_CTRL;
 		return req;
 	}
 
@@ -409,9 +598,8 @@ public:
 
 		vector<CData> result;
 		result = getItemsByID(buffer, requestList);
-		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_DATA * result.size();
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_DATA * result.size();
-
+		energyConsumption += CONSUMPTION_BYTE_SEND * BYTE_PER_DATA * result.size();
+		
 		return result;
 	}
 
@@ -427,7 +615,7 @@ public:
 		oldPred = this->deliveryPreds[ node ];
 		deliveryPreds[ node ] = transPred = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
 
-		for(map<int, double>::iterator imap = preds.begin(); imap != preds.end(); imap++)
+		for(map<int, double>::iterator imap = preds.begin(); imap != preds.end(); ++imap)
 		{
 			int dst = imap->first;
 			if( dst == this->ID )
@@ -450,9 +638,8 @@ public:
 
 	map<int, double> sendDeliveryPreds(int currentTime)
 	{
-		energyConsumption += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
-
+		energyConsumption += CONSUMPTION_BYTE_SEND * BYTE_PER_CTRL;
+		
 		return deliveryPreds;
 	}
 
@@ -463,8 +650,7 @@ public:
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
 			return map<int, double>();
 
-		energyConsumption += CONSUMPTION_DATA_RECIEVE * SIZE_CONTROL;
-		SUM_ENERGY_CONSUMPTION += CONSUMPTION_DATA_SEND * SIZE_CONTROL;
+		energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_CTRL;
 		return preds;
 	}
 
@@ -481,70 +667,6 @@ public:
 		}
 		else
 			return vector<CData>();
-	}
-
-
-	static void initNodes()
-	{
-		if( nodes.empty() && deadNodes.empty() )
-		{
-			for(int i = 0; i < NUM_NODE; i++)
-			{
-				double generationRate = RATE_DATA_GENERATE;
-				if(i % 5 == 0)
-					generationRate *= 5;
-				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
-				node->generateID();
-				node->initDeliveryPreds();
-				CNode::nodes.push_back(node);
-				CNode::idNodes.push_back( node->getID() );
-			}
-		}
-	}
-
-	static vector<CNode *>& getNodes()
-	{
-		if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
-		{
-			cout << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
-			_PAUSE;
-		}
-
-		if( nodes.empty() && deadNodes.empty() )
-			initNodes();
-		return nodes;
-	}
-
-	static vector<int>& getIdNodes()
-	{
-		if( nodes.empty() && deadNodes.empty() )
-			initNodes();
-		return idNodes;
-	}
-
-	static bool hasNodes(int currentTime)
-	{
-		if( nodes.empty() && deadNodes.empty() )
-			initNodes();
-		else
-			idNodes.clear();
-		
-		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
-		{
-			if( (*inode)->isAlive() )
-			{
-				idNodes.push_back( (*inode)->getID() );
-				inode++;
-			}
-			else
-			{
-				(*inode)->die( currentTime );
-				deadNodes.push_back( *inode );
-				inode = nodes.erase( inode );
-			}
-		}
-
-		return ( ! nodes.empty() );
 	}
 
 };

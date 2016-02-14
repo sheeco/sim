@@ -26,8 +26,8 @@
 
 ### 参数默认值
 
-    scheme                        HAR
-    hotspot_similarity            true
+    scheme                        smac, HAR
+    hotspot_similarity            false
     dynamic_node-number           false
     min_wait                      0
     
@@ -141,7 +141,7 @@
 
 * 将数据投递分类为 (a) MA在热点上得到投递和 (b) MA在路径上得到投递，并统计两种投递计数的百分比；
 
-* 并对每一个热点统计其投递计数，按照热点选取时槽输出，并伴随着`atHotspot`赋`NULL`时机的优化；
+* 并对每一个热点统计其投递计数，按照热点选取时槽输出，并伴随着`atHotspot`赋`nullptr`时机的优化；
 
 * mHAR中由于所有选取 ratio 指数增长，在贪婪选取中可能出现 position 集合还没有得到全覆盖，`hotspotsAboveAverage`为空的情况，此时直接选中`unselectedHotspots`中cover数最大的元素即可；
 
@@ -219,7 +219,7 @@
 #### 2015-12-10
 
 * 继续修改`CData`和`CNode`类，`CNode`类中原来是针对全部 node 统一统计能耗的，现在改为对于每个节点单独统计能耗，全局的 node 能耗使用`SUM_ENERGY_CONSUMPTION`统计，但尚未添加相关操作；
-* 在原来的能耗统计相关宏中添加`SIZE_DATA`，`SIZE_CONTROL`，用于指示单个数据包和控制包的大小；
+* 在原来的能耗统计相关宏中添加`BYTE_PER_DATA`，`BYTE_PER_CTRL`，用于指示单个数据包和控制包的大小；
 * 增加`CHDC`类、`Epidemic`类和`CMacProtocol`基类，原`HAR`类中有关热点选择的函数暂时放入`CHDC`类，有关路由的类暂时放入`Epidemic`类，其成员属性和函数仍待修改；
 
 
@@ -267,3 +267,13 @@
 
 * 将`Epidemic`类和`Prophet`类中的共有函数整理到父类`CRoutingProtocol`中（包括时槽判断和统一的输出格式），并整理和规范这两个子类中的剩余函数；
 * 将`CPreprocessor`类中的部分辅助函数整理到相关类中；
+
+
+#### 2016-02-14  ·  *< 2.5.0 >*
+
+* 引入 ReSharper 插件，按照 ReSharper 的建议优化代码细节（getter 函数赋 const，前缀操作符，auto 类型等）；
+* 针对 Epidemic、Prophet、HAR 三种路由类及其父类的函数做出调整和统一，以及 HAR 和 HDC 中的热点选取函数的调整和统一；
+* 整理所有的继承结构及构造函数（访问控制、参数统一、子类函数合并、父类虚析构函数等）；
+* 为所有的输出文件保存文件头字符串（`string INFO_DEBUG`等）；
+* 将一些选项保存到全局定义的选项类型中（`class SEND::LOOSE`，`class BUFFER::FIFO`），并作为函数参数标识具体操作；
+* 将之前使用全局变量（`DO_IHAR`等）标识的 scheme 选项保存到新定义的枚举类型（`MacProtocol`，`RoutingProtocol`，`HotspotSelect`）的全局变量（`MAC_PROTOCOL`，`ROUTING_PROTOCOL`，`HOTSPOT_SELECT`），仍然通过命令行参数赋值；

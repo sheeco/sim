@@ -13,13 +13,3 @@ void CRoute::updateLength()
 	toPoint = 1;  //toPoint指向sink之后的第一个点
 }
 
-string CRoute::toString()
-{
-	stringstream str;
-	for(vector<CBasicEntity *>::iterator ipoint = waypoints.begin(); ipoint != waypoints.end(); ipoint++)
-		str << (*ipoint)->getID() << " - ";
-	str << (* waypoints.begin() )->getID() << TAB;
-	str << length / SPEED_MANODE << endl;
-
-	return str.str();
-}
