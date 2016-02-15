@@ -82,7 +82,8 @@ string INFO_SINK = "#Time	#EncounterAtSink \n" ;
 
 void CRoutingProtocol::PrintInfo(int currentTime)
 {
-	if( ! ( currentTime % SLOT_RECORD_INFO == 0 ) )
+	if( ! ( currentTime % SLOT_RECORD_INFO == 0
+			|| currentTime == RUNTIME ) )
 		return;
 
 	//Energy Consumption¡¢½Úµãbuffer×´Ì¬ ...

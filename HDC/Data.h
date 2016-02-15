@@ -164,7 +164,7 @@ public:
 	//判断是否已经超过生存期(TTL <= 0)，超出应丢弃
 	inline bool isOverdue() const
 	{
-		if( useHOP() )
+		if( ! useTTL() )
 			return false;
 		else
 			return TTL <= 0;
@@ -173,7 +173,7 @@ public:
 	//判断是否允许转发（HOP > 1），不允许则不放入SV中
 	inline bool allowForward() const
 	{
-		if( useTTL() )
+		if( ! useHOP() )
 			return true;
 		else
 			return HOP > 1;

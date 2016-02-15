@@ -44,16 +44,18 @@ void CHDC::CompareWithOldHotspots(int currentTime)
 string INFO_AT_HOTSPOT = "#Time	#VisitAtHotspot	#VisitSum	#VisitAtHotspotPercent \n" ;
 extern string INFO_HOTSPOT;
 extern string INFO_HOTSPOT_STATISTICS;
+extern string INFO_MERGE;
+extern string INFO_MERGE_DETAILS;
 
 void CHDC::PrintInfo(int currentTime)
 {
-	if( ! ( currentTime % SLOT_RECORD_INFO == 0 ) )
+	if( ! ( currentTime % SLOT_HOTSPOT_UPDATE == 0
+			|| currentTime == RUNTIME  ) )
 		return ;
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、节点buffer状态 ...
-	if( ( currentTime % SLOT_HOTSPOT_UPDATE  == 0 
-		  && currentTime >= startTimeForHotspotSelection )
-		  || currentTime == RUNTIME )
+	if(  currentTime % SLOT_HOTSPOT_UPDATE  == 0 
+		 && currentTime >= startTimeForHotspotSelection )
 	{
 		//热点个数
 		ofstream hotspot("hotspot.txt", ios::app);
@@ -82,16 +84,6 @@ void CHDC::PrintInfo(int currentTime)
 		hotspot_statistics << currentTime << TAB << sumCover << TAB << CHotspot::selectedHotspots.size() << TAB << double( sumCover ) / double( CHotspot::selectedHotspots.size() ) << endl;
 		hotspot_statistics.close();
 
-		//节点在热点内的百分比（从热点选取开始时开始统计）
-		ofstream at_hotspot("at-hotspot.txt", ios::app);
-		if(currentTime == startTimeForHotspotSelection)
-		{
-			at_hotspot << INFO_LOG ; 
-			at_hotspot << INFO_AT_HOTSPOT ;
-		}
-		at_hotspot << currentTime << TAB << CNode::getVisiterAtHotspot() << TAB << CNode::getVisiter() << TAB << CNode::getVisiterAtHotspotPercent() << endl;
-		at_hotspot.close();
-
 
 		//热点归并过程统计信息（在最终选取出的热点集合中）
 		if( HOTSPOT_SELECT == _merge )
@@ -104,11 +96,10 @@ void CHDC::PrintInfo(int currentTime)
 
 			if(currentTime == startTimeForHotspotSelection)
 			{
-				merge << INFO_LOG;
-				merge << "#Time" << TAB << "#MergeHotspotCount" << TAB << "#MergeHotspotPercent" << TAB << "#OldHotspotCount" << TAB 
-					  << "#OldHotspotPercent" << TAB << "#NewHotspotCount" << TAB << "#NewHotspotPercent" << endl;
-				merge_details << INFO_LOG;
-				merge_details << "#Time" << TAB << "#HotspotType/#MergeAge ..." << endl;
+				merge << INFO_LOG ;
+				merge << INFO_MERGE ;
+				merge_details << INFO_LOG ;
+				merge_details << INFO_MERGE_DETAILS ;
 			}
 			merge_details << currentTime << TAB;
 
@@ -146,6 +137,22 @@ void CHDC::PrintInfo(int currentTime)
 			merge.close();
 			merge_details.close();
 		}
+
+		if( ( currentTime % SLOT_HOTSPOT_UPDATE  == 0 
+			  && currentTime >= startTimeForHotspotSelection )
+			|| currentTime == RUNTIME )
+		{
+			//节点在热点内的百分比（从热点选取开始时开始统计）
+			ofstream at_hotspot("at-hotspot.txt", ios::app);
+			if(currentTime == startTimeForHotspotSelection)
+			{
+				at_hotspot << INFO_LOG ; 
+				at_hotspot << INFO_AT_HOTSPOT ;
+			}
+			at_hotspot << currentTime << TAB << CNode::getVisiterAtHotspot() << TAB << CNode::getVisiter() << TAB << CNode::getVisiterAtHotspotPercent() << endl;
+			at_hotspot.close();
+		}
+
 	}
 
 }

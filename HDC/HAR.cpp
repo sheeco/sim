@@ -354,18 +354,6 @@ void HAR::MANodeRouteDesign(int currentTime)
 }
 
 
-void HAR::GenerateData(int currentTime)
-{
-	if(currentTime > DATATIME)
-		return;
-
-	for(int i = 0; i < CNode::getNodes().size(); i++)
-	{
-		CNode::getNodes().at(i)->generateData(currentTime);
-	}
-}
-
-
 void HAR::SendData(int currentTime)
 {
 	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
@@ -603,13 +591,13 @@ void HAR::PrintInfo(int currentTime)
 {
 	CRoutingProtocol::PrintInfo(currentTime);
 
-	if( ! ( currentTime % SLOT_RECORD_INFO == 0 ) )
+	if( ! ( currentTime % SLOT_HOTSPOT_UPDATE == 0 
+			|| currentTime == RUNTIME  ) )
 		return;
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、节点buffer状态 ...
-	if( ( currentTime % SLOT_HOTSPOT_UPDATE  == 0 
-		  && currentTime >= startTimeForHotspotSelection )
-		  || currentTime == RUNTIME )
+	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0 
+		&& currentTime >= startTimeForHotspotSelection )
 	{
 		//用于计算热点个数历史平均值
 		HOTSPOT_COST_SUM += m_hotspots.size();
@@ -711,8 +699,8 @@ void HAR::PrintInfo(int currentTime)
 	}
 
 	//数据投递率、数据投递时延
-	if(currentTime % SLOT_RECORD_INFO == 0
-		|| currentTime == RUNTIME)
+	if( currentTime % SLOT_RECORD_INFO == 0
+		|| currentTime == RUNTIME )
 	{
 		//每个MA的当前buffer状态
 		ofstream ma("buffer-ma.txt", ios::app);

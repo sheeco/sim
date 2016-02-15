@@ -19,12 +19,14 @@ protected:
 	static void UpdateNodeStatus(int currentTime);
 	//所有Node按照自己的ge生成数据
 	static void GenerateData(int currentTime);
-	//打印相关信息到文件
-	static void PrintInfo(int currentTime);
 
 public:
 
 	CRoutingProtocol(void){};
 	~CRoutingProtocol(void){};
+
+	//打印相关信息到文件
+	static void PrintInfo(int currentTime);
+
 };
 

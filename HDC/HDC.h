@@ -45,8 +45,6 @@ private:
 	//void UpdateNodeLocations();
 	//比较此次热点选取的结果与上一次选取结果之间的相似度
 	static void CompareWithOldHotspots(int currentTime);
-	//打印相关信息到文件
-	static void PrintInfo(int currentTime);
 
 
 public:
@@ -65,6 +63,9 @@ public:
 
 		return true;
 	}
+
+	//打印相关信息到文件
+	static void PrintInfo(int currentTime);
 
 };
 

@@ -64,15 +64,15 @@ int currentTime = 0;
 string INFO_LOG;
 ofstream debugInfo("debug.txt", ios::app);
 
-string INFO_HELP = "\n                                                  !!!!!! ALL CASE SENSITIVE !!!!!! \n"
-              "<mac>             -hdc;                  -cycle      [];        -dc-default  [];         -dc-hotspot []; \n"
-			  "<route>           -epidemic;             -prophet;              -har;                    -hop        [];        -ttl        [];\n"
-              "<hs>              -ihar£»                -mhar£»                 -alpha       [];         -beta       [];        -heat    [] []; \n"
-              "<ihar>            -lambda      [];       -lifetime   []; \n"
-			  "<mhar>            -merge       [];       -old        []; \n"
-			  "<node>            -sink     [] [];       -range      [];        -prob-trans  [];         -energy      [];       -time-data  [];       -time-run   []; \n"
-			  "<prophet>         -spoken      [];       -queue      []; \n"
-              "<test>            -dynamic-node-number;  -hotspot-similarity;   -balanced-ratio; \n\n" ;
+string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
+			  "<node>      -sink           [][];  -range           [];   -prob-trans  [];   -energy      [];   -time-data   [];   -time-run   []; \n"
+              "<mac>       -hdc;                  -cycle           [];   -dc-default  [];   -dc-hotspot  []; \n"
+			  "<route>     -epidemic;             -prophet;              -har;              -hop         [];   -ttl         [];\n"
+			  "<prophet>   -spoken           [];  -queue           []; \n"
+              "<hs>        -ihar;                 -mhar;                 -alpha       [];   -beta        [];   -heat      [][]; \n"
+              "<ihar>      -lambda           [];  -lifetime        []; \n"
+			  "<mhar>      -merge            [];  -old             []; \n"
+              "<test>      -dynamic-node-number;  -hotspot-similarity;   -balanced-ratio; \n\n" ;
 
 string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#Energy	#EncounterAtHotspot	#Log \n" ;
 
@@ -341,7 +341,7 @@ int main(int argc, char* argv[])
 		if( ! debugInfo.tellp() )
 			debugInfo << INFO_DEBUG ;
 
-		debugInfo << endl << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB << Epidemic::SPOKEN_MEMORY << TAB ;
+		debugInfo << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB << Epidemic::SPOKEN_MEMORY << TAB ;
 		if( CData::useHOP() )
 			debugInfo << CData::MAX_HOP << TAB ;
 		else 
@@ -350,12 +350,6 @@ int main(int argc, char* argv[])
 		debugInfo << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
 		parameters << endl;
-		if( MAC_PROTOCOL == _hdc )
-		{
-			INFO_LOG += "-HDC ";
-			parameters << "-HDC ";
-		}
-
 		if( ROUTING_PROTOCOL == _epidemic )
 		{
 			INFO_LOG += "-Epidemic ";
@@ -365,6 +359,12 @@ int main(int argc, char* argv[])
 		{
 			INFO_LOG += "-Prophet ";
 			parameters << "-Prophet ";
+		}
+
+		if( MAC_PROTOCOL == _hdc )
+		{
+			INFO_LOG += "-HDC ";
+			parameters << "-HDC ";
 		}
 
 		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
@@ -431,7 +431,12 @@ int main(int argc, char* argv[])
 		dead = ! Prophet::Operate(currentTime);
 
 		if( dead )
+		{
+			RUNTIME = currentTime;
+			CHDC::PrintInfo(currentTime);
+			Prophet::PrintInfo(currentTime);
 			break;
+		}
 
 		currentTime += SLOT;
 
