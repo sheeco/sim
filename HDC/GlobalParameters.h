@@ -25,25 +25,21 @@ using namespace std;
 #define SPEED_MANODE 30
 
 //buffer
-//#define BUFFER_OVERFLOW_ALLOWED false  //MA buffer已满时是否继续接收数据
-#define BUFFER_CAPACITY_NODE 200
 #define BUFFER_CAPACITY_MA 100
 #define BUFFER_CAPACITY_SINK 99999999999  //无限制
 
 //time
-
 #define SLOT 5	// ( s )
 #define SLOT_MOBILITYMODEL 30  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
 #define SLOT_LOCATION_UPDATE 100	//地理信息收集的slot
 #define SLOT_HOTSPOT_UPDATE 900	//更新热点和分类的slot
-#define SLOT_DATA_GENERATE 150	//数据产生slot
 #define SLOT_DATA_SEND 30	//数据发送slot
 #define SLOT_RECORD_INFO 100  //记录数据投递率和数据投递时延的slot
-#define SLOT_CHANGE_NUM_NODE 5 * SLOT_HOTSPOT_UPDATE  //动态节点个数测试时，节点个数发生变化的周期
+#define SLOT_CHANGE_NUM_NODE 5 * 900  //动态节点个数测试时，节点个数发生变化的周期
 
 //data
 #define RATE_DATA_GENERATE 1.0 / 150.0  //( package / s )
-#define BYTE_PER_DATA 400  //( Byte )
+#define BYTE_PER_DATA 100  //( Byte )
 #define BYTE_PER_CTRL 10
 #define CONSUMPTION_BYTE_SEND 0.008  //( mJ / Byte )
 #define CONSUMPTION_BYTE_RECIEVE 0.004
@@ -97,9 +93,9 @@ public:
 	static const char SELFISH = 'F';  //MA buffer已满时，不再从其他节点接收数据
 };
 
-typedef enum MacProtocol { _smac, _hdc } MacProtocol;
-typedef enum RoutingProtocol { _har, _prophet, _epidemic } RoutingProtocol;
-typedef enum HotspotSelect { _original, _improved, _merge } HotspotSelect;
+typedef enum _MacProtocol { _smac, _hdc } _MacProtocol;
+typedef enum _RoutingProtocol { _har, _prophet, _epidemic } _RoutingProtocol;
+typedef enum _HotspotSelect { _original, _improved, _merge } _HotspotSelect;
 
 
 

@@ -6,9 +6,9 @@ extern int RUNTIME;
 extern int DATATIME;
 extern string INFO_LOG;
 extern ofstream debugInfo;
-extern MacProtocol MAC_PROTOCOL;
-extern RoutingProtocol ROUTING_PROTOCOL;
-extern HotspotSelect HOTSPOT_SELECT;
+extern _MacProtocol MAC_PROTOCOL;
+extern _RoutingProtocol ROUTING_PROTOCOL;
+extern _HotspotSelect HOTSPOT_SELECT;
 
 //CRoutingProtocol::CRoutingProtocol(void)
 //{
@@ -60,15 +60,15 @@ void CRoutingProtocol::UpdateNodeStatus(int currentTime)
 		(*inode)->updateStatus(currentTime);
 }
 
-void CRoutingProtocol::GenerateData(int currentTime)
-{
-	if( ! ( currentTime % SLOT_DATA_GENERATE == 0 && currentTime <= DATATIME ) )
-		return;
-
-	//cout << endl << "########  < " << currentTime << " >  DATA GENERATION" ;
-	for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-		(*inode)->generateData(currentTime);
-}
+//void CRoutingProtocol::GenerateData(int currentTime)
+//{
+//	if( ! ( currentTime % SLOT_DATA_GENERATE == 0 && currentTime <= DATATIME ) )
+//		return;
+//
+//	//cout << endl << "########  < " << currentTime << " >  DATA GENERATION" ;
+//	for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
+//		(*inode)->generateData(currentTime);
+//}
 
 
 string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEnergyConsumption (#NodeCount	#CurrentEnergy...) \n" ;
@@ -76,8 +76,7 @@ string INFO_BUFFER_STATISTICS =  "#Time	#AvgBufferStateInHistoryOfEachNode \n" ;
 string INFO_DELIVERY_RATIO = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio \n" ;
 string INFO_DELAY = "#Time	#AvgDelay \n" ;
 string INFO_BUFFER = "#Time	#BufferStateOfEachNode \n" ;
-string INFO_HOTSPOT = "#Time	#HotspotCount \n" ;
-string INFO_ENCOUNTER = "#Time	#EncounterAtHotspot	#Encounter	#EncounterPercentAtHotspot \n" ;
+string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot)	#Encounter	(#EncounterPercentAtHotspot) \n" ;
 string INFO_SINK = "#Time	#EncounterAtSink \n" ;
 
 void CRoutingProtocol::PrintInfo(int currentTime)
@@ -86,43 +85,10 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			|| currentTime == RUNTIME ) )
 		return;
 
-	//Energy Consumption、节点buffer状态 ...
+	//投递率、延迟、Energy Consumption、节点buffer状态统计 ...
 	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0
 		|| currentTime == RUNTIME )
 	{
-
-		//平均能耗
-		ofstream energy_consumption("energy-consumption.txt", ios::app);
-		if(currentTime == 0)
-		{
-			energy_consumption << INFO_LOG ; 
-			energy_consumption << INFO_ENERGY_CONSUMPTION ;
-		}
-		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() / 1000 ;
-		if( CNode::ENERGY > 0 )
-		{			
-			//节点剩余能量
-			energy_consumption << TAB << CNode::getNodes().size() << TAB;
-			vector<CNode *> allNodes = CNode::getAllNodes();
-			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
-				energy_consumption << (*inode)->getEnergy() / 1000 << TAB;
-		}
-		energy_consumption << endl;
-		energy_consumption.close();
-
-		//每个节点buffer状态的历史平均值
-		ofstream buffer("buffer-node-statistics.txt", ios::app);
-		if(currentTime == 0)
-		{
-			buffer << INFO_LOG ;
-			buffer << INFO_BUFFER_STATISTICS ;
-		}
-		buffer << currentTime << TAB;
-		for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-			 buffer << (*inode)->getAverageBufferSize() << TAB;
-		buffer << endl;
-		buffer.close();
-
 		//数据投递率-900（用于debug）
 		ofstream delivery_ratio("delivery-ratio-900.txt", ios::app);
 		if(currentTime == 0)
@@ -143,45 +109,69 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		delay << currentTime << TAB << CData::getAverageDelay() << endl;
 		delay.close();
 
-
-		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
+		//MA和节点 / 节点间的相遇次数
+		ofstream encounter("encounter.txt", ios::app);
+		if(currentTime == 0)
 		{
-			//热点个数
-			ofstream hotspot("hotspot.txt", ios::app);
-			if(currentTime == startTimeForHotspotSelection)
-			{
-				hotspot << INFO_LOG ;
-				hotspot << INFO_HOTSPOT ;
-			}
-			hotspot << currentTime << TAB << CHotspot::selectedHotspots.size() << endl; 
-			hotspot.close();
-
-			//MA和节点的相遇次数统计信息
-			ofstream encounter("encounter.txt", ios::app);
-			if(currentTime == startTimeForHotspotSelection)
-			{
-				encounter << INFO_LOG ;
-				encounter << INFO_ENCOUNTER ;
-			}
-			encounter << currentTime << TAB << CNode::getEncounterAtHotspot() << TAB << CNode::getEncounter() << TAB << CNode::getEncounterAtHotspotPercent() << endl;
-			encounter.close();
-
+			encounter << INFO_LOG ;
+			encounter << INFO_ENCOUNTER ;
 		}
+		encounter << currentTime << TAB;
+		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
+			encounter << CNode::getEncounterAtHotspot() << TAB;
+		encounter << CNode::getEncounter() << TAB;
+		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
+			encounter << CNode::getEncounterAtHotspotPercent();
+		encounter << endl;
+		encounter.close();
+
+		//平均能耗
+		ofstream energy_consumption("energy-consumption.txt", ios::app);
+		if(currentTime == 0)
+		{
+			energy_consumption << INFO_LOG ; 
+			energy_consumption << INFO_ENERGY_CONSUMPTION ;
+		}
+		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() ;
+		if( CNode::finiteEnergy() )
+		{			
+			//节点剩余能量
+			energy_consumption << TAB << CNode::getNodes().size() << TAB;
+			vector<CNode *> allNodes = CNode::getAllNodes();
+			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
+				energy_consumption << (*inode)->getEnergy() << TAB;
+		}
+		energy_consumption << endl;
+		energy_consumption.close();
+
+		//每个节点buffer状态的历史平均值
+		ofstream buffer("buffer-node-statistics.txt", ios::app);
+		if(currentTime == 0)
+		{
+			buffer << INFO_LOG ;
+			buffer << INFO_BUFFER_STATISTICS ;
+		}
+		buffer << currentTime << TAB;
+		for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
+			 buffer << (*inode)->getAverageBufferSize() << TAB;
+		buffer << endl;
+		buffer.close();
+
 	}
 
-	//数据投递率、数据投递时延
+	//数据投递率、节点buffer状态
 	if(currentTime % SLOT_RECORD_INFO == 0
 		|| currentTime == RUNTIME)
 	{
-		////数据投递率-100（用于绘制曲线）
-		//ofstream delivery_ratio("delivery-ratio-100.txt", ios::app);
-		//if(currentTime == 0)
-		//{
-		//	delivery_ratio << INFO_LOG;
-		//	delivery_ratio << INFO_DELIVERY_RATIO ;
-		//}
-		//delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
-		//delivery_ratio.close();
+		//数据投递率-100（用于绘制曲线）
+		ofstream delivery_ratio("delivery-ratio-100.txt", ios::app);
+		if(currentTime == 0)
+		{
+			delivery_ratio << INFO_LOG;
+			delivery_ratio << INFO_DELIVERY_RATIO ;
+		}
+		delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
+		delivery_ratio.close();
 
 		//每个节点的当前buffer状态
 		ofstream node("buffer-node.txt", ios::app);
@@ -201,12 +191,14 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 	////最终debug输出
 	if( currentTime == RUNTIME )
 	{
-		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() / 1000 << TAB ;
-		if( MAC_PROTOCOL == _hdc)
+		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() << TAB ;
+		if( CNode::finiteEnergy() )
+			debugInfo << currentTime << TAB;
+		if( MAC_PROTOCOL == _hdc )
 		{
 			if( HOTSPOT_SELECT == _merge )
-				debugInfo << HAR::getAverageHotspotCost() << TAB << HAR::getAverageMergePercent() << TAB << HAR::getAverageOldPercent() << TAB ;
-			if(TEST_HOTSPOT_SIMILARITY)
+				debugInfo << HAR::getAverageMergePercent() << TAB << HAR::getAverageOldPercent() << TAB ;
+			if( TEST_HOTSPOT_SIMILARITY )
 				debugInfo << HAR::getAverageSimilarityRatio() << TAB ;
 			debugInfo << CNode::getEncounterAtHotspotPercent() << TAB ;
 		}

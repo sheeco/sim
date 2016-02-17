@@ -254,6 +254,8 @@
 #### 2016-02-09  ·  *< 2.4.0 >*  ·  *Prophet + HDC*
 
 * 完成`Prophet`类相关的调试；
+* 轨迹文件 .newlocation 的序号改为从 1 开始，序号对应`CNode::ID`，增删节点时仍保持对应关系；
+* 在解决方案中新增 file-formatter 项目，用于自动修改轨迹文件序号；
 
 
 #### 2016-02-10  ·  *< 2.4.1 >*
@@ -276,4 +278,4 @@
 * 整理所有的继承结构及构造函数（访问控制、参数统一、子类函数合并、父类虚析构函数等）；
 * 为所有的输出文件保存文件头字符串（`string INFO_DEBUG`等）；
 * 将一些选项保存到全局定义的选项类型中（`class SEND::LOOSE`，`class BUFFER::FIFO`），并作为函数参数标识具体操作；
-* 将之前使用全局变量（`DO_IHAR`等）标识的 scheme 选项保存到新定义的枚举类型（`MacProtocol`，`RoutingProtocol`，`HotspotSelect`）的全局变量（`MAC_PROTOCOL`，`ROUTING_PROTOCOL`，`HOTSPOT_SELECT`），仍然通过命令行参数赋值；
+* 将之前使用全局变量（`DO_IHAR`等）标识的 scheme 选项保存到新定义的枚举类型（`_MacProtocol`，`_RoutingProtocol`，`_HotspotSelect`）的全局变量（`MAC_PROTOCOL`，`ROUTING_PROTOCOL`，`HOTSPOT_SELECT`），仍然通过命令行参数赋值；

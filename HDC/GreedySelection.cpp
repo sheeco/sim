@@ -8,7 +8,7 @@ vector<CHotspot *> CGreedySelection::unselectedHotspots;
 vector<CHotspot *> CGreedySelection::hotspotsAboveAverage;
 vector<CHotspot *> CGreedySelection::selectedHotspots;
 
-extern HotspotSelect HOTSPOT_SELECT;
+extern _HotspotSelect HOTSPOT_SELECT;
 
 
 CGreedySelection::CGreedySelection()

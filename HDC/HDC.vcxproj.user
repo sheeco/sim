@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>-prob-trans 1 -ttl 2000 -energy 400  -hdc -cycle 300 -dc-default 0.2 -dc-hotspot 0.4 -prophet</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-prob-trans 1 -ttl 3000 -cycle 300 -dc-default 0.4 -prophet</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

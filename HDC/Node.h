@@ -11,8 +11,8 @@ using namespace std;
 
 extern int NUM_NODE;
 extern double PROB_DATA_FORWARD;
-extern MacProtocol MAC_PROTOCOL;
-extern RoutingProtocol ROUTING_PROTOCOL;
+extern _MacProtocol MAC_PROTOCOL;
+extern _RoutingProtocol ROUTING_PROTOCOL;
 
 class CNode :
 	public CGeneralNode
@@ -32,6 +32,7 @@ private:
 	int SLOT_LISTEN;  //由SLOT_TOTAL和DC计算得到
 	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
 	int state;  //取值范围在[ - SLOT_TOTAL, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
+	int timeData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
 	CHotspot *atHotspot;
 
@@ -65,7 +66,9 @@ private:
 		SLOT_LISTEN = 0;
 		SLOT_SLEEP = 0;
 		state = 0;
+		timeData = 0;
 		timeDeath = 0;
+		bufferCapacity = BUFFER_CAPACITY;
 		bufferSizeSum = 0;
 		bufferChangeCount = 0;
 		dutyCycle = DEFAULT_DUTY_CYCLE;
@@ -77,11 +80,28 @@ private:
 		init();
 	}
 
-	CNode(double generationRate, int bufferCapacity)
+	CNode(double generationRate)
 	{
 		init();
 		this->generationRate = generationRate;
-		this->bufferCapacity = bufferCapacity;
+	}
+
+	static void initNodes()
+	{
+		if( nodes.empty() && deadNodes.empty() )
+		{
+			for(int i = 0; i < NUM_NODE; i++)
+			{
+				double generationRate = RATE_DATA_GENERATE;
+				if(i % 5 == 0)
+					generationRate *= 5;
+				CNode* node = new CNode(generationRate);
+				node->generateID();
+				node->initDeliveryPreds();
+				CNode::nodes.push_back(node);
+				CNode::idNodes.push_back( node->getID() );
+			}
+		}
 	}
 
 	//不设置能量值时，始终返回true
@@ -93,6 +113,22 @@ private:
 			return false;
 		else
 			return true;
+	}
+
+	void generateData(int currentTime)
+	{
+		int timeDataIncre = currentTime - timeData;
+		int nData = timeDataIncre * generationRate;
+		if(nData > 0)
+		{
+			for(int i = 0; i < nData; ++i)
+			{
+				CData data(ID, currentTime);
+				buffer.push_back(data);
+			}
+			timeData = currentTime;
+		}
+		updateBufferStatus(currentTime);
 	}
 
 	/*************************************  Epidemic  *************************************/
@@ -135,7 +171,7 @@ private:
 	{
 		if( buffer.size() > BUFFER_CAPACITY )
 		{
-			cout << "Error @ CNode::calculateSummaryVector() : Buffer isn't clean !" << endl;
+			cout << "Error @ CNode::updateSummaryVector() : Buffer isn't clean !" << endl;
 			_PAUSE;
 		}
 
@@ -190,24 +226,6 @@ public:
 
 
 
-	static void initNodes()
-	{
-		if( nodes.empty() && deadNodes.empty() )
-		{
-			for(int i = 0; i < NUM_NODE; i++)
-			{
-				double generationRate = RATE_DATA_GENERATE;
-				if(i % 5 == 0)
-					generationRate *= 5;
-				CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
-				node->generateID();
-				node->initDeliveryPreds();
-				CNode::nodes.push_back(node);
-				CNode::idNodes.push_back( node->getID() );
-			}
-		}
-	}
-
 	~CNode(void){};
 
 	static vector<CNode *>& getNodes()
@@ -231,6 +249,11 @@ public:
 		if( nodes.empty() && deadNodes.empty() )
 			initNodes();
 		return idNodes;
+	}
+
+	static bool finiteEnergy()
+	{
+		return ENERGY > 0;
 	}
 
 	inline double getEnergy() const
@@ -292,7 +315,7 @@ public:
 			double generationRate = RATE_DATA_GENERATE;
 			if(i % 5 == 0)
 				generationRate *= 5;
-			CNode* node = new CNode(generationRate, BUFFER_CAPACITY_NODE);
+			CNode* node = new CNode(generationRate);
 			node->generateID();
 			node->initDeliveryPreds();
 			CNode::nodes.push_back(node);
@@ -415,7 +438,6 @@ public:
 		if( state < -SLOT_LISTEN )
 			state = -SLOT_LISTEN;
 	}
-	
 	//在非热点处降低 dc
 	void resetDutyCycle()
 	{
@@ -441,17 +463,6 @@ public:
 			return false;
 
 		return state >= 0;
-	}
-
-	void generateData(int currentTime)
-	{
-		int nData = generationRate * SLOT_DATA_GENERATE;
-		for(int i = 0; i < nData; i++)
-		{
-			CData data(ID, currentTime);
-			buffer.push_back(data);
-		}
-		updateBufferStatus(currentTime);
 	}
 
 	//更新buffer状态记录，以便计算buffer status

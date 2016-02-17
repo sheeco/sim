@@ -15,7 +15,7 @@ extern int RUNTIME;
 extern int DATATIME;
 extern double PROB_DATA_FORWARD;
 extern int MAX_MEMORY_TIME;
-extern RoutingProtocol ROUTING_PROTOCOL;
+extern _RoutingProtocol ROUTING_PROTOCOL;
 
 /***************************** xHAR ********************************/
 extern int startTimeForHotspotSelection;
@@ -160,8 +160,6 @@ public:
 			return false;
 
 		UpdateNodeStatus(currentTime);
-
-		GenerateData(currentTime);
 
 		HotspotSelection(currentTime);
 

@@ -3,7 +3,7 @@
 #include "FileParser.h"
 
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
-int CNode::BUFFER_CAPACITY = BUFFER_CAPACITY_NODE;
+int CNode::BUFFER_CAPACITY = 0;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
 int CNode::encounterAtHotspot = 0;
@@ -26,7 +26,7 @@ double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
 double CNode::DECAY_RATIO = 0.90;  //0.98(/s)
 double CNode::TRANS_RATIO = 0.20;  //0.25
 
-extern RoutingProtocol ROUTING_PROTOCOL;
+extern _RoutingProtocol ROUTING_PROTOCOL;
 
 vector<CNode *> CNode::getAllNodes()
 {
@@ -105,6 +105,10 @@ bool CNode::updateStatus(int currentTime)
 	}
 	timeSleep = timeIncre - timeListen;
 	energyConsumption += timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP;
+
+	//生成数据
+	generateData(currentTime);
+
 
 	/**************************************  Prophet  *************************************/
 	if( ROUTING_PROTOCOL == _prophet )

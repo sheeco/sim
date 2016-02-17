@@ -9,8 +9,8 @@ int Epidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
 int Epidemic::SPOKEN_MEMORY = 0;
 
 extern bool TEST_DYNAMIC_NUM_NODE;
-extern MacProtocol MAC_PROTOCOL;
-extern RoutingProtocol ROUTING_PROTOCOL;
+extern _MacProtocol MAC_PROTOCOL;
+extern _RoutingProtocol ROUTING_PROTOCOL;
 extern string INFO_SINK;
 
 void Epidemic::SendData(int currentTime)
@@ -176,8 +176,6 @@ bool Epidemic::Operate(int currentTime)
 	//调用下层协议HDC，判断是否位于热点区域，更新占空比
 	if( MAC_PROTOCOL == _hdc )
 		CHDC::UpdateDutyCycleForNodes(currentTime);
-
-	GenerateData(currentTime);
 
 	SendData(currentTime);
 

@@ -9,9 +9,9 @@
 
 using namespace std;
 
-MacProtocol MAC_PROTOCOL = _smac;
-RoutingProtocol ROUTING_PROTOCOL = _prophet;
-HotspotSelect HOTSPOT_SELECT = _original;
+_MacProtocol MAC_PROTOCOL = _smac;
+_RoutingProtocol ROUTING_PROTOCOL = _prophet;
+_HotspotSelect HOTSPOT_SELECT = _original;
 
 
 /************************************ IHAR ************************************/
@@ -65,7 +65,7 @@ string INFO_LOG;
 ofstream debugInfo("debug.txt", ios::app);
 
 string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
-			  "<node>      -sink           [][];  -range           [];   -prob-trans  [];   -energy      [];   -time-data   [];   -time-run   []; \n"
+ 	          "<node>      -sink           [][];  -range           [];   -prob-trans  [];   -buffer      [];   -energy      [];   -time-data   [];   -time-run   []; \n"
               "<mac>       -hdc;                  -cycle           [];   -dc-default  [];   -dc-hotspot  []; \n"
 			  "<route>     -epidemic;             -prophet;              -har;              -hop         [];   -ttl         [];\n"
 			  "<prophet>   -spoken           [];  -queue           []; \n"
@@ -74,7 +74,7 @@ string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE
 			  "<mhar>      -merge            [];  -old             []; \n"
               "<test>      -dynamic-node-number;  -hotspot-similarity;   -balanced-ratio; \n\n" ;
 
-string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#Energy	#EncounterAtHotspot	#Log \n" ;
+string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
 
 int main(int argc, char* argv[])
 {
@@ -166,12 +166,18 @@ int main(int argc, char* argv[])
 				if(iField < argc - 1)
 					DATATIME = atoi( argv[ iField + 1 ] );
 				iField += 2;
+
+				if( CNode::finiteEnergy() )
+					RUNTIME = DATATIME = 999999;
 			}
 			else if( field == "-time-run" )
 			{
 				if(iField < argc - 1)
 					RUNTIME = atoi( argv[ iField + 1 ] );
 				iField += 2;
+
+				if( CNode::finiteEnergy() )
+					RUNTIME = DATATIME = 999999;
 			}
 			else if( field == "-cycle" )
 			{
@@ -203,11 +209,20 @@ int main(int argc, char* argv[])
 					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-buffer" )
+			{
+				if(iField < argc - 1)
+					CNode::BUFFER_CAPACITY = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-energy" )
 			{
 				if(iField < argc - 1)
 					CNode::ENERGY = 1000 * atoi( argv[ iField + 1 ] );
 				iField += 2;
+
+				if( CNode::finiteEnergy() )
+					RUNTIME = DATATIME = 999999;
 			}
 			else if( field == "-queue" )
 			{
@@ -328,9 +343,8 @@ int main(int argc, char* argv[])
 			parameters << "HOP" << TAB << CData::MAX_HOP << endl;
 		else
 			parameters << "TTL" << TAB << CData::MAX_TTL << endl;
+		parameters << "BUFFER CAPACITY" << TAB << CNode::BUFFER_CAPACITY << endl;
 		parameters << "NODE ENERGY" << TAB << CNode::ENERGY << endl;
-		parameters << "MAX QUEUE SIZE" << TAB << Epidemic::MAX_QUEUE_SIZE << endl;
-		parameters << "SPOKEN MEMORY" << TAB << Epidemic::SPOKEN_MEMORY << endl;
 
 		parameters << "DATA TIME" << TAB << DATATIME << endl;
 		parameters << "RUN TIME" << TAB << RUNTIME << endl;
@@ -341,7 +355,7 @@ int main(int argc, char* argv[])
 		if( ! debugInfo.tellp() )
 			debugInfo << INFO_DEBUG ;
 
-		debugInfo << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB << Epidemic::SPOKEN_MEMORY << TAB ;
+		debugInfo << DATATIME << TAB << RUNTIME << TAB << PROB_DATA_FORWARD << TAB << CNode::BUFFER_CAPACITY << TAB << CNode::ENERGY << TAB ;
 		if( CData::useHOP() )
 			debugInfo << CData::MAX_HOP << TAB ;
 		else 
@@ -403,7 +417,7 @@ int main(int argc, char* argv[])
 			parameters << "HEAT_CO_1" << TAB << CO_HOTSPOT_HEAT_A1 << endl;
 			parameters << "HEAT_CO_2" << TAB << CO_HOTSPOT_HEAT_A2 << endl;
 		}
-		debugInfo.flush();
+		//debugInfo.flush();
 
 		if(TEST_DYNAMIC_NUM_NODE)
 		{
