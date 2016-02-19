@@ -9,7 +9,7 @@ bool CMANode::receiveData(int time, vector<CData> datas)
 {
 	if(buffer.size() > BUFFER_CAPACITY_MA)
 	{
-		cout<<"Error @ CMANode::receiveData() : buffer overflown"<<endl;
+		cout << endl << "Error @ CMANode::receiveData() : buffer overflown"<<endl;
 		_PAUSE;
 		return false;
 	}
@@ -86,7 +86,7 @@ void CMANode::updateLocation(int time)
 
 				if( atHotspot->getCandidateType() > 3 )
 				{
-					cout << "Error @ CMANode::updateLocation : atHotspot is corrupted !" << endl;
+					cout << endl << "Error @ CMANode::updateLocation : atHotspot is corrupted !" << endl;
 					_PAUSE;
 				}
 			}

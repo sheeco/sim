@@ -17,18 +17,19 @@
 
 using namespace std;
 
-//#define NUM_NODE 29  //OLD: sensor数目，现已改用NUM_NODE_INIT
-#define SINK_ID 0  //0为sink节点预留，传感器节点ID从1开始
-//#define SINK_X 0.0
-//#define SINK_Y 0.0
-//#define TRANS_RANGE 1000	//transmission range
-#define SPEED_MANODE 30
 
-//buffer
-#define BUFFER_CAPACITY_MA 100
+//Sink
+#define SINK_ID 0  //0为sink节点预留，传感器节点ID从1开始
 #define BUFFER_CAPACITY_SINK 99999999999  //无限制
 
-//time
+//Node
+//#define NUM_NODE 29  //OLD: sensor数目，现已改用NUM_NODE_INIT
+
+//MA
+#define SPEED_MANODE 30
+#define BUFFER_CAPACITY_MA 100
+
+//Slot
 #define SLOT 5	// ( s )
 #define SLOT_MOBILITYMODEL 30  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
 #define SLOT_LOCATION_UPDATE 100	//地理信息收集的slot
@@ -37,10 +38,7 @@ using namespace std;
 #define SLOT_RECORD_INFO 100  //记录数据投递率和数据投递时延的slot
 #define SLOT_CHANGE_NUM_NODE 5 * 900  //动态节点个数测试时，节点个数发生变化的周期
 
-//data
-#define RATE_DATA_GENERATE 1.0 / 150.0  //( package / s )
-#define BYTE_PER_DATA 100  //( Byte )
-#define BYTE_PER_CTRL 10
+//Energy
 #define CONSUMPTION_BYTE_SEND 0.008  //( mJ / Byte )
 #define CONSUMPTION_BYTE_RECIEVE 0.004
 #define CONSUMPTION_LISTEN 13.5  // ( mJ / s )
@@ -50,7 +48,6 @@ using namespace std;
 /********************************* IHAR **********************************/
 
 //IHAR: Node Number Test
-//#define TEST_DYNAMIC_NUM_NODE false
 #define NUM_NODE_MIN 14
 #define NUM_NODE_MAX 34
 #define NUM_NODE_INIT 29
@@ -73,7 +70,7 @@ using namespace std;
 #define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
 
 
-/********************************* const *********************************/
+/******************************** Mode Const ********************************/
 
 typedef char Mode;
 

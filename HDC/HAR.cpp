@@ -186,7 +186,8 @@ void HAR::OptimizeRoute(CRoute &route)
 
 void HAR::HotspotSelection(int currentTime)
 {
-	if( ! ( currentTime % SLOT_HOTSPOT_UPDATE == 0 ) )
+	if( ! ( currentTime % SLOT_HOTSPOT_UPDATE == 0 
+		&& currentTime >= startTimeForHotspotSelection ) )
 		return;
 
 	if( TEST_LEARN )
@@ -297,7 +298,7 @@ void HAR::HotspotClassification(int currentTime)
 			if( new_buffer > BUFFER_CAPACITY_MA
 				&& route.getNWayPoints() == 1)
 			{
-				//cout<<"Error @ HAR::HotspotClassification() : A single hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
+				//cout << endl << "Error @ HAR::HotspotClassification() : A single hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
 				//_PAUSE;
 				route.AddPoint(max_front, tmp_hotspots[max_hotspot]);
 				vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin() + max_hotspot;

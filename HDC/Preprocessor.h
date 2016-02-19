@@ -69,11 +69,5 @@ public:
 	static bool ascendByID(CNode *left, CNode *right){	return left->getID() < right->getID();	};
 
 
-	/** 预处理操作函数 **/
-
-	/** Optional Functions，由main函数调用**/
-
-	static void SaveHotspotsToFile(int time, vector<CHotspot *> hotspots);
-
 };
 

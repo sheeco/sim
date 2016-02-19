@@ -54,7 +54,7 @@ vector<int> CPreprocessor::RandomIntList(int min, int max, int size)
 		}while(duplicate);
 		if(tmp < 0)
 		{
-			cout<<"Error @ RandomIntList() : tmp < 0"<<endl;
+			cout << endl << "Error @ RandomIntList() : tmp < 0"<<endl;
 			_PAUSE;
 		}
 		else
@@ -353,9 +353,3 @@ vector<CHotspot> CPreprocessor::mergeSortByDeliveryCount(vector<CHotspot> v, int
 	return mergeByDeliveryCount(left, right, endTime);
 }
 
-void CPreprocessor::SaveHotspotsToFile(int time, vector<CHotspot *> hotspots)
-{
-	ofstream toFile("hotspots.txt");
-	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
-		toFile<<time<< TAB <<(*ihotspot)->getX()<< TAB <<(*ihotspot)->getY()<< TAB <<(*ihotspot)->getID()<< TAB <<(*ihotspot)->getNCoveredPosition()<<endl;
-}

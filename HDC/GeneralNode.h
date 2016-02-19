@@ -40,26 +40,7 @@ public:
 	}
 
 
-	virtual vector<CData> sendAllData(Mode mode) = 0
-	{
-		double bet = RandomFloat(0, 1);
-		if( bet > PROB_DATA_FORWARD )
-		{
-			energyConsumption += buffer.size() * BYTE_PER_DATA * CONSUMPTION_BYTE_SEND;
-			return vector<CData>();
-		}
-
-		if(buffer.empty())
-			return vector<CData>();
-		else
-		{
-			vector<CData> data = buffer;
-			energyConsumption += buffer.size() * BYTE_PER_DATA * CONSUMPTION_BYTE_SEND;
-			if(mode == SEND::DUMP)
-				buffer.clear();
-			return data;
-		}
-	}
+	virtual vector<CData> sendAllData(Mode mode) = 0;
 
 	virtual bool receiveData(int time, vector<CData> datas) = 0;
 };

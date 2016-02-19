@@ -31,7 +31,7 @@ private:
 
 	int SLOT_LISTEN;  //由SLOT_TOTAL和DC计算得到
 	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
-	int state;  //取值范围在[ - SLOT_TOTAL, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
+	int state;  //取值范围在[ - SLOT_SLEEP, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
 	int timeData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
 	CHotspot *atHotspot;
@@ -92,7 +92,7 @@ private:
 		{
 			for(int i = 0; i < NUM_NODE; i++)
 			{
-				double generationRate = RATE_DATA_GENERATE;
+				double generationRate = DEFAULT_DATA_RATE;
 				if(i % 5 == 0)
 					generationRate *= 5;
 				CNode* node = new CNode(generationRate);
@@ -171,7 +171,7 @@ private:
 	{
 		if( buffer.size() > BUFFER_CAPACITY )
 		{
-			cout << "Error @ CNode::updateSummaryVector() : Buffer isn't clean !" << endl;
+			cout << endl << "Error @ CNode::updateSummaryVector() : Buffer isn't clean !" << endl;
 			_PAUSE;
 		}
 
@@ -209,9 +209,14 @@ private:
 
 public:
 
+	static int SLOT_TOTAL;
 	static double DEFAULT_DUTY_CYCLE;  //不使用HDC，或者HDC中不在热点区域内时的占空比
 	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
-	static int SLOT_TOTAL;
+
+	static double DEFAULT_DATA_RATE;  //( package / s )
+	static int DATA_SIZE;  //( Byte )
+	static int CTRL_SIZE;
+
 	static int BUFFER_CAPACITY;
 	static int ENERGY;
 	static Mode BUFFER_MODE;
@@ -232,7 +237,7 @@ public:
 	{
 		if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
 		{
-			cout << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
+			cout << endl << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
 			_PAUSE;
 		}
 
@@ -296,6 +301,7 @@ public:
 		return ( ! nodes.empty() );
 	}
 
+	//待测试
 	static void newNodes(int n)
 	{
 		//优先恢复之前被删除的节点
@@ -312,7 +318,7 @@ public:
 		//如果仍不足数，构造新的节点
 		for(int i = NUM_NODE; i < NUM_NODE + n; i++)
 		{
-			double generationRate = RATE_DATA_GENERATE;
+			double generationRate = DEFAULT_DATA_RATE;
 			if(i % 5 == 0)
 				generationRate *= 5;
 			CNode* node = new CNode(generationRate);
@@ -325,6 +331,7 @@ public:
 		}			
 	}
 
+	//待测试
 	static void removeNodes(int n)
 	{
 		//FIXME: Random selected ?
@@ -496,7 +503,7 @@ public:
 		encounterOnRoute++;
 	}
 
-	//访问计数：用于统计节点位于热点内的百分比
+	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
 	inline static double getVisiterAtHotspotPercent()
 	{
 		if(visiterAtHotspot == 0)
@@ -533,7 +540,7 @@ public:
 		double bet = RandomFloat(0, 1);
 		if(bet > PROB_DATA_FORWARD)
 		{
-			energyConsumption += n * BYTE_PER_DATA * CONSUMPTION_BYTE_SEND;
+			energyConsumption += n * DATA_SIZE * CONSUMPTION_BYTE_SEND;
 			return vector<CData>();
 		}
 
@@ -556,7 +563,7 @@ public:
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
 			return false;
 
-		energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_DATA * datas.size();
+		energyConsumption += CONSUMPTION_BYTE_RECIEVE * DATA_SIZE * datas.size();
 		for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); ++idata)
 			idata->arriveAnotherNode(time);
 		buffer.insert(buffer.begin(), datas.begin(), datas.end() );
@@ -589,7 +596,7 @@ public:
 	vector<int> sendSummaryVector()
 	{
 		updateSummaryVector();
-		energyConsumption += CONSUMPTION_BYTE_SEND * BYTE_PER_CTRL;
+		energyConsumption += CONSUMPTION_BYTE_SEND * CTRL_SIZE;
 		return summaryVector;
 	}
 
@@ -598,7 +605,7 @@ public:
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
 			return vector<int>();
 
-		energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_CTRL;
+		energyConsumption += CONSUMPTION_BYTE_RECIEVE * CTRL_SIZE;
 		return sv;	
 	}
 
@@ -625,7 +632,7 @@ public:
 			sv = vector<int>( sv.begin(), id );
 		}
 
-		energyConsumption += CONSUMPTION_BYTE_SEND * BYTE_PER_CTRL;
+		energyConsumption += CONSUMPTION_BYTE_SEND * CTRL_SIZE;
 		return sv;
 	}
 	
@@ -636,7 +643,7 @@ public:
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
 			return vector<int>();
 
-		energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_CTRL;
+		energyConsumption += CONSUMPTION_BYTE_RECIEVE * CTRL_SIZE;
 		return req;
 	}
 
@@ -647,7 +654,7 @@ public:
 
 		vector<CData> result;
 		result = getItemsByID(buffer, requestList);
-		energyConsumption += CONSUMPTION_BYTE_SEND * BYTE_PER_DATA * result.size();
+		energyConsumption += CONSUMPTION_BYTE_SEND * DATA_SIZE * result.size();
 		
 		return result;
 	}
@@ -687,7 +694,7 @@ public:
 
 	map<int, double> sendDeliveryPreds(int currentTime)
 	{
-		energyConsumption += CONSUMPTION_BYTE_SEND * BYTE_PER_CTRL;
+		energyConsumption += CONSUMPTION_BYTE_SEND * CTRL_SIZE;
 		
 		return deliveryPreds;
 	}
@@ -699,7 +706,7 @@ public:
 		if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
 			return map<int, double>();
 
-		energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_CTRL;
+		energyConsumption += CONSUMPTION_BYTE_RECIEVE * CTRL_SIZE;
 		return preds;
 	}
 

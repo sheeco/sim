@@ -4,6 +4,7 @@
 #include "Data.h"
 #include "Route.h"
 #include "GeneralNode.h"
+#include "HAR.h"
 
 using namespace std;
 
@@ -57,7 +58,7 @@ public:
 			sink->buffer.push_back(*idata);
 		}
 		//实际上无需统计sink的能耗
-		sink->energyConsumption += CONSUMPTION_BYTE_RECIEVE * BYTE_PER_DATA * data.size();
+		sink->energyConsumption += CONSUMPTION_BYTE_RECIEVE * CNode::DATA_SIZE * data.size();
 		return true;
 	}
 

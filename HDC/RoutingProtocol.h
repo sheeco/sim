@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "protocol.h"
+#include "Protocol.h"
 
 class CRoutingProtocol :
 	public CProtocol
@@ -17,8 +17,7 @@ protected:
 	static void ChangeNodeNumber(int currentTime);
 	//更新所有node的坐标、占空比和工作状态
 	static void UpdateNodeStatus(int currentTime);
-	//所有Node按照自己的ge生成数据
-	static void GenerateData(int currentTime);
+
 
 public:
 

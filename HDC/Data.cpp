@@ -19,5 +19,5 @@ double CData::getAverageEnergyConsumption()
 	if(ARRIVAL_COUNT == 0)
 		return 0;
 	else
-		return CNode::getSumEnergyConsumption() / ARRIVAL_COUNT / BYTE_PER_DATA;
+		return CNode::getSumEnergyConsumption() / ARRIVAL_COUNT / CNode::DATA_SIZE;
 }

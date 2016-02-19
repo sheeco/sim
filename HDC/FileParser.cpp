@@ -1,4 +1,5 @@
 #include "FileParser.h"
+#include "Preprocessor.h"
 
 void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y)
 {
@@ -15,11 +16,11 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 
 		if( file == nullptr)
 		{
-			cout << "Error @ CFileParser::getPositionFromFile : Cannot find file \"" << nodeID << ".newlocation\" ! " << endl;
+			cout << endl << "Error @ CFileParser::getPositionFromFile() : Cannot find file \"" << nodeID << ".newlocation\" ! " << endl;
 			_PAUSE;
 			exit(1);
 		}
-		while(!feof(file))
+		while( ! feof( file ) )
 		{
 			fscanf(file, "%lf %lf %lf", &tmp_time, &tmp_x, &tmp_y);
 
@@ -27,6 +28,11 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 				break;
 		}
 
+		if( ( time - tmp_time ) >= SLOT_MOBILITYMODEL )
+		{
+			cout << endl << "Error @ CFileParser::getPositionFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time << endl;
+			_PAUSE;
+		}
 		//È¡µÃ×ø±ê
 		x = tmp_x;
 		y = tmp_y;
@@ -35,20 +41,20 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 	}
 	catch(exception e)
 	{
-		cout<<endl<<"Error @ CFileParser::getPositionFromFile() : Unknown error without assumption"<<endl;
+		cout << endl << "Error @ CFileParser::getPositionFromFile() : Unknown error without assumption" << endl;
 		_PAUSE;
 	}
 }
 
-CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
-{
-	for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
-	{
-		if((*ipos)->getID() == ID)
-			return *ipos;
-	}
-	return nullptr;
-}
+//CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
+//{
+//	for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
+//	{
+//		if((*ipos)->getID() == ID)
+//			return *ipos;
+//	}
+//	return nullptr;
+//}
 
 //vector<CHotspot *> CFileParser::getHotspotFromFile(char *filename, int time, vector<CPosition *> positions)
 //{
@@ -107,7 +113,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //	}
 //	catch(exception e)
 //	{
-//		cout<<endl<<"Error @ CFileParser::getHotspotFromFile() : Wrong Format"<<endl;
+//		cout << endl << "Error @ CFileParser::getHotspotFromFile() : Wrong Format"<<endl;
 //		_PAUSE;
 //	}
 //	file.close();
@@ -130,7 +136,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //			writeHotspotToFile(filename, *it, withDetail);
 //		else
 //		{
-//			cout<<"Error @ CFileParser::writeHotspotToFile() : list_hotspot has a nullptr"<<endl;
+//			cout << endl << "Error @ CFileParser::writeHotspotToFile() : list_hotspot has a nullptr"<<endl;
 //			_PAUSE;
 //		}
 //	}
@@ -148,7 +154,7 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //		}
 //		else
 //		{
-//			cout<<"Error @ CFileParser::writeHotspotToFile() : list_hotspot has a nullptr"<<endl;
+//			cout << endl << "Error @ CFileParser::writeHotspotToFile() : list_hotspot has a nullptr"<<endl;
 //			_PAUSE;
 //		}
 //	}
@@ -156,4 +162,11 @@ CPosition* CFileParser::findPositionByID(vector<CPosition *> positions, int ID)
 //	file << time << TAB << coverSum << TAB << list_hotspot.size() << TAB << coverSum / list_hotspot.size() << endl;
 //	
 //	file.close();
+//}
+
+//void CFileParser::SaveHotspotsToFile(int time, vector<CHotspot *> hotspots)
+//{
+//	ofstream toFile("hotspots.txt");
+//	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
+//		toFile<<time<< TAB <<(*ihotspot)->getX()<< TAB <<(*ihotspot)->getY()<< TAB <<(*ihotspot)->getID()<< TAB <<(*ihotspot)->getNCoveredPosition()<<endl;
 //}

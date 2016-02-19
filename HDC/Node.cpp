@@ -3,23 +3,30 @@
 #include "FileParser.h"
 
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
-int CNode::BUFFER_CAPACITY = 0;
+
+int CNode::SLOT_TOTAL = 0;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
+
+double CNode::DEFAULT_DATA_RATE = 0;
+int CNode::DATA_SIZE = 0;
+int CNode::CTRL_SIZE = 0;
+
+int CNode::BUFFER_CAPACITY = 0;
+int CNode::ENERGY = 0;
+Mode CNode::BUFFER_MODE = BUFFER::LOOSE;
+Mode CNode::COPY_MODE = SEND::DUMP;
+Mode CNode::SEND_MODE = SEND::FIFO;
+
 int CNode::encounterAtHotspot = 0;
 int CNode::encounterOnRoute = 0;
 int CNode::visiterAtHotspot = 0;
 int CNode::visiterOnRoute = 0;
 
-int CNode::SLOT_TOTAL = 0;
-int CNode::ENERGY = 0;
 vector<CNode*> CNode::nodes;
 vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
 vector<CNode *> CNode::deletedNodes;
-Mode CNode::BUFFER_MODE = BUFFER::LOOSE;
-Mode CNode::COPY_MODE = SEND::DUMP;
-Mode CNode::SEND_MODE = SEND::FIFO;
 
 /**************************************  Prophet  *************************************/
 double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75

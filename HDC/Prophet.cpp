@@ -31,17 +31,24 @@ void Prophet::SendData(int currentTime)
 	//判断工作状态，向sink投递数据，节点间通信
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
-		//如果处于休眠状态，直接跳过
-		if( ! (*inode)->isListening() )
-			continue;
+		////如果处于休眠状态，直接跳过
+		//if( ! (*inode)->isListening() )
+		//	continue;
 
-		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
+		bool atSink = false;
+		
+		//如果处于休眠状态，跳过
+		if( (*inode)->isListening() )
 		{
-			//deliver data to sink
-			flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
-			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(SEND::DUMP) );
-			(*inode)->updateDeliveryPredsWithSink();
-			nEncounterAtSink++;
+			if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
+			{
+				atSink = true;
+				//deliver data to sink
+				flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
+				CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(SEND::DUMP) );
+				(*inode)->updateDeliveryPredsWithSink();
+				nEncounterAtSink++;
+			}
 		}
 
 		//scan other nodes and forward data
@@ -59,6 +66,10 @@ void Prophet::SendData(int currentTime)
 				CNode::encountAtHotspot();
 			else
 				CNode::encountOnRoute();
+
+			//如果处于休眠状态，跳过
+			if( ! (*inode)->isListening() )
+				break;
 
 			//init by node with smaller id
 			CNode *smaller, *greater = nullptr;
@@ -124,6 +135,14 @@ void Prophet::SendData(int currentTime)
 					else
 					{
 						flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )          " ;
+						
+						//在Sink附近的节点可以在接收到其他节点的数据之后向Sink进行二次投递
+						if( atSink == true )
+						{
+							flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
+							CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(SEND::DUMP) );						
+						}
+
 					}
 				}
 				else

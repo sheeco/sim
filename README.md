@@ -11,40 +11,59 @@
 
 ### 参数格式
 
-                                                 !!!!!! ALL CASE SENSITIVE !!!!!!
-	<mode>            -har;                  -ihar;                  -hdc;                    
-	                  -hotspot-similarity;   -dynamic-node-number;
-	<time>            -time-data   [];       -time-run   [];
-	<node>            -energy      [];       -sink       [] [];      -range      [];
-	<har>             -alpha       [];       -beta       [];         -gamma      [];          
-	                  -heat   [] [];               -prob-trans [];
-	<ihar>            -lambda      [];       -lifetime   [];
-	<prophet>         -hop         [];       -ttl        [];         -queue      [];          
-	                  -spoken [];
-	<hdc>             -cycle       [];       -dc-default [];         -dc-default [];
+	                                 !!!!!! ALL CASE SENSITIVE !!!!!!
+
+	<node>      -sink           [][];  -range           [];   -prob-trans  [];   -energy      [];   -time-data   [];   -time-run   [];
+	<data>      -buffer           [];  -data-rate       [];   -data-size   [];
+	<mac>       -hdc;                  -cycle           [];   -dc-default  [];   -dc-hotspot  [];
+	<route>     -epidemic;             -prophet;              -har;              -hop         [];   -ttl         [];
+	<prophet>   -spoken           [];  -queue           [];
+	<hs>        -ihar;                 -mhar;                 -alpha       [];   -beta        [];   -heat      [][];
+	<ihar>      -lambda           [];  -lifetime        [];
+	<mhar>      -merge            [];  -old             [];
+	<test>      -dynamic-node-number;  -hotspot-similarity;   -balanced-ratio;
+
 
 
 ### 参数默认值
 
-    scheme                        smac, HAR
-    hotspot_similarity            false
-    dynamic_node-number           false
-    min_wait                      0
-    
-    alpha                         0.03
-    beta                          0.0025
-    gamma                         0.5
-    heat                          1, 30
-    prob_trans                    1.0
+    Scheme                        smac, prophet
+	Data Time	                  15000
+	Run Time	                  15000
+	Prob Trans	                  1
+    Hotspot Similarity            false
+    Dynamic Node Number           false
+	    
+	<MAC>
+	
+	Slot Total	                  300
+	Default DC	                  0
+	Hotspot DC	                  0.4
+	
+	<Routing>
+	
+	TTL	                          0
+	Data Rate	                  1 / 150
+	Data Size	                  400
+	Buffer Capacity	              200
+	Node Energy	                  0
+
+	<HAR>
+
+    Alpha                         0.03
+    Beta                          0.0025
+    Heat                          1, 30
+    Min Wait                      0
     
     <IHAR>
-    lambda                        0
-    lifetime                      3600
+
+    Lambda                        0
+    Lifetime                      3600
     
     <mHAR>
-    merge                         1.0
-    old                           1.0
-    heat                          flat
+
+    Merge                         1.0
+    Old                           1.0
 
 
 ### 源文件说明
@@ -219,7 +238,7 @@
 #### 2015-12-10
 
 * 继续修改`CData`和`CNode`类，`CNode`类中原来是针对全部 node 统一统计能耗的，现在改为对于每个节点单独统计能耗，全局的 node 能耗使用`SUM_ENERGY_CONSUMPTION`统计，但尚未添加相关操作；
-* 在原来的能耗统计相关宏中添加`BYTE_PER_DATA`，`BYTE_PER_CTRL`，用于指示单个数据包和控制包的大小；
+* 在原来的能耗统计相关宏中添加`DATA_SIZE`，`CTRL_SIZE`，用于指示单个数据包和控制包的大小；
 * 增加`CHDC`类、`Epidemic`类和`CMacProtocol`基类，原`HAR`类中有关热点选择的函数暂时放入`CHDC`类，有关路由的类暂时放入`Epidemic`类，其成员属性和函数仍待修改；
 
 
@@ -279,3 +298,19 @@
 * 为所有的输出文件保存文件头字符串（`string INFO_DEBUG`等）；
 * 将一些选项保存到全局定义的选项类型中（`class SEND::LOOSE`，`class BUFFER::FIFO`），并作为函数参数标识具体操作；
 * 将之前使用全局变量（`DO_IHAR`等）标识的 scheme 选项保存到新定义的枚举类型（`_MacProtocol`，`_RoutingProtocol`，`_HotspotSelect`）的全局变量（`MAC_PROTOCOL`，`ROUTING_PROTOCOL`，`HOTSPOT_SELECT`），仍然通过命令行参数赋值；
+
+
+#### 2016-02-15  ·  *< 2.5.1 > < 2.5.2 >*
+
+
+#### 2016-02-16  ·  *< 2.5.3 >*
+
+
+#### 2016-02-18  ·  *< 2.5.4 >*
+
+
+#### 2016-02-20  ·  *< 2.5.5 >*
+
+* 原宏定义`DATA_GENERATE_RATE`、`BYTE_PER_CTRL`和`BYTE_PER_DATA`移入`CNode`中的静态成员变量`CNode::DEFAULT_DATA_RATE`、`CNode::DATA_SIZE`和`CNode::CTRL_SIZE`；
+* `CNode::DATA_SIZE`和`CNode::CTRL_SIZE`的比例太小时，HDC 的平均能耗将比普通 DC 更大；比例越大，改善效果越明显；
+* `CNode::BUFFER_CAPACITY`和`CNode::DEFAULT_DATA_RATE`的比例减小，投递率整体下降；比例越大，投递率整体上升；

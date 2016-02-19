@@ -82,7 +82,7 @@ void CGreedySelection::CollectNewPositions(int time)
 		tmp_pos->generateID();
 		if(tmp_pos->getID() == -1)
 		{
-			cout<<endl<<"Error @ CPreprocessor::BuildCandidateHotspots() : Wrong Format"<<endl;
+			cout << endl << "Error @ CPreprocessor::BuildCandidateHotspots() : Wrong Format"<<endl;
 			_PAUSE;
 			break;
 		}
@@ -208,7 +208,7 @@ void CGreedySelection::GreedySelect(int time)
 		CHotspot *best_hotspot;
 		if( index_best_hotspot == -1 || index_best_hotspot == unselectedHotspots.size() )
 		{
-			//cout<<"Error @ CGreedySelection::GreedySelection() : index_max_hotspot == -1"<<endl;
+			//cout << endl << "Error @ CGreedySelection::GreedySelection() : index_max_hotspot == -1"<<endl;
 			
 			//在merge-HAR中可能出现此情况，剩余的未选中热点中有一部分由于是旧热点，系数得到累积之后达不到GAMMA指示的水平
 			//此时，直接选中ratio最大的候选热点

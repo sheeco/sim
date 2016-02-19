@@ -65,7 +65,8 @@ string INFO_LOG;
 ofstream debugInfo("debug.txt", ios::app);
 
 string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
- 	          "<node>      -sink           [][];  -range           [];   -prob-trans  [];   -buffer      [];   -energy      [];   -time-data   [];   -time-run   []; \n"
+ 	          "<node>      -sink           [][];  -range           [];   -prob-trans  [];   -energy      [];   -time-data   [];   -time-run   []; \n"
+			  "<data>      -buffer           [];  -data-rate       [];   -data-size   [];  \n"
               "<mac>       -hdc;                  -cycle           [];   -dc-default  [];   -dc-hotspot  []; \n"
 			  "<route>     -epidemic;             -prophet;              -har;              -hop         [];   -ttl         [];\n"
 			  "<prophet>   -spoken           [];  -queue           []; \n"
@@ -87,9 +88,13 @@ int main(int argc, char* argv[])
 	TRANS_RANGE = 250;
 	DATATIME = 15000;
 	RUNTIME = 15000;
-	CData::MAX_TTL = 0;
+	CNode::DATA_SIZE = 400;
+	CNode::CTRL_SIZE = 10;
+	CNode::DEFAULT_DATA_RATE = 1.0 / 150.0;
+	CNode::BUFFER_CAPACITY = 200;
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
+	CData::MAX_TTL = 0;
 
 
 	/********************************** 命令行参数解析 ***********************************/
@@ -215,6 +220,18 @@ int main(int argc, char* argv[])
 					CNode::BUFFER_CAPACITY = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-data-rate" )
+			{
+				if(iField < argc - 1)
+					CNode::DEFAULT_DATA_RATE = double(1) / atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-data-size" )
+			{
+				if(iField < argc - 1)
+					CNode::DATA_SIZE = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-energy" )
 			{
 				if(iField < argc - 1)
@@ -312,7 +329,7 @@ int main(int argc, char* argv[])
 	}
 	catch(exception e)
 	{
-		cout << "Error @ main() : Wrong Parameter Format!" << endl;
+		cout << endl << "Error @ main() : Wrong Parameter Format!" << endl;
 		cout << INFO_HELP;
 		_PAUSE;
 		exit(1);
@@ -343,6 +360,8 @@ int main(int argc, char* argv[])
 			parameters << "HOP" << TAB << CData::MAX_HOP << endl;
 		else
 			parameters << "TTL" << TAB << CData::MAX_TTL << endl;
+		parameters << "DATA RATE" << TAB << CNode::DEFAULT_DATA_RATE << endl;
+		parameters << "DATA SIZE" << TAB << CNode::DATA_SIZE << endl;
 		parameters << "BUFFER CAPACITY" << TAB << CNode::BUFFER_CAPACITY << endl;
 		parameters << "NODE ENERGY" << TAB << CNode::ENERGY << endl;
 

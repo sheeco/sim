@@ -110,6 +110,7 @@
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="Epidemic.cpp" />
     <ClCompile Include="FileParser.cpp" />
+    <ClCompile Include="GeneralNode.cpp" />
     <ClCompile Include="GreedySelection.cpp" />
     <ClCompile Include="HAR.cpp" />
     <ClCompile Include="HDC.cpp" />

@@ -56,7 +56,7 @@ public:
 			return nullptr;
 		else if(waypoints[0]->getID() != SINK_ID)
 		{
-			cout<<"Error @ CRoute::getSink() : waypoints[0] is not sink"<<endl;
+			cout << endl << "Error @ CRoute::getSink() : waypoints[0] is not sink"<<endl;
 			_PAUSE;
 			return nullptr;
 		}
@@ -89,7 +89,7 @@ public:
 		if( toPoint > waypoints.size() - 1 
 			|| toPoint < 0  )
 		{
-			cout << "Error @ CBasicEntity::getToPoint : toPoint exceeds the range " << endl;
+			cout << endl << "Error @ CBasicEntity::getToPoint : toPoint exceeds the range " << endl;
 			_PAUSE;
 		}
 		return waypoints[toPoint];
