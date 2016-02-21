@@ -314,3 +314,8 @@
 * 原宏定义`DATA_GENERATE_RATE`、`BYTE_PER_CTRL`和`BYTE_PER_DATA`移入`CNode`中的静态成员变量`CNode::DEFAULT_DATA_RATE`、`CNode::DATA_SIZE`和`CNode::CTRL_SIZE`；
 * `CNode::DATA_SIZE`和`CNode::CTRL_SIZE`的比例太小时，HDC 的平均能耗将比普通 DC 更大；比例越大，改善效果越明显；
 * `CNode::BUFFER_CAPACITY`和`CNode::DEFAULT_DATA_RATE`的比例减小，投递率整体下降；比例越大，投递率整体上升；
+
+
+#### 2016-02-21  ·  *< 2.5.6 >*
+
+* `energy-consumption.txt`中输出错误（为按照 x 坐标排序），修复`CNode::getAllNodes()`中使用到的节点排序函数；

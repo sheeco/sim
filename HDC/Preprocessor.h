@@ -38,10 +38,10 @@ public:
 	static void freePointerVector(vector<CHotspot *> &v);	
 	
 	//用于归并排序的函数
-	template <class E>
-	static vector<E> merge(vector<E> left, vector<E> right, bool(*Comp)(E, E));
-	template <class E>
-	static vector<E> mergeSort(vector<E> v, bool(*Comp)(E, E));
+	//template <class E>
+	//static vector<E> merge(vector<E> left, vector<E> right, bool(*Comp)(E, E));
+	//template <class E>
+	//static vector<E> mergeSort(vector<E> v, bool(*Comp)(E, E));
 	//CData按照时间排序
 	static vector<CData> merge(vector<CData> left, vector<CData> right, bool(*Comp)(CData, CData));
 	static vector<CData> mergeSort(vector<CData> v, bool(*Comp)(CData, CData));

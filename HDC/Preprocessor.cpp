@@ -97,43 +97,43 @@ bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
 	return ( static_cast<CHotspot *>(left)->calculateRatio() ) > ( static_cast<CHotspot *>(right)->calculateRatio() );
 }
 
-template <class E>
-vector<E> CPreprocessor::merge(vector<E> left, vector<E> right, bool(*Comp)(E, E))
-{
-	vector<E> result;
-	typename vector<E>::size_type li = 0;
-	typename vector<E>::size_type ri = 0;
-	while(li < left.size()
-		&& ri < right.size())
-	{
-		if( ! Comp(left[li], right[ri]) )
-			result.push_back(right[ri++]);
-		else
-			result.push_back(left[li++]);
-	}
-	while(li < left.size())
-		result.push_back(left[li++]);
-	while(ri < right.size())
-		result.push_back(right[ri++]);
-	return result;
-}
+//template <class E>
+//vector<E> CPreprocessor::merge(vector<E> left, vector<E> right, bool(*Comp)(E, E))
+//{
+//	vector<E> result;
+//	typename vector<E>::size_type li = 0;
+//	typename vector<E>::size_type ri = 0;
+//	while(li < left.size()
+//		&& ri < right.size())
+//	{
+//		if( ! Comp(left[li], right[ri]) )
+//			result.push_back(right[ri++]);
+//		else
+//			result.push_back(left[li++]);
+//	}
+//	while(li < left.size())
+//		result.push_back(left[li++]);
+//	while(ri < right.size())
+//		result.push_back(right[ri++]);
+//	return result;
+//}
 
-template <class E>
-vector<E> CPreprocessor::mergeSort(vector<E> v, bool(*Comp)(E, E))
-{
-	if(v.size() == 0)
-		return vector<E>();
-	if(v.size() == 1)
-		return vector<E>(1, v[0]);
-
-	typename vector<E>::iterator mid = v.begin() + v.size() / 2;
-	vector<E> left(v.begin(), mid);
-	vector<E> right(mid, v.end());
-	left = mergeSort(left, Comp);
-	right = mergeSort(right, Comp);
-
-	return merge(left, right, Comp);
-}
+//template <class E>
+//vector<E> CPreprocessor::mergeSort(vector<E> v, bool(*Comp)(E, E))
+//{
+//	if(v.size() == 0)
+//		return vector<E>();
+//	if(v.size() == 1)
+//		return vector<E>(1, v[0]);
+//
+//	typename vector<E>::iterator mid = v.begin() + v.size() / 2;
+//	vector<E> left(v.begin(), mid);
+//	vector<E> right(mid, v.end());
+//	left = mergeSort(left, Comp);
+//	right = mergeSort(right, Comp);
+//
+//	return merge(left, right, Comp);
+//}
 
 vector<CData> CPreprocessor::merge(vector<CData> left, vector<CData> right, bool(*Comp)(CData, CData))
 {
@@ -251,7 +251,7 @@ vector<CNode *> CPreprocessor::merge(vector<CNode *> left, vector<CNode *> right
 	while(li < left.size()
 		&& ri < right.size())
 	{
-		if( Comp(left[li], right[ri]) )
+		if( ! Comp(left[li], right[ri]) )
 			result.push_back(right[ri++]);
 		else
 			result.push_back(left[li++]);
@@ -276,7 +276,7 @@ vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> v, bool(*Comp)(CNode *,
 	left = mergeSort(left, Comp);
 	right = mergeSort(right, Comp);
 
-	return merge(left, right);
+	return merge(left, right, Comp);
 }
 
 vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *))
