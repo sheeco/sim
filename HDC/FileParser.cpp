@@ -1,5 +1,6 @@
 #include "FileParser.h"
 #include "Preprocessor.h"
+#include "HAR.h"
 
 void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y)
 {
@@ -31,7 +32,16 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 		if( ( time - tmp_time ) >= SLOT_MOBILITYMODEL )
 		{
 			cout << endl << "Error @ CFileParser::getPositionFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time << endl;
-			_PAUSE;
+			debugInfo << CData::getDataArrivalCount() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() << TAB;
+			debugInfo << time - SLOT_MOBILITYMODEL << TAB << CNode::getNodes().size() << TAB << INFO_LOG.replace(0, 1, "");
+			if( MAC_PROTOCOL == _hdc )
+			{
+				debugInfo << CNode::getEncounterAtHotspotPercent() << TAB ;
+			}
+			debugInfo.close();
+			//_PAUSE;
+			_ALERT;
+			exit(time - SLOT_MOBILITYMODEL);
 		}
 		//È¡µÃ×ø±ê
 		x = tmp_x;
