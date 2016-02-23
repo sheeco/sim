@@ -137,7 +137,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		{			
 			//节点剩余能量
 			energy_consumption << TAB << CNode::getNodes().size() << TAB;
-			vector<CNode *> allNodes = CNode::getAllNodes();
+			vector<CNode *> allNodes = CNode::getAllNodes(true);
 			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 				energy_consumption << (*inode)->getEnergy() << TAB;
 		}
@@ -193,7 +193,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 	{
 		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() << TAB ;
 		if( CNode::finiteEnergy() )
-			debugInfo << currentTime << TAB;
+			debugInfo << currentTime << TAB << CNode::getNodes().size() << TAB ;
 		if( MAC_PROTOCOL == _hdc )
 		{
 			if( HOTSPOT_SELECT == _merge )

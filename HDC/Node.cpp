@@ -35,13 +35,13 @@ double CNode::TRANS_RATIO = 0.20;  //0.25
 
 extern _RoutingProtocol ROUTING_PROTOCOL;
 
-vector<CNode *> CNode::getAllNodes()
+vector<CNode *> CNode::getAllNodes(bool sort)
 {
 	vector<CNode *> allNodes = CNode::getNodes();
 	allNodes.insert(allNodes.end(), deadNodes.begin(), deadNodes.end());
 	allNodes.insert(allNodes.end(), deletedNodes.begin(), deletedNodes.end());
-
-	allNodes = CPreprocessor::mergeSort(allNodes, CPreprocessor::ascendByID);
+	if( sort )
+		allNodes = CPreprocessor::mergeSort(allNodes, CPreprocessor::ascendByID);
 	return allNodes;
 }
 

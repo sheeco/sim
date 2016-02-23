@@ -247,7 +247,7 @@ public:
 	}
 
 	//包括已经失效的节点和删除的节点，按照ID排序
-	static vector<CNode *> getAllNodes();
+	static vector<CNode *> getAllNodes(bool sort);
 
 	static vector<int>& getIdNodes()
 	{
@@ -408,7 +408,8 @@ public:
 	static double getSumEnergyConsumption()
 	{
 		double sumEnergyConsumption = 0;
-		for(auto inode = getNodes().begin(); inode != getNodes().end(); ++inode)
+		auto allNodes = CNode::getAllNodes(false);
+		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 			sumEnergyConsumption += (*inode)->getEnergyConsumption();
 		return sumEnergyConsumption;
 	}
