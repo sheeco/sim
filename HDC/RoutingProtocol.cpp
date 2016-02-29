@@ -71,12 +71,12 @@ void CRoutingProtocol::UpdateNodeStatus(int currentTime)
 //}
 
 
-string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEnergyConsumption (#NodeCount	#CurrentEnergy...) \n" ;
+string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEC (#SumEC	#NodeCount	#CurrentEnergy...) \n" ;
 string INFO_BUFFER_STATISTICS =  "#Time	#AvgBufferStateInHistoryOfEachNode \n" ;
-string INFO_DELIVERY_RATIO = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio \n" ;
+string INFO_DELIVERY_RATIO = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio% \n" ;
 string INFO_DELAY = "#Time	#AvgDelay \n" ;
 string INFO_BUFFER = "#Time	#BufferStateOfEachNode \n" ;
-string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot)	#Encounter	(#EncounterPercentAtHotspot) \n" ;
+string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot)	#Encounter	(#EncounterAtHotspot%) \n" ;
 string INFO_SINK = "#Time	#EncounterAtSink \n" ;
 
 void CRoutingProtocol::PrintInfo(int currentTime)
@@ -96,7 +96,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			delivery_ratio << INFO_LOG ;
 			delivery_ratio << INFO_DELIVERY_RATIO ;
 		}
-		delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
+		delivery_ratio << currentTime << TAB << CData::getDeliveryCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		//数据投递延迟
@@ -136,7 +136,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		if( CNode::finiteEnergy() )
 		{			
 			//节点剩余能量
-			energy_consumption << TAB << CNode::getNodes().size() << TAB;
+			energy_consumption << TAB << CNode::getSumEnergyConsumption() << TAB << CNode::getNodes().size() << TAB;
 			vector<CNode *> allNodes = CNode::getAllNodes(true);
 			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 				energy_consumption << (*inode)->getEnergy() << TAB;
@@ -152,8 +152,14 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			buffer << INFO_BUFFER_STATISTICS ;
 		}
 		buffer << currentTime << TAB;
-		for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-			 buffer << (*inode)->getAverageBufferSize() << TAB;
+		vector<CNode *> allNodes = CNode::getAllNodes(true);
+		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
+		{
+			if( ! (*inode)->isAlive() )
+				buffer << "-" << TAB ;
+			else
+				buffer << (*inode)->getAverageBufferSize() << TAB;
+		}
 		buffer << endl;
 		buffer.close();
 
@@ -170,39 +176,57 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			delivery_ratio << INFO_LOG;
 			delivery_ratio << INFO_DELIVERY_RATIO ;
 		}
-		delivery_ratio << currentTime << TAB << CData::getDataArrivalCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
+		delivery_ratio << currentTime << TAB << CData::getDeliveryCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		//每个节点的当前buffer状态
-		ofstream node("buffer-node.txt", ios::app);
+		ofstream buffer("buffer-node.txt", ios::app);
 		if(currentTime == 0)
 		{
-			node << INFO_LOG ;
-			node << INFO_BUFFER ;
+			buffer << INFO_LOG ;
+			buffer << INFO_BUFFER ;
 		}
-		node << currentTime << TAB;
-		for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-			node << (*inode)->getBufferSize() << "  " ;
-		node << endl;
-		node.close();
+		buffer << currentTime << TAB;
+		vector<CNode *> allNodes = CNode::getAllNodes(true);
+		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
+		{
+			if( ! (*inode)->isAlive() )
+				buffer << "-" << TAB ;
+			else
+				buffer << (*inode)->getBufferSize() << "  " ;
+		}
+		buffer << endl;
+		buffer.close();
 
 	}
+
+	PrintFinal(currentTime);
+
+}
+
+void CRoutingProtocol::PrintFinal(int currentTime)
+{
+	if( currentTime != RUNTIME )
+		return;
 
 	////最终debug输出
-	if( currentTime == RUNTIME )
+	if( CNode::finiteEnergy() )
+		debugInfo << CData::getDeliveryCount() << TAB ;
+	else
+		debugInfo << CData::getDeliveryRatio() << TAB ;
+	debugInfo << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() << TAB ;
+	if( CNode::finiteEnergy() )
+		debugInfo << currentTime << TAB << CNode::getNodes().size() << TAB ;
+	if( MAC_PROTOCOL == _hdc )
 	{
-		debugInfo << CData::getDeliveryRatio() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() << TAB ;
-		if( CNode::finiteEnergy() )
-			debugInfo << currentTime << TAB << CNode::getNodes().size() << TAB ;
-		if( MAC_PROTOCOL == _hdc )
-		{
-			if( HOTSPOT_SELECT == _merge )
-				debugInfo << HAR::getAverageMergePercent() << TAB << HAR::getAverageOldPercent() << TAB ;
-			if( TEST_HOTSPOT_SIMILARITY )
-				debugInfo << HAR::getAverageSimilarityRatio() << TAB ;
-			debugInfo << CNode::getEncounterAtHotspotPercent() << TAB ;
-		}
-		debugInfo.flush();
+		if( HOTSPOT_SELECT == _merge )
+			debugInfo << HAR::getAverageMergePercent() << TAB << HAR::getAverageOldPercent() << TAB ;
+		if( TEST_HOTSPOT_SIMILARITY )
+			debugInfo << HAR::getAverageSimilarityRatio() << TAB ;
+		debugInfo << CNode::getEncounterAtHotspotPercent() << TAB ;
 	}
+	if( ROUTING_PROTOCOL != _har )
+		debugInfo << INFO_LOG.replace(0, 1, "");
+	debugInfo.flush();
 
 }

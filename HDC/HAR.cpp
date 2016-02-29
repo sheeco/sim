@@ -572,11 +572,7 @@ void HAR::SendData(int currentTime)
 		(*inode)->recordBufferStatus();
 
 	//控制台输出时保留一位小数
-	double deliveryRatio = 0;
-	if( CData::getDataArrivalCount() > 0 )
-		deliveryRatio = CData::getDataArrivalCount() / double(CData::getDataCount()) * 1000;
-	deliveryRatio = ROUND( deliveryRatio );
-	deliveryRatio = deliveryRatio / double( 10 );
+	double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
 	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
 	delivery_hotspot.close();
 }
@@ -599,6 +595,8 @@ void HAR::PrintInfo(int currentTime)
 		      && currentTime >= startTimeForHotspotSelection )
 			|| currentTime == RUNTIME  ) )
 		return;
+
+	/***************************************** 热点选取的相关输出 *********************************************/
 
 	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0
 		|| currentTime == RUNTIME )
@@ -627,8 +625,12 @@ void HAR::PrintInfo(int currentTime)
 	if( ROUTING_PROTOCOL != _har )
 		return ;
 
+	/***************************************** 路由协议的通用输出 *********************************************/
+
 	CRoutingProtocol::PrintInfo(currentTime);
 
+
+	/****************************************** HAR路由的补充输出 *********************************************/
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、MA节点buffer状态 ...
 	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0
@@ -764,6 +766,7 @@ void HAR::PrintInfo(int currentTime)
 		if( TEST_HOTSPOT_SIMILARITY )
 			debugInfo << getAverageSimilarityRatio() << TAB ;
 		debugInfo << CData::getDeliveryAtHotspotPercent() << TAB ;
+		debugInfo << INFO_LOG.replace(0, 1, "");
 		debugInfo.flush();
 	}
 }

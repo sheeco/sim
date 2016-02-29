@@ -360,7 +360,7 @@ int main(int argc, char* argv[])
 			parameters << "HOP" << TAB << CData::MAX_HOP << endl;
 		else
 			parameters << "TTL" << TAB << CData::MAX_TTL << endl;
-		parameters << "DATA RATE" << TAB << CNode::DEFAULT_DATA_RATE << endl;
+		parameters << "DATA RATE" << TAB << "1 / " << int( 1 / CNode::DEFAULT_DATA_RATE ) << endl;
 		parameters << "DATA SIZE" << TAB << CNode::DATA_SIZE << endl;
 		parameters << "BUFFER CAPACITY" << TAB << CNode::BUFFER_CAPACITY << endl;
 		parameters << "NODE ENERGY" << TAB << CNode::ENERGY << endl;
@@ -474,9 +474,6 @@ int main(int argc, char* argv[])
 		currentTime += SLOT;
 
 	}
-
-	debugInfo << INFO_LOG.replace(0, 1, "");
-	debugInfo.flush();
 
 	debugInfo.close();
 	_ALERT;

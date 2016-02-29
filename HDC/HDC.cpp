@@ -111,9 +111,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	}
 
 	//控制台输出时保留一位小数
-	double encounterRatio = CNode::getEncounterAtHotspotPercent() * 1000;
-	encounterRatio = ROUND( encounterRatio );
-	encounterRatio = encounterRatio / double( 10 );
+	double encounterRatio = NDigitFloat( CNode::getEncounterAtHotspotPercent() * 100, 1);
 	flash_cout << "####  [ Hotspot Encounter ]  " << encounterRatio << " %                                           " << endl;
 	//flash_cout << "####  [ At Hotspot ]  " << atHotspotCount << " / " << CNode::getNodes().size() << "                              " ;
 

@@ -62,7 +62,7 @@ public:
 		this->TTL = MAX_TTL;
 	}
 
-	~CData(void);
+	~CData(void){};
 
 	static void deliverAtHotspot(int n)
 	{
@@ -91,14 +91,6 @@ public:
 		return double(DELIVERY_AT_HOTSPOT_COUNT) / double( DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT );
 	}
 
-	//static inline void overflow()
-	//{
-	//	OVERFLOW_COUNT++;
-	//}
-	//static int getOverflowCount()
-	//{
-	//	return OVERFLOW_COUNT;
-	//}
 	//setters & getters
 	inline void setNode(int node)
 	{
@@ -211,7 +203,7 @@ public:
 	{
 		return ID_COUNT;
 	}
-	static int getDataArrivalCount()
+	static int getDeliveryCount()
 	{
 		return ARRIVAL_COUNT;
 	}
@@ -229,6 +221,5 @@ public:
 		return DELAY_SUM / ARRIVAL_COUNT;
 	}
 	static double getAverageEnergyConsumption();
-
 };
 

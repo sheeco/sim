@@ -32,14 +32,12 @@ void CFileParser::getPositionFromFile(int nodeID, int time, double &x, double &y
 		if( ( time - tmp_time ) >= SLOT_MOBILITYMODEL )
 		{
 			cout << endl << "Error @ CFileParser::getPositionFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time << endl;
-			debugInfo << CData::getDataArrivalCount() << TAB << CData::getAverageDelay() << TAB << CData::getAverageEnergyConsumption() << TAB;
-			debugInfo << time - SLOT_MOBILITYMODEL << TAB << CNode::getNodes().size() << TAB << INFO_LOG.replace(0, 1, "");
-			if( MAC_PROTOCOL == _hdc )
+			if( time != RUNTIME )
 			{
-				debugInfo << CNode::getEncounterAtHotspotPercent() << TAB ;
+				RUNTIME = time;
+				CRoutingProtocol::PrintFinal(time);
 			}
 			debugInfo.close();
-			//_PAUSE;
 			_ALERT;
 			exit(time - SLOT_MOBILITYMODEL);
 		}

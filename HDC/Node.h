@@ -104,17 +104,6 @@ private:
 		}
 	}
 
-	//不设置能量值时，始终返回true
-	bool isAlive() const
-	{
-		if( energy == 0 )
-			return true;
-		else if( energy - energyConsumption <= 0 )
-			return false;
-		else
-			return true;
-	}
-
 	void generateData(int currentTime)
 	{
 		int timeDataIncre = currentTime - timeData;
@@ -261,13 +250,6 @@ public:
 		return ENERGY > 0;
 	}
 
-	inline double getEnergy() const
-	{
-		if( ! isAlive() )
-			return 0;
-		return energy - energyConsumption;
-	}
-
 	static bool hasNodes(int currentTime)
 	{
 		if( nodes.empty() && deadNodes.empty() )
@@ -384,6 +366,82 @@ public:
 		return nullptr;
 	}
 
+	static double getSumEnergyConsumption()
+	{
+		double sumEnergyConsumption = 0;
+		auto allNodes = CNode::getAllNodes(false);
+		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
+			sumEnergyConsumption += (*inode)->getEnergyConsumption();
+		return sumEnergyConsumption;
+	}
+
+	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
+	inline static double getEncounterAtHotspotPercent()
+	{
+		if(encounterAtHotspot == 0)
+			return 0.0;
+		return double(encounterAtHotspot) / double(encounterAtHotspot + encounterOnRoute);
+	}
+	inline static int getEncounter()
+	{
+		return encounterAtHotspot + encounterOnRoute;
+	}
+	inline static int getEncounterAtHotspot()
+	{
+		return encounterAtHotspot;
+	}
+	inline static void encountAtHotspot()
+	{
+		encounterAtHotspot++;
+	}
+	inline static void encountOnRoute()
+	{
+		encounterOnRoute++;
+	}
+
+	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
+	inline static double getVisiterAtHotspotPercent()
+	{
+		if(visiterAtHotspot == 0)
+			return 0.0;
+		return double(visiterAtHotspot) / double(visiterAtHotspot + visiterOnRoute);
+	}
+	inline static int getVisiter()
+	{
+		return visiterAtHotspot + visiterOnRoute;
+	}
+	inline static int getVisiterAtHotspot()
+	{
+		return visiterAtHotspot;
+	}
+	inline static void visitAtHotspot()
+	{
+		visiterAtHotspot++;
+	}
+	inline static void visitOnRoute()
+	{
+		visiterOnRoute++;
+	}
+
+
+	//不设置能量值时，始终返回true
+	bool isAlive() const
+	{
+		if( energy == 0 )
+			return true;
+		else if( energy - energyConsumption <= 0 )
+			return false;
+		else
+			return true;
+	}
+
+	inline double getEnergy() const
+	{
+		if( ! isAlive() )
+			return 0;
+		return energy - energyConsumption;
+	}
+
 	inline double getGenerationRate() const
 	{
 		return generationRate;
@@ -405,14 +463,7 @@ public:
 		else
 			return false;
 	}
-	static double getSumEnergyConsumption()
-	{
-		double sumEnergyConsumption = 0;
-		auto allNodes = CNode::getAllNodes(false);
-		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
-			sumEnergyConsumption += (*inode)->getEnergyConsumption();
-		return sumEnergyConsumption;
-	}
+
 	inline void generateID()
 	{
 		ID_COUNT++;
@@ -478,54 +529,6 @@ public:
 	{
 		bufferSizeSum += buffer.size();
 		bufferChangeCount++;
-	}
-
-	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
-	inline static double getEncounterAtHotspotPercent()
-	{
-		if(encounterAtHotspot == 0)
-			return 0.0;
-		return double(encounterAtHotspot) / double(encounterAtHotspot + encounterOnRoute);
-	}
-	inline static int getEncounter()
-	{
-		return encounterAtHotspot + encounterOnRoute;
-	}
-	inline static int getEncounterAtHotspot()
-	{
-		return encounterAtHotspot;
-	}
-	inline static void encountAtHotspot()
-	{
-		encounterAtHotspot++;
-	}
-	inline static void encountOnRoute()
-	{
-		encounterOnRoute++;
-	}
-
-	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
-	inline static double getVisiterAtHotspotPercent()
-	{
-		if(visiterAtHotspot == 0)
-			return 0.0;
-		return double(visiterAtHotspot) / double(visiterAtHotspot + visiterOnRoute);
-	}
-	inline static int getVisiter()
-	{
-		return visiterAtHotspot + visiterOnRoute;
-	}
-	inline static int getVisiterAtHotspot()
-	{
-		return visiterAtHotspot;
-	}
-	inline static void visitAtHotspot()
-	{
-		visiterAtHotspot++;
-	}
-	inline static void visitOnRoute()
-	{
-		visiterOnRoute++;
 	}
 
 	vector<CData> sendAllData(Mode mode) override

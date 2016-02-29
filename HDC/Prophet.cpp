@@ -163,11 +163,7 @@ void Prophet::SendData(int currentTime)
 		(*inode)->recordBufferStatus();
 
 	//控制台输出时保留一位小数
-	double deliveryRatio = 0;
-	if( CData::getDataArrivalCount() > 0 )
-		deliveryRatio = CData::getDataArrivalCount() / double(CData::getDataCount()) * 1000;
-	deliveryRatio = ROUND( deliveryRatio );
-	deliveryRatio = deliveryRatio / double( 10 );
+	double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
 	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl<< endl;
 	sink << currentTime << TAB << nEncounterAtSink << endl;
 	sink.close();

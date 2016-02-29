@@ -125,6 +125,22 @@ inline int RandomInt(int min, int max)
 	return min + rand() % (max - min);
 }
 
+//为浮点数保留n位小数，四舍五入
+inline double NDigitFloat(double original, int n)
+{
+	if( ZERO(original) )
+		return 0;
+	if( n < 0 )
+		return original;
+	if( n == 0 )
+		return ROUND(original);
+
+	original *= pow(10, n);
+	original = ROUND( original );
+	original /= pow(10, n);
+	return original;
+}
+
 //检查vector中是否已存在某个元素
 template <class E>
 bool ifExists(vector<E> list, E elem)
