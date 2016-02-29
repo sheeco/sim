@@ -18,7 +18,7 @@ TEST
 
 # User-specific files
 
-# *.suo
+*.suo
 
 # *.user
 
