@@ -12,9 +12,9 @@ int CHDC::SIMILARITY_RATIO_COUNT = 0;
 
 extern _HotspotSelect HOTSPOT_SELECT;
 
-CHDC::CHDC(void)
-{
-}
+//CHDC::CHDC()
+//{
+//}
 
 void CHDC::CompareWithOldHotspots(int currentTime)
 {
@@ -68,8 +68,8 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 
 	int atHotspotCount = 0;
 	vector<CNode *> nodes = CNode::getNodes();
-	nodes = CPreprocessor::mergeSort( nodes );
-	hotspots = CPreprocessor::mergeSort( hotspots, CPreprocessor::ascendByLocationX );
+	nodes = CSortHelper::mergeSort( nodes );
+	hotspots = CSortHelper::mergeSort( hotspots, CSortHelper::ascendByLocationX );
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
 		CHotspot *atHotspot = nullptr;

@@ -7,15 +7,18 @@ extern double CO_POSITION_DECAY;
 
 using namespace std;
 
+
 //存储单个节点移动位置的类
 class CPosition : 
-	public CGeoEntity
+	public CBasicEntity, public CGeoEntity
 {
 private:
+
 	int node;  //所属节点ID
 	//bool isCovered;
 	double weight;
 	static int ID_COUNT;
+
 
 public:
 
@@ -42,7 +45,7 @@ public:
 	//	return isCovered;
 	//}
 
-	inline int getNode()
+	inline int getNode() const
 	{
 		return node;
 	}
@@ -50,7 +53,7 @@ public:
 	{
 		this->node = node;
 	}
-	inline double getWeight()
+	inline double getWeight() const
 	{
 		return weight;
 	}

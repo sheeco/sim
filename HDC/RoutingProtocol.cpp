@@ -9,13 +9,14 @@ extern ofstream debugInfo;
 extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 extern _HotspotSelect HOTSPOT_SELECT;
+extern int SLOT_CHANGE_NUM_NODE;
 
-//CRoutingProtocol::CRoutingProtocol(void)
+//CRoutingProtocol::CRoutingProtocol()
 //{
 //}
 //
 //
-//CRoutingProtocol::~CRoutingProtocol(void)
+//CRoutingProtocol::~CRoutingProtocol()
 //{
 //}
 
@@ -71,7 +72,7 @@ void CRoutingProtocol::UpdateNodeStatus(int currentTime)
 //}
 
 
-string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEC (#SumEC	#NodeCount	#CurrentEnergy...) \n" ;
+string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEC	(#SumEC	#NodeCount	#CurrentEnergy...) \n" ;
 string INFO_BUFFER_STATISTICS =  "#Time	#AvgBufferStateInHistoryOfEachNode \n" ;
 string INFO_DELIVERY_RATIO = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio% \n" ;
 string INFO_DELAY = "#Time	#AvgDelay \n" ;

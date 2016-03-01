@@ -7,17 +7,21 @@
 
 using namespace std;
 
+
 class CMANode :
 	public CGeneralNode
 {
 //protected:
+
 //	int ID;  //MA节点的编号
 //	double x;  //MA节点现在的x坐标
 //	double y;  //MA节点现在的y坐标
 //	int time;  //更新MA节点坐标的时间戳
 //	bool flag;
 
+
 private:
+
 	vector<CData> buffer;
 	CRoute route;
 	vector<CRoute> oldRoutes;
@@ -37,7 +41,7 @@ private:
 		bufferCapacity = BUFFER_CAPACITY_MA;
 	}
 
-	CMANode(void)
+	CMANode()
 	{
 		init();
 	}
@@ -63,14 +67,14 @@ private:
 
 public:
 
-	static Mode BUFFER_MODE;
+	static Mode RECEIVE_MODE;
 
 	static vector<CMANode *> getMANodes()
 	{
 		return MANodes;
 	}
 
-	~CMANode(void){};
+	~CMANode(){};
 
 	//当前活动MA个数不足时调用，将激活闲置的MA或构造新的MA
 	static CMANode* newMANode(CRoute route, int time)
@@ -182,13 +186,13 @@ public:
 		if( capacity < 0 )
 			capacity = 0;
 
-		if( BUFFER_MODE == BUFFER::SELFISH )
+		if( RECEIVE_MODE == RECEIVE::SELFISH )
 			return capacity;
-		else if( BUFFER_MODE == BUFFER::LOOSE )
+		else if( RECEIVE_MODE == RECEIVE::LOOSE )
 			return bufferCapacity;
 		else
 		{
-			cout << endl << "Error @ CMANode::getBufferCapacity() : BUFFER_MODE = " << BUFFER_MODE << endl;
+			cout << endl << "Error @ CMANode::getBufferCapacity() : RECEIVE_MODE = " << RECEIVE_MODE << endl;
 			_PAUSE;
 		}
 	}

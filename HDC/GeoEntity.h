@@ -1,14 +1,23 @@
+/***********************************************************************************************************************************
+
+次级类 CGeoEntity ： （继承自顶级类 CEntity ）与CBasicEntity类似，但专用于空间相关的实体，所有空间相关的实体，应该继承自这个类
+
+***********************************************************************************************************************************/
+
 #pragma once
 
-#include "BasicEntity.h"
+#include "Entity.h"
 
 using namespace std;
 
+
 class CGeoEntity :
-	public CBasicEntity
+	public CEntity
 {
 public:
-	CGeoEntity(void){};
-	~CGeoEntity(void){};
+
+	CGeoEntity(){};
+	~CGeoEntity(){};
+
 };
 

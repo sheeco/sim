@@ -1,18 +1,20 @@
 #pragma once
 
 #include "Hotspot.h"
-#include "Processor.h"
+#include "Helper.h"
 
 using namespace std;
 
 extern int NUM_NODE;
 extern int startTimeForHotspotSelection;
 
+
 //包含用于文件解析的函数的类
-class CFileParser :
-	public CProcessor
+class CFileHelper :
+	public CHelper
 {
 public:
+
 	//传入nodeID和time，将从文件中解析到的信息赋给pos
 	static void getPositionFromFile(int nodeID, int time, double &x, double &y);
 	//static CPosition* findPositionByID(vector<CPosition *> positions, int ID);

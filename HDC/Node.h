@@ -14,15 +14,18 @@ extern double PROB_DATA_FORWARD;
 extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 
+
 class CNode :
 	public CGeneralNode
 {
 //protected:
+
 //	int ID;  //node编号
 //	double x;  //node现在的x坐标
 //	double y;  //node现在的y坐标
 //	int time;  //更新node坐标、工作状态（、Prophet中的衰减）的时间戳
 //	bool flag;
+
 
 private:
 
@@ -75,7 +78,7 @@ private:
 		energy = ENERGY;
 	}
 
-	CNode(void)
+	CNode()
 	{
 		init();
 	}
@@ -208,9 +211,9 @@ public:
 
 	static int BUFFER_CAPACITY;
 	static int ENERGY;
-	static Mode BUFFER_MODE;
-	static Mode COPY_MODE;
+	static Mode RECEIVE_MODE;
 	static Mode SEND_MODE;
+	static Mode QUEUE_MODE;
 
 	/**************************************  Prophet  *************************************/
 
@@ -220,7 +223,7 @@ public:
 
 
 
-	~CNode(void){};
+	~CNode(){};
 
 	static vector<CNode *>& getNodes()
 	{
@@ -331,7 +334,7 @@ public:
 
 		for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
 		{
-			if( ifExists(deletedIDs, (*ipos)->getNode()) )
+			if( IfExists(deletedIDs, (*ipos)->getNode()) )
 				ipos = CPosition::positions.erase(ipos);
 			else
 				++ipos;
@@ -434,14 +437,12 @@ public:
 		else
 			return true;
 	}
-
 	inline double getEnergy() const
 	{
 		if( ! isAlive() )
 			return 0;
 		return energy - energyConsumption;
 	}
-
 	inline double getGenerationRate() const
 	{
 		return generationRate;
@@ -463,7 +464,6 @@ public:
 		else
 			return false;
 	}
-
 	inline void generateID()
 	{
 		ID_COUNT++;
@@ -549,11 +549,11 @@ public:
 		}
 
 		vector<CData> data;
-		if( SEND_MODE == SEND::FIFO )
+		if( QUEUE_MODE == QUEUE::FIFO )
 		{
 			data.insert(data.begin(), buffer.begin(), buffer.begin() + n);
 		}
-		else if( SEND_MODE == SEND::LIFO )
+		else if( QUEUE_MODE == QUEUE::LIFO )
 		{
 			data.insert(data.begin(), buffer.end() - n, buffer.end());
 		}
@@ -657,7 +657,7 @@ public:
 			return vector<CData>();
 
 		vector<CData> result;
-		result = getItemsByID(buffer, requestList);
+		result = GetItemsByID(buffer, requestList);
 		energyConsumption += CONSUMPTION_BYTE_SEND * DATA_SIZE * result.size();
 		
 		return result;

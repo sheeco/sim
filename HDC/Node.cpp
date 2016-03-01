@@ -1,6 +1,6 @@
 #include "Node.h"
-#include "Preprocessor.h"
-#include "FileParser.h"
+#include "SortHelper.h"
+#include "FileHelper.h"
 
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 
@@ -14,9 +14,9 @@ int CNode::CTRL_SIZE = 0;
 
 int CNode::BUFFER_CAPACITY = 0;
 int CNode::ENERGY = 0;
-Mode CNode::BUFFER_MODE = BUFFER::LOOSE;
-Mode CNode::COPY_MODE = SEND::DUMP;
-Mode CNode::SEND_MODE = SEND::FIFO;
+Mode CNode::RECEIVE_MODE = RECEIVE::LOOSE;
+Mode CNode::SEND_MODE = SEND::DUMP;
+Mode CNode::QUEUE_MODE = QUEUE::FIFO;
 
 int CNode::encounterAtHotspot = 0;
 int CNode::encounterOnRoute = 0;
@@ -41,7 +41,7 @@ vector<CNode *> CNode::getAllNodes(bool sort)
 	allNodes.insert(allNodes.end(), deadNodes.begin(), deadNodes.end());
 	allNodes.insert(allNodes.end(), deletedNodes.begin(), deletedNodes.end());
 	if( sort )
-		allNodes = CPreprocessor::mergeSort(allNodes, CPreprocessor::ascendByID);
+		allNodes = CSortHelper::mergeSort(allNodes, CSortHelper::ascendByID);
 	return allNodes;
 }
 
@@ -59,8 +59,8 @@ void CNode::dropDataIfOverflow(int currentTime)
 	//	else
 	//		otherData.push_back( *idata );
 	//}
-	//otherData = CPreprocessor::mergeSort(otherData, CPreprocessor::ascendByData);
-	//myData = CPreprocessor::mergeSort(myData, CPreprocessor::ascendByData);
+	//otherData = CSortHelper::mergeSort(otherData, CSortHelper::ascendByData);
+	//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByData);
 	////如果超出MAX_QUEUE_SIZE
 	//if(otherData.size() > Epidemic::MAX_QUEUE_SIZE)
 	//	otherData = vector<CData>( otherData.end() - Epidemic::MAX_QUEUE_SIZE, otherData.end() );
@@ -73,7 +73,7 @@ void CNode::dropDataIfOverflow(int currentTime)
 	//}		
 
 	vector<CData> myData = buffer;
-	myData = CPreprocessor::mergeSort(myData, CPreprocessor::ascendByData);
+	myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByData);
 	//如果总长度溢出
 	if( myData.size() > bufferCapacity )
 	{
@@ -123,7 +123,7 @@ bool CNode::updateStatus(int currentTime)
 
 	//更新坐标
 	double x = 0, y = 0;
-	CFileParser::getPositionFromFile(ID, currentTime, x, y);
+	CFileHelper::getPositionFromFile(ID, currentTime, x, y);
 	moveTo(x, y, currentTime);
 
 	return state >= 0;

@@ -16,10 +16,12 @@ extern int g_old_nPositions;
 extern int g_old_nHotspots;
 extern string INFO_LOG;
 
-class CPostSelector : 
+
+class CPostSelect : 
 	public CAlgorithm
 {
 private:
+
 	double maxRatio;
 	vector<int> coveredNodes;
 	vector<int> lostNodes;
@@ -36,9 +38,11 @@ private:
 	//检查选取的hotspot集合是否能覆盖所有node
 	bool verifyCompleted();
 
+
 public:
-	CPostSelector(vector<CHotspot *> hotspotCandidates);
-	~CPostSelector(void);
+
+	CPostSelect(vector<CHotspot *> hotspotCandidates);
+	~CPostSelect(){};
 
 	//选取hotspot完成后，将被覆盖的每一个position分配到唯一一个hotspot
 	vector<CHotspot *> assignPositionsToHotspots(vector<CHotspot *> hotspots) const;	

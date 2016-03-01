@@ -83,11 +83,11 @@
     <ClInclude Include="Data.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Epidemic.h" />
-    <ClInclude Include="FileParser.h" />
+    <ClInclude Include="FileHelper.h" />
     <ClInclude Include="GeneralNode.h" />
     <ClInclude Include="GeoEntity.h" />
     <ClInclude Include="GlobalParameters.h" />
-    <ClInclude Include="GreedySelection.h" />
+    <ClInclude Include="HotspotSelect.h" />
     <ClInclude Include="HAR.h" />
     <ClInclude Include="HDC.h" />
     <ClInclude Include="Hotspot.h" />
@@ -97,9 +97,10 @@
     <ClInclude Include="BasicEntity.h" />
     <ClInclude Include="NodeRepair.h" />
     <ClInclude Include="Position.h" />
-    <ClInclude Include="PostSelector.h" />
-    <ClInclude Include="Preprocessor.h" />
-    <ClInclude Include="Processor.h" />
+    <ClInclude Include="PostSelect.h" />
+    <ClInclude Include="Process.h" />
+    <ClInclude Include="SortHelper.h" />
+    <ClInclude Include="Helper.h" />
     <ClInclude Include="Prophet.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="Route.h" />
@@ -109,9 +110,9 @@
   <ItemGroup>
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="Epidemic.cpp" />
-    <ClCompile Include="FileParser.cpp" />
+    <ClCompile Include="FileHelper.cpp" />
     <ClCompile Include="GeneralNode.cpp" />
-    <ClCompile Include="GreedySelection.cpp" />
+    <ClCompile Include="HotspotSelect.cpp" />
     <ClCompile Include="HAR.cpp" />
     <ClCompile Include="HDC.cpp" />
     <ClCompile Include="Hotspot.cpp" />
@@ -120,8 +121,8 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeRepair.cpp" />
     <ClCompile Include="Position.cpp" />
-    <ClCompile Include="PostSelector.cpp" />
-    <ClCompile Include="Preprocessor.cpp" />
+    <ClCompile Include="PostSelect.cpp" />
+    <ClCompile Include="SortHelper.cpp" />
     <ClCompile Include="Prophet.cpp" />
     <ClCompile Include="Route.cpp" />
     <ClCompile Include="RoutingProtocol.cpp" />

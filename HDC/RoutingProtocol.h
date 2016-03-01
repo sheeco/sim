@@ -1,12 +1,15 @@
 /***********************************************************************************************************************************
 
-次级类 CRoutingProtocol ：（继承自顶级类 CProtocol ）所有路由协议算法的实现类，都应该继承自这个类
+基类 CRoutingProtocol ： （继承自 CProcess > CAlgorithm > CProtocol ）所有路由协议算法的实现类，都应该继承自这个类
 
 ***********************************************************************************************************************************/
 
 #pragma once
 
 #include "Protocol.h"
+
+using namespace std;
+
 
 class CRoutingProtocol :
 	public CProtocol
@@ -21,8 +24,8 @@ protected:
 
 public:
 
-	CRoutingProtocol(void){};
-	~CRoutingProtocol(void){};
+	CRoutingProtocol(){};
+	~CRoutingProtocol(){};
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);

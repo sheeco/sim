@@ -1,3 +1,9 @@
+/***********************************************************************************************************************************
+
+基类 CGeneralNode ： （继承自 CEntity > CBasicEntity ）所有网络节点类应该继承自这个类
+
+***********************************************************************************************************************************/
+
 #pragma once
 
 #include "Data.h"
@@ -6,10 +12,12 @@ using namespace std;
 
 extern double PROB_DATA_FORWARD;
 
+
 class CGeneralNode :
 	public CBasicEntity
 {
 protected:
+
 	vector<CData> buffer;
 	int bufferCapacity;
 	int energy;
@@ -17,14 +25,15 @@ protected:
 
 
 public:
-	CGeneralNode(void)
+
+	CGeneralNode()
 	{
 		this->bufferCapacity = 0;
 		this->energy = 0;
 		this->energyConsumption = 0;
 	}
 
-	virtual ~CGeneralNode(void){};
+	~CGeneralNode(){};
 
 	inline double getEnergyConsumption() const
 	{
@@ -43,5 +52,6 @@ public:
 	virtual vector<CData> sendAllData(Mode mode) = 0;
 
 	virtual bool receiveData(int time, vector<CData> datas) = 0;
+
 };
 

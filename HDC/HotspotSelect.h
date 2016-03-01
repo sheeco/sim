@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Preprocessor.h"
+#include "SortHelper.h"
 #include "Algorithm.h"
 
 using namespace std;
@@ -10,11 +10,13 @@ extern int startTimeForHotspotSelection;
 
 extern string INFO_LOG;
 
+
 //HAR中原始的贪婪hotspot选取方法的包装
-class CGreedySelection :
+class CHotspotSelect :
 	public CAlgorithm
 {
 private:
+
 	static vector<CHotspot *> copy_hotspotCandidates;  //来自CHotspot::hotspotCandidates，贪婪选取过程中会修改hotspot的信息
 	static vector<CPosition *> uncoveredPositions;  //保存尚未被cover的position
 	static vector<CHotspot *> unselectedHotspots;  //未被选中的hotspot集合
@@ -34,11 +36,12 @@ private:
 	//更新hotspotsAboveAverage，在每一次迭代后调用
 	static void updateStatus();
 
+
 public:
 
-	CGreedySelection();
+	CHotspotSelect(){};
 
-	~CGreedySelection(void);
+	~CHotspotSelect(){};
 
 	//从文件中读取所有节点的当前位置，加入position列表（append）
 	//由main函数，在每个地理位置信息收集时隙上调用
@@ -49,7 +52,7 @@ public:
 	static void BuildCandidateHotspots(int time);
 
 	//执行贪婪选取过程，返回选取结果
-	//注意：返回的信息将在CGreedySelection类析构之后失效，应及时保存
+	//注意：返回的信息将在CHotspotSelect类析构之后失效，应及时保存
 	static void GreedySelect(int time);
 
 	//merge-HAR: 

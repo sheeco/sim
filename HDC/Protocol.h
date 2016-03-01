@@ -1,6 +1,6 @@
 /***********************************************************************************************************************************
 
-顶级类 CProtocol ：（和 CAlgorithm 类似，但专用于协议算法的实现类）所有协议算法的实现类，都应该继承自这个类
+基类 CProtocol ： （继承自 CProcess > CAlgorithm ）与CAlgorithm类似，但专用于网络协议算法，所有协议算法的实现类，都应该继承自这个类
 
 ***********************************************************************************************************************************/
 
@@ -8,10 +8,16 @@
 
 using namespace std;
 
-class CProtocol
+#include "Algorithm.h"
+
+
+class CProtocol : 
+	public CAlgorithm
 {
 public:
-	CProtocol(void){};
-	virtual ~CProtocol(void){};
+
+	CProtocol(){};
+	~CProtocol(){};
+
 };
 

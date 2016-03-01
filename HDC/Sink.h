@@ -11,10 +11,12 @@ using namespace std;
 extern double SINK_X;
 extern double SINK_Y;
 
+
 class CSink :
 	public CGeneralNode
 {
 //protected:
+
 //	int ID;  //Sink节点的编号
 //	double x;  //Sink节点x坐标
 //	double y;  //Sink节点y坐标
@@ -22,12 +24,13 @@ class CSink :
 //	bool flag;
 //	vector<CData> buffer;
 
+
 private:
 
 	static CSink* sink;
 	vector<CRoute> newRoutes;
 
-	CSink(void)
+	CSink()
 	{
 		this->ID = SINK_ID;
 		this->x = SINK_X;
@@ -35,7 +38,7 @@ private:
 		this->bufferCapacity = BUFFER_CAPACITY_SINK;
 	}
 
-	~CSink(void){};
+	~CSink(){};
 
 
 public:

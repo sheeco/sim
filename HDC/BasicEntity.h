@@ -1,3 +1,9 @@
+/***********************************************************************************************************************************
+
+次级类 CBasicEntity ： （继承自顶级类 CEntity ）所有普通的实体类，应该继承自这个类；除非属于空间相关的实体，则应该继承自CGeoEntity
+
+***********************************************************************************************************************************/
+
 #pragma once
 
 #include "GlobalParameters.h"
@@ -5,20 +11,26 @@
 
 using namespace std;
 
+
 //包含位置坐标、时间戳、ID的基类
 class CBasicEntity : 
 	public CEntity
 {
 protected:
+
 	int ID;
 	double x;
 	double y;
 	int time;
 	bool flag;
 
+
 public:
+
 	CBasicEntity(): 
 		ID(0), x(0), y(0), time(0), flag(false) {};
+
+	~CBasicEntity(){};
 
 	//setters & getters
 	//手动设置ID

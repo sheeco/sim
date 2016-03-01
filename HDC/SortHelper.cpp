@@ -1,96 +1,12 @@
-#include "Preprocessor.h"
+#include "SortHelper.h"
 
-CPreprocessor::CPreprocessor(void)
-{
-}
 
-CPreprocessor::~CPreprocessor(void)
-{
-}
-
-vector<int> CPreprocessor::RandomIntList(int min, int max, int size)
-{
-	vector<int> result;
-	int tmp = -1;
-	if(size > (max - min))
-	{
-		vector<int> tmp_order;
-		for(int i = min; i < max; i++)
-		{
-			tmp_order.push_back(i);
-		}
-		while(! tmp_order.empty())
-		{
-			vector<int>::iterator it = tmp_order.begin();
-			int bet = RandomInt(0, tmp_order.size());
-			tmp = tmp_order.at(bet);
-			result.push_back(tmp);
-			tmp_order.erase(it + bet);
-		}
-		return result;
-	}
-
-	bool duplicate;
-	if(size == 1)
-	{
-		result.push_back(min);
-		return result;
-	}
-
-	for(int i = 0; i < size; i++)
-	{
-		do
-		{
-			duplicate = false;
-			tmp = RandomInt(min, max);
-			for(int j = 0; j < result.size(); j++)
-			{
-				if(result[j] == tmp)
-				{
-					duplicate = true;
-					break;
-				}
-			}
-		}while(duplicate);
-		if(tmp < 0)
-		{
-			cout << endl << "Error @ RandomIntList() : tmp < 0"<<endl;
-			_PAUSE;
-		}
-		else
-			result.push_back(tmp);
-	}
-	return result;
-}
-
-void CPreprocessor::freePointerVector(vector<CPosition *> &v)
-{
-	vector<CPosition *>::iterator it;
-	for(it = v.begin(); it != v.end(); ++it)
-	{
-		if(*it != nullptr)
-			delete *it;
-	}
-	v.clear();
-}
-
-void CPreprocessor::freePointerVector(vector<CHotspot *> &v)
-{
-	vector<CHotspot *>::iterator it;
-	for(it = v.begin(); it != v.end(); ++it)
-	{
-		if(*it != nullptr)
-			delete *it;
-	}
-	v.clear();
-}
-
-bool CPreprocessor::ascendByLocationX(CHotspot *left, CHotspot *right)
+bool CSortHelper::ascendByLocationX(CHotspot *left, CHotspot *right)
 {
 	return (*left > *right);
 }
 
-bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
+bool CSortHelper::ascendByRatio(CHotspot *left, CHotspot *right)
 {
 	//将执行强制类型转换，只能传入CHotspot类
 	//包括ratio的计算
@@ -98,7 +14,7 @@ bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
 }
 
 //template <class E>
-//vector<E> CPreprocessor::merge(vector<E> left, vector<E> right, bool(*Comp)(E, E))
+//vector<E> CSortHelper::merge(vector<E> left, vector<E> right, bool(*Comp)(E, E))
 //{
 //	vector<E> result;
 //	typename vector<E>::size_type li = 0;
@@ -119,7 +35,7 @@ bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
 //}
 
 //template <class E>
-//vector<E> CPreprocessor::mergeSort(vector<E> v, bool(*Comp)(E, E))
+//vector<E> CSortHelper::mergeSort(vector<E> v, bool(*Comp)(E, E))
 //{
 //	if(v.size() == 0)
 //		return vector<E>();
@@ -135,7 +51,7 @@ bool CPreprocessor::ascendByRatio(CHotspot *left, CHotspot *right)
 //	return merge(left, right, Comp);
 //}
 
-vector<CData> CPreprocessor::merge(vector<CData> left, vector<CData> right, bool(*Comp)(CData, CData))
+vector<CData> CSortHelper::merge(vector<CData> left, vector<CData> right, bool(*Comp)(CData, CData))
 {
 	vector<CData> result;
 	vector<CData>::size_type li = 0;
@@ -155,7 +71,7 @@ vector<CData> CPreprocessor::merge(vector<CData> left, vector<CData> right, bool
 	return result;
 }
 
-vector<CData> CPreprocessor::mergeSort(vector<CData> v, bool(*Comp)(CData, CData))
+vector<CData> CSortHelper::mergeSort(vector<CData> v, bool(*Comp)(CData, CData))
 {
 	if(v.size() == 0)
 		return vector<CData>();
@@ -171,7 +87,7 @@ vector<CData> CPreprocessor::mergeSort(vector<CData> v, bool(*Comp)(CData, CData
 	return merge(left, right, Comp);
 }
 
-vector<CPosition *> CPreprocessor::merge(vector<CPosition *> left, vector<CPosition *> right)
+vector<CPosition *> CSortHelper::merge(vector<CPosition *> left, vector<CPosition *> right)
 {
 	vector<CPosition *> result;
 	vector<CPosition *>::size_type li = 0;
@@ -191,7 +107,7 @@ vector<CPosition *> CPreprocessor::merge(vector<CPosition *> left, vector<CPosit
 	return result;
 }
 
-vector<CPosition *> CPreprocessor::mergeSort(vector<CPosition *> v)
+vector<CPosition *> CSortHelper::mergeSort(vector<CPosition *> v)
 {
 	if(v.size() == 0)
 		return vector<CPosition *>();
@@ -207,7 +123,7 @@ vector<CPosition *> CPreprocessor::mergeSort(vector<CPosition *> v)
 	return merge(left, right);
 }
 
-vector<CNode *> CPreprocessor::merge(vector<CNode *> left, vector<CNode *> right)
+vector<CNode *> CSortHelper::merge(vector<CNode *> left, vector<CNode *> right)
 {
 	vector<CNode *> result;
 	vector<CNode *>::size_type li = 0;
@@ -227,7 +143,7 @@ vector<CNode *> CPreprocessor::merge(vector<CNode *> left, vector<CNode *> right
 	return result;
 }
 
-vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> v)
+vector<CNode *> CSortHelper::mergeSort(vector<CNode *> v)
 {
 	if(v.size() == 0)
 		return vector<CNode *>();
@@ -243,7 +159,7 @@ vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> v)
 	return merge(left, right);
 }
 
-vector<CNode *> CPreprocessor::merge(vector<CNode *> left, vector<CNode *> right, bool(*Comp)(CNode *, CNode *))
+vector<CNode *> CSortHelper::merge(vector<CNode *> left, vector<CNode *> right, bool(*Comp)(CNode *, CNode *))
 {
 	vector<CNode *> result;
 	vector<CNode *>::size_type li = 0;
@@ -263,7 +179,7 @@ vector<CNode *> CPreprocessor::merge(vector<CNode *> left, vector<CNode *> right
 	return result;
 }
 
-vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> v, bool(*Comp)(CNode *, CNode *))
+vector<CNode *> CSortHelper::mergeSort(vector<CNode *> v, bool(*Comp)(CNode *, CNode *))
 {
 	if(v.size() == 0)
 		return vector<CNode *>();
@@ -279,7 +195,7 @@ vector<CNode *> CPreprocessor::mergeSort(vector<CNode *> v, bool(*Comp)(CNode *,
 	return merge(left, right, Comp);
 }
 
-vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *))
+vector<CHotspot *> CSortHelper::merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *))
 {
 	vector<CHotspot *> result;
 	vector<CHotspot *>::size_type li = 0;
@@ -299,7 +215,7 @@ vector<CHotspot *> CPreprocessor::merge(vector<CHotspot *> left, vector<CHotspot
 	return result;
 }
 
-vector<CHotspot *> CPreprocessor::mergeSort(vector<CHotspot *> v, bool(*Comp)(CHotspot *, CHotspot *))
+vector<CHotspot *> CSortHelper::mergeSort(vector<CHotspot *> v, bool(*Comp)(CHotspot *, CHotspot *))
 {
 	if(v.size() == 0)
 		return vector<CHotspot *>();
@@ -315,7 +231,7 @@ vector<CHotspot *> CPreprocessor::mergeSort(vector<CHotspot *> v, bool(*Comp)(CH
 	return merge(left, right, Comp);
 }
 
-vector<CHotspot> CPreprocessor::mergeByDeliveryCount(vector<CHotspot> left, vector<CHotspot> right, int endTime)
+vector<CHotspot> CSortHelper::mergeByDeliveryCount(vector<CHotspot> left, vector<CHotspot> right, int endTime)
 {
 	vector<CHotspot> result;
 	vector<CHotspot>::size_type li = 0;
@@ -337,7 +253,7 @@ vector<CHotspot> CPreprocessor::mergeByDeliveryCount(vector<CHotspot> left, vect
 	return result;
 }
 
-vector<CHotspot> CPreprocessor::mergeSortByDeliveryCount(vector<CHotspot> v, int endTime)
+vector<CHotspot> CSortHelper::mergeSortByDeliveryCount(vector<CHotspot> v, int endTime)
 {
 	if(v.size() == 0)
 		return vector<CHotspot>();

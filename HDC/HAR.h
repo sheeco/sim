@@ -32,10 +32,12 @@ extern bool TEST_LEARN;
 extern string INFO_LOG;
 extern ofstream debugInfo;
 
+
 class HAR : 
 	public CRoutingProtocol
 {
 private:
+
 	static vector<CHotspot *> m_hotspots;
 	static vector<CRoute> m_routes;  //即hotspot class
 	//vector<CMANode> m_MANodes;
@@ -104,9 +106,9 @@ private:
 
 
 public:
-	HAR(void){};
 
-	~HAR(void){};
+	HAR(){};
+	~HAR(){};
 
 
 	//用于最终debug结果的统计和记录

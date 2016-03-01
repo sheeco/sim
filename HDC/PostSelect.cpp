@@ -1,10 +1,10 @@
-#include "PostSelector.h"
-#include "Preprocessor.h"
+#include "PostSelect.h"
+#include "SortHelper.h"
 
-CPostSelector::CPostSelector(vector<CHotspot *> hotspotCandidates)
+CPostSelect::CPostSelect(vector<CHotspot *> hotspotCandidates)
 {
 	this->maxRatio = 0;
-	hotspotCandidates = CPreprocessor::mergeSort(hotspotCandidates, CPreprocessor::ascendByRatio);
+	hotspotCandidates = CSortHelper::mergeSort(hotspotCandidates, CSortHelper::ascendByRatio);
 	if(hotspotCandidates.size() > 0)
 	{
 		this->maxRatio = hotspotCandidates.at(hotspotCandidates.size() - 1)->getNCoveredPosition();
@@ -13,15 +13,15 @@ CPostSelector::CPostSelector(vector<CHotspot *> hotspotCandidates)
 }
 
 
-CPostSelector::~CPostSelector(void)
-{
-}
+//CPostSelect::~CPostSelect()
+//{
+//}
 
-double CPostSelector::getRatioForHotspot(CHotspot *hotspot) const
+double CPostSelect::getRatioForHotspot(CHotspot *hotspot) const
 {
 	if(maxRatio == 0)
 	{
-		cout << endl << "Error @ CPostSelector::getRatioForHotspot() : maxRatio = 0"<<endl;
+		cout << endl << "Error @ CPostSelect::getRatioForHotspot() : maxRatio = 0"<<endl;
 		_PAUSE;
 		return -1;
 	}
@@ -34,28 +34,28 @@ double CPostSelector::getRatioForHotspot(CHotspot *hotspot) const
 	}
 }
 
-void  CPostSelector::includeHotspots(CHotspot *hotspot)
+void  CPostSelect::includeHotspots(CHotspot *hotspot)
 {
 	vector<CPosition *> positions = hotspot->getCoveredPositions();
 	for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 	{
-		addToListUniquely(this->coveredNodes, (*ipos)->getNode());
-		addToListUniquely(this->coveredPositions, (*ipos)->getID());
+		AddToListUniquely(this->coveredNodes, (*ipos)->getNode());
+		AddToListUniquely(this->coveredPositions, (*ipos)->getID());
 	}
 	this->selectedHotspots.push_back(hotspot);
 }
 
-void CPostSelector::findLostNodes()
+void CPostSelect::findLostNodes()
 {
 	this->lostNodes.clear();
 	for(vector<int>::iterator i = CNode::getIdNodes().begin(); i != CNode::getIdNodes().end(); ++i)
 	{
-		if( ! ifExists(this->coveredNodes, *i))
+		if( ! IfExists(this->coveredNodes, *i))
 			this->lostNodes.push_back( *i );
 	}
 }
 
-CHotspot* CPostSelector::findBestHotspotForNode(int inode)
+CHotspot* CPostSelect::findBestHotspotForNode(int inode)
 {
 	int maxCoverCount = 0;
 	CHotspot *result = nullptr;
@@ -81,13 +81,13 @@ CHotspot* CPostSelector::findBestHotspotForNode(int inode)
 	return result;
 }
 
-vector<CHotspot *> CPostSelector::assignPositionsToHotspots(vector<CHotspot *> hotspots) const
+vector<CHotspot *> CPostSelect::assignPositionsToHotspots(vector<CHotspot *> hotspots) const
 {
 	vector<CHotspot *> tmp_hotspots = hotspots;
 	vector<CHotspot *> result_hotspots;
 	while(! tmp_hotspots.empty())
 	{
-		tmp_hotspots = CPreprocessor::mergeSort(tmp_hotspots, CPreprocessor::ascendByRatio);
+		tmp_hotspots = CSortHelper::mergeSort(tmp_hotspots, CSortHelper::ascendByRatio);
 		//FIXME:尽量多 / 平均？
 		CHotspot *selected_hotspot = tmp_hotspots.at(tmp_hotspots.size() - 1);
 		if(selected_hotspot->getNCoveredPosition() == 0)
@@ -105,7 +105,7 @@ vector<CHotspot *> CPostSelector::assignPositionsToHotspots(vector<CHotspot *> h
 	return result_hotspots;
 }
 
-bool CPostSelector::verifyCompleted()
+bool CPostSelect::verifyCompleted()
 {
 	findLostNodes();
 	if(lostNodes.size() == 0)
@@ -114,7 +114,7 @@ bool CPostSelector::verifyCompleted()
 		return false;
 }
 
-vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
+vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 {
 	flash_cout << "####  ( POST SELECT )          " ;
 
@@ -162,7 +162,7 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 	}
 	if( ! verifyCompleted())
 	{
-		cout << endl << "Error @ CPostSelector::PostSelect() : not completed"<<endl;
+		cout << endl << "Error @ CPostSelect::PostSelect() : not completed"<<endl;
 		_PAUSE;
 	}
 
@@ -174,7 +174,7 @@ vector<CHotspot *> CPostSelector::PostSelect(int currentTime)
 	return selectedHotspots;
 }
 
-int CPostSelector::getNCoveredPositions() const
+int CPostSelect::getNCoveredPositions() const
 {
 	return coveredPositions.size();
 }

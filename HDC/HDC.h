@@ -24,6 +24,7 @@ extern double RATIO_OLD_HOTSPOT;
 //extern string INFO_LOG;
 //extern fstream debugInfo;
 
+
 class CHDC :
 	public CMacProtocol
 {
@@ -49,8 +50,8 @@ private:
 
 public:
 
-	CHDC(void);
-	~CHDC(void){};
+	CHDC(){};
+	~CHDC(){};
 
 	//检查所有Node，如果位于热点区域，更新占空比
 	static void UpdateDutyCycleForNodes(int currentTime);

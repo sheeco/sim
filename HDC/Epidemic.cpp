@@ -2,7 +2,7 @@
 #include "Node.h"
 #include "Sink.h"
 #include "HDC.h"
-#include "Preprocessor.h"
+#include "SortHelper.h"
 
 
 int Epidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
@@ -29,7 +29,7 @@ void Epidemic::SendData(int currentTime)
 	int nEncounterAtSink = 0;
 	//本地将所有node按照x坐标排序
 	vector<CNode *> nodes = CNode::getNodes();
-	nodes = CPreprocessor::mergeSort(nodes);
+	nodes = CSortHelper::mergeSort(nodes);
 
 	//判断工作状态，向sink投递数据，节点间通信
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)

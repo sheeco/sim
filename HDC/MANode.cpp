@@ -3,7 +3,7 @@
 int CMANode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
-Mode CMANode::BUFFER_MODE = BUFFER::SELFISH;
+Mode CMANode::RECEIVE_MODE = RECEIVE::SELFISH;
 
 bool CMANode::receiveData(int time, vector<CData> datas)
 {
@@ -16,7 +16,7 @@ bool CMANode::receiveData(int time, vector<CData> datas)
 	int num = datas.size();
 
 	//不允许溢出，即仅在Buffer有空余时才接收数据
-	if( BUFFER_MODE == BUFFER::SELFISH )
+	if( RECEIVE_MODE == RECEIVE::SELFISH )
 	{
 		if(buffer.size() == BUFFER_CAPACITY_MA)
 			return false;

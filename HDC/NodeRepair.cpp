@@ -9,7 +9,7 @@ CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *>
 	{
 		for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
 		{
-			if( ! ifExists(this->selectedHotspots, *ihotspot, CHotspot::identical))
+			if( ! IfExists(this->selectedHotspots, *ihotspot, CHotspot::identical))
 				unselectedHotspots.push_back(*ihotspot);
 		}
 	}
@@ -85,6 +85,6 @@ vector<CHotspot *> CNodeRepair::RepairPoorNodes()
 	return selectedHotspots;
 }
 
-CNodeRepair::~CNodeRepair(void)
-{
-}
+//CNodeRepair::~CNodeRepair()
+//{
+//}

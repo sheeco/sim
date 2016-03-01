@@ -8,13 +8,16 @@ class CData :
 	public CBasicEntity
 {
 //protected:
+
 //	int ID;  //data编号
 //	double x;  //未使用
 //	double y;  //未使用
 //	int time;  //该data最后一次状态更新的时间戳，用于校验，初始值应等于timeBirth
 //	bool flag;
 
+
 private:
+
 	int node;  //所属node
 	int timeBirth;  //生成时间
 	int timeArrival;  //到达sink的时间
@@ -32,8 +35,16 @@ private:
 	static int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
 	static int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
 
-	CData(void): 
-		node(0), timeBirth(0), timeArrival(-1), HOP(0), TTL(0) {};
+	CData(){};
+
+	void init()
+	{
+		this->node = 0;
+		this->timeBirth = 0;
+		this->timeArrival = -1;
+		this->HOP = 0;
+		this->TTL = 0;
+	}
 
 	//自动生成ID
 	//ID = node_id * 10 000 000 + data_counter ，用于在SV中识别Data来源
@@ -53,7 +64,7 @@ public:
 
 	CData(int node, int timeBirth)
 	{
-		CData();
+		init();
 		this->node = node;
 		this->timeBirth = timeBirth;
 		this->time = timeBirth;
@@ -62,7 +73,7 @@ public:
 		this->TTL = MAX_TTL;
 	}
 
-	~CData(void){};
+	~CData(){};
 
 	static void deliverAtHotspot(int n)
 	{
@@ -221,5 +232,6 @@ public:
 		return DELAY_SUM / ARRIVAL_COUNT;
 	}
 	static double getAverageEnergyConsumption();
+
 };
 

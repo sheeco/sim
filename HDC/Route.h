@@ -1,14 +1,25 @@
 #pragma once
 
 #include "Hotspot.h"
-#include "Entity.h"
+#include "GeoEntity.h"
 
 using namespace std;
 
+
 class CRoute : 
-	public CEntity
+	public CGeoEntity
 {
+////注意：CRoute类的以下变量实际上不会也不应该被使用
+//
+//protected:
+//
+//	double x;
+//	double y;
+//	int time;
+
+
 private:
+
 	vector<CBasicEntity *> waypoints;  //路线经过的点，包括sink和一些hotspot，必须保证第0个元素是sink
 	vector<int> coveredNodes;
 	double length;
@@ -26,7 +37,8 @@ private:
 
 
 public:
-	CRoute(void)
+
+	CRoute()
 	{
 		init();
 	}
@@ -38,8 +50,7 @@ public:
 		toPoint = 0;  //初始化为sink
 	}
 
-	~CRoute(void)
-	{}
+	~CRoute(){};
 
 	inline vector<CBasicEntity *> getWayPoints() const
 	{
@@ -104,14 +115,14 @@ public:
 	void AddPoint(CBasicEntity *hotspot)
 	{
 		waypoints.push_back(hotspot);
-		addToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
+		AddToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
 	}
 	//将给定hotspot插入到路径中给定的位置
 	void AddPoint(int front, CBasicEntity *hotspot)
 	{
 		vector<CBasicEntity *>::iterator ipoint = waypoints.begin() + front + 1;
 		waypoints.insert(ipoint, hotspot);
-		addToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
+		AddToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
 	}
 
 	//对给定插入计算路径增量

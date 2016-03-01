@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Preprocessor.h"
+#include "SortHelper.h"
 #include "Algorithm.h"
 
 using namespace std;
@@ -8,10 +8,12 @@ using namespace std;
 extern int NUM_NODE;
 extern double LAMBDA;
 
+
 class CNodeRepair : 
 	public CAlgorithm
 {
 private:
+
 	int time;
 	vector<int> poorNodes;  //保存cover数不足的node
 	vector<CHotspot*> unselectedHotspots;  //未被选中的hotspot集合
@@ -21,9 +23,12 @@ private:
 	int countForNode(vector<CHotspot *> hotspots, int n) const;
 	CHotspot* findMaxCoverHotspotForNode(int inode);
 
+
 public:
+
 	CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *> hotspotCandidates, int time);
-	~CNodeRepair(void);
+	~CNodeRepair(){};
 	vector<CHotspot *> RepairPoorNodes();
+
 };
 

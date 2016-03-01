@@ -14,9 +14,10 @@ extern double RATIO_OLD_HOTSPOT;
 
 using namespace std;
 
+
 //存储hostspot信息的类
 class CHotspot : 
-	public CGeoEntity
+	public CBasicEntity, public CGeoEntity
 {
 private:
 	
@@ -122,6 +123,7 @@ public:
 	//time应当是当前time，而不是pos的time
 	CHotspot(CPosition* pos, int time)
 	{
+		init();
 		addPosition(pos);
 		generateHotspot(x, y, time);
 	}
@@ -129,6 +131,7 @@ public:
 	//由merge函数调用
 	CHotspot(double x, double y, int time)
 	{
+		init();
 		generateHotspot(x, y, time);
 	}
 

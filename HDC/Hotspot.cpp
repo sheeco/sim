@@ -1,5 +1,5 @@
 #include "Hotspot.h"
-#include "Preprocessor.h"
+#include "SortHelper.h"
 
 extern int TRANS_RANGE;
 
@@ -90,7 +90,7 @@ int CHotspot::getNCoveredPositionsForNode(int inode)
 
 bool CHotspot::ifNodeExists(int inode) const
 {
-	return ( ifExists(coveredNodes, inode) );
+	return ( IfExists(coveredNodes, inode) );
 }
 
 void CHotspot::generateCoveredNodes()
@@ -98,7 +98,7 @@ void CHotspot::generateCoveredNodes()
 	this->coveredNodes.clear();
 	for(vector<CPosition *>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
 	{
-		addToListUniquely(coveredNodes, (*ipos)->getNode());
+		AddToListUniquely(coveredNodes, (*ipos)->getNode());
 	}
 }
 
@@ -118,8 +118,8 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots)
 {
 	//Sort by Coordinate X to save time
-	oldHotspots = CPreprocessor::mergeSort(oldHotspots, CPreprocessor::ascendByLocationX);
-	newHotspots = CPreprocessor::mergeSort(newHotspots, CPreprocessor::ascendByLocationX);
+	oldHotspots = CSortHelper::mergeSort(oldHotspots, CSortHelper::ascendByLocationX);
+	newHotspots = CSortHelper::mergeSort(newHotspots, CSortHelper::ascendByLocationX);
 
 	vector<CHotspot *>::iterator iOld, iNew;
 	double sumArea = 0;

@@ -1,23 +1,20 @@
 /***********************************************************************************************************************************
 
-次级类 CAlgorithm ： （继承自顶级类 CProcess ）所有具体算法实现的单独成类，应该继承自这个类；除非属于路由或MAC层协议，则应该继承自CRoutingProtocol或CMacProtocol类
+顶级类 CProcess ： 所有非实体类（过程、算法、协议、接口等），应该最终继承自这个类
 
 ***********************************************************************************************************************************/
 
 #pragma once
 
-#include "Process.h"
-
 using namespace std;
 
 
-class CAlgorithm : 
-	public CProcess
+class CProcess
 {
 public:
 
-	CAlgorithm(){};
-	~CAlgorithm(){};
+	CProcess(){};
+	~CProcess(){};
 
 };
 

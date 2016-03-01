@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Preprocessor.h"
-#include "PostSelector.h"
+#include "SortHelper.h"
+#include "PostSelect.h"
 #include "NodeRepair.h"
-#include "GreedySelection.h"
+#include "HotspotSelect.h"
 #include "Prophet.h"
 #include "HDC.h"
 
@@ -13,6 +13,16 @@ _MacProtocol MAC_PROTOCOL = _smac;
 _RoutingProtocol ROUTING_PROTOCOL = _prophet;
 _HotspotSelect HOTSPOT_SELECT = _original;
 
+
+/*********************************** HAR *************************************/
+
+int startTimeForHotspotSelection = SLOT_HOTSPOT_UPDATE;  //no MA node at first
+double ALPHA = 0.03;  //ratio for post selection
+double BETA = 0.0025;  //ratio for true hotspot
+double GAMMA = 0.5;  //ratio for HotspotsAboveAverage
+double CO_HOTSPOT_HEAT_A1 = 1;
+double CO_HOTSPOT_HEAT_A2 = 30;
+bool TEST_HOTSPOT_SIMILARITY = false;
 
 /************************************ IHAR ************************************/
 
@@ -32,57 +42,48 @@ double RATIO_MERGE_HOTSPOT = 1.0;
 double RATIO_NEW_HOTSPOT = 1.0;
 double RATIO_OLD_HOTSPOT = 1.0;
 double CO_POSITION_DECAY = 1.0;
+int MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
 
 bool TEST_LEARN = false;
 int MAX_NUM_HOTSPOT = 999999;
 double MIN_POSITION_WEIGHT = 0;
 
-
-/********************************* 全局变量 ***********************************/
-
 bool TEST_BALANCED_RATIO = false;
-bool TEST_HOTSPOT_SIMILARITY = false;
+
+/********************************* 网络运行 ***********************************/
+
 bool TEST_DYNAMIC_NUM_NODE = false;
+int SLOT_CHANGE_NUM_NODE = 5 * SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
 
 double SINK_X = 0.0;
 double SINK_Y = 0.0;
 int TRANS_RANGE = 100;  //transmission range
-
-double ALPHA = 0.03;  //ratio for post selection
-double BETA = 0.0025;  //ratio for true hotspot
-double GAMMA = 0.5;  //ratio for HotspotsAboveAverage
-double CO_HOTSPOT_HEAT_A1 = 1;
-double CO_HOTSPOT_HEAT_A2 = 30;
-int MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
-
-int startTimeForHotspotSelection = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 double PROB_DATA_FORWARD = 1.0;
 int DATATIME = 0;
 int RUNTIME = 0;
 int currentTime = 0;
 
+/********************************* Usage & Output ***********************************/
+
 string INFO_LOG;
 ofstream debugInfo("debug.txt", ios::app);
 
 string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
- 	          "<node>      -sink           [][];  -range           [];   -prob-trans  [];   -energy      [];   -time-data   [];   -time-run   []; \n"
-			  "<data>      -buffer           [];  -data-rate       [];   -data-size   [];  \n"
-              "<mac>       -hdc;                  -cycle           [];   -dc-default  [];   -dc-hotspot  []; \n"
-			  "<route>     -epidemic;             -prophet;              -har;              -hop         [];   -ttl         [];\n"
-			  "<prophet>   -spoken           [];  -queue           []; \n"
-              "<hs>        -ihar;                 -mhar;                 -alpha       [];   -beta        [];   -heat      [][]; \n"
-              "<ihar>      -lambda           [];  -lifetime        []; \n"
-			  "<mhar>      -merge            [];  -old             []; \n"
-              "<test>      -dynamic-node-number;  -hotspot-similarity;   -balanced-ratio; \n\n" ;
+ 	          "<node>      -sink           [][]  -range           []   -prob-trans  []   -energy      []   -time-data   []   -time-run   [] \n"
+			  "<data>      -buffer           []  -data-rate       []   -data-size   []  \n"
+              "<mac>       -hdc                  -cycle           []   -dc-default  []   -dc-hotspot  [] \n"
+			  "<route>     -epidemic             -prophet              -har              -hop         []   -ttl         []\n"
+			  "<prophet>   -spoken           []  -queue           [] \n"
+              "<hs>        -hs                   -ihs                  -mhs              -alpha       []   -beta        []   -heat      [][] \n"
+              "<ihar>      -lambda           []  -lifetime        [] \n"
+			  "<mhar>      -merge            []  -old             [] \n"
+              "<test>      -dynamic-node-number  -hotspot-similarity   -balanced-ratio \n\n" ;
 
 string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
 
-int main(int argc, char* argv[])
+
+void initConfiguration()
 {
-
-
-	/************************************ 参数默认值 *************************************/
-
 	SINK_X = -200;
 	SINK_Y = 200;
 	TRANS_RANGE = 250;
@@ -94,11 +95,11 @@ int main(int argc, char* argv[])
 	CNode::BUFFER_CAPACITY = 200;
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
-	CData::MAX_TTL = 0;
+	CData::MAX_TTL = 0;	
+}
 
-
-	/********************************** 命令行参数解析 ***********************************/
-
+bool ParseParameters(int argc, char* argv[])
+{
 	try
 	{
 		int iField = 0;
@@ -127,12 +128,17 @@ int main(int argc, char* argv[])
 				ROUTING_PROTOCOL = _har;
 				iField++;
 			}
-			else if( field == "-ihar" )
+			else if( field == "-hs" )
+			{
+				HOTSPOT_SELECT = _original;
+				iField++;
+			}
+			else if( field == "-ihs" )
 			{
 				HOTSPOT_SELECT = _improved;
 				iField++;
 			}
-			else if( field == "-mhar" )
+			else if( field == "-mhs" )
 			{
 				HOTSPOT_SELECT = _merge;
 				iField++;
@@ -326,18 +332,18 @@ int main(int argc, char* argv[])
 
 		}
 
+		return true;
 	}
 	catch(exception e)
 	{
-		cout << endl << "Error @ main() : Wrong Parameter Format!" << endl;
+		cout << endl << "Error @ ParseParameters() : Wrong Parameter Format!" << endl;
 		cout << INFO_HELP;
-		_PAUSE;
-		exit(1);
+		return false;
 	}
+}
 
-	srand( static_cast<unsigned>(time(nullptr)) ); 
-  
-	/********************************* 将log信息和参数信息写入文件 ***********************************/
+void PrintConfiguration()
+{
 	if(currentTime == 0)
 	{
 		string logtime;  
@@ -451,7 +457,28 @@ int main(int argc, char* argv[])
 		parameters.close();
 	}
 
-	//HAR har;
+}
+
+
+int main(int argc, char* argv[])
+{
+	/************************************ 参数默认值 *************************************/
+
+	initConfiguration();
+
+	/************************************ 命令行参数解析 *************************************/
+
+	if( ! ParseParameters(argc, argv) )
+	{
+		_PAUSE;
+		exit(-1);
+	}
+
+	/********************************* 将log信息和参数信息写入文件 ***********************************/
+	
+	PrintConfiguration();
+
+	srand( static_cast<unsigned>(time(nullptr)) ); 
 
 	while(currentTime <= RUNTIME)
 	{

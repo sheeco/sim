@@ -1,6 +1,6 @@
 #include "HAR.h"
-#include "GreedySelection.h"
-#include "PostSelector.h"
+#include "HotspotSelect.h"
+#include "PostSelect.h"
 #include "NodeRepair.h"
 #include "Sink.h"
 #include "MANode.h"
@@ -98,7 +98,7 @@ double HAR::getSumGenerationRate(vector<int> nodes)
 double HAR::getSumGenerationRate(vector<int> nodes_a, vector<int> nodes_b)
 {
 	double sum = 0;
-	addToListUniquely(nodes_a, nodes_b);
+	AddToListUniquely(nodes_a, nodes_b);
 	for(int i = 0; i < nodes_a.size(); i++)
 	{
 		if( ! CNode::ifNodeExists( nodes_a[i] ) )
@@ -193,24 +193,24 @@ void HAR::HotspotSelection(int currentTime)
 	if( TEST_LEARN )
 		DecayPositionsWithoutDeliveryCount(currentTime);
 
-	CGreedySelection::CollectNewPositions(currentTime);
+	CHotspotSelect::CollectNewPositions(currentTime);
 
 	if( currentTime >= startTimeForHotspotSelection )
 	{
 		cout << "########  < " << currentTime << " >  HOTSPOT SELECTTION" << endl ;
 
-		CGreedySelection::BuildCandidateHotspots(currentTime);
+		CHotspotSelect::BuildCandidateHotspots(currentTime);
 
 		/**************************** 热点归并过程(merge-HAR) *****************************/
 		if( HOTSPOT_SELECT == _merge )
-			CGreedySelection::MergeHotspots(currentTime);
+			CHotspotSelect::MergeHotspots(currentTime);
 
 		/********************************** 贪婪选取 *************************************/
-		CGreedySelection::GreedySelect(currentTime);
+		CHotspotSelect::GreedySelect(currentTime);
 
 
 		/********************************* 后续选取过程 ***********************************/
-		CPostSelector postSelector(CHotspot::selectedHotspots);
+		CPostSelect postSelector(CHotspot::selectedHotspots);
 		CHotspot::selectedHotspots = postSelector.PostSelect(currentTime);
 
 	
@@ -427,7 +427,7 @@ void HAR::SendData(int currentTime)
 							{
 								//按照投递计数降序排列，2700s时输出900s选出的热点在(900, 1800)期间的投递计数，传入的参数应为1800
 								int endTime =  currentTime - SLOT_HOTSPOT_UPDATE;
-								deliveryCounts = CPreprocessor::mergeSortByDeliveryCount(deliveryCounts, (endTime) );
+								deliveryCounts = CSortHelper::mergeSortByDeliveryCount(deliveryCounts, (endTime) );
 								for(vector<CHotspot>::iterator ihotspot = deliveryCounts.begin(); ihotspot != deliveryCounts.end(); ++ihotspot)
 								{
 									delivery_hotspot << ihotspot->getDeliveryCount( currentTime - SLOT_HOTSPOT_UPDATE ) << TAB ;
@@ -480,7 +480,7 @@ void HAR::SendData(int currentTime)
 				CHotspot *atHotspot = (*iMANode)->getAtHotspot();
 				int tmp = ROUND( getWaitingTime(atHotspot) );
 				//FIXME: 如果不允许Buffer溢出，Buffer已满时即直接跳过waiting
-				if( ( CMANode::BUFFER_MODE == BUFFER::SELFISH ) && (*iMANode)->isFull() )
+				if( ( CMANode::RECEIVE_MODE == RECEIVE::SELFISH ) && (*iMANode)->isFull() )
 					(*iMANode)->setWaitingTime( 0 );
 				else
 				{
@@ -532,7 +532,7 @@ void HAR::SendData(int currentTime)
 	{
 		for(auto inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
 		{
-			if( ( CMANode::BUFFER_MODE == BUFFER::SELFISH ) && (*iMANode)->isFull() )
+			if( ( CMANode::RECEIVE_MODE == RECEIVE::SELFISH ) && (*iMANode)->isFull() )
 				break;
 			if(CBasicEntity::getDistance( static_cast<CBasicEntity>(**iMANode), static_cast<CBasicEntity>(**inode) ) > TRANS_RANGE)
 				continue;
@@ -808,7 +808,7 @@ void HAR::DecayPositionsWithoutDeliveryCount(int currentTime)
 	{
 		if( (*ihotspot)->getDeliveryCount(currentTime) == 0 )
 		{
-			addToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
+			AddToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
 			//free(*ihotspot);
 			//在mHAR中，应该考虑是否将这些热点排除在归并之外
 			//CHotspot::deletedHotspots.push_back(*ihotspot);
@@ -820,7 +820,7 @@ void HAR::DecayPositionsWithoutDeliveryCount(int currentTime)
 	}
 	for(vector<CPosition*>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
 	{
-		if( ifExists(badPositions, *ipos) )
+		if( IfExists(badPositions, *ipos) )
 		{
 			(*ipos)->decayWeight();
 			//Reduce complexity

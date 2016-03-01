@@ -9,7 +9,11 @@
 	--(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log
 
 
-### 参数格式
+### Output
+
+	-
+
+### Usage
 
 	                                 !!!!!! ALL CASE SENSITIVE !!!!!!
 
@@ -25,7 +29,7 @@
 
 
 
-### 参数默认值
+### Configuration
 
     Scheme                        smac, prophet
 	Data Time	                  15000
@@ -66,7 +70,11 @@
     Old                           1.0
 
 
-### 源文件说明
+### Dependencies
+
+	-
+
+### Files
 
     Entity.h & .cpp
     
@@ -76,7 +84,7 @@
     
     GeneralNode.h & .cpp
     
-    Processor.h & .cpp
+    Helper.h & .cpp
     
     Algorithm.h & .cpp
     
@@ -110,15 +118,15 @@
     
     MANode.h & .cpp
     
-    FileParser.h & .cpp
+    FileHelper.h & .cpp
     
     Preprocesor.h & .cpp
     
     ---
     
-    GreedySelection.h & .cpp
+    HotspotSelect.h & .cpp
     
-    PostSelector.h & .cpp
+    PostSelect.h & .cpp
     
     HAR.h & .cpp
     
@@ -127,20 +135,16 @@
     NodeRepair.h & .cpp
 
 
-### 输出文件说明
+### Interface
 
 	-
 
-
-### 关键类外部接口
-
-	-
 
 
 ---
 
 
-### 此前的重要更改  ·  *< 2.0.0 >*
+### Previous Modifications  ·  *< 2.0.0 >*
 
 * 修正旧版本的热点选取、后续选取中的错误（int 除法等）；
 
@@ -165,7 +169,7 @@
 * mHAR中由于所有选取 ratio 指数增长，在贪婪选取中可能出现 position 集合还没有得到全覆盖，`hotspotsAboveAverage`为空的情况，此时直接选中`unselectedHotspots`中cover数最大的元素即可；
 
 
-# 更新日志    *2015-11-13 --*
+# LOG    *2015-11-13 --*
 
 #### 2015-11-13  ·  *< 2.0.1 >*
 
@@ -203,7 +207,7 @@
 
 #### 2015-11-27  ·  *< 2.1.2 >*
 
-* 为每个 position 定于初始值为1的权值，增加`CPreprocessor::DecayPositionsWithoutDeliveryCount`，按照投递计数为0的热点对其 position 执行衰减，可使用命令行参数`-learn`选项开启，`-decay`设置指数型衰减系数；
+* 为每个 position 定于初始值为1的权值，增加`CSortHelper::DecayPositionsWithoutDeliveryCount`，按照投递计数为0的热点对其 position 执行衰减，可使用命令行参数`-learn`选项开启，`-decay`设置指数型衰减系数；
 * 由于衰减后的 position 整体权值水平持续降低，后续选取过程中的固定alpha值将导致选取出的热点总数持续上升，在测试阶段暂时使用`-max-hotspot`来暂时稳定热点总数；
 * 增加`MIN_POSITION_WEIGHT`，权值衰减之后如果低于此值将被直接删除，使用命令行参数`-min-weight`赋值（默认值为 1 即不删除）（未测试）；
 * 修复`CHotspot::calculateRatio`中的 int 除法问题；
@@ -287,16 +291,16 @@
 #### 2016-02-11
 
 * 将`Epidemic`类和`Prophet`类中的共有函数整理到父类`CRoutingProtocol`中（包括时槽判断和统一的输出格式），并整理和规范这两个子类中的剩余函数；
-* 将`CPreprocessor`类中的部分辅助函数整理到相关类中；
+* 将`CSortHelper`类中的部分辅助函数整理到相关类中；
 
 
-#### 2016-02-14  ·  *< 2.5.0 >*
+#### 2016-02-14  ·  *< 2.5.0 >*  ·  *ReSharper*
 
 * 引入 ReSharper 插件，按照 ReSharper 的建议优化代码细节（getter 函数赋 const，前缀操作符，auto 类型等）；
 * 针对 Epidemic、Prophet、HAR 三种路由类及其父类的函数做出调整和统一，以及 HAR 和 HDC 中的热点选取函数的调整和统一；
 * 整理所有的继承结构及构造函数（访问控制、参数统一、子类函数合并、父类虚析构函数等）；
 * 为所有的输出文件保存文件头字符串（`string INFO_DEBUG`等）；
-* 将一些选项保存到全局定义的选项类型中（`class SEND::LOOSE`，`class BUFFER::FIFO`），并作为函数参数标识具体操作；
+* 将一些选项保存到全局定义的配置类型中（`SEND::COPY/DUMP`、`RECEIVE::LOOSE/SELFISH`、`QUEUE::FIFO/LIFO`），并作为函数参数标识具体操作；
 * 将之前使用全局变量（`DO_IHAR`等）标识的 scheme 选项保存到新定义的枚举类型（`_MacProtocol`，`_RoutingProtocol`，`_HotspotSelect`）的全局变量（`MAC_PROTOCOL`，`ROUTING_PROTOCOL`，`HOTSPOT_SELECT`），仍然通过命令行参数赋值；
 
 
@@ -336,3 +340,13 @@
 * 有限能量测试时，不论运行时间是否超出轨迹文件范围，始终以总投递计数为指标；
 * 将保留小数点后 n 位的操作独立成`NDigitFloat`，放入`GlobalParameters.h`；
 * 针对有限能量测试时部分节点会死亡的情况，修改`buffer-node.txt`和`buffer-node-statistics.txt`文件中的输出，保证节点信息的前后对应，并使用`-`标出死亡节点；
+
+
+#### 2016-03-01  ·  *< 2.5.10 >*  ·  *类结构规范化*
+
+* 再次进行类名和文件名的规范化：
+	* `CProcessor`改为`CHelper`；
+	* 将所有辅助函数分类整理到全局（`GlobalParameters.h`）、`CFileHelper`、`CSortHelper`三处；
+	* `CRoute`类继承自`CGeoEntity`；
+* *将配置参数相关的定义和操作整理到单独的*`CConfiguration`*类；*
+* *将配置参数的默认值读取改用 XML 实现；*
