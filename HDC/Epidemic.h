@@ -3,8 +3,6 @@
 #include "GlobalParameters.h"
 #include "RoutingProtocol.h"
 
-using namespace std;
-
 extern int TRANS_RANGE;
 extern int NUM_NODE;
 extern double PROB_DATA_FORWARD;
@@ -15,7 +13,7 @@ extern string INFO_LOG;
 extern ofstream debugInfo;
 
 
-class Epidemic :
+class CEpidemic :
 	public CRoutingProtocol
 {
 private:
@@ -30,9 +28,9 @@ public:
 	static int MAX_QUEUE_SIZE;  //同意存储的来自其他节点的data的最大总数，超过该数目将丢弃（是否在Request之前检查？）默认值等于buffer容量
 	static int SPOKEN_MEMORY;  //在这个时间内交换过数据的节点暂时不再交换数据
 
-	Epidemic(){};
+	CEpidemic(){};
 
-	~Epidemic(){};
+	~CEpidemic(){};
 
 	static bool Operate(int currentTime);
 

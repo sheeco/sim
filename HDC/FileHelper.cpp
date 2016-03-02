@@ -1,6 +1,5 @@
 #include "FileHelper.h"
 #include "SortHelper.h"
-#include "HAR.h"
 
 void CFileHelper::getPositionFromFile(int nodeID, int time, double &x, double &y)
 {

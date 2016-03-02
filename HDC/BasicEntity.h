@@ -9,12 +9,10 @@
 #include "GlobalParameters.h"
 #include "Entity.h"
 
-using namespace std;
-
 
 //包含位置坐标、时间戳、ID的基类
 class CBasicEntity : 
-	public CEntity
+	virtual public CEntity
 {
 protected:
 
@@ -82,20 +80,20 @@ public:
 	//virtual CString toString()const{};
 
 	//操作符重载，基于x坐标比较大小，用于position或hotspot间的排序
-	inline int CBasicEntity::operator==(CBasicEntity it) const
+	inline int CBasicEntity::operator==(CBasicEntity &it) const
 	//FIXME:精度问题
 	{
 		return (this->x == it.getX());
 	}
-	inline int CBasicEntity::operator!=(CBasicEntity it) const
+	inline int CBasicEntity::operator!=(CBasicEntity &it) const
 	{
 		return (this->x != it.getX());
 	}
-	inline int CBasicEntity::operator<(CBasicEntity it) const
+	inline int CBasicEntity::operator<(CBasicEntity &it) const
 	{
 		return (this->x < it.getX());
 	}
-	inline int CBasicEntity::operator>(CBasicEntity it) const
+	inline int CBasicEntity::operator>(CBasicEntity &it) const
 	{
 		return (this->x > it.getX());
 	}
@@ -109,7 +107,7 @@ public:
 	}
 
 	//返回两点间距离
-	inline static double getDistance(CBasicEntity m, CBasicEntity n)
+	inline static double getDistance(CBasicEntity &m, CBasicEntity &n)
 	{
 		double mx, my, nx, ny;
 		mx = m.getX();

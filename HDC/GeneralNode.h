@@ -8,8 +8,6 @@
 
 #include "Data.h"
 
-using namespace std;
-
 extern double PROB_DATA_FORWARD;
 
 
@@ -33,7 +31,7 @@ public:
 		this->energyConsumption = 0;
 	}
 
-	~CGeneralNode(){};
+	virtual ~CGeneralNode(){};
 
 	inline double getEnergyConsumption() const
 	{

@@ -1,10 +1,7 @@
 #pragma once
 
-#include "GlobalParameters.h"
 #include "MacProtocol.h"
 #include "HAR.h"
-
-using namespace std;
 
 extern bool TEST_HOTSPOT_SIMILARITY;
 

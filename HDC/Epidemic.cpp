@@ -5,15 +5,15 @@
 #include "SortHelper.h"
 
 
-int Epidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
-int Epidemic::SPOKEN_MEMORY = 0;
+int CEpidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
+int CEpidemic::SPOKEN_MEMORY = 0;
 
 extern bool TEST_DYNAMIC_NUM_NODE;
 extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 extern string INFO_SINK;
 
-void Epidemic::SendData(int currentTime)
+void CEpidemic::SendData(int currentTime)
 {
 	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 		return;
@@ -155,7 +155,7 @@ void Epidemic::SendData(int currentTime)
 
 }
 
-bool Epidemic::Operate(int currentTime)
+bool CEpidemic::Operate(int currentTime)
 {
 	if( ROUTING_PROTOCOL != _epidemic )
 		return false;

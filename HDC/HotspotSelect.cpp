@@ -1,6 +1,6 @@
 #include "HotspotSelect.h"
 #include "FileHelper.h"
-#include <sstream>
+//#include <sstream>
 
 vector<CHotspot *> CHotspotSelect::copy_hotspotCandidates;
 vector<CPosition *> CHotspotSelect::uncoveredPositions;
@@ -265,7 +265,7 @@ void CHotspotSelect::MergeHotspots(int time)
 	vector<CHotspot *> mergeResult;
 	int mergeCount = 0;
 	int oldCount = 0;
-	stringstream tmp;
+	//stringstream tmp;
 
 	//sort new hotspots by x coordinates
 	CHotspot::hotspotCandidates = CSortHelper::mergeSort(CHotspot::hotspotCandidates, CSortHelper::ascendByLocationX);
@@ -294,7 +294,7 @@ void CHotspotSelect::MergeHotspots(int time)
 																				   time );
 				//for merge statistics
 				mergeCount++;
-				tmp << (*iOld)->getNCoveredPosition() << "/" << (*iNew)->getNCoveredPosition() << "/" << merge->getNCoveredPosition() << "," << merge->getAge() << TAB;
+				//tmp << (*iOld)->getNCoveredPosition() << "/" << (*iNew)->getNCoveredPosition() << "/" << merge->getNCoveredPosition() << "," << merge->getAge() << TAB;
 
 				//update the best merge index
 				int current_cover = merge->getNCoveredPosition();

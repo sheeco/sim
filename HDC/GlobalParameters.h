@@ -15,8 +15,6 @@
 #include <iomanip>
 #include <map>
 
-using namespace std;
-
 
 //Sink
 #define SINK_ID 0  //0为sink节点预留，传感器节点ID从1开始
@@ -65,6 +63,19 @@ using namespace std;
 #define PI 3.1415926535
 #define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
 
+/********************************** TypeDef ***********************************/
+
+using std::ios;
+using std::cin;
+using std::cout;
+using std::endl;
+using std::ofstream;
+using std::string;
+using std::vector;
+using std::map;
+using std::pair;
+using std::iterator;
+using std::exception;
 
 /******************************** Config Const ********************************/
 

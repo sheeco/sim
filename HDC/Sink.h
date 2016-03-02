@@ -6,8 +6,6 @@
 #include "GeneralNode.h"
 #include "HAR.h"
 
-using namespace std;
-
 extern double SINK_X;
 extern double SINK_Y;
 

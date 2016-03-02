@@ -2,10 +2,8 @@
 
 #include "RoutingProtocol.h"
 
-using namespace std;
 
-
-class Prophet :
+class CProphet :
 	public CRoutingProtocol
 {
 private:
@@ -17,8 +15,8 @@ private:
 
 public:
 
-	Prophet(){};
-	~Prophet(){};
+	CProphet(){};
+	~CProphet(){};
 
 	static bool Operate(int currentTime);
 

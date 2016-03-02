@@ -1,4 +1,7 @@
 #include "NodeRepair.h"
+#include "Node.h"
+
+extern int MAX_MEMORY_TIME;
 
 
 CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *> hotspotCandidates, int time)

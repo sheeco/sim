@@ -3,8 +3,6 @@
 #include "Hotspot.h"
 #include "GeoEntity.h"
 
-using namespace std;
-
 
 class CRoute : 
 	public CGeoEntity
@@ -46,8 +44,8 @@ public:
 	CRoute(CBasicEntity *sink)
 	{
 		init();
-		waypoints.push_back(sink);
-		toPoint = 0;  //初始化为sink
+		waypoints.push_back( sink );
+		toPoint = SINK_ID;  //初始化为sink
 	}
 
 	~CRoute(){};
@@ -59,20 +57,6 @@ public:
 	inline vector<int> getCoveredNodes() const
 	{
 		return coveredNodes;
-	}
-
-	inline CBasicEntity* getSink()
-	{
-		if(waypoints.empty())
-			return nullptr;
-		else if(waypoints[0]->getID() != SINK_ID)
-		{
-			cout << endl << "Error @ CRoute::getSink() : waypoints[0] is not sink"<<endl;
-			_PAUSE;
-			return nullptr;
-		}
-		else
-			return waypoints[0];
 	}
 
 	inline bool isOverdue() const
@@ -112,13 +96,13 @@ public:
 	}
 
 	//将给定的元素放到waypoint列表的最后
-	void AddPoint(CBasicEntity *hotspot)
+	void AddHotspot(CBasicEntity *hotspot)
 	{
 		waypoints.push_back(hotspot);
 		AddToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
 	}
 	//将给定hotspot插入到路径中给定的位置
-	void AddPoint(int front, CBasicEntity *hotspot)
+	void AddHotspot(int front, CBasicEntity *hotspot)
 	{
 		vector<CBasicEntity *>::iterator ipoint = waypoints.begin() + front + 1;
 		waypoints.insert(ipoint, hotspot);
@@ -126,7 +110,7 @@ public:
 	}
 
 	//对给定插入计算路径增量
-	double getAddingDistance(int front, CBasicEntity *hotspot)
+	double getAddingDistance(int front, CHotspot *hotspot)
 	{
 		int back = ( front + 1 ) % waypoints.size();
 		double oldDistance =  CBasicEntity::getDistance( *waypoints[front], *waypoints[back] );

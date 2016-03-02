@@ -12,8 +12,6 @@ extern double RATIO_MERGE_HOTSPOT;
 extern double RATIO_NEW_HOTSPOT;
 extern double RATIO_OLD_HOTSPOT;
 
-using namespace std;
-
 
 //存储hostspot信息的类
 class CHotspot : 

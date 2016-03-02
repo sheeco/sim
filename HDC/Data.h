@@ -2,7 +2,6 @@
 
 #include "BasicEntity.h"
 
-using namespace std;
 
 class CData : 
 	public CBasicEntity
@@ -35,7 +34,10 @@ private:
 	static int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
 	static int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
 
-	CData(){};
+	CData()
+	{
+		init();
+	};
 
 	void init()
 	{

@@ -8,8 +8,6 @@
 
 #include "Protocol.h"
 
-using namespace std;
-
 
 class CMacProtocol :
 	public CProtocol

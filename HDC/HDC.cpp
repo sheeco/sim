@@ -1,5 +1,5 @@
 #include "HDC.h"
-#include "NodeRepair.h"
+#include "SortHelper.h"
 
 int CHDC::HOTSPOT_COST_SUM = 0;
 int CHDC::HOTSPOT_COST_COUNT = 0;

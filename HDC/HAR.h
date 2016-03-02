@@ -6,8 +6,6 @@
 #include "RoutingProtocol.h"
 #include "Node.h"
 
-using namespace std;
-
 extern bool TEST_DYNAMIC_NUM_NODE;
 extern bool TEST_HOTSPOT_SIMILARITY;
 extern int NUM_NODE;
@@ -66,7 +64,6 @@ private:
 	static double getHotspotHeat(CHotspot *hotspot);
 	static double getWaitingTime(CHotspot *hotspot);
 	static double getSumGenerationRate(vector<int> nodes);  //计算ge的sum，同一个node不应重复计算
-	static double getSumGenerationRate(vector<int> nodes_a, vector<int> nodes_b);
 	static double getTimeIncrementForInsertion(CRoute route, int front, CHotspot *hotspot);
 	static double calculateRatioForInsertion(CRoute route, int front, CHotspot *hotspot);
 	//对一条route进行优化（TSP 最近邻居算法）

@@ -45,7 +45,7 @@ vector<CNode *> CNode::getAllNodes(bool sort)
 	return allNodes;
 }
 
-void CNode::dropDataIfOverflow(int currentTime)
+void CNode::dropDataIfOverflow()
 {
 	if( buffer.empty() )
 		return;
@@ -62,8 +62,8 @@ void CNode::dropDataIfOverflow(int currentTime)
 	//otherData = CSortHelper::mergeSort(otherData, CSortHelper::ascendByData);
 	//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByData);
 	////如果超出MAX_QUEUE_SIZE
-	//if(otherData.size() > Epidemic::MAX_QUEUE_SIZE)
-	//	otherData = vector<CData>( otherData.end() - Epidemic::MAX_QUEUE_SIZE, otherData.end() );
+	//if(otherData.size() > CEpidemic::MAX_QUEUE_SIZE)
+	//	otherData = vector<CData>( otherData.end() - CEpidemic::MAX_QUEUE_SIZE, otherData.end() );
 	//myData.insert( myData.begin(), otherData.begin(), otherData.end() );
 	////如果总长度溢出
 	//if( myData.size() > bufferCapacity )

@@ -350,3 +350,12 @@
 	* `CRoute`类继承自`CGeoEntity`；
 * *将配置参数相关的定义和操作整理到单独的*`CConfiguration`*类；*
 * *将配置参数的默认值读取改用 XML 实现；*
+
+
+#### 2016-03-02  ·  *< 2.5.11 >*
+
+* 进一步规范化类名；
+* 删除所有`using namespace std;`的使用，改为`using cin/ cout/ endl/ string/ ...;`；
+* 多态：修改部分函数参数类型为基类的引用，以避免对象分割；
+* 将 Resharper 的配置导出到文件`HDC.sln.DotSettings`，并添加到追踪列表；
+* *在`README.md`中添加 Environment 说明；*

@@ -5,8 +5,6 @@
 
 extern double CO_POSITION_DECAY;
 
-using namespace std;
-
 
 //存储单个节点移动位置的类
 class CPosition : 

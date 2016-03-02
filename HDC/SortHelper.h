@@ -4,8 +4,6 @@
 #include "Helper.h"
 #include "Node.h"
 
-using namespace std;
-
 extern int NUM_NODE;
 extern int MAX_MEMORY_TIME;
 extern double MIN_POSITION_WEIGHT;

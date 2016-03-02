@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Hotspot.h"
+//#include "Hotspot.h"
 #include "Helper.h"
-
-using namespace std;
 
 extern int NUM_NODE;
 extern int startTimeForHotspotSelection;

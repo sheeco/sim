@@ -1,9 +1,7 @@
 #pragma once
 
-#include "SortHelper.h"
 #include "Algorithm.h"
-
-using namespace std;
+#include "Hotspot.h"
 
 extern int NUM_NODE;
 extern double LAMBDA;

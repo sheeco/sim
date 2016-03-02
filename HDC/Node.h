@@ -7,8 +7,6 @@
 #include "Epidemic.h"
 #include "Hotspot.h"
 
-using namespace std;
-
 extern int NUM_NODE;
 extern double PROB_DATA_FORWARD;
 extern _MacProtocol MAC_PROTOCOL;
@@ -148,13 +146,13 @@ private:
 	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
 	//超出MAX_QUEUE_SIZE时从前端丢弃数据，溢出时将从从前端丢弃数据
 	//注意：必须在dropOverdueData之后调用
-	void dropDataIfOverflow(int currentTime);
+	void dropDataIfOverflow();
 
 	//注意：需要在每次收到数据之后、投递数据之后、生成新数据之后调用此函数
 	void updateBufferStatus(int currentTime)
 	{
 		dropOverdueData(currentTime);
-		dropDataIfOverflow(currentTime);
+		dropDataIfOverflow();
 	}
 
 	//更新SV（HOP <= 1的消息不会放入SV）
@@ -584,7 +582,7 @@ public:
 		map<CNode *, int>::iterator icache = spokenCache.find( node );
 		if( icache == spokenCache.end() )
 			return false;
-		else if( ( currentTime - icache->second ) < Epidemic::SPOKEN_MEMORY )
+		else if( ( currentTime - icache->second ) < CEpidemic::SPOKEN_MEMORY )
 			return true;
 		else
 			return false;
@@ -622,10 +620,10 @@ public:
 		updateSummaryVector();
 		RemoveFromList(sv, summaryVector);
 		//待测试
-		if( Epidemic::MAX_QUEUE_SIZE > 0  &&  sv.size() > Epidemic::MAX_QUEUE_SIZE )
+		if( CEpidemic::MAX_QUEUE_SIZE > 0  &&  sv.size() > CEpidemic::MAX_QUEUE_SIZE )
 		{
 			vector<int>::iterator id = sv.begin();
-			for(int count = 0; id != sv.end() &&  count < Epidemic::MAX_QUEUE_SIZE ; )
+			for(int count = 0; id != sv.end() &&  count < CEpidemic::MAX_QUEUE_SIZE ; )
 			{
 				if( CData::getNodeByMask( *id ) != this->ID )
 				{
@@ -696,14 +694,14 @@ public:
 		deliveryPreds[SINK_ID] = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
 	}
 
-	map<int, double> sendDeliveryPreds(int currentTime)
+	map<int, double> sendDeliveryPreds()
 	{
 		energyConsumption += CONSUMPTION_BYTE_SEND * CTRL_SIZE;
 		
 		return deliveryPreds;
 	}
 
-	map<int, double> receiveDeliveryPredsAndSV(int node, map<int, double> preds, vector<int> &sv)
+	map<int, double> receiveDeliveryPredsAndSV(map<int, double> preds, vector<int> &sv)
 	{
 		if( preds.empty() )
 			return map<int, double>();
@@ -714,7 +712,7 @@ public:
 		return preds;
 	}
 
-	vector<CData> sendDataByPredsAndSV(CNode *node, map<int, double> preds, vector<int> &sv)
+	vector<CData> sendDataByPredsAndSV(map<int, double> preds, vector<int> &sv)
 	{
 		if( preds.empty() )
 			return vector<CData>();

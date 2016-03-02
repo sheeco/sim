@@ -95,19 +95,6 @@ double HAR::getSumGenerationRate(vector<int> nodes)
 	return sum;
 }
 
-double HAR::getSumGenerationRate(vector<int> nodes_a, vector<int> nodes_b)
-{
-	double sum = 0;
-	AddToListUniquely(nodes_a, nodes_b);
-	for(int i = 0; i < nodes_a.size(); i++)
-	{
-		if( ! CNode::ifNodeExists( nodes_a[i] ) )
-			continue;
-		sum += CNode::getNodeByID( nodes_a[i] )->getGenerationRate();
-	}
-	return sum;
-}
-
 double HAR::getTimeIncrementForInsertion(CRoute route, int front, CHotspot *hotspot)
 {
 	double result = getWaitingTime(hotspot) + ( route.getAddingDistance(front, hotspot) / SPEED_MANODE );
@@ -117,7 +104,10 @@ double HAR::getTimeIncrementForInsertion(CRoute route, int front, CHotspot *hots
 double HAR::calculateRatioForInsertion(CRoute route, int front, CHotspot *hotspot)
 {
 	double time_incr = getTimeIncrementForInsertion(route, front, hotspot);
-	double sumGenerationRate = getSumGenerationRate(route.getCoveredNodes(), hotspot->getCoveredNodes());
+	vector<int> tmp_nodes = route.getCoveredNodes();
+	AddToListUniquely(tmp_nodes, hotspot->getCoveredNodes());
+
+	double sumGenerationRate = getSumGenerationRate(tmp_nodes);
 	return ( time_incr * sumGenerationRate );
 }
 
@@ -159,8 +149,8 @@ double HAR::calculateEDTime()
 void HAR::OptimizeRoute(CRoute &route)
 {
 	vector<CBasicEntity *> waypoints = route.getWayPoints();
-	CBasicEntity *current = route.getSink();
-	CRoute result(current);
+	CBasicEntity *current = CSink::getSink();
+	CRoute result( CSink::getSink() );
 	waypoints.erase(waypoints.begin());
 	while(! waypoints.empty())
 	{
@@ -176,7 +166,7 @@ void HAR::OptimizeRoute(CRoute &route)
 				min_point = ipoint;
 			}
 		}
-		result.AddPoint(*min_point);
+		result.AddHotspot(*min_point);
 		current = *min_point;
 		waypoints.erase(min_point);
 	}
@@ -248,7 +238,6 @@ void HAR::HotspotClassification(int currentTime)
 		//构造一个hotspot class
 		CRoute route(CSink::getSink());
 		double current_time_cost = 0;
-		double current_buffer = 0;
 		while(true)
 		{
 			if( tmp_hotspots.empty() )
@@ -280,7 +269,9 @@ void HAR::HotspotClassification(int currentTime)
 				}
 
 				time_increment = getTimeIncrementForInsertion(route, best_front, tmp_hotspots[ihotspot]);
-				sum_generationRate = getSumGenerationRate(route.getCoveredNodes(), tmp_hotspots[ihotspot]->getCoveredNodes());
+				vector<int> tmp_nodes = route.getCoveredNodes();
+				AddToListUniquely(tmp_nodes, tmp_hotspots[ihotspot]->getCoveredNodes());
+				sum_generationRate = getSumGenerationRate(tmp_nodes);
 				ratio = time_increment * sum_generationRate;  //sum_ge重复计算？？
 				if(ratio > max_ratio)
 				{
@@ -300,7 +291,7 @@ void HAR::HotspotClassification(int currentTime)
 			{
 				//cout << endl << "Error @ HAR::HotspotClassification() : A single hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
 				//_PAUSE;
-				route.AddPoint(max_front, tmp_hotspots[max_hotspot]);
+				route.AddHotspot(max_front, tmp_hotspots[max_hotspot]);
 				vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin() + max_hotspot;
 				tmp_hotspots.erase(ihotspot);
 				break;
@@ -311,7 +302,7 @@ void HAR::HotspotClassification(int currentTime)
 			{
 				current_time_cost += max_time_increment;
 				//current_buffer = new_buffer;
-				route.AddPoint(max_front, tmp_hotspots[max_hotspot]);
+				route.AddHotspot(max_front, tmp_hotspots[max_hotspot]);
 				vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin() + max_hotspot;
 				tmp_hotspots.erase(ihotspot);
 			}
@@ -475,7 +466,7 @@ void HAR::SendData(int currentTime)
 			if(   (*iMANode)->isAtHotspot() 
 					&& (*iMANode)->getWaitingTime() < 0 )
 			{
-				ofstream waiting_time("waiting-time.txt", ios::app);
+				waiting_time.open("waiting-time.txt", ios::app);
 
 				CHotspot *atHotspot = (*iMANode)->getAtHotspot();
 				int tmp = ROUND( getWaitingTime(atHotspot) );
@@ -511,8 +502,8 @@ void HAR::SendData(int currentTime)
 					}
 					waiting_time << atHotspot->getAge() << TAB << atHotspot->getNCoveredPosition() << TAB 
 								 << atHotspot->getHeat() << TAB << tmp << endl;
-					waiting_time.close();	
 				}
+				waiting_time.close();	
 
 			}
 		}while((*iMANode)->getTime() < currentTime);
@@ -534,7 +525,7 @@ void HAR::SendData(int currentTime)
 		{
 			if( ( CMANode::RECEIVE_MODE == RECEIVE::SELFISH ) && (*iMANode)->isFull() )
 				break;
-			if(CBasicEntity::getDistance( static_cast<CBasicEntity>(**iMANode), static_cast<CBasicEntity>(**inode) ) > TRANS_RANGE)
+			if(CBasicEntity::getDistance( **iMANode, **inode ) > TRANS_RANGE)
 				continue;
 
 			//对于热点上和路径上分别统计相遇次数

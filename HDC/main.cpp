@@ -7,8 +7,6 @@
 #include "Prophet.h"
 #include "HDC.h"
 
-using namespace std;
-
 _MacProtocol MAC_PROTOCOL = _smac;
 _RoutingProtocol ROUTING_PROTOCOL = _prophet;
 _HotspotSelect HOTSPOT_SELECT = _original;
@@ -250,13 +248,13 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-queue" )
 			{
 				if(iField < argc - 1)
-					Epidemic::MAX_QUEUE_SIZE = atoi( argv[ iField + 1 ] );
+					CEpidemic::MAX_QUEUE_SIZE = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}			
 			else if( field == "-spoken" )
 			{
 				if(iField < argc - 1)
-					Epidemic::SPOKEN_MEMORY = atoi( argv[ iField + 1 ] );
+					CEpidemic::SPOKEN_MEMORY = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 
@@ -488,13 +486,13 @@ int main(int argc, char* argv[])
 
 		bool dead = false;
 
-		dead = ! Prophet::Operate(currentTime);
+		dead = ! CProphet::Operate(currentTime);
 
 		if( dead )
 		{
 			RUNTIME = currentTime;
 			CHDC::PrintInfo(currentTime);
-			Prophet::PrintInfo(currentTime);
+			CProphet::PrintInfo(currentTime);
 			break;
 		}
 

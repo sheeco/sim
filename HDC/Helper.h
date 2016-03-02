@@ -8,8 +8,6 @@
 
 #include "Process.h"
 
-using namespace std;
-
 
 class CHelper : 
 	public CProcess

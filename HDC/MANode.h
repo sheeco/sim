@@ -5,8 +5,6 @@
 #include "Sink.h"
 #include "GeneralNode.h"
 
-using namespace std;
-
 
 class CMANode :
 	public CGeneralNode
@@ -133,7 +131,7 @@ public:
 
 		this->route = route;
 	}
-	inline bool routeIsOverdue()
+	inline bool routeIsOverdue() const
 	{
 		return route.isOverdue();
 	}
@@ -193,7 +191,9 @@ public:
 		else
 		{
 			cout << endl << "Error @ CMANode::getBufferCapacity() : RECEIVE_MODE = " << RECEIVE_MODE << endl;
+			//TODO: add exit(-1) after all errors
 			_PAUSE;
+			exit(-1);
 		}
 	}
 

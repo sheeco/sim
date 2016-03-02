@@ -10,7 +10,7 @@ extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 extern string INFO_SINK;
 
-void Prophet::SendData(int currentTime)
+void CProphet::SendData(int currentTime)
 {
 	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 		return;
@@ -84,20 +84,20 @@ void Prophet::SendData(int currentTime)
 
 			//forward data
 			
-			preds = smaller->sendDeliveryPreds(currentTime);
+			preds = smaller->sendDeliveryPreds();
 			sv = smaller->sendSummaryVector();
 
 			if( preds.empty() )
 				skip = true;
 			else
 			{
-				preds = greater->receiveDeliveryPredsAndSV( smaller->getID(), preds, sv );
+				preds = greater->receiveDeliveryPredsAndSV(preds, sv );
 				if( preds.empty() )
 					fail = true;
 				else
 				{
 					greater->updateDeliveryPredsWith(smaller->getID(), preds);
-					data = greater->sendDataByPredsAndSV( smaller, preds, sv );
+					data = greater->sendDataByPredsAndSV(preds, sv );
 					if( data.empty() )
 						skip = true;
 					else
@@ -106,20 +106,20 @@ void Prophet::SendData(int currentTime)
 			}
 			if( ! fail )
 			{
-				preds = greater->sendDeliveryPreds(currentTime);
+				preds = greater->sendDeliveryPreds();
 				sv = greater->sendSummaryVector();
 				if( preds.empty() && skip )
 					skip = true;
 				else
 				{
 					skip = false;
-					preds = smaller->receiveDeliveryPredsAndSV( greater->getID(), preds, sv );
+					preds = smaller->receiveDeliveryPredsAndSV(preds, sv );
 					if( preds.empty() )
 						fail = true;
 					else
 					{
 						smaller->updateDeliveryPredsWith(greater->getID(), preds);
-						data = smaller->sendDataByPredsAndSV( greater, preds, sv );
+						data = smaller->sendDataByPredsAndSV(preds, sv );
 						if( data.empty() )
 							skip = true;
 						else
@@ -170,7 +170,7 @@ void Prophet::SendData(int currentTime)
 
 }
 
-bool Prophet::Operate(int currentTime)
+bool CProphet::Operate(int currentTime)
 {
 	if( ROUTING_PROTOCOL != _prophet )
 		return false;

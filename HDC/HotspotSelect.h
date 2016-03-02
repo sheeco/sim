@@ -3,8 +3,6 @@
 #include "SortHelper.h"
 #include "Algorithm.h"
 
-using namespace std;
-
 extern double GAMMA;
 extern int startTimeForHotspotSelection;
 

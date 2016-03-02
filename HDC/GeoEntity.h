@@ -8,11 +8,9 @@
 
 #include "Entity.h"
 
-using namespace std;
-
 
 class CGeoEntity :
-	public CEntity
+	virtual public CEntity
 {
 public:
 
