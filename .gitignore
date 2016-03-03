@@ -4,13 +4,13 @@
 
 
 
-# Specific files for this project ( mHAR ) ( Edited by Eco on 2015-11-03; Updated on 2015-11-16 )
+# Specific files for this project ( mHAR ) ( Created by Eco on 2015-11-03; Updated on 2016-03-03 )
 
 *.newlocation
 
 *.txt
 
-run.bat
+*.bat
 
 TEST
 
@@ -20,7 +20,7 @@ TEST
 
 *.suo
 
-# *.user
+*.user
 
 *.userosscache
 

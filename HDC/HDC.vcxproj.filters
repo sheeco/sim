@@ -163,8 +163,10 @@
     <None Include="..\.gitignore">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="ClassDiagram.cd" />
     <None Include="..\HDC.sln.DotSettings">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="ClassDiagram.cd">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>
