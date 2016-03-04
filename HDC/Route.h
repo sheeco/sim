@@ -41,12 +41,7 @@ public:
 		init();
 	}
 
-	CRoute(CBasicEntity *sink)
-	{
-		init();
-		waypoints.push_back( sink );
-		toPoint = SINK_ID;  //³õÊ¼»¯Îªsink
-	}
+	CRoute(CBasicEntity *sink);
 
 	~CRoute(){};
 

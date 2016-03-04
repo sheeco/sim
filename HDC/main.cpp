@@ -80,6 +80,7 @@ string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE
 string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
 
 
+//TODO: 默认配置参数改为从XML读取
 void initConfiguration()
 {
 	SINK_X = -200;

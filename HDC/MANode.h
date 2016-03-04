@@ -31,6 +31,8 @@ private:
 	static vector<CMANode *> freeMANodes;
 
 	static int ID_COUNT;
+	static int SPEED;
+	static int BUFFER_CAPACITY_MA;  //TODO: static getter & ref mod
 
 	void init()
 	{

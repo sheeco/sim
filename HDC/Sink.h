@@ -28,18 +28,23 @@ private:
 	static CSink* sink;
 	vector<CRoute> newRoutes;
 
+	//TODO: 参数统一读取 / 类内读取 ？
+	static int SINK_ID;
+	static int BUFFER_CAPACITY;
+
 	CSink()
 	{
 		this->ID = SINK_ID;
 		this->x = SINK_X;
 		this->y = SINK_Y;		
-		this->bufferCapacity = BUFFER_CAPACITY_SINK;
+		this->bufferCapacity = BUFFER_CAPACITY;
 	}
 
 	~CSink(){};
 
 
 public:
+
 
 	//Sink为单例模式
 	static CSink* getSink()

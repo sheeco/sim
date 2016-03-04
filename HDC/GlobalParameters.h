@@ -15,14 +15,15 @@
 #include <iomanip>
 #include <map>
 
+//TODO: move amap macro def into in-class static attr
 
 //Sink
-#define SINK_ID 0  //0为sink节点预留，传感器节点ID从1开始
-#define BUFFER_CAPACITY_SINK 99999999999  //无限制
+//#define SINK_ID 0  //0为sink节点预留，传感器节点ID从1开始
+//#define BUFFER_CAPACITY_SINK 99999999999  //无限制
 
 //MA
-#define SPEED_MANODE 30
-#define BUFFER_CAPACITY_MA 100
+//#define SPEED_MANODE 30
+//#define BUFFER_CAPACITY_MA 100
 
 //Slot
 #define SLOT 5	// ( s )
@@ -64,6 +65,8 @@
 #define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI
 
 /********************************** TypeDef ***********************************/
+
+//TODO: 尝试使用用户namespace包裹当前所有用户类型定义
 
 using std::ios;
 using std::cin;

@@ -97,7 +97,7 @@ double HAR::getSumGenerationRate(vector<int> nodes)
 
 double HAR::getTimeIncrementForInsertion(CRoute route, int front, CHotspot *hotspot)
 {
-	double result = getWaitingTime(hotspot) + ( route.getAddingDistance(front, hotspot) / SPEED_MANODE );
+	double result = getWaitingTime(hotspot) + ( route.getAddingDistance(front, hotspot) / CMANode::getSpeed() );
 	return result;
 }
 
@@ -135,10 +135,10 @@ double HAR::calculateEDTime()
 		sum_pm += exp( -1 / (*ihotspot)->getHeat() );
 	}
 	avg_waitingTime = sum_waitingTime / m_hotspots.size();
-	avg_u = avg_length / SPEED_MANODE + avg_waitingTime;
+	avg_u = avg_length / CMANode::getSpeed() + avg_waitingTime;
 	avg_pw = sum_pm / m_hotspots.size();
-	pmh = sum_waitingTime / (sum_length / SPEED_MANODE + sum_waitingTime);
-	EM = (1 - pmh) * ( ( (1 - avg_pw) / avg_pw) * avg_u + (avg_length / (2 * SPEED_MANODE) + avg_waitingTime) ) + pmh * ( ( (1 - avg_pw) / avg_pw) * avg_u + avg_waitingTime);
+	pmh = sum_waitingTime / (sum_length / CMANode::getSpeed() + sum_waitingTime);
+	EM = (1 - pmh) * ( ( (1 - avg_pw) / avg_pw) * avg_u + (avg_length / (2 * CMANode::getSpeed()) + avg_waitingTime) ) + pmh * ( ( (1 - avg_pw) / avg_pw) * avg_u + avg_waitingTime);
 	EIM = avg_u / avg_pw;
 	ED = EM + ( (1 - PROB_DATA_FORWARD) / PROB_DATA_FORWARD ) * EIM + ( double( m_hotspots.size() ) / (2 * m_routes.size()) ) * avg_u;
 
@@ -448,7 +448,7 @@ void HAR::SendData(int currentTime)
 					//统计旧热点的投递计数信息
 					for(vector<CBasicEntity *>::iterator iHotspot = overdueHotspots.begin(); iHotspot != overdueHotspots.end(); ++iHotspot)
 					{
-						if( (*iHotspot)->getID() == SINK_ID )
+						if( (*iHotspot)->getID() == CSink::getSink()->getID() )
 							continue;
 						CHotspot *hotspot = static_cast<CHotspot *>(*iHotspot);
 						deliveryCounts.push_back( *hotspot );

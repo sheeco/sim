@@ -1,6 +1,8 @@
 #include "MANode.h"
 
 int CMANode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
+int CMANode::SPEED = 30;
+int CMANode::BUFFER_CAPACITY_MA = 100;
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
 Mode CMANode::RECEIVE_MODE = RECEIVE::SELFISH;
@@ -67,14 +69,14 @@ void CMANode::updateLocation(int time)
 	//路线过期，立即返回sink
 	if( route.isOverdue() )
 	{
-		this->moveTo( *static_cast<CBasicEntity *>(CSink::getSink()) , interval, SPEED_MANODE);
+		this->moveTo( *static_cast<CBasicEntity *>(CSink::getSink()) , interval, SPEED);
 		return ;
 	}
 	//在路线上正常移动
 	else
 	{
 		CBasicEntity *toPoint = route.getToPoint();
-		bool arrival = this->moveTo(*toPoint , interval, SPEED_MANODE);
+		bool arrival = this->moveTo(*toPoint , interval, SPEED);
 
 		//如果已到达目的地
 		if(arrival)

@@ -688,11 +688,7 @@ public:
 		
 	}
 
-	void updateDeliveryPredsWithSink()
-	{
-		double oldPred = deliveryPreds[SINK_ID];
-		deliveryPreds[SINK_ID] = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
-	}
+	void updateDeliveryPredsWithSink();
 
 	map<int, double> sendDeliveryPreds()
 	{
@@ -712,20 +708,7 @@ public:
 		return preds;
 	}
 
-	vector<CData> sendDataByPredsAndSV(map<int, double> preds, vector<int> &sv)
-	{
-		if( preds.empty() )
-			return vector<CData>();
-
-		if( preds.find(SINK_ID)->second > this->deliveryPreds.find(SINK_ID)->second )
-		{		
-			vector<int> req = summaryVector;
-			RemoveFromList(req, sv);
-			return sendDataByRequestList( req );
-		}
-		else
-			return vector<CData>();
-	}
+	vector<CData> sendDataByPredsAndSV(map<int, double> preds, vector<int> &sv);
 
 };
 

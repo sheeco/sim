@@ -1,4 +1,12 @@
 #include "Route.h"
+#include "Sink.h"
+
+CRoute::CRoute(CBasicEntity *sink)
+{
+	init();
+	waypoints.push_back( sink );
+	toPoint = CSink::getSink()->getID();  //³õÊ¼»¯Îªsink
+}
 
 void CRoute::updateLength()
 {

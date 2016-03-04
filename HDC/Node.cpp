@@ -1,6 +1,7 @@
 #include "Node.h"
 #include "SortHelper.h"
 #include "FileHelper.h"
+#include "Sink.h"
 
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 
@@ -127,4 +128,25 @@ bool CNode::updateStatus(int currentTime)
 	moveTo(x, y, currentTime);
 
 	return state >= 0;
+}
+
+void CNode::updateDeliveryPredsWithSink()
+{
+	double oldPred = deliveryPreds[CSink::getSink()->getID()];
+	deliveryPreds[CSink::getSink()->getID()] = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
+}
+
+vector<CData> CNode::sendDataByPredsAndSV(map<int, double> preds, vector<int> &sv)
+{
+	if( preds.empty() )
+		return vector<CData>();
+
+	if( preds.find(CSink::getSink()->getID())->second > this->deliveryPreds.find(CSink::getSink()->getID())->second )
+	{		
+		vector<int> req = summaryVector;
+		RemoveFromList(req, sv);
+		return sendDataByRequestList( req );
+	}
+	else
+		return vector<CData>();
 }
