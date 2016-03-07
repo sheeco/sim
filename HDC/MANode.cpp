@@ -1,15 +1,16 @@
 #include "MANode.h"
 
+//TODO: read from xml instead of constant initial value
 int CMANode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 int CMANode::SPEED = 30;
-int CMANode::BUFFER_CAPACITY_MA = 100;
+int CMANode::BUFFER_CAPACITY = 100;
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
-Mode CMANode::RECEIVE_MODE = RECEIVE::SELFISH;
+CGeneralNode::_Receive CMANode::RECEIVE_MODE = _selfish;
 
 bool CMANode::receiveData(int time, vector<CData> datas)
 {
-	if(buffer.size() > BUFFER_CAPACITY_MA)
+	if(buffer.size() > BUFFER_CAPACITY)
 	{
 		cout << endl << "Error @ CMANode::receiveData() : buffer overflown"<<endl;
 		_PAUSE;
@@ -18,16 +19,16 @@ bool CMANode::receiveData(int time, vector<CData> datas)
 	int num = datas.size();
 
 	//不允许溢出，即仅在Buffer有空余时才接收数据
-	if( RECEIVE_MODE == RECEIVE::SELFISH )
+	if( RECEIVE_MODE == _selfish)
 	{
-		if(buffer.size() == BUFFER_CAPACITY_MA)
+		if(buffer.size() == BUFFER_CAPACITY)
 			return false;
-		if(datas.size() + buffer.size() > BUFFER_CAPACITY_MA)
-			num = BUFFER_CAPACITY_MA - buffer.size();
+		if(datas.size() + buffer.size() > BUFFER_CAPACITY)
+			num = BUFFER_CAPACITY - buffer.size();
 	}
 	for(int i = 0; i < num; i++)
 	{
-		if(buffer.size() == BUFFER_CAPACITY_MA)
+		if(buffer.size() == BUFFER_CAPACITY)
 			buffer.erase(buffer.begin());  //如果buffer已满，删除最早的一个Data
 		buffer.push_back(datas[i]);
 	}

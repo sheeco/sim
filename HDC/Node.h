@@ -7,8 +7,6 @@
 #include "Epidemic.h"
 #include "Hotspot.h"
 
-extern int NUM_NODE;
-extern double PROB_DATA_FORWARD;
 extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 
@@ -51,6 +49,10 @@ private:
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
 	static vector<CNode *> deletedNodes;  //用于暂存Node个数动态变化时被暂时移出的节点
 
+	static int NUM_NODE_MIN;
+	static int NUM_NODE_MAX;
+	static int NUM_NODE_INIT;
+
 	/*************************************  Epidemic  *************************************/
 
 	vector<int> summaryVector;
@@ -91,7 +93,7 @@ private:
 	{
 		if( nodes.empty() && deadNodes.empty() )
 		{
-			for(int i = 0; i < NUM_NODE; i++)
+			for(int i = 0; i < nodes.size(); i++)
 			{
 				double generationRate = DEFAULT_DATA_RATE;
 				if(i % 5 == 0)
@@ -178,12 +180,71 @@ private:
 
 	/**************************************  Prophet  *************************************/
 
+	//待测试
+	static void newNodes(int n)
+	{
+		//优先恢复之前被删除的节点
+		for(int i = nodes.size(); i < nodes.size() + n; i++)
+		{
+			if( deletedNodes.empty() )
+				break;
+
+			CNode::nodes.push_back(deletedNodes[0]);
+			CNode::idNodes.push_back( deletedNodes[0]->getID() );
+			--n;
+		}
+		//如果仍不足数，构造新的节点
+		for(int i = nodes.size(); i < nodes.size() + n; i++)
+		{
+			double generationRate = DEFAULT_DATA_RATE;
+			if(i % 5 == 0)
+				generationRate *= 5;
+			CNode* node = new CNode(generationRate);
+			node->generateID();
+			node->initDeliveryPreds();
+			CNode::nodes.push_back(node);
+			CNode::idNodes.push_back( node->getID() );
+			--n;
+		}			
+	}
+
+	//待测试
+	static void removeNodes(int n)
+	{
+		//FIXME: Random selected ?
+		vector<CNode *>::iterator start = nodes.begin();
+		vector<CNode *>::iterator end = nodes.end();
+		vector<CNode *>::iterator fence = nodes.begin();
+		fence += nodes.size() + n;
+		vector<CNode *> leftNodes(start, fence);
+
+		//Remove invalid positoins belonging to the deleted nodes
+		vector<CNode *> deletedNodes(fence, end);
+		vector<int> deletedIDs;
+		for(auto inode = deletedNodes.begin(); inode != deletedNodes.end(); ++inode)
+			deletedIDs.push_back( (*inode)->getID() );
+
+		for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
+		{
+			if( IfExists(deletedIDs, (*ipos)->getNode()) )
+				ipos = CPosition::positions.erase(ipos);
+			else
+				++ipos;
+		}
+
+		nodes = leftNodes;
+		idNodes.clear();
+		for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
+			idNodes.push_back( (*inode)->getID() );
+		CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
+	}
+
 	void initDeliveryPreds()
 	{
 		if( ! deliveryPreds.empty() )
 			return;
 
-		for(int id = 0; id <= NUM_NODE; id++)
+		for(int id = 0; id <= nodes.size(); id++)
 		{
 			if( id != ID )
 				deliveryPreds[id] = INIT_DELIVERY_PRED;
@@ -209,9 +270,9 @@ public:
 
 	static int BUFFER_CAPACITY;
 	static int ENERGY;
-	static Mode RECEIVE_MODE;
-	static Mode SEND_MODE;
-	static Mode QUEUE_MODE;
+	static _Receive RECEIVE_MODE;
+	static _Send SEND_MODE;
+	static _Queue QUEUE_MODE;
 
 	/**************************************  Prophet  *************************************/
 
@@ -234,6 +295,11 @@ public:
 		if( nodes.empty() && deadNodes.empty() )
 			initNodes();
 		return nodes;
+	}
+
+	static int getNNodes()
+	{
+		return nodes.size();
 	}
 
 	//包括已经失效的节点和删除的节点，按照ID排序
@@ -282,68 +348,6 @@ public:
 			cout << "####  [ Node ]  " << CNode::getNodes().size() << endl;
 
 		return ( ! nodes.empty() );
-	}
-
-	//待测试
-	static void newNodes(int n)
-	{
-		//优先恢复之前被删除的节点
-		for(int i = NUM_NODE; i < NUM_NODE + n; i++)
-		{
-			if( deletedNodes.empty() )
-				break;
-
-			CNode::nodes.push_back(deletedNodes[0]);
-			CNode::idNodes.push_back( deletedNodes[0]->getID() );
-			++NUM_NODE;
-			--n;
-		}
-		//如果仍不足数，构造新的节点
-		for(int i = NUM_NODE; i < NUM_NODE + n; i++)
-		{
-			double generationRate = DEFAULT_DATA_RATE;
-			if(i % 5 == 0)
-				generationRate *= 5;
-			CNode* node = new CNode(generationRate);
-			node->generateID();
-			node->initDeliveryPreds();
-			CNode::nodes.push_back(node);
-			CNode::idNodes.push_back( node->getID() );
-			++NUM_NODE;
-			--n;
-		}			
-	}
-
-	//待测试
-	static void removeNodes(int n)
-	{
-		//FIXME: Random selected ?
-		vector<CNode *>::iterator start = nodes.begin();
-		vector<CNode *>::iterator end = nodes.end();
-		vector<CNode *>::iterator fence = nodes.begin();
-		fence += NUM_NODE + n;
-		vector<CNode *> leftNodes(start, fence);
-
-		//Remove invalid positoins belonging to the deleted nodes
-		vector<CNode *> deletedNodes(fence, end);
-		vector<int> deletedIDs;
-		for(auto inode = deletedNodes.begin(); inode != deletedNodes.end(); ++inode)
-			deletedIDs.push_back( (*inode)->getID() );
-
-		for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
-		{
-			if( IfExists(deletedIDs, (*ipos)->getNode()) )
-				ipos = CPosition::positions.erase(ipos);
-			else
-				++ipos;
-		}
-
-		nodes = leftNodes;
-		NUM_NODE = nodes.size();
-		idNodes.clear();
-		for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
-			idNodes.push_back( (*inode)->getID() );
-		CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
 	}
 
 	static bool ifNodeExists(int id)
@@ -529,7 +533,7 @@ public:
 		bufferChangeCount++;
 	}
 
-	vector<CData> sendAllData(Mode mode) override
+	vector<CData> sendAllData(_Send mode) override
 	{
 		return CGeneralNode::sendAllData(mode);
 	}
@@ -537,7 +541,7 @@ public:
 	vector<CData> sendData(int n)
 	{
 		if( n >= buffer.size() )
-			return sendAllData(SEND::DUMP);
+			return sendAllData(_dump);
 
 		double bet = RandomFloat(0, 1);
 		if(bet > PROB_DATA_FORWARD)
@@ -547,11 +551,11 @@ public:
 		}
 
 		vector<CData> data;
-		if( QUEUE_MODE == QUEUE::FIFO )
+		if( QUEUE_MODE == _fifo )
 		{
 			data.insert(data.begin(), buffer.begin(), buffer.begin() + n);
 		}
-		else if( QUEUE_MODE == QUEUE::LIFO )
+		else if( QUEUE_MODE == _lifo )
 		{
 			data.insert(data.begin(), buffer.end() - n, buffer.end());
 		}
@@ -709,6 +713,9 @@ public:
 	}
 
 	vector<CData> sendDataByPredsAndSV(map<int, double> preds, vector<int> &sv);
+
+	//在限定范围内随机增删一定数量的node
+	static int ChangeNodeNumber();
 
 };
 

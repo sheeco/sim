@@ -5,7 +5,6 @@
 #include "Sink.h"
 #include "SortHelper.h"
 
-extern bool TEST_DYNAMIC_NUM_NODE;
 extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 extern string INFO_SINK;
@@ -40,12 +39,12 @@ void CProphet::SendData(int currentTime)
 		//如果处于休眠状态，跳过
 		if( (*inode)->isListening() )
 		{
-			if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
+			if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::TRANS_RANGE )
 			{
 				atSink = true;
 				//deliver data to sink
 				flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
-				CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(SEND::DUMP) );
+				CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
 				(*inode)->updateDeliveryPredsWithSink();
 				nEncounterAtSink++;
 			}
@@ -55,11 +54,11 @@ void CProphet::SendData(int currentTime)
 		//inode < jnode，即任何节点对只有一次通信机会
 		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); ++jnode)
 		{
-			if( (*jnode)->getX() + TRANS_RANGE < (*inode)->getX() )
+			if( (*jnode)->getX() + CGeneralNode::TRANS_RANGE < (*inode)->getX() )
 				continue;
-			if( (*inode)->getX() + TRANS_RANGE < (*jnode)->getX() )
+			if( (*inode)->getX() + CGeneralNode::TRANS_RANGE < (*jnode)->getX() )
 				break;
-			if( CBasicEntity::getDistance( **inode, **jnode ) > TRANS_RANGE )
+			if( CBasicEntity::getDistance( **inode, **jnode ) > CGeneralNode::TRANS_RANGE )
 				continue;
 
 			if( (*inode)->isAtHotspot() || (*jnode)->isAtHotspot() )
@@ -140,7 +139,7 @@ void CProphet::SendData(int currentTime)
 						if( atSink == true )
 						{
 							flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
-							CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(SEND::DUMP) );						
+							CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );						
 						}
 
 					}

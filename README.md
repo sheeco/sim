@@ -355,7 +355,7 @@
 - OPT：<有限能量的测试> 针对部分节点死亡的情况，修改`buffer-node.txt`和`buffer-node-statistics.txt`文件中的输出，保证节点信息的前后对应，并使用`-`标出死亡节点；
 
 
-###### 2016-03-01  ·  *< 2.5.10 >*  ·  *类重构*
+###### 2016-03-01  ·  *< 2.5.10 >*
 
 - RFCT：类名和文件名
 	* `CProcessor`改为`CHelper`；
@@ -384,3 +384,12 @@
 ###### 2016-03-04
 
 - MNT：更新`README.md`文档格式；
+
+
+###### 2016-03-07  ·  *< 2.6.0 >*  ·  *类重构*
+
+- RFCT：将`GlobalParameters.h`中的全局变量尽量地移入类内静态变量；
+- RFCT：对于发送、接收、队列选项的定义和使用，将`Mode`、`SEND`、`RECEIVE`、`QUEUE`等类定义改为类内的枚举类定义`CGeneralNode::_Send`、`CGeneralNode::_Receive`、`CGeneralNode::_Queue`；
+- RFCT：对于热点类型的定义和使用，将`TYPE_MERGE_HOTSPOT`、`TYPE_NEW_HOTSPOT`、`TYPE_OLD_HOTSPOT`等宏定义改为类内的枚举类定义`CHotspot::_TypeHotspot`；
+- RFCT：新增`CConfiguration`顶级类，为之后添加从文件中读取参数配置的功能做准备；
+- RFCT：将主函数中的运行部分移入单独的`Run()`函数；

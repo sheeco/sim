@@ -15,9 +15,9 @@ int CNode::CTRL_SIZE = 0;
 
 int CNode::BUFFER_CAPACITY = 0;
 int CNode::ENERGY = 0;
-Mode CNode::RECEIVE_MODE = RECEIVE::LOOSE;
-Mode CNode::SEND_MODE = SEND::DUMP;
-Mode CNode::QUEUE_MODE = QUEUE::FIFO;
+CGeneralNode::_Receive CNode::RECEIVE_MODE = _loose;
+CGeneralNode::_Send CNode::SEND_MODE = _dump;
+CGeneralNode::_Queue CNode::QUEUE_MODE = _fifo;
 
 int CNode::encounterAtHotspot = 0;
 int CNode::encounterOnRoute = 0;
@@ -28,6 +28,10 @@ vector<CNode*> CNode::nodes;
 vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
 vector<CNode *> CNode::deletedNodes;
+
+int CNode::NUM_NODE_MIN = 14;
+int CNode::NUM_NODE_MAX = 34;
+int CNode::NUM_NODE_INIT = 29;
 
 /**************************************  Prophet  *************************************/
 double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
@@ -149,4 +153,32 @@ vector<CData> CNode::sendDataByPredsAndSV(map<int, double> preds, vector<int> &s
 	}
 	else
 		return vector<CData>();
+}
+
+int CNode::ChangeNodeNumber()
+{
+	int delta = 0;
+	float bet = 0;
+	do
+	{
+		bet = RandomFloat(-1, 1);
+		if(bet > 0)
+			bet = 0.2 + bet / 2;  //更改比例至少 0.2
+		else
+			bet = -0.2 + bet / 2;
+		delta = ROUND( bet * (NUM_NODE_MAX - NUM_NODE_MIN) );
+	}while(delta != 0);
+
+	if(delta < NUM_NODE_MIN - nodes.size())
+	{
+		delta = NUM_NODE_MIN - nodes.size();
+		removeNodes(delta);
+	}
+	else if(delta > NUM_NODE_MAX - nodes.size())
+	{
+		delta = NUM_NODE_MAX - nodes.size();
+		newNodes(delta);
+	}
+
+	return delta;
 }

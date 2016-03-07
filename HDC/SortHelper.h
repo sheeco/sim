@@ -4,17 +4,6 @@
 #include "Helper.h"
 #include "Node.h"
 
-extern int NUM_NODE;
-extern int MAX_MEMORY_TIME;
-extern double MIN_POSITION_WEIGHT;
-
-extern int* g_degreeForPositions;
-extern int* g_degreeForHotspots;
-extern vector<CPosition*> g_tmpPositions;
-
-extern int g_old_nPositions;
-extern int g_old_nHotspots;
-
 
 //一些预处理函数包装成的类
 class CSortHelper :

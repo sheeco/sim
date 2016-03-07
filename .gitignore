@@ -12,6 +12,12 @@
 
 *.bat
 
+*.lnk
+
+*.pdf
+
+*.java
+
 TEST
 
 

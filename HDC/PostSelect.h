@@ -4,14 +4,6 @@
 #include "Position.h"
 #include "Algorithm.h"
 
-extern double ALPHA;
-extern int MAX_NUM_HOTSPOT;
-extern int NUM_NODE;
-
-extern vector<CPosition*> g_tmpPositions;
-
-extern int g_old_nPositions;
-extern int g_old_nHotspots;
 extern string INFO_LOG;
 
 
@@ -38,6 +30,8 @@ private:
 
 
 public:
+
+	static double ALPHA;  //ratio for post selection
 
 	CPostSelect(vector<CHotspot *> hotspotCandidates);
 	~CPostSelect(){};

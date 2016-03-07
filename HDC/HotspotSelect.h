@@ -3,9 +3,6 @@
 #include "SortHelper.h"
 #include "Algorithm.h"
 
-extern double GAMMA;
-extern int startTimeForHotspotSelection;
-
 extern string INFO_LOG;
 
 

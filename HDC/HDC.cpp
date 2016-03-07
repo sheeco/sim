@@ -1,6 +1,12 @@
 #include "HDC.h"
 #include "SortHelper.h"
 
+extern _HotspotSelect HOTSPOT_SELECT;
+extern string INFO_HOTSPOT;
+extern string INFO_HOTSPOT_STATISTICS;
+extern string INFO_MERGE;
+extern string INFO_MERGE_DETAILS;
+
 int CHDC::HOTSPOT_COST_SUM = 0;
 int CHDC::HOTSPOT_COST_COUNT = 0;
 double CHDC::MERGE_PERCENT_SUM = 0;
@@ -10,46 +16,10 @@ int CHDC::OLD_PERCENT_COUNT = 0;
 double CHDC::SIMILARITY_RATIO_SUM = 0;
 int CHDC::SIMILARITY_RATIO_COUNT = 0;
 
-extern _HotspotSelect HOTSPOT_SELECT;
-
-//CHDC::CHDC()
-//{
-//}
-
-void CHDC::CompareWithOldHotspots(int currentTime)
-{
-	if( CHotspot::oldSelectedHotspots.empty() )
-		return ;
-
-	double overlapArea = CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots, CHotspot::selectedHotspots);
-	double oldArea = CHotspot::oldSelectedHotspots.size() * AREA_SINGLE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots);
-	double newArea = CHotspot::selectedHotspots.size() * AREA_SINGLE_HOTSPOT - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
-
-	ofstream similarity("similarity.txt", ios::app);
-	if( currentTime == startTimeForHotspotSelection + SLOT_HOTSPOT_UPDATE )
-	{
-		similarity << INFO_LOG;
-		similarity << "#Time" << TAB << "#Overlap/Old" << TAB << "#Overlap/New" << TAB
-				   << "#OverlapArea" << TAB << "#OldArea" << TAB << "#NewArea" << endl;
-	}
-	similarity << currentTime << TAB << ( overlapArea / oldArea ) << TAB << ( overlapArea / newArea ) << TAB
-			   << overlapArea << TAB << oldArea << TAB << newArea << endl;
-	similarity.close();
-
-	//用于计算最终选取出的热点的前后相似度的历史平均值信息
-	SIMILARITY_RATIO_SUM += overlapArea / oldArea;
-	SIMILARITY_RATIO_COUNT++;
-}
-
-extern string INFO_HOTSPOT;
-extern string INFO_HOTSPOT_STATISTICS;
-extern string INFO_MERGE;
-extern string INFO_MERGE_DETAILS;
-
 void CHDC::PrintInfo(int currentTime)
 {
-	if( ! ( ( currentTime % SLOT_HOTSPOT_UPDATE == 0 
-		      && currentTime >= startTimeForHotspotSelection )
+	if( ! ( ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 
+		      && currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
 			|| currentTime == RUNTIME  ) )
 		return;
 
@@ -76,11 +46,11 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 
 		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 		{
-			if( (*ihotspot)->getX() + TRANS_RANGE < (*inode)->getX() )
+			if( (*ihotspot)->getX() + CGeneralNode::TRANS_RANGE < (*inode)->getX() )
 				continue;
-			if( (*inode)->getX() + TRANS_RANGE < (*ihotspot)->getX() )
+			if( (*inode)->getX() + CGeneralNode::TRANS_RANGE < (*ihotspot)->getX() )
 				break;
-			if( CBasicEntity::getDistance( **inode, **ihotspot ) <= TRANS_RANGE )		
+			if( CBasicEntity::getDistance( **inode, **ihotspot ) <= CGeneralNode::TRANS_RANGE )		
 			{
 				atHotspot = *ihotspot;
 				break;

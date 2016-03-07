@@ -8,8 +8,6 @@
 
 #include "Data.h"
 
-extern double PROB_DATA_FORWARD;
-
 
 class CGeneralNode :
 	public CBasicEntity
@@ -21,8 +19,31 @@ protected:
 	int energy;
 	double energyConsumption;
 
+	static double CONSUMPTION_BYTE_SEND;
+	static double CONSUMPTION_BYTE_RECIEVE;
+	static double CONSUMPTION_LISTEN;
+	static double CONSUMPTION_SLEEP;
+
 
 public:
+
+	typedef enum _Send {
+		_copy,  //发送数据时，保留自身副本
+		_dump   //发送数据时，删除自身副本
+	} _Send;
+
+	typedef enum _Receive {
+		_loose,   //MA buffer已满时，仍允许继续接收数据
+		_selfish   //MA buffer已满时，不再从其他节点接收数据
+	} _Receive;
+
+	typedef enum _Queue {
+		_fifo,   //可发送配额有限时，优先从头部发送
+		_lifo   //可发送配额有限时，优先从尾部发送
+	} _Queue;
+
+	static int TRANS_RANGE;  //transmission range
+	static double PROB_DATA_FORWARD;
 
 	CGeneralNode()
 	{
@@ -47,7 +68,7 @@ public:
 	}
 
 
-	virtual vector<CData> sendAllData(Mode mode) = 0;
+	virtual vector<CData> sendAllData(_Send mode) = 0;
 
 	virtual bool receiveData(int time, vector<CData> datas) = 0;
 

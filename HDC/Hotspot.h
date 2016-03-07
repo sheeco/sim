@@ -1,22 +1,36 @@
 #pragma once
 
+#include <iostream>
 #include "Position.h"
 #include "GeoEntity.h"
-#include <iostream>
-
-extern bool TEST_BALANCED_RATIO;
-extern bool TEST_LEARN;
-extern int NUM_NODE;
-extern int TRANS_RANGE;
-extern double RATIO_MERGE_HOTSPOT;
-extern double RATIO_NEW_HOTSPOT;
-extern double RATIO_OLD_HOTSPOT;
+#include "GeneralNode.h"
 
 
 //存储hostspot信息的类
 class CHotspot : 
 	public CBasicEntity, public CGeoEntity
 {
+	friend class CHotspotSelect;
+	friend class CPostSelect;
+	friend class CNodeRepair;
+	friend class HAR;
+	friend class CHDC;
+
+
+protected:
+
+	typedef enum _TypeHotspot {_new_hotspot, _old_hotspot, _merge_hotspot } _TypeHotspot;
+
+	//TODO: current public static attr should be converted to protected amap
+	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
+	static vector<CHotspot *> hotspotCandidates;
+	static vector<CHotspot *> selectedHotspots;
+	//上一次贪婪选取最终得到的热点集合，保留
+	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
+	static vector<CHotspot *> oldSelectedHotspots;
+	static vector<CHotspot *> deletedHotspots;
+
+
 private:
 	
 	//int birth;  //hotspot的ID即birth，即起始position的ID
@@ -30,7 +44,7 @@ private:
 	static int ID_COUNT;
 
 	//merge-HAR
-	int candidateType;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
+	_TypeHotspot candidateType;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
 	int age;  //用于标记旧热点或归并热点的年龄，即连任轮数
 
 	//检查某个position是否已在覆盖列表中
@@ -53,7 +67,7 @@ private:
 		this->ratio = 0;		
 		
 		//merge_HAR
-		this->candidateType = TYPE_NEW_HOTSPOT;
+		this->candidateType = _new_hotspot;
 		this->age = 0;
 		this->deliveryCounts.push_back(0);		
 	}
@@ -80,12 +94,12 @@ private:
 			{
 				if(CPosition::positions[i]->getFlag())
 					continue;
-				if( CPosition::positions[i]->getX() + TRANS_RANGE < this->getX() )
+				if( CPosition::positions[i]->getX() + CGeneralNode::TRANS_RANGE < this->getX() )
 					continue;
 				//若水平距离已超出range，则可以直接停止搜索
-				if( this->getX() + TRANS_RANGE < CPosition::positions[i]->getX() )
+				if( this->getX() + CGeneralNode::TRANS_RANGE < CPosition::positions[i]->getX() )
 					break;
-				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= TRANS_RANGE)
+				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= CGeneralNode::TRANS_RANGE)
 				{
 					this->addPosition(CPosition::positions[i]);
 					CPosition::positions[i]->setFlag(true);
@@ -108,14 +122,13 @@ private:
 
 public:
 
-	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
-	static vector<CHotspot *> hotspotCandidates;
-	static vector<CHotspot *> selectedHotspots;
-	//上一次贪婪选取最终得到的热点集合，保留
-	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
-	static vector<CHotspot *> oldSelectedHotspots;
-	static vector<CHotspot *> deletedHotspots;
+	static int SLOT_LOCATION_UPDATE;  //地理信息收集的slot
+	static int SLOT_HOTSPOT_UPDATE;	 //更新热点和分类的slot
+	static int TIME_HOSPOT_SELECT_START;  //no MA node at first
 
+	static double RATIO_MERGE_HOTSPOT;
+	static double RATIO_NEW_HOTSPOT;
+	static double RATIO_OLD_HOTSPOT;
 
 	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
 	//time应当是当前time，而不是pos的time
@@ -159,11 +172,11 @@ public:
 	}
 
 	//merge_HAR
-	inline int getCandidateType() const
+	inline _TypeHotspot getCandidateType() const
 	{
 		return this->candidateType;
 	}
-	inline void setCandidateType(int candidateType)
+	inline void setCandidateType(_TypeHotspot candidateType)
 	{
 		this->candidateType = candidateType;
 	}
@@ -194,27 +207,8 @@ public:
 	}
 	//新的ratio计算方法，将在贪婪选取和后续选取过程中用到，不使用-balanced-ratio时ratio==nCoverdPosition
 	//注意：调用之前必须确保coveredNodes已得到更新
-	double calculateRatio()
-	{
-		if( TEST_BALANCED_RATIO )
-		{
-			ratio = coveredPositions.size() * double(NUM_NODE - coveredNodes.size() + 1) / double(NUM_NODE);
-			return ratio;
-		}
-		else if( TEST_LEARN )
-		{
-			ratio = 0;
-			for(vector<CPosition*>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
-				ratio += (*ipos)->getWeight();
-			return ratio;
+	double calculateRatio();
 
-		}
-		else
-		{
-			ratio = coveredPositions.size();
-			return ratio;
-		}
-	}
 	//当覆盖列表发生更改时调用，更新坐标、覆盖节点列表和ratio
 	void updateStatus()
 	{
@@ -229,11 +223,11 @@ public:
 	{
 		switch( this->candidateType )
 		{
-			case TYPE_MERGE_HOTSPOT: 
+			case _merge_hotspot: 
 				return RATIO_MERGE_HOTSPOT;
-			case TYPE_NEW_HOTSPOT: 
+			case _new_hotspot: 
 				return RATIO_NEW_HOTSPOT;
-			case TYPE_OLD_HOTSPOT: 
+			case _old_hotspot: 
 				return RATIO_OLD_HOTSPOT;
 			default:
 				return 1;

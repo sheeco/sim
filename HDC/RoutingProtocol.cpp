@@ -9,7 +9,11 @@ extern ofstream debugInfo;
 extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 extern _HotspotSelect HOTSPOT_SELECT;
-extern int SLOT_CHANGE_NUM_NODE;
+
+int CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //数据发送slot
+bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = false;
+bool CRoutingProtocol::TEST_DYNAMIC_NUM_NODE = false;
+int CRoutingProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
 
 //CRoutingProtocol::CRoutingProtocol()
 //{
@@ -26,27 +30,15 @@ void CRoutingProtocol::ChangeNodeNumber(int currentTime)
 		return;
 
 	cout << endl << "########  < " << currentTime << " >  NODE NUMBER CHANGE" ;
-	float bet = RandomFloat(-1, 1);
-	if(bet > 0)
-		bet = 0.2 + bet / 2;
-	else
-		bet = -0.2 + bet / 2;
-	int delta = ROUND( bet * (NUM_NODE_MAX - NUM_NODE_MIN) );
-	if(delta == 0)
-		return ;
-	if(delta < NUM_NODE_MIN - NUM_NODE)
-		delta = NUM_NODE_MIN - NUM_NODE;
-	else if(delta > NUM_NODE_MAX - NUM_NODE)
-		delta = NUM_NODE_MAX - NUM_NODE;
+	
+	int delta = CNode::ChangeNodeNumber();
 
-	if(delta > 0)
+	if(delta >= 0)
 	{
-		CNode::newNodes(delta);
 		cout << "####  ( " << delta << " nodes added )" << endl;
 	}
 	else
 	{
-		CNode::removeNodes(delta);
 		cout << "####  ( " << -delta << " nodes removed )" << endl;
 	}
 }
@@ -87,7 +79,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		return;
 
 	//投递率、延迟、Energy Consumption、节点buffer状态统计 ...
-	if( currentTime % SLOT_HOTSPOT_UPDATE  == 0
+	if( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE  == 0
 		|| currentTime == RUNTIME )
 	{
 		//数据投递率-900（用于debug）

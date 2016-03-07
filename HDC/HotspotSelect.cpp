@@ -1,5 +1,6 @@
 #include "HotspotSelect.h"
 #include "FileHelper.h"
+#include "HAR.h"
 //#include <sstream>
 
 vector<CHotspot *> CHotspotSelect::copy_hotspotCandidates;
@@ -58,7 +59,7 @@ void CHotspotSelect::updateStatus()
 		//merge-HAR: ratio
 		ratio *= pow( unselectedHotspots[i]->getCoByCandidateType(), unselectedHotspots[i]->getAge() );
 
-		if( ratio / max_ratio < GAMMA)
+		if( ratio / max_ratio < 0.5 )
 			break;
 		else
 			hotspotsAboveAverage.push_back(unselectedHotspots[i]);
@@ -67,7 +68,7 @@ void CHotspotSelect::updateStatus()
 
 void CHotspotSelect::CollectNewPositions(int time)
 {
-	if( ! ( time % SLOT_LOCATION_UPDATE == 0 && time > 0 ) )
+	if( ! ( time % CHotspot::SLOT_LOCATION_UPDATE == 0 && time > 0 ) )
 		return ;
 	CPosition* tmp_pos = nullptr;
 
@@ -95,7 +96,7 @@ void CHotspotSelect::CollectNewPositions(int time)
 	//IHAR: 删除过期的position记录
 	if( HOTSPOT_SELECT == _improved )
 	{
-		int threshold = time - MAX_MEMORY_TIME;
+		int threshold = time - HAR::MAX_MEMORY_TIME;
 		if(threshold > 0)
 		{
 			for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
@@ -180,9 +181,9 @@ void CHotspotSelect::GreedySelect(int time)
 				{
 					if((*ipos)->getFlag() == true)
 						continue;
-					if(fabs(hotspotsAboveAverage[i]->getX() - (*ipos)->getX()) > TRANS_RANGE)
+					if(fabs(hotspotsAboveAverage[i]->getX() - (*ipos)->getX()) > CGeneralNode::TRANS_RANGE)
 						continue;
-					if(CBasicEntity::getDistance(*hotspotsAboveAverage[i], **ipos) <= TRANS_RANGE)
+					if(CBasicEntity::getDistance(*hotspotsAboveAverage[i], **ipos) <= CGeneralNode::TRANS_RANGE)
 					{
 						hotspotsAboveAverage[i]->addPosition(*ipos);
 						(*ipos)->setFlag(true);
@@ -281,12 +282,12 @@ void CHotspotSelect::MergeHotspots(int time)
 		for(vector<CHotspot *>::iterator iNew = CHotspot::hotspotCandidates.begin(); iNew != CHotspot::hotspotCandidates.end(); ++iNew, i++)
 		{
 			//for (x within range)
-			if( (*iNew)->getX() + 2 * TRANS_RANGE <= (*iOld)->getX() )
+			if( (*iNew)->getX() + 2 * CGeneralNode::TRANS_RANGE <= (*iOld)->getX() )
 				continue;
-			if( (*iOld)->getX() + 2 * TRANS_RANGE <= (*iNew)->getX() )
+			if( (*iOld)->getX() + 2 * CGeneralNode::TRANS_RANGE <= (*iNew)->getX() )
 				break;
 			//try merge
-			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * TRANS_RANGE)
+			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * CGeneralNode::TRANS_RANGE)
 			{
 				//FIXE: time copied from old or new ?
 				CHotspot *merge = new CHotspot( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 ,
@@ -316,7 +317,7 @@ void CHotspotSelect::MergeHotspots(int time)
 			delete *usedHotspotCandidate;
 			CHotspot::hotspotCandidates.erase(usedHotspotCandidate);
 			//push the merge result into mergeResult and set type to merge type
-			best_merge->setCandidateType(TYPE_MERGE_HOTSPOT);
+			best_merge->setCandidateType(CHotspot::_merge_hotspot);
 			best_merge->setAge( (*iOld)->getAge() + 1 );
 			mergeResult.push_back(best_merge);
 
@@ -331,7 +332,7 @@ void CHotspotSelect::MergeHotspots(int time)
 
 			CHotspot *old = *iOld;
 			oldCount++;
-			old->setCandidateType(TYPE_OLD_HOTSPOT);
+			old->setCandidateType(CHotspot::_old_hotspot);
 			old->setAge( old->getAge() + 1 );
 
 			mergeResult.push_back(old);

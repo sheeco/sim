@@ -32,13 +32,13 @@ private:
 
 	static int ID_COUNT;
 	static int SPEED;
-	static int BUFFER_CAPACITY_MA;  //TODO: static getter & ref mod
+	static int BUFFER_CAPACITY;  //TODO: static getter & ref mod
 
 	void init()
 	{
 		atHotspot = nullptr;	
 		waitingTime = -1;
-		bufferCapacity = BUFFER_CAPACITY_MA;
+		bufferCapacity = BUFFER_CAPACITY;
 	}
 
 	CMANode()
@@ -57,8 +57,8 @@ private:
 	{
 		init();
 		this->route = route;
-		this->x = SINK_X;
-		this->y = SINK_Y;
+		this->x = CSink::SINK_X;
+		this->y = CSink::SINK_Y;
 		atHotspot = nullptr;
 		this->time = time;
 		generateID();
@@ -67,7 +67,7 @@ private:
 
 public:
 
-	static Mode RECEIVE_MODE;
+	static _Receive RECEIVE_MODE;
 
 	static vector<CMANode *> getMANodes()
 	{
@@ -170,36 +170,46 @@ public:
 		return waitingTime;
 	}
 
+	static int getBufferCapacity()
+	{
+		return BUFFER_CAPACITY;
+	}
+
+	static int getSpeed()
+	{
+		return SPEED;
+	}
+
 	//判断Buffer是否已满
 	inline bool isFull() const
 	{
-		if(buffer.size() >= BUFFER_CAPACITY_MA)
+		if(buffer.size() >= BUFFER_CAPACITY)
 			return true;
 		else
 			return false;
 	}	
 
 	//接收数据时，返回允许接收的最大数据数
-	inline int getBufferCapacity() const
+	inline int getDataTolerance() const
 	{
-		int capacity = bufferCapacity - buffer.size();
-		if( capacity < 0 )
-			capacity = 0;
+		int tolerance = bufferCapacity - buffer.size();
+		if( tolerance < 0 )
+			tolerance = 0;
 
-		if( RECEIVE_MODE == RECEIVE::SELFISH )
-			return capacity;
-		else if( RECEIVE_MODE == RECEIVE::LOOSE )
+		if( RECEIVE_MODE == _selfish )
+			return tolerance;
+		else if( RECEIVE_MODE == _loose )
 			return bufferCapacity;
 		else
 		{
-			cout << endl << "Error @ CMANode::getBufferCapacity() : RECEIVE_MODE = " << RECEIVE_MODE << endl;
+			cout << endl << "Error @ CMANode::getDataTolerance() : RECEIVE_MODE = " << RECEIVE_MODE << endl;
 			//TODO: add exit(-1) after all errors
 			_PAUSE;
 			exit(-1);
 		}
 	}
 
-	vector<CData>  sendAllData(Mode mode) override
+	vector<CData>  sendAllData(_Send mode) override
 	{
 		return CGeneralNode::sendAllData(mode);
 	}

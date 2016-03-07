@@ -5,13 +5,12 @@
 #include "SortHelper.h"
 
 
-int CEpidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
-int CEpidemic::SPOKEN_MEMORY = 0;
-
-extern bool TEST_DYNAMIC_NUM_NODE;
 extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 extern string INFO_SINK;
+
+int CEpidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
+int CEpidemic::SPOKEN_MEMORY = 0;
 
 void CEpidemic::SendData(int currentTime)
 {
@@ -38,11 +37,11 @@ void CEpidemic::SendData(int currentTime)
 		if( ! (*inode)->isListening() )
 			continue;
 
-		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= TRANS_RANGE )
+		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::TRANS_RANGE )
 		{
 			//deliver data to sink
 			flash_cout << "####  ( Node " << (*inode)->getID() << " deliver " << (*inode)->getBufferSize() << " data to Sink )                    " ;
-			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(SEND::DUMP) );
+			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
 			nEncounterAtSink++;
 		}
 
@@ -50,11 +49,11 @@ void CEpidemic::SendData(int currentTime)
 		//inode < jnode，即任何节点对只有一次通信机会
 		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); ++jnode)
 		{
-			if( (*jnode)->getX() + TRANS_RANGE < (*inode)->getX() )
+			if( (*jnode)->getX() + CGeneralNode::TRANS_RANGE < (*inode)->getX() )
 				continue;
-			if( (*inode)->getX() + TRANS_RANGE < (*jnode)->getX() )
+			if( (*inode)->getX() + CGeneralNode::TRANS_RANGE < (*jnode)->getX() )
 				break;
-			if( CBasicEntity::getDistance( **inode, **jnode ) > TRANS_RANGE )
+			if( CBasicEntity::getDistance( **inode, **jnode ) > CGeneralNode::TRANS_RANGE )
 				continue;
 
 			if( (*inode)->isAtHotspot() || (*jnode)->isAtHotspot() )

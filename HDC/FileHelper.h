@@ -3,9 +3,6 @@
 //#include "Hotspot.h"
 #include "Helper.h"
 
-extern int NUM_NODE;
-extern int startTimeForHotspotSelection;
-
 
 //包含用于文件解析的函数的类
 class CFileHelper :

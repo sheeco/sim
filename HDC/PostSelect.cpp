@@ -1,6 +1,8 @@
 #include "PostSelect.h"
 #include "SortHelper.h"
 
+double CPostSelect::ALPHA = 0.03;  //ratio for post selection
+
 CPostSelect::CPostSelect(vector<CHotspot *> hotspotCandidates)
 {
 	this->maxRatio = 0;
@@ -126,9 +128,6 @@ vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 	//选中所有ratio >= ALPHA的hotspot
 	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); )
 	{
-		if( selectedHotspots.size() >= MAX_NUM_HOTSPOT )
-			break;
-
 		if(this->getRatioForHotspot(*ihotspot) >= ALPHA)
 		{
 			(*ihotspot)->setFlag(true);

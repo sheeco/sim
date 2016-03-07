@@ -3,9 +3,6 @@
 #include "Algorithm.h"
 #include "Hotspot.h"
 
-extern int NUM_NODE;
-extern double LAMBDA;
-
 
 class CNodeRepair : 
 	public CAlgorithm

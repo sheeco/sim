@@ -3,8 +3,6 @@
 #include "BasicEntity.h"
 #include "GeoEntity.h"
 
-extern double CO_POSITION_DECAY;
-
 
 //存储单个节点移动位置的类
 class CPosition : 
@@ -19,6 +17,8 @@ private:
 
 
 public:
+
+	static double CO_POSITION_DECAY;
 
 	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
 	static vector<CPosition *> positions;

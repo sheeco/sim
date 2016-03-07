@@ -3,23 +3,8 @@
 #include "MacProtocol.h"
 #include "HAR.h"
 
-extern bool TEST_HOTSPOT_SIMILARITY;
-
-extern int startTimeForHotspotSelection;
-extern double CO_HOTSPOT_HEAT_A1;
-extern double CO_HOTSPOT_HEAT_A2;
-extern double BETA;
-extern int MAX_MEMORY_TIME;
-extern int NUM_NODE;
 extern int DATATIME;
 extern int RUNTIME;
-
-extern double RATIO_MERGE_HOTSPOT;
-extern double RATIO_NEW_HOTSPOT;
-extern double RATIO_OLD_HOTSPOT;
-
-//extern string INFO_LOG;
-//extern fstream debugInfo;
 
 
 class CHDC :
@@ -41,8 +26,6 @@ private:
 
 	////更新所有node的位置（而不是position）
 	//void UpdateNodeLocations();
-	//比较此次热点选取的结果与上一次选取结果之间的相似度
-	static void CompareWithOldHotspots(int currentTime);
 
 
 public:

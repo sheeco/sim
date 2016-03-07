@@ -6,9 +6,6 @@
 #include "GeneralNode.h"
 #include "HAR.h"
 
-extern double SINK_X;
-extern double SINK_Y;
-
 
 class CSink :
 	public CGeneralNode
@@ -45,6 +42,8 @@ private:
 
 public:
 
+	static double SINK_X;
+	static double SINK_Y;
 
 	//Sink为单例模式
 	static CSink* getSink()
@@ -68,7 +67,7 @@ public:
 		return true;
 	}
 
-	vector<CData> sendAllData(Mode mode) override
+	vector<CData> sendAllData(_Send mode) override
 	{
 		cout << "Errror @ CSink::sendAllData() : This function mustn't be called !" << endl;
 		_PAUSE;
