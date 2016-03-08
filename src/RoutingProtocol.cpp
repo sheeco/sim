@@ -15,10 +15,10 @@ bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = false;
 bool CRoutingProtocol::TEST_DYNAMIC_NUM_NODE = false;
 int CRoutingProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
 
+
 //CRoutingProtocol::CRoutingProtocol()
 //{
 //}
-//
 //
 //CRoutingProtocol::~CRoutingProtocol()
 //{

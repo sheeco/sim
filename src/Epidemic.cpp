@@ -12,6 +12,7 @@ extern string INFO_SINK;
 int CEpidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
 int CEpidemic::SPOKEN_MEMORY = 0;
 
+
 void CEpidemic::SendData(int currentTime)
 {
 	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )

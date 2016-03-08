@@ -1,9 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDC", "HDC\HDC.vcxproj", "{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "file-formatter", "file-formatter.vcxproj", "{392E2C88-BFB0-4DBB-8EBE-904814F41D52}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "file-formatter", "file-formatter\file-formatter.vcxproj", "{392E2C88-BFB0-4DBB-8EBE-904814F41D52}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDC", "HDC.vcxproj", "{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "项目文件", "项目文件", "{50C498CB-27D2-411D-B31C-1EFFA2EFF802}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		HDC.sln.DotSettings = HDC.sln.DotSettings
+		HDC.vssettings = HDC.vssettings
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,14 +20,14 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}.Debug|Win32.Build.0 = Debug|Win32
-		{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}.Release|Win32.ActiveCfg = Release|Win32
-		{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}.Release|Win32.Build.0 = Release|Win32
 		{392E2C88-BFB0-4DBB-8EBE-904814F41D52}.Debug|Win32.ActiveCfg = Debug|Win32
 		{392E2C88-BFB0-4DBB-8EBE-904814F41D52}.Debug|Win32.Build.0 = Debug|Win32
 		{392E2C88-BFB0-4DBB-8EBE-904814F41D52}.Release|Win32.ActiveCfg = Release|Win32
 		{392E2C88-BFB0-4DBB-8EBE-904814F41D52}.Release|Win32.Build.0 = Release|Win32
+		{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}.Debug|Win32.Build.0 = Debug|Win32
+		{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}.Release|Win32.ActiveCfg = Release|Win32
+		{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

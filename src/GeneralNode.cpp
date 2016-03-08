@@ -8,6 +8,7 @@ double CGeneralNode::CONSUMPTION_SLEEP = 0.015;
 int CGeneralNode::TRANS_RANGE = 100;  //transmission range
 double CGeneralNode::PROB_DATA_FORWARD = 1.0;
 
+
 vector<CData> CGeneralNode::sendAllData(_Send mode)
 {
 	double bet = RandomFloat(0, 1);

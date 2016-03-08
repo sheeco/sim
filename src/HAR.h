@@ -12,7 +12,6 @@ extern _RoutingProtocol ROUTING_PROTOCOL;
 
 /***************************** xHAR ********************************/
 
-
 extern string INFO_LOG;
 extern ofstream debugInfo;
 

@@ -9,6 +9,7 @@ extern _MacProtocol MAC_PROTOCOL;
 extern _RoutingProtocol ROUTING_PROTOCOL;
 extern string INFO_SINK;
 
+
 void CProphet::SendData(int currentTime)
 {
 	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )

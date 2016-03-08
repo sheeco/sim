@@ -25,6 +25,11 @@
 				<PropertyValue name="StartPageRSSUrl">http://go.microsoft.com/fwlink/?linkid=45332&amp;clcid=%VSSPV_LCID_HEX%</PropertyValue>
 				<PropertyValue name="StartPageRefreshInterval">60</PropertyValue>
 			</ToolsOptionsSubCategory>
+			<ToolsOptionsSubCategory name="Import and Export Settings" RegisteredName="Import and Export Settings" PackageName="Visual Studio Environment Package">
+				<PropertyValue name="TrackTeamSettings">true</PropertyValue>
+				<PropertyValue name="TeamSettingsFile">%vsspv_settings_directory%\HDC.vssettings</PropertyValue>
+				<PropertyValue name="AutoSaveFile">%vsspv_settings_directory%\HDC.vssettings</PropertyValue>
+			</ToolsOptionsSubCategory>
 			<ToolsOptionsSubCategory name="General" RegisteredName="General" PackageName="Visual Studio Environment Package">
 				<PropertyValue name="AnimationSpeed">5</PropertyValue>
 				<PropertyValue name="RichClientExperienceOptions">65535</PropertyValue>
@@ -94,6 +99,58 @@
 			</ToolsOptionsSubCategory>
 		</ToolsOptionsCategory>
 		<ToolsOptionsCategory name="TextEditor" RegisteredName="TextEditor">
+			<ToolsOptionsSubCategory name="PL/SQL" RegisteredName="PL/SQL" PackageName="Text Management Package">
+				<PropertyValue name="AutoListMembers">true</PropertyValue>
+				<PropertyValue name="AutoListParams">true</PropertyValue>
+				<PropertyValue name="CutCopyBlankLines">true</PropertyValue>
+				<PropertyValue name="EnableLeftClickForURLs">true</PropertyValue>
+				<PropertyValue name="HideAdvancedMembers">true</PropertyValue>
+				<PropertyValue name="IndentSize">4</PropertyValue>
+				<PropertyValue name="IndentStyle">1</PropertyValue>
+				<PropertyValue name="InsertTabs">true</PropertyValue>
+				<PropertyValue name="ShowLineNumbers">false</PropertyValue>
+				<PropertyValue name="ShowNavigationBar">false</PropertyValue>
+				<PropertyValue name="TabSize">4</PropertyValue>
+				<PropertyValue name="VirtualSpace">false</PropertyValue>
+				<PropertyValue name="WordWrap">false</PropertyValue>
+				<PropertyValue name="WordWrapGlyphs">true</PropertyValue>
+			</ToolsOptionsSubCategory>
+			<ToolsOptionsSubCategory name="SQL" RegisteredName="SQL" PackageName="Text Management Package">
+				<PropertyValue name="AutoListMembers">true</PropertyValue>
+				<PropertyValue name="AutoListParams">true</PropertyValue>
+				<PropertyValue name="CutCopyBlankLines">true</PropertyValue>
+				<PropertyValue name="EnableLeftClickForURLs">true</PropertyValue>
+				<PropertyValue name="HideAdvancedMembers">true</PropertyValue>
+				<PropertyValue name="IndentSize">4</PropertyValue>
+				<PropertyValue name="IndentStyle">1</PropertyValue>
+				<PropertyValue name="InsertTabs">true</PropertyValue>
+				<PropertyValue name="ShowLineNumbers">false</PropertyValue>
+				<PropertyValue name="ShowNavigationBar">false</PropertyValue>
+				<PropertyValue name="TabSize">4</PropertyValue>
+				<PropertyValue name="VirtualSpace">false</PropertyValue>
+				<PropertyValue name="WordWrap">false</PropertyValue>
+				<PropertyValue name="WordWrapGlyphs">true</PropertyValue>
+			</ToolsOptionsSubCategory>
+			<ToolsOptionsSubCategory name="XAML Specific" RegisteredName="XAML Specific" PackageName="Microsoft.VisualStudio.Xaml">
+				<PropertyValue name="AttributeFormat">Preserve</PropertyValue>
+				<PropertyValue name="AutoInsertAttributeQuotes">true</PropertyValue>
+				<PropertyValue name="AutoInsertCommas">true</PropertyValue>
+				<PropertyValue name="AutoInsertEndBraces">true</PropertyValue>
+				<PropertyValue name="AutoInsertEndTags">true</PropertyValue>
+				<PropertyValue name="AutoOutlining">true</PropertyValue>
+				<PropertyValue name="AutoReformatOnEndTag">true</PropertyValue>
+				<PropertyValue name="AutoReformatOnPaste">true</PropertyValue>
+				<PropertyValue name="AutoReformatOnStartTag">true</PropertyValue>
+				<PropertyValue name="AutoToolboxPopulate">true</PropertyValue>
+				<PropertyValue name="BlankLineOption">Preserve</PropertyValue>
+				<PropertyValue name="KeepFirstAttributeOnSameLine">true</PropertyValue>
+				<PropertyValue name="MaximizeXamlEditor">false</PropertyValue>
+				<PropertyValue name="QuoteStyle">DoubleQuote</PropertyValue>
+				<PropertyValue name="WrapColumn">120</PropertyValue>
+				<PropertyValue name="WrapTags">false</PropertyValue>
+			</ToolsOptionsSubCategory>
+			<ToolsOptionsSubCategory name="AnkhSVN Log Messages" RegisteredName="AnkhSVN Log Messages" PackageName="AnkhSVN - Subversion Support for Visual Studio"/>
+			<ToolsOptionsSubCategory name="AnkhSVN Unified Diff" RegisteredName="AnkhSVN Unified Diff" PackageName="AnkhSVN - Subversion Support for Visual Studio"/>
 			<ToolsOptionsSubCategory name="CSharp" RegisteredName="CSharp" PackageName="Text Management Package">
 				<PropertyValue name="TabSize">4</PropertyValue>
 				<PropertyValue name="AutoListMembers">true</PropertyValue>
@@ -284,7 +341,7 @@
 				<PropertyValue name="AutoIndentOnTab">false</PropertyValue>
 				<PropertyValue name="DisableMemberListKeywords">false</PropertyValue>
 				<PropertyValue name="EnumerateCommentTasks">true</PropertyValue>
-				<PropertyValue name="AutomaticOutliningOfPragmaRegions">true</PropertyValue>
+				<PropertyValue name="AutomaticOutliningOfPragmaRegions">false</PropertyValue>
 				<PropertyValue name="DisableMemberListExpansions">false</PropertyValue>
 				<PropertyValue name="LoggingFilter">0</PropertyValue>
 				<PropertyValue name="RescanSolution">false</PropertyValue>
@@ -608,6 +665,36 @@ CSS 3.0;CSS 3.0</PropertyValue>
 			</ToolsOptionsSubCategory>
 		</ToolsOptionsCategory>
 	</ToolsOptions>
+	<Category name="Database Tools" RegisteredName="Database Tools">
+		<Category name="Data Compare" Category="{B25F97C5-F845-458F-853B-3970D61FE4B9}" Package="{481A3758-A6D0-43E0-B1B8-4428BE962F8E}" RegisteredName="Data Compare" PackageName="VSTS for Database Professionals Sql Server">
+			<PropertyValue name="DataSettings">Default</PropertyValue>
+			<PropertyValue name="MaxCharsPerColumn">65535</PropertyValue>
+		</Category>
+		<Category name="Data Generator" Category="{7E055B73-82C8-4C8E-981F-FE58F889C213}" Package="{068E2583-0872-403B-AF4C-6C2A8F2D8C3E}" RegisteredName="Data Generator" PackageName="VSTS for Database Professionals">
+			<PropertyValue name="DataSinks"/>
+			<PropertyValue name="PopulateRowCount">50</PropertyValue>
+			<PropertyValue name="PreviewCount">50</PropertyValue>
+			<PropertyValue name="Seed">5</PropertyValue>
+			<PropertyValue name="SqlTimeout">60</PropertyValue>
+			<PropertyValue name="TableErrorThreshold">0</PropertyValue>
+		</Category>
+		<Category name="Schema Compare" RegisteredName="Schema Compare">
+			<Category name="Microsoft SQL Server 2005" Category="{FEA72D7C-B46E-47dc-9E8E-915ADC603B4E}" Package="{481A3758-A6D0-43E0-B1B8-4428BE962F8E}" RegisteredName="Microsoft SQL Server 2005" PackageName="VSTS for Database Professionals Sql Server">
+				<PropertyValue name="GeneralOptionsForCompare">000000000000010001000100000001</PropertyValue>
+				<PropertyValue name="GeneralOptionsForUpdate">11011100</PropertyValue>
+				<PropertyValue name="IgnoredSqlTypes">000000000000000000000000010000000100000000000000000000000000</PropertyValue>
+				<PropertyValue name="SevenSetOptionsBitArray">1111101</PropertyValue>
+				<PropertyValue name="UseSourceCollation">True</PropertyValue>
+			</Category>
+			<Category name="Microsoft SQL Server 2008" Category="{0F633993-8DD1-49f5-B67D-B52E35CDD480}" Package="{481A3758-A6D0-43E0-B1B8-4428BE962F8E}" RegisteredName="Microsoft SQL Server 2008" PackageName="VSTS for Database Professionals Sql Server">
+				<PropertyValue name="GeneralOptionsForCompare">0000000000000100010001000000011</PropertyValue>
+				<PropertyValue name="GeneralOptionsForUpdate">11011100</PropertyValue>
+				<PropertyValue name="IgnoredSqlTypes">0000000000000000000000000100000001000000000000000000000000000000000000</PropertyValue>
+				<PropertyValue name="SevenSetOptionsBitArray">1111101</PropertyValue>
+				<PropertyValue name="UseSourceCollation">True</PropertyValue>
+			</Category>
+		</Category>
+	</Category>
 	<Category name="Environment_Group" RegisteredName="Environment_Group">
 		<Category name="Environment_NewProjectDialogPreferredLanguage" Category="{77E22C0C-9F4A-4bfb-AD3A-3F3F4711E9ED}" Package="{DA9FB551-C724-11d0-AE1F-00A0C90FFFC3}" RegisteredName="Environment_NewProjectDialogPreferredLanguage" PackageName="Visual Studio Environment Package">
 			<PropertyValue name="HasNewProjectDialogPreferredLanguage">true</PropertyValue>
@@ -625,14 +712,14 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<Columns>
 						<Column Name="Priority" Width="20" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="Checked" Width="28" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
-						<Column Name="Description" Width="18" Visibility="Visible" SortPriority="0" SortDirection="Down"/>
+						<Column Name="Description" Width="318" Visibility="Visible" SortPriority="0" SortDirection="Down"/>
 					</Columns>
 				</Provider>
 				<Provider GUID="{5A2D2729-ADFF-4A2E-A44F-55EBBF5DF64B}">
 					<Columns>
 						<Column Name="Priority" Width="20" Visibility="Visible" SortPriority="0" SortDirection="Down"/>
 						<Column Name="ProviderKnowsOrder" Width="18" Visibility="Invisible" SortPriority="-1" SortDirection="Up"/>
-						<Column Name="Description" Width="213" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
+						<Column Name="Description" Width="18" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="File" Width="63" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="Line" Width="70" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="Column" Width="70" Visibility="Invisible" SortPriority="-1" SortDirection="Up"/>
@@ -660,7 +747,7 @@ CSS 3.0;CSS 3.0</PropertyValue>
 						<Column Name="Bitmap" Width="17" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="ProviderKnowsOrder" Width="17" Visibility="Invisible" SortPriority="2" SortDirection="Up"/>
 						<Column Name="Checked" Width="28" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
-						<Column Name="Description" Width="18" Visibility="Visible" SortPriority="7" SortDirection="Up"/>
+						<Column Name="Description" Width="250" Visibility="Visible" SortPriority="7" SortDirection="Up"/>
 						<Column Name="File" Width="120" Visibility="Visible" SortPriority="4" SortDirection="Up"/>
 						<Column Name="Line" Width="70" Visibility="Visible" SortPriority="5" SortDirection="Up"/>
 						<Column Name="Column" Width="70" Visibility="Invisible" SortPriority="6" SortDirection="Up"/>
@@ -674,7 +761,7 @@ CSS 3.0;CSS 3.0</PropertyValue>
 						<Column Name="Bitmap" Width="17" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="ProviderKnowsOrder" Width="17" Visibility="Invisible" SortPriority="2" SortDirection="Up"/>
 						<Column Name="Checked" Width="28" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
-						<Column Name="Description" Width="18" Visibility="Visible" SortPriority="7" SortDirection="Up"/>
+						<Column Name="Description" Width="250" Visibility="Visible" SortPriority="7" SortDirection="Up"/>
 						<Column Name="File" Width="120" Visibility="Visible" SortPriority="4" SortDirection="Up"/>
 						<Column Name="Line" Width="70" Visibility="Visible" SortPriority="5" SortDirection="Up"/>
 						<Column Name="Column" Width="70" Visibility="Invisible" SortPriority="6" SortDirection="Up"/>
@@ -690,23 +777,23 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="props" Definition="View.PropertiesWindow"/>
 				<Alias Name="memory1" Definition="Debug.Memory1"/>
 				<Alias Name="memory2" Definition="Debug.Memory2"/>
-				<Alias Name="Lcase" Definition="Edit.MakeLowercase"/>
 				<Alias Name="memory3" Definition="Debug.Memory3"/>
-				<Alias Name="kb" Definition="Debug.ListCallStack"/>
-				<Alias Name="locals" Definition="Debug.Locals"/>
+				<Alias Name="Lcase" Definition="Edit.MakeLowercase"/>
 				<Alias Name="memory4" Definition="Debug.Memory4"/>
+				<Alias Name="locals" Definition="Debug.Locals"/>
+				<Alias Name="kb" Definition="Debug.ListCallStack"/>
 				<Alias Name="da" Definition="Debug.ListMemory /Ansi"/>
-				<Alias Name="DelEOL" Definition="Edit.DeleteToEOL"/>
 				<Alias Name="db" Definition="Debug.ListMemory /Format:OneByte"/>
+				<Alias Name="DelEOL" Definition="Edit.DeleteToEOL"/>
 				<Alias Name="dc" Definition="Debug.ListMemory /Format:FourBytes /Ansi"/>
 				<Alias Name="dd" Definition="Debug.ListMemory /Format:FourBytes"/>
 				<Alias Name="df" Definition="Debug.ListMemory /Format:Float"/>
-				<Alias Name="AddProj" Definition="File.AddNewProject"/>
 				<Alias Name="WordWrap" Definition="Edit.ToggleWordWrap"/>
+				<Alias Name="AddProj" Definition="File.AddNewProject"/>
 				<Alias Name="dq" Definition="Debug.ListMemory /Format:EightBytes"/>
 				<Alias Name="du" Definition="Debug.ListMemory /Unicode"/>
-				<Alias Name="ListMembers" Definition="Edit.ListMembers"/>
 				<Alias Name="designer" Definition="View.ViewDesigner"/>
+				<Alias Name="ListMembers" Definition="Edit.ListMembers"/>
 				<Alias Name="code" Definition="View.ViewCode"/>
 				<Alias Name="ParamInfo" Definition="Edit.ParameterInfo"/>
 				<Alias Name="DelHSp" Definition="Edit.DeleteHorizontalWhiteSpace"/>
@@ -718,14 +805,14 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="TileV" Definition="Window.TileVertically"/>
 				<Alias Name="OutlineDefs" Definition="Edit.CollapsetoDefinitions"/>
 				<Alias Name="CloseAll" Definition="Window.CloseAllDocuments"/>
-				<Alias Name="InsertFile" Definition="Edit.InsertFileAsText"/>
 				<Alias Name="ToggleBook" Definition="Edit.ToggleBookmark"/>
+				<Alias Name="InsertFile" Definition="Edit.InsertFileAsText"/>
 				<Alias Name="autos" Definition="Debug.Autos"/>
 				<Alias Name="SaveAll" Definition="File.SaveAll"/>
 				<Alias Name="new" Definition="File.NewFile"/>
 				<Alias Name="d" Definition="Debug.ListMemory"/>
-				<Alias Name="navigate" Definition="View.WebBrowser"/>
 				<Alias Name="rtc" Definition="Debug.RunToCursor"/>
+				<Alias Name="navigate" Definition="View.WebBrowser"/>
 				<Alias Name="g" Definition="Debug.Start"/>
 				<Alias Name="k" Definition="Debug.ListCallStack"/>
 				<Alias Name="format" Definition="Edit.FormatSelection"/>
@@ -733,10 +820,10 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="p" Definition="Debug.StepOver"/>
 				<Alias Name="q" Definition="Debug.StopDebugging"/>
 				<Alias Name="r" Definition="Debug.ListRegisters"/>
-				<Alias Name="~*kb" Definition="Debug.ListCallStack /AllThreads"/>
 				<Alias Name="t" Definition="Debug.StepInto"/>
-				<Alias Name="nf" Definition="File.NewFile"/>
+				<Alias Name="~*kb" Definition="Debug.ListCallStack /AllThreads"/>
 				<Alias Name="u" Definition="Debug.ListDisassembly"/>
+				<Alias Name="nf" Definition="File.NewFile"/>
 				<Alias Name="registers" Definition="Debug.Registers"/>
 				<Alias Name="LineCut" Definition="Edit.LineCut"/>
 				<Alias Name="memory" Definition="memory1"/>
@@ -746,9 +833,9 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="DelBOL" Definition="Edit.DeleteToBOL"/>
 				<Alias Name="~*k" Definition="Debug.ListCallStack /AllThreads"/>
 				<Alias Name="NextBook" Definition="Edit.NextBookmark"/>
-				<Alias Name="NewProj" Definition="File.NewProject"/>
-				<Alias Name="Ucase" Definition="Edit.MakeUppercase"/>
 				<Alias Name="TaskList" Definition="View.TaskList"/>
+				<Alias Name="Ucase" Definition="Edit.MakeUppercase"/>
+				<Alias Name="NewProj" Definition="File.NewProject"/>
 				<Alias Name="Untabify" Definition="Edit.UntabifySelectedLines"/>
 				<Alias Name="GotoBrace" Definition="Edit.GotoBrace"/>
 				<Alias Name="cls" Definition="Edit.ClearAll"/>
@@ -757,29 +844,29 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="log" Definition="Tools.LogCommandWindowOutput"/>
 				<Alias Name="print" Definition="File.Print"/>
 				<Alias Name="op" Definition="File.OpenProject"/>
-				<Alias Name="alias" Definition="Tools.Alias"/>
 				<Alias Name="eval" Definition="Debug.EvaluateStatement"/>
+				<Alias Name="alias" Definition="Tools.Alias"/>
 				<Alias Name="watch" Definition="Debug.Watch"/>
 				<Alias Name="cmd" Definition="View.CommandWindow"/>
-				<Alias Name="GotoLn" Definition="Edit.GoTo"/>
 				<Alias Name="help" Definition="Help.F1Help"/>
+				<Alias Name="GotoLn" Definition="Edit.GoTo"/>
 				<Alias Name="disasm" Definition="Debug.Disassembly"/>
 				<Alias Name="redo" Definition="Edit.Redo"/>
-				<Alias Name="LineDel" Definition="Edit.LineDelete"/>
-				<Alias Name="tabify" Definition="Edit.TabifySelectedLines"/>
 				<Alias Name="undo" Definition="Edit.Undo"/>
+				<Alias Name="tabify" Definition="Edit.TabifySelectedLines"/>
+				<Alias Name="LineDel" Definition="Edit.LineDelete"/>
 				<Alias Name="StopOutlining" Definition="Edit.CollapsetoDefinitions"/>
 				<Alias Name="pr" Definition="Debug.StepOut"/>
-				<Alias Name="FullScreen" Definition="View.FullScreen"/>
 				<Alias Name="SaveAs" Definition="File.SaveSelectedItemsAs"/>
+				<Alias Name="FullScreen" Definition="View.FullScreen"/>
 				<Alias Name="nav" Definition="navigate"/>
-				<Alias Name="exit" Definition="File.Exit"/>
 				<Alias Name="SwapAnchor" Definition="Edit.SwapAnchor"/>
-				<Alias Name="PrevBook" Definition="Edit.PreviousBookmark"/>
+				<Alias Name="exit" Definition="File.Exit"/>
 				<Alias Name="threads" Definition="Debug.Threads"/>
+				<Alias Name="PrevBook" Definition="Edit.PreviousBookmark"/>
 				<Alias Name="close" Definition="File.Close"/>
-				<Alias Name="bl" Definition="Debug.Breakpoints"/>
 				<Alias Name="toolbox" Definition="View.Toolbox"/>
+				<Alias Name="bl" Definition="Debug.Breakpoints"/>
 				<Alias Name="bp" Definition="Debug.ToggleBreakpoint"/>
 				<Alias Name="??" Definition="Debug.QuickWatch"/>
 				<Alias Name="StopFind" Definition="Edit.FindInFiles /stop"/>
@@ -954,7 +1041,7 @@ CSS 3.0;CSS 3.0</PropertyValue>
 			<PropertyValue name="FindTextFromEditor">1</PropertyValue>
 			<PropertyValue name="HitReplaced">1</PropertyValue>
 			<PropertyValue name="Syntax">Regex</PropertyValue>
-			<PropertyValue name="In Files Pane Display Options">288</PropertyValue>
+			<PropertyValue name="In Files Pane Display Options">256</PropertyValue>
 			<PropertyValue name="NumberOfScopes">0</PropertyValue>
 		</Category>
 		<Category name="Environment_WindowLayout" Category="{eb4ba109-a9db-4445-bd09-e7604bcdce84}" Package="{DA9FB551-C724-11d0-AE1F-00A0C90FFFC3}" RegisteredName="Environment_WindowLayout" PackageName="Visual Studio Environment Package">
@@ -964,15 +1051,10 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<WindowProfile xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wm="clr-namespace:Microsoft.VisualStudio.Platform.WindowManagement;assembly=Microsoft.VisualStudio.Platform.WindowManagement" Name="Design" xmlns="clr-namespace:Microsoft.VisualStudio.PlatformUI.Shell;assembly=Microsoft.VisualStudio.Shell.ViewManager">
 					<MainSite IsVisible="True">
 						<AutoHideRoot IsVisible="True" DockedHeight="*" DockedWidth="*" DockRestriction="AlwaysFloating">
-							<AutoHideChannel Orientation="Vertical" IsVisible="True">
+							<AutoHideChannel Orientation="Vertical">
 								<AutoHideGroup>
 									<wm:ToolWindowView ForceCreate="ForceCreate" Name="ST:0:0:{25f7e850-ffa1-11d0-b63f-00a0c922e851}" DockedHeight="768" DockedWidth="348.16" FloatingHeight="537.6" FloatingWidth="256"/>
 									<wm:ToolWindowView ForceCreate="ForceCreate" Name="ST:0:0:{873151d0-cf2e-48cc-b4bf-ad0394f6a3c3}" DockedHeight="768" DockedWidth="348.16" FloatingHeight="537.6" FloatingWidth="256"/>
-								</AutoHideGroup>
-								<AutoHideGroup IsVisible="True">
-									<wm:ToolWindowView ForceCreate="ForceCreate" IconIndex="0" IconResourceID="6651" IconResourcePackage="da9fb551-c724-11d0-ae1f-00a0c90fffc3" Name="ST:0:0:{c9c0ae26-aa77-11d2-b3f0-0000f87570ee}" IsVisible="True" DockedWidth="306" AutoHideWidth="316" FloatingTop="0" FloatingLeft="121" FloatingHeight="202" FloatingWidth="445"/>
-									<wm:ToolWindowView ForceCreate="ForceCreate" Name="ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}" IsVisible="True" DockedWidth="306" FloatingTop="335" FloatingLeft="-30" FloatingHeight="202" FloatingWidth="1285"/>
-									<wm:ToolWindowView ContextVisibilityEnabled="False" ForceCreate="ForceCreate" IconIndex="0" IconResourceID="301" IconResourcePackage="3f3d9528-bac4-420e-8147-29896300c5c0" Name="ST:0:0:{3822e751-eb69-4b0e-b301-595a9e4c74d5}" IsVisible="True" DockedWidth="306" FloatingTop="774" FloatingLeft="95" FloatingHeight="202" FloatingWidth="445"/>
 								</AutoHideGroup>
 							</AutoHideChannel>
 							<AutoHideChannel Dock="Right" Orientation="Vertical">
@@ -1025,10 +1107,10 @@ CSS 3.0;CSS 3.0</PropertyValue>
 							</AutoHideChannel>
 							<DockRoot IsVisible="True" DockedHeight="*" DockedWidth="*">
 								<DockGroup IsVisible="True" DockedHeight="*" DockedWidth="*">
-									<TabGroup>
-										<ViewBookmark Name="ST:0:0:{c9c0ae26-aa77-11d2-b3f0-0000f87570ee}"/>
-										<ViewBookmark Name="ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"/>
-										<ViewBookmark Name="ST:0:0:{3822e751-eb69-4b0e-b301-595a9e4c74d5}"/>
+									<TabGroup IsVisible="True" DockedWidth="294">
+										<wm:ToolWindowView ForceCreate="ForceCreate" IconIndex="0" IconResourceID="6651" IconResourcePackage="da9fb551-c724-11d0-ae1f-00a0c90fffc3" Name="ST:0:0:{c9c0ae26-aa77-11d2-b3f0-0000f87570ee}" IsVisible="True" DockedWidth="294" AutoHideWidth="316" FloatingTop="0" FloatingLeft="121" FloatingHeight="202" FloatingWidth="445"/>
+										<wm:ToolWindowView ForceCreate="ForceCreate" Name="ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}" IsSelected="True" IsVisible="True" DockedWidth="294" FloatingTop="335" FloatingLeft="-30" FloatingHeight="202" FloatingWidth="1285"/>
+										<wm:ToolWindowView ContextVisibilityEnabled="False" ForceCreate="ForceCreate" IconIndex="0" IconResourceID="301" IconResourcePackage="3f3d9528-bac4-420e-8147-29896300c5c0" Name="ST:0:0:{3822e751-eb69-4b0e-b301-595a9e4c74d5}" IsVisible="True" DockedWidth="294" FloatingTop="774" FloatingLeft="95" FloatingHeight="202" FloatingWidth="445"/>
 									</TabGroup>
 									<TabGroup DockedHeight="768" DockedWidth="232.16">
 										<ViewBookmark Name="ST:0:0:{25f7e850-ffa1-11d0-b63f-00a0c922e851}" DockedHeight="768" DockedWidth="232.16"/>
@@ -1118,11 +1200,11 @@ CSS 3.0;CSS 3.0</PropertyValue>
 										<wm:ToolWindowView ContextVisibilityEnabled="False" ForceCreate="ForceCreate" Name="ST:0:0:{66dba47c-61df-11d2-aa79-00c04f990343}" DockedHeight="384" DockedWidth="204.8" FloatingHeight="384" FloatingWidth="204.8"/>
 									</DockGroup>
 									<TabGroup IsVisible="True" DockedWidth="366">
-										<wm:ToolWindowView ForceCreate="ForceCreate" IconIndex="0" IconResourceID="284" IconResourcePackage="0c6e6407-13fc-4878-869a-c8b4016c57fe" Name="ST:0:0:{6b94e921-da4b-5407-88f2-56bc747e95ad}" IsVisible="True" DockedWidth="366" FloatingTop="960" FloatingLeft="1409" FloatingHeight="450" FloatingWidth="450"/>
-										<wm:ToolWindowView ContextVisibilityEnabled="False" ForceCreate="ForceCreate" IconIndex="6" IconResourceID="6650" IconResourcePackage="4a9b7e50-aa16-11d0-a8c5-00a0c921a4d2" Name="ST:0:0:{4a9b7e51-aa16-11d0-a8c5-00a0c921a4d2}" IsVisible="True" DockedWidth="366" FloatingTop="933" FloatingLeft="1162" FloatingHeight="297" FloatingWidth="1642"/>
+										<wm:ToolWindowView ForceCreate="ForceCreate" IconIndex="0" IconResourceID="284" IconResourcePackage="0c6e6407-13fc-4878-869a-c8b4016c57fe" Name="ST:0:0:{6b94e921-da4b-5407-88f2-56bc747e95ad}" DockedWidth="366" FloatingTop="960" FloatingLeft="1409" FloatingHeight="450" FloatingWidth="450"/>
+										<wm:ToolWindowView ContextVisibilityEnabled="False" ForceCreate="ForceCreate" IconIndex="6" IconResourceID="6650" IconResourcePackage="4a9b7e50-aa16-11d0-a8c5-00a0c921a4d2" Name="ST:0:0:{4a9b7e51-aa16-11d0-a8c5-00a0c921a4d2}" IsSelected="True" IsVisible="True" DockedWidth="366" FloatingTop="933" FloatingLeft="1162" FloatingHeight="297" FloatingWidth="1642"/>
 										<wm:ToolWindowView ContextVisibilityEnabled="False" ForceCreate="ForceCreate" IconIndex="3" IconResourceID="6651" IconResourcePackage="da9fb551-c724-11d0-ae1f-00a0c90fffc3" Name="ST:0:0:{a0c5197d-0ac7-4b63-97cd-8872a789d233}" IsVisible="True" DockedWidth="366" FloatingTop="935" FloatingLeft="1272" FloatingHeight="297" FloatingWidth="1642"/>
 										<wm:ToolWindowView OnTopWhenLastInContext="False" ForceCreate="ForceCreate" IconIndex="2" IconResourceID="5123" IconResourcePackage="c9dd4a57-47fb-11d2-83e7-00c04f9902c1" Name="ST:0:0:{be4d7042-ba3f-11d2-840e-00c04f9902c1}" IsVisible="True" DockedWidth="366" FloatingTop="936" FloatingLeft="860" FloatingHeight="297" FloatingWidth="1642"/>
-										<wm:ToolWindowView ContextVisibilityEnabled="False" ForceCreate="ForceCreate" IconIndex="7" IconResourceID="6650" IconResourcePackage="da9fb551-c724-11d0-ae1f-00a0c90fffc3" Name="ST:0:0:{cf2ddc32-8cad-11d2-9302-005345000000}" IsSelected="True" IsVisible="True" DockedWidth="366" FloatingTop="502" FloatingLeft="1430" FloatingHeight="335" FloatingWidth="379"/>
+										<wm:ToolWindowView ContextVisibilityEnabled="False" ForceCreate="ForceCreate" IconIndex="7" IconResourceID="6650" IconResourcePackage="da9fb551-c724-11d0-ae1f-00a0c90fffc3" Name="ST:0:0:{cf2ddc32-8cad-11d2-9302-005345000000}" IsVisible="True" DockedWidth="366" FloatingTop="502" FloatingLeft="1430" FloatingHeight="335" FloatingWidth="379"/>
 										<wm:ToolWindowView ForceCreate="ForceCreate" IconIndex="0" IconResourceID="1" IconResourcePackage="b80b010d-188c-4b19-b483-6c20d52071ae" Name="ST:0:0:{131369f2-062d-44a2-8671-91ff31efb4f4}" IsVisible="True" DockedWidth="366" AutoHideHeight="655" FloatingTop="940" FloatingLeft="1519" FloatingHeight="652" FloatingWidth="1642"/>
 										<wm:ToolWindowView OnTopWhenLastInContext="False" ContextVisibilityEnabled="False" ForceCreate="ForceCreate" IconIndex="1" IconResourceID="6650" IconResourcePackage="da9fb551-c724-11d0-ae1f-00a0c90fffc3" Name="ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}" IsVisible="True" DockedWidth="366" FloatingTop="94" FloatingLeft="1199" FloatingHeight="865" FloatingWidth="297"/>
 									</TabGroup>
@@ -1891,6 +1973,7 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<modify_toolbar Menu="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:0000000e" Visibility="auto" FullScreen="hide" Dock="top" Row="2" FloatRectangle="0,0,237,24" DockRectangle="1,0,237,24"/>
 					<modify_toolbar Menu="{C9DD4A58-47FB-11D2-83E7-00C04F9902C1}:00000420" Visibility="hide" FullScreen="hide" Dock="top" Row="2" FloatRectangle="0,0,943,27" DockRectangle="0,0,943,27"/>
 					<modify_toolbar Menu="{C9DD4A58-47FB-11D2-83E7-00C04F9902C1}:00000421" Visibility="auto" FullScreen="hide" Dock="top" Row="2" FloatRectangle="0,0,245,24" DockRectangle="2,0,245,24"/>
+					<modify_toolbar Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" Visibility="show" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,495,27" DockRectangle="10,0,495,27"/>
 					<add Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000644" CmdPri="04000001" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:000001d2" GroupPri="01000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d"/>
 					<add Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000645" CmdPri="08000001" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:000001d2" GroupPri="01000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d"/>
 					<add Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000070" CmdPri="00800001" Group="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:00000552" GroupPri="01020000" Menu="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:0000000e"/>
@@ -1898,8 +1981,8 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<remove Cmd="{CCD03FEB-6B80-4CDB-AB3A-04702F6E7553}:00002020" CmdPri="70200000" Group="{318676E3-4A0D-4397-8FD0-78D0177D90BC}:000010fe" GroupPri="01100000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" IsPartialRemoval="false"/>
 					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000008f" CmdPri="02000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001078" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="false"/>
 					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00002c11" CmdPri="0d000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:0000107a" GroupPri="03000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000037a" CmdPri="01000000" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000283" GroupPri="45000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" Icon="{952691C5-34D6-462B-AC56-9AB09770A30D}:00000004" BeginGroup="true"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000037a" CmdPri="01000000" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000283" GroupPri="45000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" Icon="{952691C5-34D6-462B-AC56-9AB09770A30D}:00000004" BeginGroup="true"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000037a" CmdPri="01000000" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000283" GroupPri="45000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" BeginGroup="true"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000037a" CmdPri="01000000" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000283" GroupPri="45000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" BeginGroup="true"/>
 					<modify Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000070" CmdPri="00800001" Group="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:00000552" GroupPri="01020000" Menu="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:0000000e" Icon="{C40A5A10-3EEB-11D3-AFE5-00105A9991EF}:00000003" BeginGroup="true"/>
 					<modify Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000088" CmdPri="01000000" Group="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:00000552" GroupPri="01020000" Menu="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:0000000e" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000056" BeginGroup="false"/>
 				</UserCustomizations>
@@ -2430,6 +2513,17 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<RemoveShortcut Command="Window.ActivateDocumentWindow" Scope="全局">Alt+0</RemoveShortcut>
 					<RemoveShortcut Command="Window.ActivateDocumentWindow" Scope="全局">Esc</RemoveShortcut>
 					<RemoveShortcut Command="Window.PreviousDocumentWindow" Scope="全局">Ctrl+Shift+F6</RemoveShortcut>
+					<RemoveShortcut Command="Edit.ToggleAllOutlining" Scope="文本编辑器">Ctrl+M, Ctrl+L</RemoveShortcut>
+					<RemoveShortcut Command="Edit.ToggleOutliningExpansion" Scope="文本编辑器">Ctrl+M, Ctrl+M</RemoveShortcut>
+					<RemoveShortcut Command="File.OpenWebSite" Scope="全局">Shift+Alt+O</RemoveShortcut>
+					<RemoveShortcut Command="Edit.CollapseAllOutlining" Scope="文本编辑器">Ctrl+M, Ctrl+A</RemoveShortcut>
+					<RemoveShortcut Command="Edit.ExpandAllOutlining" Scope="文本编辑器">Ctrl+M, Ctrl+X</RemoveShortcut>
+					<RemoveShortcut Command="{D63DB1F0-404E-4B21-9648-CA8D99245EC3},36" Scope="全局">Ctrl+[, S</RemoveShortcut>
+					<RemoveShortcut Command="{D63DB1F0-404E-4B21-9648-CA8D99245EC3},36" Scope="全局">Ctrl+[, Ctrl+S</RemoveShortcut>
+					<RemoveShortcut Command="{D63DB1F0-404E-4B21-9648-CA8D99245EC3},39" Scope="全局">Ctrl+[, O</RemoveShortcut>
+					<RemoveShortcut Command="{D63DB1F0-404E-4B21-9648-CA8D99245EC3},39" Scope="全局">Ctrl+[, Ctrl+O</RemoveShortcut>
+					<RemoveShortcut Command="{D63DB1F0-404E-4B21-9648-CA8D99245EC3},40" Scope="全局">Ctrl+[, P</RemoveShortcut>
+					<RemoveShortcut Command="{D63DB1F0-404E-4B21-9648-CA8D99245EC3},40" Scope="全局">Ctrl+[, Ctrl+P</RemoveShortcut>
 					<Shortcut Command="ReSharper.ReSharper_BlockComment" Scope="XAML UI 设计器">Ctrl+Shift+/</Shortcut>
 					<Shortcut Command="ReSharper.ReSharper_BlockComment" Scope="文本编辑器">Ctrl+Shift+/</Shortcut>
 					<Shortcut Command="ReSharper.ReSharper_BookmarksBookmarksMenu" Scope="全局">Ctrl+`</Shortcut>
@@ -2716,9 +2810,59 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<Shortcut Command="Edit.GotoBrace" Scope="文本编辑器">Alt+]</Shortcut>
 					<Shortcut Command="Window.CloseDocumentWindow" Scope="全局">Esc</Shortcut>
 					<Shortcut Command="OtherContextMenus.EasyMDIToolWindow.CloseAllButPinned" Scope="文本编辑器">Shift+F4</Shortcut>
+					<Shortcut Command="Edit.ToggleAllOutlining" Scope="全局">Shift+Alt+O</Shortcut>
+					<Shortcut Command="Edit.CollapseAllOutlining" Scope="全局">Ctrl+[</Shortcut>
+					<Shortcut Command="Edit.ExpandAllOutlining" Scope="全局">Ctrl+]</Shortcut>
+					<Shortcut Command="Format.GuideSettings" Scope="全局">F6</Shortcut>
 				</UserShortcuts>
 			</KeyboardShortcuts>
 		</Category>
+	</Category>
+	<Category name="Environment_Help" RegisteredName="Environment_Help">
+		<Category name="Environment_Help_IndexFilter" Category="{A69C6FF2-EC60-4fc8-BB7E-F77AB60938B4}" Package="{4A791146-19E4-11D3-B86B-00C04F79F802}" RegisteredName="Environment_Help_IndexFilter" PackageName="Visual Studio Help Package">
+			<PropertyValue name="Filter">VC</PropertyValue>
+		</Category>
+		<Category name="Environment_Help_Options" Category="{C7C72A03-D951-428f-9F0D-D29D9E038FAA}" Package="{4A791146-19E4-11D3-B86B-00C04F79F802}" RegisteredName="Environment_Help_Options" PackageName="Visual Studio Help Package">
+			<PropertyValue name="CurrentChannel">VCHowDoI80</PropertyValue>
+			<PropertyValue name="DeveloperCenter">http://go.microsoft.com/fwlink/?LinkId=47810&amp;clcid=%VSSPV_LCID_HEX%</PropertyValue>
+			<PropertyValue name="ProfileDevLanguages">C++</PropertyValue>
+		</Category>
+		<Category name="Environment_Help_SearchFilter" Category="{C59B9E28-E89E-4028-A3EF-50FA6DF01120}" Package="{4A791146-19E4-11D3-B86B-00C04F79F802}" RegisteredName="Environment_Help_SearchFilter" PackageName="Visual Studio Help Package">
+			<CurrentSearchFilter>
+				<SearchFilterState>
+					<Filter Id="Language" Default="False">
+						<Values>
+							<Value Id="C++" Checked="True"/>
+						</Values>
+					</Filter>
+					<Filter Id="Technology" Default="True">
+						<Values>
+							<Value Id="ASPNETWeb" Checked="False"/>
+							<Value Id="Devices" Checked="False"/>
+							<Value Id="Longhorn" Checked="False"/>
+							<Value Id="NETCompactFramework" Checked="False"/>
+							<Value Id="NETCppLibs" Checked="True"/>
+							<Value Id="NETFramework" Checked="False"/>
+							<Value Id="NativeCppLibs" Checked="True"/>
+							<Value Id="OfficeDev" Checked="False"/>
+							<Value Id="SQLServer2000" Checked="False"/>
+							<Value Id="SQLServer2005" Checked="False"/>
+							<Value Id="ServerEnt" Checked="False"/>
+							<Value Id="VisualStudioIDE" Checked="False"/>
+							<Value Id="WebDevelopment" Checked="False"/>
+							<Value Id="Win32" Checked="True"/>
+							<Value Id="WinForms" Checked="False"/>
+						</Values>
+					</Filter>
+					<Filter Id="TopicTypes" Default="True">
+					</Filter>
+				</SearchFilterState>
+			</CurrentSearchFilter>
+		</Category>
+	</Category>
+	<Category name="SQL_Editor" Category="{7d092b67-f9b8-4de4-a60e-298bada6f735}" Package="{cd5a6b66-0d89-4949-b356-361cf0d74372}" RegisteredName="SQL_Editor" PackageName="RadLangSvc.Package, RadLangSvc.VS, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"/>
+	<Category name="Test Tools_Test Project" Category="{83eb4e3c-d916-35f7-0118-10f5d3fd41e9}" Package="{a9405ae6-9ac6-4f0e-a03f-7afe45f6fcb7}" RegisteredName="Test Tools_Test Project">
+		<PropertyValue name="DefaultProjectLanguage">VC</PropertyValue>
 	</Category>
 	<Category name="HTML Tag Specific" Category="{7583bb73-a453-40e8-8951-b6986ddb1d9b}" Package="{1B437D20-F8FE-11D2-A6AE-00104BCC7269}" RegisteredName="HTML Tag Specific" PackageName="Visual Studio HTM Editor Package"/>
 	<Category name="Test Tools_Web Test_SharePoint" Category="{7BEC21FF-13B0-4104-89B0-43FDAE76835E}" Package="{a9405ae6-9ac6-4f0e-a03f-7afe45f6fcb7}" RegisteredName="Test Tools_Web Test_SharePoint" PackageName="Microsoft.VisualStudio.TestTools.TestCaseManagement.QualityToolsPackage, Microsoft.VisualStudio.QualityTools.TestCaseManagement, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

@@ -16,6 +16,7 @@ int CHDC::OLD_PERCENT_COUNT = 0;
 double CHDC::SIMILARITY_RATIO_SUM = 0;
 int CHDC::SIMILARITY_RATIO_COUNT = 0;
 
+
 void CHDC::PrintInfo(int currentTime)
 {
 	if( ! ( ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 

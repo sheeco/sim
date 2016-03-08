@@ -15,6 +15,7 @@ vector<CHotspot *> CHotspot::selectedHotspots;
 vector<CHotspot *> CHotspot::oldSelectedHotspots;
 vector<CHotspot *> CHotspot::deletedHotspots;
 
+
 bool CHotspot::ifPositionExists(CPosition* pos)
 {
 	if(coveredPositions.empty())

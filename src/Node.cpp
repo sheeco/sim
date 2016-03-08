@@ -3,6 +3,8 @@
 #include "FileHelper.h"
 #include "Sink.h"
 
+extern _RoutingProtocol ROUTING_PROTOCOL;
+
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 
 int CNode::SLOT_TOTAL = 0;
@@ -38,7 +40,6 @@ double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
 double CNode::DECAY_RATIO = 0.90;  //0.98(/s)
 double CNode::TRANS_RATIO = 0.20;  //0.25
 
-extern _RoutingProtocol ROUTING_PROTOCOL;
 
 vector<CNode *> CNode::getAllNodes(bool sort)
 {

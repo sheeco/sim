@@ -34,6 +34,7 @@ bool HAR::TEST_LEARN = false;
 double HAR::MIN_POSITION_WEIGHT = 0;
 bool HAR::TEST_BALANCED_RATIO = false;
 
+
 double HAR::getHotspotHeat(CHotspot *hotspot)
 {
 	int nCoveredNodes = hotspot->getNCoveredNodes();

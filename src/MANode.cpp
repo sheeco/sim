@@ -8,6 +8,7 @@ vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
 CGeneralNode::_Receive CMANode::RECEIVE_MODE = _selfish;
 
+
 bool CMANode::receiveData(int time, vector<CData> datas)
 {
 	if(buffer.size() > BUFFER_CAPACITY)

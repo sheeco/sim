@@ -12,9 +12,6 @@ vector<CHotspot *> CHotspotSelect::selectedHotspots;
 extern _HotspotSelect HOTSPOT_SELECT;
 
 
-//CHotspotSelect::CHotspotSelect()
-//{}
-
 void CHotspotSelect::updateHotspotCandidates()
 {
 	//制作候选hotspot集的副本

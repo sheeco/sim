@@ -393,3 +393,9 @@
 - RFCT：对于热点类型的定义和使用，将`TYPE_MERGE_HOTSPOT`、`TYPE_NEW_HOTSPOT`、`TYPE_OLD_HOTSPOT`等宏定义改为类内的枚举类定义`CHotspot::_TypeHotspot`；
 - RFCT：新增`CConfiguration`顶级类，为之后添加从文件中读取参数配置的功能做准备；
 - RFCT：将主函数中的运行部分移入单独的`Run()`函数；
+
+
+###### 2016-03-08  ·  *< 2.6.1 >*
+
+- MNT：自定义 VS 和 Resharper 快捷键，并保存在文件`HDC.vssettings`中，加入项目追踪列表；
+- RFCT：调整项目的代码目录结构；

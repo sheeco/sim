@@ -3,6 +3,7 @@
 
 double CPostSelect::ALPHA = 0.03;  //ratio for post selection
 
+
 CPostSelect::CPostSelect(vector<CHotspot *> hotspotCandidates)
 {
 	this->maxRatio = 0;
@@ -13,11 +14,6 @@ CPostSelect::CPostSelect(vector<CHotspot *> hotspotCandidates)
 	}
 	this->hotspotCandidates = hotspotCandidates;
 }
-
-
-//CPostSelect::~CPostSelect()
-//{
-//}
 
 double CPostSelect::getRatioForHotspot(CHotspot *hotspot) const
 {

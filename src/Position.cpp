@@ -6,6 +6,7 @@ int CPosition::nPositions = 0;
 vector<CPosition *> CPosition::positions;
 vector<CPosition *> CPosition::deletedPositions;
 
+
 int CPosition::getIndexOfPosition(CPosition* pos)
 {
 	for(int i = 0; i < nPositions; i++)
