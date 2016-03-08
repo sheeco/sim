@@ -50,26 +50,35 @@
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=TYPEDEF/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=UNION/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=UNION_005FMEMBER/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=0A4664ADE151C349B62FB87D8470A5D9/@KeyIndexDefined">False</s:Boolean>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=0A4664ADE151C349B62FB87D8470A5D9/MatchComments/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=0A4664ADE151C349B62FB87D8470A5D9/MatchIdentifiers/@EntryValue">False</s:Boolean>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=8D99CBCC55CBF34DBD61974A525153B6/@KeyIndexDefined">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=8D99CBCC55CBF34DBD61974A525153B6/Color/@EntryValue">Blue</s:String>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=8D99CBCC55CBF34DBD61974A525153B6/MatchComments/@EntryValue">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=8D99CBCC55CBF34DBD61974A525153B6/Name/@EntryValue">Todo</s:String>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=8D99CBCC55CBF34DBD61974A525153B6/Pattern/@EntryValue">\bTODO\b(.*)</s:String>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=8D99CBCC55CBF34DBD61974A525153B6/TodoIconStyle/@EntryValue">Normal</s:String>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=A8053BF83897C34F822CA8329B4B7469/@KeyIndexDefined">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=A8053BF83897C34F822CA8329B4B7469/Color/@EntryValue">Red</s:String>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=A8053BF83897C34F822CA8329B4B7469/MatchComments/@EntryValue">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=A8053BF83897C34F822CA8329B4B7469/Name/@EntryValue">Not implemented</s:String>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=A8053BF83897C34F822CA8329B4B7469/Pattern/@EntryValue">\bNotImplementedException\b</s:String>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=A8053BF83897C34F822CA8329B4B7469/TodoIconStyle/@EntryValue">Edit</s:String>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=BE0013BAE56B6C41A65567E03F80EFA8/@KeyIndexDefined">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=BE0013BAE56B6C41A65567E03F80EFA8/Color/@EntryValue">Red</s:String>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=BE0013BAE56B6C41A65567E03F80EFA8/MatchComments/@EntryValue">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=BE0013BAE56B6C41A65567E03F80EFA8/Name/@EntryValue">Bug</s:String>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=BE0013BAE56B6C41A65567E03F80EFA8/Pattern/@EntryValue">(?&lt;=\W|^)(?&lt;TAG&gt;BUG)(\W|$)(.*)</s:String>
-	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=BE0013BAE56B6C41A65567E03F80EFA8/TodoIconStyle/@EntryValue">Error</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=4386F01B791C56499C7EA059B55FFB54/@KeyIndexDefined">False</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=8D99CBCC55CBF34DBD61974A525153B6/@KeyIndexDefined">False</s:Boolean>
+	
+	
+	
+	
+	
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=961894CCC510410ABE2B99132B253C80/@KeyIndexDefined">False</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=A8053BF83897C34F822CA8329B4B7469/@KeyIndexDefined">False</s:Boolean>
+	
+	
+	
+	
+	
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=BE0013BAE56B6C41A65567E03F80EFA8/@KeyIndexDefined">False</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=C45C99906E5A974E8A0129566B847650/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=C45C99906E5A974E8A0129566B847650/Color/@EntryValue">HotTrack</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=C45C99906E5A974E8A0129566B847650/MatchComments/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=C45C99906E5A974E8A0129566B847650/Name/@EntryValue">Todo</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=C45C99906E5A974E8A0129566B847650/Pattern/@EntryValue">(?&lt;=\W|^)(?&lt;TAG&gt;TODO)(\W|$)(.*)</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=C45C99906E5A974E8A0129566B847650/TodoIconStyle/@EntryValue">Edit</s:String>
+	
+	
+	
+	
+	
 	
 	
 	

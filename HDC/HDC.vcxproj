@@ -137,6 +137,7 @@
     <None Include="..\.gitattributes" />
     <None Include="..\.gitignore" />
     <None Include="..\HDC.sln.DotSettings" />
+    <None Include="..\HDC.vssettings" />
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
