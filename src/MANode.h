@@ -67,7 +67,7 @@ private:
 
 public:
 
-	static _Receive RECEIVE_MODE;
+	static _RECEIVE RECEIVE_MODE;
 
 	static vector<CMANode *> getMANodes()
 	{
@@ -204,12 +204,12 @@ public:
 		{
 			cout << endl << "Error @ CMANode::getDataTolerance() : RECEIVE_MODE = " << RECEIVE_MODE << endl;
 			//TODO: add exit(-1) after all errors
-			_PAUSE;
+			_PAUSE_;
 			exit(-1);
 		}
 	}
 
-	vector<CData>  sendAllData(_Send mode) override
+	vector<CData>  sendAllData(_SEND mode) override
 	{
 		return CGeneralNode::sendAllData(mode);
 	}

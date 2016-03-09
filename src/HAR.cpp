@@ -6,7 +6,7 @@
 #include "MANode.h"
 
 //extern int currentTime;
-extern _HotspotSelect HOTSPOT_SELECT;
+extern _HOTSPOT_SELECT HOTSPOT_SELECT;
 
 vector<CHotspot *> HAR::m_hotspots;
 vector<CRoute> HAR::m_routes;
@@ -24,7 +24,7 @@ double HAR::SIMILARITY_RATIO_SUM = 0;
 int HAR::SIMILARITY_RATIO_COUNT = 0;
 
 double HAR::BETA = 0.0025;  //ratio for true hotspot
-double HAR::GAMMA = 0.5;  //ratio for HotspotsAboveAverage
+//double HAR::GAMMA = 0.5;  //ratio for HotspotsAboveAverage
 double HAR::CO_HOTSPOT_HEAT_A1 = 1;
 double HAR::CO_HOTSPOT_HEAT_A2 = 30;
 double HAR::LAMBDA = 0;
@@ -64,24 +64,24 @@ double HAR::getWaitingTime(int currentTime, CHotspot *hotspot)
 
 	for(int i = 0; i < coveredNodes.size(); i++)
 	{
-		int tmp_time = currentTime;
-		double tmp;
+		int temp_time = currentTime;
+		double temp;
 
 		//IHAR: Reduce Memory currentTime
 		if( HOTSPOT_SELECT == _improved )
 		{
-			tmp_time = min(currentTime, MAX_MEMORY_TIME);
+			temp_time = min(currentTime, MAX_MEMORY_TIME);
 		}
 
 		nCoveredPositionsForNode.push_back( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) );
-		tmp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( tmp_time + CHotspot::SLOT_HOTSPOT_UPDATE );
+		temp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( temp_time + CHotspot::SLOT_HOTSPOT_UPDATE );
 
 		//merge-HAR: ratio
-		tmp *= pow( hotspot->getCoByCandidateType(), hotspot->getAge() );
+		temp *= pow( hotspot->getCoByCandidateType(), hotspot->getAge() );
 
-		if(tmp >= BETA)
+		if(temp >= BETA)
 		{
-			result *= tmp;
+			result *= temp;
 			count_trueHotspot++;
 		}
 	}
@@ -116,10 +116,10 @@ double HAR::getTimeIncrementForInsertion(int currentTime, CRoute route, int fron
 double HAR::calculateRatioForInsertion(int currentTime, CRoute route, int front, CHotspot *hotspot)
 {
 	double time_incr = getTimeIncrementForInsertion(currentTime, route, front, hotspot);
-	vector<int> tmp_nodes = route.getCoveredNodes();
-	AddToListUniquely(tmp_nodes, hotspot->getCoveredNodes());
+	vector<int> temp_nodes = route.getCoveredNodes();
+	AddToListUniquely(temp_nodes, hotspot->getCoveredNodes());
 
-	double sumGenerationRate = getSumGenerationRate(tmp_nodes);
+	double sumGenerationRate = getSumGenerationRate(temp_nodes);
 	return ( time_incr * sumGenerationRate );
 }
 
@@ -236,23 +236,23 @@ void HAR::HotspotSelection(int currentTime)
 
 void HAR::HotspotClassification(int currentTime)
 {
-	vector<CHotspot *> tmp_hotspots = CHotspot::selectedHotspots;
+	vector<CHotspot *> temp_hotspots = CHotspot::selectedHotspots;
 	m_hotspots = CHotspot::selectedHotspots;
-	for(vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin(); ihotspot != tmp_hotspots.end(); ++ihotspot)
+	for(vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin(); ihotspot != temp_hotspots.end(); ++ihotspot)
 	{
 		(*ihotspot)->setHeat( getHotspotHeat(*ihotspot) );
 	}
 	
 	vector<CRoute> newRoutes;
 	
-	while(! tmp_hotspots.empty())
+	while(! temp_hotspots.empty())
 	{
 		//构造一个hotspot class
 		CRoute route(CSink::getSink());
 		double current_time_cost = 0;
 		while(true)
 		{
-			if( tmp_hotspots.empty() )
+			if( temp_hotspots.empty() )
 				break;
 			//循环向class中添加hotspot，直到buffer已满
 			double max_ratio = 0;
@@ -265,13 +265,13 @@ void HAR::HotspotClassification(int currentTime)
 			double ratio = 0;
 			int size_waypoints = route.getNWayPoints();
 			//遍历所有剩余hotspot，选择ratio最大的hotspot添加
-			for(int ihotspot = 0; ihotspot < tmp_hotspots.size(); ihotspot++)
+			for(int ihotspot = 0; ihotspot < temp_hotspots.size(); ihotspot++)
 			{
 				double min_length_increment = -1;
 				double best_front = -1;
 				for(int i = 0; i < size_waypoints; i++)  //先寻找最小路径增量？？
 				{
-					double length_increment = route.getAddingDistance(i, tmp_hotspots[ihotspot]);
+					double length_increment = route.getAddingDistance(i, temp_hotspots[ihotspot]);
 					if(length_increment < min_length_increment
 						|| min_length_increment < 0)
 					{
@@ -280,10 +280,10 @@ void HAR::HotspotClassification(int currentTime)
 					}
 				}
 
-				time_increment = getTimeIncrementForInsertion(currentTime, route, best_front, tmp_hotspots[ihotspot]);
-				vector<int> tmp_nodes = route.getCoveredNodes();
-				AddToListUniquely(tmp_nodes, tmp_hotspots[ihotspot]->getCoveredNodes());
-				sum_generationRate = getSumGenerationRate(tmp_nodes);
+				time_increment = getTimeIncrementForInsertion(currentTime, route, best_front, temp_hotspots[ihotspot]);
+				vector<int> temp_nodes = route.getCoveredNodes();
+				AddToListUniquely(temp_nodes, temp_hotspots[ihotspot]->getCoveredNodes());
+				sum_generationRate = getSumGenerationRate(temp_nodes);
 				ratio = time_increment * sum_generationRate;  //sum_ge重复计算？？
 				if(ratio > max_ratio)
 				{
@@ -302,10 +302,10 @@ void HAR::HotspotClassification(int currentTime)
 				&& route.getNWayPoints() == 1)
 			{
 				//cout << endl << "Error @ HAR::HotspotClassification() : A single hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
-				//_PAUSE;
-				route.AddHotspot(max_front, tmp_hotspots[max_hotspot]);
-				vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin() + max_hotspot;
-				tmp_hotspots.erase(ihotspot);
+				//_PAUSE_;
+				route.AddHotspot(max_front, temp_hotspots[max_hotspot]);
+				vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin() + max_hotspot;
+				temp_hotspots.erase(ihotspot);
 				break;
 			}
 			if( new_buffer > CMANode::getBufferCapacity() )
@@ -314,9 +314,9 @@ void HAR::HotspotClassification(int currentTime)
 			{
 				current_time_cost += max_time_increment;
 				//current_buffer = new_buffer;
-				route.AddHotspot(max_front, tmp_hotspots[max_hotspot]);
-				vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin() + max_hotspot;
-				tmp_hotspots.erase(ihotspot);
+				route.AddHotspot(max_front, temp_hotspots[max_hotspot]);
+				vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin() + max_hotspot;
+				temp_hotspots.erase(ihotspot);
 			}
 		}
 		newRoutes.push_back(route);
@@ -481,21 +481,21 @@ void HAR::SendData(int currentTime)
 				waiting_time.open("waiting-time.txt", ios::app);
 
 				CHotspot *atHotspot = (*iMANode)->getAtHotspot();
-				int tmp = ROUND( getWaitingTime(currentTime, atHotspot) );
+				int temp = ROUND( getWaitingTime(currentTime, atHotspot) );
 				//FIXME: 如果不允许Buffer溢出，Buffer已满时即直接跳过waiting
 				if( ( CMANode::RECEIVE_MODE == CGeneralNode::_selfish ) && (*iMANode)->isFull() )
 					(*iMANode)->setWaitingTime( 0 );
 				else
 				{
-					(*iMANode)->setWaitingTime( tmp );
-					atHotspot->addWaitingTime( tmp );
-					flash_cout << "####  ( MA " << (*iMANode)->getID() << " wait for " << tmp << " )                               " ;
-					//if(tmp == 0)
+					(*iMANode)->setWaitingTime( temp );
+					atHotspot->addWaitingTime( temp );
+					flash_cout << "####  ( MA " << (*iMANode)->getID() << " wait for " << temp << " )                               " ;
+					//if(temp == 0)
 					//	(*iMANode)->setAtHotspot(nullptr);
 				}
 
 				//记录waiting time信息
-				if( tmp > 0)
+				if( temp > 0)
 				{
 					waiting_time << atHotspot->getTime() << TAB << (*iMANode)->getID() << TAB << atHotspot->getID() << TAB ;
 					switch( atHotspot->getCandidateType() )
@@ -513,7 +513,7 @@ void HAR::SendData(int currentTime)
 							break;
 					}
 					waiting_time << atHotspot->getAge() << TAB << atHotspot->getNCoveredPosition() << TAB 
-								 << atHotspot->getHeat() << TAB << tmp << endl;
+								 << atHotspot->getHeat() << TAB << temp << endl;
 				}
 				waiting_time.close();	
 

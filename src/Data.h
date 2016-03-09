@@ -189,7 +189,7 @@ public:
 		if( MAX_HOP > 0 && MAX_TTL > 0 )
 		{
 			cout << endl << "Error @ CData::useHOP() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
-			_PAUSE;
+			_PAUSE_;
 			return false;
 		}
 		else
@@ -200,7 +200,7 @@ public:
 		if( MAX_HOP > 0 && MAX_TTL > 0 )
 		{
 			cout << endl << "Error @ CData::useTTL() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
-			_PAUSE;
+			_PAUSE_;
 			return false;
 		}
 		else

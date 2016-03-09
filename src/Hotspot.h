@@ -19,7 +19,7 @@ class CHotspot :
 
 protected:
 
-	typedef enum _TypeHotspot {_new_hotspot, _old_hotspot, _merge_hotspot } _TypeHotspot;
+	typedef enum _TYPE_HOTSPOT {_new_hotspot, _old_hotspot, _merge_hotspot } _TYPE_HOTSPOT;
 
 	//TODO: current public static attr should be converted to protected amap
 	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
@@ -44,7 +44,7 @@ private:
 	static int ID_COUNT;
 
 	//merge-HAR
-	_TypeHotspot candidateType;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
+	_TYPE_HOTSPOT candidateType;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
 	int age;  //用于标记旧热点或归并热点的年龄，即连任轮数
 
 	//检查某个position是否已在覆盖列表中
@@ -172,11 +172,11 @@ public:
 	}
 
 	//merge_HAR
-	inline _TypeHotspot getCandidateType() const
+	inline _TYPE_HOTSPOT getCandidateType() const
 	{
 		return this->candidateType;
 	}
-	inline void setCandidateType(_TypeHotspot candidateType)
+	inline void setCandidateType(_TYPE_HOTSPOT candidateType)
 	{
 		this->candidateType = candidateType;
 	}
@@ -250,7 +250,7 @@ public:
 		if( i < 0 || i > deliveryCounts.size() )
 		{
 			cout << endl << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") : " << i << " exceeds (0," << deliveryCounts.size() - 1 << ") !" << endl;
-			_PAUSE;
+			_PAUSE_;
 		}
 		return deliveryCounts.at( i );
 	}
@@ -274,7 +274,7 @@ public:
 		if( i < 0 || i > waitingTimes.size() )
 		{
 			cout << endl << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") : " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
-			_PAUSE;
+			_PAUSE_;
 		}		return waitingTimes.at( i );
 	}
 	inline void addWaitingTime(int t)

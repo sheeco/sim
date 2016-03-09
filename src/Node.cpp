@@ -3,7 +3,7 @@
 #include "FileHelper.h"
 #include "Sink.h"
 
-extern _RoutingProtocol ROUTING_PROTOCOL;
+extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
 
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 
@@ -17,9 +17,9 @@ int CNode::CTRL_SIZE = 0;
 
 int CNode::BUFFER_CAPACITY = 0;
 int CNode::ENERGY = 0;
-CGeneralNode::_Receive CNode::RECEIVE_MODE = _loose;
-CGeneralNode::_Send CNode::SEND_MODE = _dump;
-CGeneralNode::_Queue CNode::QUEUE_MODE = _fifo;
+CGeneralNode::_RECEIVE CNode::RECEIVE_MODE = _loose;
+CGeneralNode::_SEND CNode::SEND_MODE = _dump;
+CGeneralNode::_QUEUE CNode::QUEUE_MODE = _fifo;
 
 int CNode::encounterAtHotspot = 0;
 int CNode::encounterOnRoute = 0;

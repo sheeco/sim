@@ -2,17 +2,15 @@
 
 #include "SortHelper.h"
 #include "PostSelect.h"
-#include "NodeRepair.h"
-#include "HotspotSelect.h"
 #include "Prophet.h"
 #include "HDC.h"
 #include "Sink.h"
 
 
 //TODO: move these global config to a global CConfiguration parameter
-_MacProtocol MAC_PROTOCOL = _smac;
-_RoutingProtocol ROUTING_PROTOCOL = _prophet;
-_HotspotSelect HOTSPOT_SELECT = _original;
+_MAC_PROTOCOL MAC_PROTOCOL = _smac;
+_ROUTING_PROTOCOL ROUTING_PROTOCOL = _prophet;
+_HOTSPOT_SELECT HOTSPOT_SELECT = _original;
 
 int DATATIME = 0;
 int RUNTIME = 0;
@@ -279,7 +277,7 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-help" )
 			{
 				cout << INFO_HELP;
-				_PAUSE;
+				_PAUSE_;
 				exit(1);
 			}
 			else
@@ -451,7 +449,7 @@ int main(int argc, char* argv[])
 
 	if( ! ParseParameters(argc, argv) )
 	{
-		_PAUSE;
+		_PAUSE_;
 		exit(-1);
 	}
 
@@ -463,5 +461,5 @@ int main(int argc, char* argv[])
 
 	Run();
 
-	_ALERT;
+	_ALERT_;
 }

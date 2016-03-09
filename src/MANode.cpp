@@ -6,7 +6,7 @@ int CMANode::SPEED = 30;
 int CMANode::BUFFER_CAPACITY = 100;
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
-CGeneralNode::_Receive CMANode::RECEIVE_MODE = _selfish;
+CGeneralNode::_RECEIVE CMANode::RECEIVE_MODE = _selfish;
 
 
 bool CMANode::receiveData(int time, vector<CData> datas)
@@ -14,7 +14,7 @@ bool CMANode::receiveData(int time, vector<CData> datas)
 	if(buffer.size() > BUFFER_CAPACITY)
 	{
 		cout << endl << "Error @ CMANode::receiveData() : buffer overflown"<<endl;
-		_PAUSE;
+		_PAUSE_;
 		return false;
 	}
 	int num = datas.size();
@@ -91,7 +91,7 @@ void CMANode::updateLocation(int time)
 				if( atHotspot->getCandidateType() > 3 )
 				{
 					cout << endl << "Error @ CMANode::updateLocation : atHotspot is corrupted !" << endl;
-					_PAUSE;
+					_PAUSE_;
 				}
 			}
 			route.updateToPoint();

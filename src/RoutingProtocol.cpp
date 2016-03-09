@@ -6,9 +6,9 @@ extern int RUNTIME;
 extern int DATATIME;
 extern string INFO_LOG;
 extern ofstream debugInfo;
-extern _MacProtocol MAC_PROTOCOL;
-extern _RoutingProtocol ROUTING_PROTOCOL;
-extern _HotspotSelect HOTSPOT_SELECT;
+extern _MAC_PROTOCOL MAC_PROTOCOL;
+extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
+extern _HOTSPOT_SELECT HOTSPOT_SELECT;
 
 int CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //Êý¾Ý·¢ËÍslot
 bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = false;

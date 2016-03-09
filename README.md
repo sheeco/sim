@@ -399,3 +399,9 @@
 
 - MNT：自定义 VS 和 Resharper 快捷键，并保存在文件`HDC.vssettings`中，加入项目追踪列表；
 - RFCT：调整项目的代码目录结构；
+
+
+###### 2016-03-09  ·  *< 2.6.2 >*
+
+- RFCT：将枚举类名格式改为`_ALL_UPPERCASE`，系统行为宏定义格式改为`_ALL_UPPERCASE_`；
+- RFCT：调整项目的代码目录结构，将 VS 工程和设置文件等移入`.project\`文件夹下（Resharper 的配置导出到文件`.project/resharper.DotSettings`，VS 的配置导出到文件`.project/HDC.vssettings`）；

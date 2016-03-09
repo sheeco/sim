@@ -8,7 +8,7 @@
 
 extern int RUNTIME;
 extern int DATATIME;
-extern _RoutingProtocol ROUTING_PROTOCOL;
+extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
 
 /***************************** xHAR ********************************/
 
@@ -90,7 +90,7 @@ private:
 public:
 
 	static double BETA;  //ratio for true hotspot
-	static double GAMMA;  //ratio for HotspotsAboveAverage
+//	static double GAMMA;  //ratio for HotspotsAboveAverage
 	static double CO_HOTSPOT_HEAT_A1;
 	static double CO_HOTSPOT_HEAT_A2;
 

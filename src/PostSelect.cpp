@@ -20,7 +20,7 @@ double CPostSelect::getRatioForHotspot(CHotspot *hotspot) const
 	if(maxRatio == 0)
 	{
 		cout << endl << "Error @ CPostSelect::getRatioForHotspot() : maxRatio = 0"<<endl;
-		_PAUSE;
+		_PAUSE_;
 		return -1;
 	}
 	else
@@ -81,19 +81,19 @@ CHotspot* CPostSelect::findBestHotspotForNode(int inode)
 
 vector<CHotspot *> CPostSelect::assignPositionsToHotspots(vector<CHotspot *> hotspots) const
 {
-	vector<CHotspot *> tmp_hotspots = hotspots;
+	vector<CHotspot *> temp_hotspots = hotspots;
 	vector<CHotspot *> result_hotspots;
-	while(! tmp_hotspots.empty())
+	while(! temp_hotspots.empty())
 	{
-		tmp_hotspots = CSortHelper::mergeSort(tmp_hotspots, CSortHelper::ascendByRatio);
+		temp_hotspots = CSortHelper::mergeSort(temp_hotspots, CSortHelper::ascendByRatio);
 		//FIXME:尽量多 / 平均？
-		CHotspot *selected_hotspot = tmp_hotspots.at(tmp_hotspots.size() - 1);
+		CHotspot *selected_hotspot = temp_hotspots.at(temp_hotspots.size() - 1);
 		if(selected_hotspot->getNCoveredPosition() == 0)
 			break;
-		tmp_hotspots.pop_back();
+		temp_hotspots.pop_back();
 		result_hotspots.push_back(selected_hotspot);
 		vector<CPosition *> positions = selected_hotspot->getCoveredPositions();
-		for(vector<CHotspot *>::iterator ihotspot = tmp_hotspots.begin(); ihotspot != tmp_hotspots.end(); ++ihotspot)
+		for(vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin(); ihotspot != temp_hotspots.end(); ++ihotspot)
 		{
 			(*ihotspot)->removePositionList(positions);
 			(*ihotspot)->updateStatus();
@@ -158,7 +158,7 @@ vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 	if( ! verifyCompleted())
 	{
 		cout << endl << "Error @ CPostSelect::PostSelect() : not completed"<<endl;
-		_PAUSE;
+		_PAUSE_;
 	}
 
 	//分配每个position到唯一一个热点，并计算最终选取出的hotspot的cover的node，以备使用

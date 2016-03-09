@@ -5,8 +5,8 @@
 #include "SortHelper.h"
 
 
-extern _MacProtocol MAC_PROTOCOL;
-extern _RoutingProtocol ROUTING_PROTOCOL;
+extern _MAC_PROTOCOL MAC_PROTOCOL;
+extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
 extern string INFO_SINK;
 
 int CEpidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;

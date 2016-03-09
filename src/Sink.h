@@ -67,10 +67,10 @@ public:
 		return true;
 	}
 
-	vector<CData> sendAllData(_Send mode) override
+	vector<CData> sendAllData(_SEND mode) override
 	{
 		cout << "Errror @ CSink::sendAllData() : This function mustn't be called !" << endl;
-		_PAUSE;
+		_PAUSE_;
 		return vector<CData>();
 	}
 

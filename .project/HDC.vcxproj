@@ -10,13 +10,10 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\file-formatter.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{392E2C88-BFB0-4DBB-8EBE-904814F41D52}</ProjectGuid>
+    <ProjectGuid>{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>fileformatter</RootNamespace>
+    <RootNamespace>HDC</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -24,6 +21,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -44,12 +42,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>build\$(Configuration)\</OutDir>
+    <OutDir>..\build\$(Configuration)\</OutDir>
+    <IntDir>..\build\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>bin\</OutDir>
-    <IntDir>build\</IntDir>
+    <OutDir>..\bin\</OutDir>
+    <IntDir>..\build\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,13 +57,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <BuildLog>
-      <Path>build\$(Configuration)\$(ProjectName).log</Path>
+      <Path>..\build\$(Configuration)\$(ProjectName).log</Path>
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -72,10 +72,11 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -84,9 +85,64 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <BuildLog>
-      <Path>build\$(ProjectName).log</Path>
+      <Path>..\build\$(ProjectName).log</Path>
     </BuildLog>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Configuration.cpp" />
+    <ClCompile Include="..\src\Data.cpp" />
+    <ClCompile Include="..\src\Epidemic.cpp" />
+    <ClCompile Include="..\src\FileHelper.cpp" />
+    <ClCompile Include="..\src\GeneralNode.cpp" />
+    <ClCompile Include="..\src\HAR.cpp" />
+    <ClCompile Include="..\src\HDC.cpp" />
+    <ClCompile Include="..\src\Hotspot.cpp" />
+    <ClCompile Include="..\src\HotspotSelect.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\MANode.cpp" />
+    <ClCompile Include="..\src\Node.cpp" />
+    <ClCompile Include="..\src\NodeRepair.cpp" />
+    <ClCompile Include="..\src\Position.cpp" />
+    <ClCompile Include="..\src\PostSelect.cpp" />
+    <ClCompile Include="..\src\Prophet.cpp" />
+    <ClCompile Include="..\src\Route.cpp" />
+    <ClCompile Include="..\src\RoutingProtocol.cpp" />
+    <ClCompile Include="..\src\Sink.cpp" />
+    <ClCompile Include="..\src\SortHelper.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Algorithm.h" />
+    <ClInclude Include="..\src\BasicEntity.h" />
+    <ClInclude Include="..\src\Configuration.h" />
+    <ClInclude Include="..\src\Data.h" />
+    <ClInclude Include="..\src\Entity.h" />
+    <ClInclude Include="..\src\Epidemic.h" />
+    <ClInclude Include="..\src\FileHelper.h" />
+    <ClInclude Include="..\src\GeneralNode.h" />
+    <ClInclude Include="..\src\GeoEntity.h" />
+    <ClInclude Include="..\src\GlobalParameters.h" />
+    <ClInclude Include="..\src\HAR.h" />
+    <ClInclude Include="..\src\HDC.h" />
+    <ClInclude Include="..\src\Helper.h" />
+    <ClInclude Include="..\src\Hotspot.h" />
+    <ClInclude Include="..\src\HotspotSelect.h" />
+    <ClInclude Include="..\src\MACProtocol.h" />
+    <ClInclude Include="..\src\MANode.h" />
+    <ClInclude Include="..\src\Node.h" />
+    <ClInclude Include="..\src\NodeRepair.h" />
+    <ClInclude Include="..\src\Position.h" />
+    <ClInclude Include="..\src\PostSelect.h" />
+    <ClInclude Include="..\src\Process.h" />
+    <ClInclude Include="..\src\Prophet.h" />
+    <ClInclude Include="..\src\Protocol.h" />
+    <ClInclude Include="..\src\Route.h" />
+    <ClInclude Include="..\src\RoutingProtocol.h" />
+    <ClInclude Include="..\src\Sink.h" />
+    <ClInclude Include="..\src\SortHelper.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

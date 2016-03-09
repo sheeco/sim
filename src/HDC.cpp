@@ -1,7 +1,7 @@
 #include "HDC.h"
 #include "SortHelper.h"
 
-extern _HotspotSelect HOTSPOT_SELECT;
+extern _HOTSPOT_SELECT HOTSPOT_SELECT;
 extern string INFO_HOTSPOT;
 extern string INFO_HOTSPOT_STATISTICS;
 extern string INFO_MERGE;

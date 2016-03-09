@@ -27,20 +27,20 @@ protected:
 
 public:
 
-	typedef enum _Send {
+	typedef enum _SEND {
 		_copy,  //发送数据时，保留自身副本
 		_dump   //发送数据时，删除自身副本
-	} _Send;
+	} _SEND;
 
-	typedef enum _Receive {
+	typedef enum _RECEIVE {
 		_loose,   //MA buffer已满时，仍允许继续接收数据
 		_selfish   //MA buffer已满时，不再从其他节点接收数据
-	} _Receive;
+	} _RECEIVE;
 
-	typedef enum _Queue {
+	typedef enum _QUEUE {
 		_fifo,   //可发送配额有限时，优先从头部发送
 		_lifo   //可发送配额有限时，优先从尾部发送
-	} _Queue;
+	} _QUEUE;
 
 	static int TRANS_RANGE;  //transmission range
 	static double PROB_DATA_FORWARD;
@@ -68,7 +68,7 @@ public:
 	}
 
 
-	virtual vector<CData> sendAllData(_Send mode) = 0;
+	virtual vector<CData> sendAllData(_SEND mode) = 0;
 
 	virtual bool receiveData(int time, vector<CData> datas) = 0;
 

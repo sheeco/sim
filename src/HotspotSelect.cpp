@@ -9,7 +9,7 @@ vector<CHotspot *> CHotspotSelect::unselectedHotspots;
 vector<CHotspot *> CHotspotSelect::hotspotsAboveAverage;
 vector<CHotspot *> CHotspotSelect::selectedHotspots;
 
-extern _HotspotSelect HOTSPOT_SELECT;
+extern _HOTSPOT_SELECT HOTSPOT_SELECT;
 
 
 void CHotspotSelect::updateHotspotCandidates()
@@ -19,8 +19,8 @@ void CHotspotSelect::updateHotspotCandidates()
 	{
 		for(vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); ++ihotspot)
 		{
-			CHotspot *tmp_hotspot = new CHotspot(**ihotspot);
-			copy_hotspotCandidates.push_back(tmp_hotspot);
+			CHotspot *temp_hotspot = new CHotspot(**ihotspot);
+			copy_hotspotCandidates.push_back(temp_hotspot);
 		}
 	}
 	unselectedHotspots = CHotspot::hotspotCandidates;	
@@ -67,26 +67,26 @@ void CHotspotSelect::CollectNewPositions(int time)
 {
 	if( ! ( time % CHotspot::SLOT_LOCATION_UPDATE == 0 && time > 0 ) )
 		return ;
-	CPosition* tmp_pos = nullptr;
+	CPosition* temp_pos = nullptr;
 
 	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到CPosition::positions中
 	for(vector<int>::iterator i = CNode::getIdNodes().begin(); i != CNode::getIdNodes().end(); ++i)
 	{
-		tmp_pos = new CPosition();
+		temp_pos = new CPosition();
 		double x = 0, y = 0;
 		CFileHelper::getPositionFromFile(*i, time, x, y);
-		tmp_pos->moveTo(x, y, time);
-		tmp_pos->setNode( *i );
-		tmp_pos->generateID();
-		if(tmp_pos->getID() == -1)
+		temp_pos->moveTo(x, y, time);
+		temp_pos->setNode( *i );
+		temp_pos->generateID();
+		if(temp_pos->getID() == -1)
 		{
 			cout << endl << "Error @ CSortHelper::BuildCandidateHotspots() : Wrong Format"<<endl;
-			_PAUSE;
+			_PAUSE_;
 			break;
 		}
 		else
 		{
-			CPosition::positions.push_back(tmp_pos);
+			CPosition::positions.push_back(temp_pos);
 		}
 	}
 	
@@ -163,12 +163,12 @@ void CHotspotSelect::GreedySelect(int time)
 		for(int i = 0; i < hotspotsAboveAverage.size(); i++)
 		{
 			bool modified = false;
-			vector<CPosition *> tmp_positions = hotspotsAboveAverage[i]->getCoveredPositions();
+			vector<CPosition *> temp_positions = hotspotsAboveAverage[i]->getCoveredPositions();
 
 			//重置flag
 			for(vector<CPosition *>::iterator ipos = uncoveredPositions.begin(); ipos != uncoveredPositions.end(); ++ipos)
 				(*ipos)->setFlag(false);
-			for(vector<CPosition *>::iterator ipos = tmp_positions.begin(); ipos != tmp_positions.end(); ++ipos)
+			for(vector<CPosition *>::iterator ipos = temp_positions.begin(); ipos != temp_positions.end(); ++ipos)
 				(*ipos)->setFlag(true);
 
 			do
@@ -230,17 +230,17 @@ void CHotspotSelect::GreedySelect(int time)
 		}
 		
 		//将这个hotspot覆盖列表中的所有position从其他hotspot的列表中、从uncoveredPositions中移除
-		vector<CPosition *> tmp_positions = best_hotspot->getCoveredPositions();
+		vector<CPosition *> temp_positions = best_hotspot->getCoveredPositions();
 		for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ++ihotspot)
-			(*ihotspot)->removePositionList(tmp_positions);
+			(*ihotspot)->removePositionList(temp_positions);
 
 	
-		for(int j = 0; j < tmp_positions.size(); j++)
+		for(int j = 0; j < temp_positions.size(); j++)
 		{
-			CPosition *tmp_pos = tmp_positions[j];
+			CPosition *temp_pos = temp_positions[j];
 			for(vector<CPosition *>::iterator ipos = uncoveredPositions.begin(); ipos != uncoveredPositions.end(); ++ipos)
 			{
-				if(*ipos == tmp_pos)
+				if(*ipos == temp_pos)
 				{
 					uncoveredPositions.erase(ipos);
 					break;
@@ -263,7 +263,7 @@ void CHotspotSelect::MergeHotspots(int time)
 	vector<CHotspot *> mergeResult;
 	int mergeCount = 0;
 	int oldCount = 0;
-	//stringstream tmp;
+	//stringstream temp;
 
 	//sort new hotspots by x coordinates
 	CHotspot::hotspotCandidates = CSortHelper::mergeSort(CHotspot::hotspotCandidates, CSortHelper::ascendByLocationX);
@@ -292,7 +292,7 @@ void CHotspotSelect::MergeHotspots(int time)
 																				   time );
 				//for merge statistics
 				mergeCount++;
-				//tmp << (*iOld)->getNCoveredPosition() << "/" << (*iNew)->getNCoveredPosition() << "/" << merge->getNCoveredPosition() << "," << merge->getAge() << TAB;
+				//temp << (*iOld)->getNCoveredPosition() << "/" << (*iNew)->getNCoveredPosition() << "/" << merge->getNCoveredPosition() << "," << merge->getAge() << TAB;
 
 				//update the best merge index
 				int current_cover = merge->getNCoveredPosition();

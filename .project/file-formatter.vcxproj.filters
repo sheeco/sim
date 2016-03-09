@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\file-formatter.cpp">
+    <ClCompile Include="..\src\file-formatter.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

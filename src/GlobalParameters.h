@@ -107,11 +107,11 @@
 //#define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI  ->  AreaCircle(CGeneralNode::TRANS_RANGE)
 
 //Output & Debug
-#define flash_cout cout << CR  //控制台输出位置回到行首，在动态显示的输出时使用 flash_cout 代替 cout 即可
 #define TAB '\t'
 #define CR '\r'  //用于控制台输出时同行改写的转义字符
-#define _PAUSE _ALERT; system("pause")
-#define _ALERT cout << '\a'
+#define _PAUSE_ _ALERT_; system("pause")
+#define _ALERT_ cout << '\a'
+#define flash_cout cout << CR  //控制台输出位置回到行首，在动态显示的输出时使用 flash_cout 代替 cout 即可
 
 /********************************** Namespace Lib ***********************************/
 
@@ -131,9 +131,9 @@ using std::exception;
 
 /******************************** Config Const ********************************/
 
-typedef enum _MacProtocol { _smac, _hdc } _MacProtocol;
-typedef enum _RoutingProtocol { _har, _prophet, _epidemic } _RoutingProtocol;
-typedef enum _HotspotSelect { _original, _improved, _merge } _HotspotSelect;
+typedef enum _MAC_PROTOCOL { _smac, _hdc } _MAC_PROTOCOL;
+typedef enum _ROUTING_PROTOCOL { _har, _prophet, _epidemic } _ROUTING_PROTOCOL;
+typedef enum _HOTSPOT_SELECT { _original, _improved, _merge } _HOTSPOT_SELECT;
 
 
 //TODO: wrap these funcs with a namespace
@@ -172,21 +172,21 @@ inline int RandomInt(int min, int max)
 inline vector<int> RandomIntList(int min, int max, int size)
 {
 	vector<int> result;
-	int tmp = -1;
+	int temp = -1;
 	if(size > (max - min))
 	{
-		vector<int> tmp_order;
+		vector<int> temp_order;
 		for(int i = min; i < max; i++)
 		{
-			tmp_order.push_back(i);
+			temp_order.push_back(i);
 		}
-		while(! tmp_order.empty())
+		while(! temp_order.empty())
 		{
-			vector<int>::iterator it = tmp_order.begin();
-			int bet = RandomInt(0, tmp_order.size());
-			tmp = tmp_order.at(bet);
-			result.push_back(tmp);
-			tmp_order.erase(it + bet);
+			vector<int>::iterator it = temp_order.begin();
+			int bet = RandomInt(0, temp_order.size());
+			temp = temp_order.at(bet);
+			result.push_back(temp);
+			temp_order.erase(it + bet);
 		}
 		return result;
 	}
@@ -203,23 +203,23 @@ inline vector<int> RandomIntList(int min, int max, int size)
 		do
 		{
 			duplicate = false;
-			tmp = RandomInt(min, max);
+			temp = RandomInt(min, max);
 			for(int j = 0; j < result.size(); j++)
 			{
-				if(result[j] == tmp)
+				if(result[j] == temp)
 				{
 					duplicate = true;
 					break;
 				}
 			}
 		}while(duplicate);
-		if(tmp < 0)
+		if(temp < 0)
 		{
-			cout << endl << "Error @ RandomIntList() : tmp < 0" << endl;
-			_PAUSE;
+			cout << endl << "Error @ RandomIntList() : temp < 0" << endl;
+			_PAUSE_;
 		}
 		else
-			result.push_back(tmp);
+			result.push_back(temp);
 	}
 	return result;
 }

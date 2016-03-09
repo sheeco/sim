@@ -80,7 +80,7 @@ public:
 			|| toPoint < 0  )
 		{
 			cout << endl << "Error @ CBasicEntity::getToPoint : toPoint exceeds the range " << endl;
-			_PAUSE;
+			_PAUSE_;
 		}
 		return waypoints[toPoint];
 	}

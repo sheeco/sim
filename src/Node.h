@@ -7,8 +7,8 @@
 #include "Epidemic.h"
 #include "Hotspot.h"
 
-extern _MacProtocol MAC_PROTOCOL;
-extern _RoutingProtocol ROUTING_PROTOCOL;
+extern _MAC_PROTOCOL MAC_PROTOCOL;
+extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
 
 
 class CNode :
@@ -164,7 +164,7 @@ private:
 		if( buffer.size() > BUFFER_CAPACITY )
 		{
 			cout << endl << "Error @ CNode::updateSummaryVector() : Buffer isn't clean !" << endl;
-			_PAUSE;
+			_PAUSE_;
 		}
 
 		summaryVector.clear();
@@ -270,9 +270,9 @@ public:
 
 	static int BUFFER_CAPACITY;
 	static int ENERGY;
-	static _Receive RECEIVE_MODE;
-	static _Send SEND_MODE;
-	static _Queue QUEUE_MODE;
+	static _RECEIVE RECEIVE_MODE;
+	static _SEND SEND_MODE;
+	static _QUEUE QUEUE_MODE;
 
 	/**************************************  Prophet  *************************************/
 
@@ -289,7 +289,7 @@ public:
 		if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
 		{
 			cout << endl << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
-			_PAUSE;
+			_PAUSE_;
 		}
 
 		if( nodes.empty() && deadNodes.empty() )
@@ -533,7 +533,7 @@ public:
 		bufferChangeCount++;
 	}
 
-	vector<CData> sendAllData(_Send mode) override
+	vector<CData> sendAllData(_SEND mode) override
 	{
 		return CGeneralNode::sendAllData(mode);
 	}

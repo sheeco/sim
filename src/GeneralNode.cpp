@@ -9,7 +9,7 @@ int CGeneralNode::TRANS_RANGE = 100;  //transmission range
 double CGeneralNode::PROB_DATA_FORWARD = 1.0;
 
 
-vector<CData> CGeneralNode::sendAllData(_Send mode)
+vector<CData> CGeneralNode::sendAllData(_SEND mode)
 {
 	double bet = RandomFloat(0, 1);
 	if( bet > PROB_DATA_FORWARD )

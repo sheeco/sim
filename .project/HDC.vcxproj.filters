@@ -20,150 +20,150 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Configuration.cpp">
+    <ClCompile Include="..\src\Configuration.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Data.cpp">
+    <ClCompile Include="..\src\Data.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Epidemic.cpp">
+    <ClCompile Include="..\src\Epidemic.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\FileHelper.cpp">
+    <ClCompile Include="..\src\FileHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\GeneralNode.cpp">
+    <ClCompile Include="..\src\GeneralNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\HAR.cpp">
+    <ClCompile Include="..\src\HAR.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\HDC.cpp">
+    <ClCompile Include="..\src\HDC.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hotspot.cpp">
+    <ClCompile Include="..\src\Hotspot.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\HotspotSelect.cpp">
+    <ClCompile Include="..\src\HotspotSelect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="..\src\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\MANode.cpp">
+    <ClCompile Include="..\src\MANode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Node.cpp">
+    <ClCompile Include="..\src\Node.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\NodeRepair.cpp">
+    <ClCompile Include="..\src\NodeRepair.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Position.cpp">
+    <ClCompile Include="..\src\Position.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\PostSelect.cpp">
+    <ClCompile Include="..\src\PostSelect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Prophet.cpp">
+    <ClCompile Include="..\src\Prophet.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Route.cpp">
+    <ClCompile Include="..\src\Route.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\RoutingProtocol.cpp">
+    <ClCompile Include="..\src\RoutingProtocol.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Sink.cpp">
+    <ClCompile Include="..\src\Sink.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\SortHelper.cpp">
+    <ClCompile Include="..\src\SortHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Algorithm.h">
+    <ClInclude Include="..\src\Algorithm.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\BasicEntity.h">
+    <ClInclude Include="..\src\BasicEntity.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Configuration.h">
+    <ClInclude Include="..\src\Configuration.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Data.h">
+    <ClInclude Include="..\src\Data.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Entity.h">
+    <ClInclude Include="..\src\Entity.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Epidemic.h">
+    <ClInclude Include="..\src\Epidemic.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\FileHelper.h">
+    <ClInclude Include="..\src\FileHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\GeneralNode.h">
+    <ClInclude Include="..\src\GeneralNode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\GeoEntity.h">
+    <ClInclude Include="..\src\GeoEntity.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\GlobalParameters.h">
+    <ClInclude Include="..\src\GlobalParameters.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\HAR.h">
+    <ClInclude Include="..\src\HAR.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\HDC.h">
+    <ClInclude Include="..\src\HDC.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Helper.h">
+    <ClInclude Include="..\src\Helper.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hotspot.h">
+    <ClInclude Include="..\src\Hotspot.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\HotspotSelect.h">
+    <ClInclude Include="..\src\HotspotSelect.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\MACProtocol.h">
+    <ClInclude Include="..\src\MACProtocol.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\MANode.h">
+    <ClInclude Include="..\src\MANode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Node.h">
+    <ClInclude Include="..\src\Node.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\NodeRepair.h">
+    <ClInclude Include="..\src\NodeRepair.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Position.h">
+    <ClInclude Include="..\src\Position.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\PostSelect.h">
+    <ClInclude Include="..\src\PostSelect.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Process.h">
+    <ClInclude Include="..\src\Process.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Prophet.h">
+    <ClInclude Include="..\src\Prophet.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Protocol.h">
+    <ClInclude Include="..\src\Protocol.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Route.h">
+    <ClInclude Include="..\src\Route.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\RoutingProtocol.h">
+    <ClInclude Include="..\src\RoutingProtocol.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Sink.h">
+    <ClInclude Include="..\src\Sink.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\SortHelper.h">
+    <ClInclude Include="..\src\SortHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
