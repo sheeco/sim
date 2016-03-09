@@ -1,8 +1,10 @@
 #include "FileHelper.h"
 #include "SortHelper.h"
 
+extern string DATASET;
 
-void CFileHelper::getPositionFromFile(int nodeID, int time, double &x, double &y)
+
+void CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y)
 {
 	FILE *file;
 	char filename[20] = {'\0'};
@@ -12,12 +14,15 @@ void CFileHelper::getPositionFromFile(int nodeID, int time, double &x, double &y
 
 	try
 	{
-		sprintf(filename, "%d.newlocation", nodeID);  //新的location文件，将time和坐标信息都包含在内
-		file = fopen(filename,"rb");
+		//TODO: 改为 .trace 文件
+		//TODO: 文件第一行读取 SLOT_MOBILITY
+		sprintf(filename, "%d.trace", nodeID);  //新的 location 文件，将 time 和坐标信息都包含在内
+		string filepath = "../res/" + DATASET + "/" + filename;  //.exe 文件必须在 bin/ 文件夹下
+		file = fopen(filepath.c_str(),"rb");
 
 		if( file == nullptr)
 		{
-			cout << endl << "Error @ CFileHelper::getPositionFromFile() : Cannot find file \"" << nodeID << ".newlocation\" ! " << endl;
+			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << nodeID << ".trace\" ! " << endl;
 			_PAUSE_;
 			exit(1);
 		}
@@ -31,7 +36,7 @@ void CFileHelper::getPositionFromFile(int nodeID, int time, double &x, double &y
 
 		if( ( time - temp_time ) >= SLOT_MOBILITYMODEL )
 		{
-			cout << endl << "Error @ CFileHelper::getPositionFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time << endl;
+			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time << endl;
 			if( time != RUNTIME )
 			{
 				RUNTIME = time;
@@ -49,7 +54,7 @@ void CFileHelper::getPositionFromFile(int nodeID, int time, double &x, double &y
 	}
 	catch(exception e)
 	{
-		cout << endl << "Error @ CFileHelper::getPositionFromFile() : Unknown error without assumption" << endl;
+		cout << endl << "Error @ CFileHelper::getLocationFromFile() : Unknown error without assumption" << endl;
 		_PAUSE_;
 	}
 }

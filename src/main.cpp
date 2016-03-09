@@ -14,6 +14,7 @@ _HOTSPOT_SELECT HOTSPOT_SELECT = _original;
 
 int DATATIME = 0;
 int RUNTIME = 0;
+string DATASET;
 
 /********************************* Usage & Output ***********************************/
 
@@ -34,7 +35,9 @@ string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE
 string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
 
 
-//TODO: 默认配置参数改为从XML读取
+//TODO: 检查所有类内静态变量：(a)决定 private / protected；(b)将参数初始化全部移至此处
+//TODO: CConfiguration / CConfigureHelper ?
+//TODO: 默认配置参数改为从 XML 读取
 void initConfiguration()
 {
 	CSink::SINK_X = -200;
@@ -49,6 +52,7 @@ void initConfiguration()
 	CData::MAX_TTL = 0;	
 	DATATIME = 15000;
 	RUNTIME = 15000;
+	DATASET = "KAIST";
 }
 
 bool ParseParameters(int argc, char* argv[])
@@ -441,6 +445,8 @@ bool Run()
 
 int main(int argc, char* argv[])
 {
+	//TODO: release 版本中应改为 while(1) 循环
+
 	/************************************ 参数默认值 *************************************/
 
 	initConfiguration();

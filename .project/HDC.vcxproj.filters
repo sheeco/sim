@@ -20,9 +20,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Configuration.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Data.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

@@ -129,7 +129,7 @@ bool CNode::updateStatus(int currentTime)
 
 	//¸üÐÂ×ø±ê
 	double x = 0, y = 0;
-	CFileHelper::getPositionFromFile(ID, currentTime, x, y);
+	CFileHelper::getLocationFromFile(ID, currentTime, x, y);
 	moveTo(x, y, currentTime);
 
 	return state >= 0;
@@ -172,7 +172,7 @@ int CNode::ChangeNodeNumber()
 
 	if(delta < NUM_NODE_MIN - nodes.size())
 	{
-		delta = NUM_NODE_MIN - nodes.size();
+		delta = nodes.size() - NUM_NODE_MIN;
 		removeNodes(delta);
 	}
 	else if(delta > NUM_NODE_MAX - nodes.size())

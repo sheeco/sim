@@ -6,7 +6,7 @@
 
 # Specific files for this project ( mHAR ) ( Created by Eco on 2015-11-03; Updated on 2016-03-03 )
 
-*.newlocation
+*.trace
 
 *.txt
 

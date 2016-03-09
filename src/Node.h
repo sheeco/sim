@@ -93,7 +93,7 @@ private:
 	{
 		if( nodes.empty() && deadNodes.empty() )
 		{
-			for(int i = 0; i < nodes.size(); i++)
+			for(int i = 0; i < NUM_NODE_INIT; i++)
 			{
 				double generationRate = DEFAULT_DATA_RATE;
 				if(i % 5 == 0)
@@ -215,7 +215,7 @@ private:
 		vector<CNode *>::iterator start = nodes.begin();
 		vector<CNode *>::iterator end = nodes.end();
 		vector<CNode *>::iterator fence = nodes.begin();
-		fence += nodes.size() + n;
+		fence += nodes.size() - n;
 		vector<CNode *> leftNodes(start, fence);
 
 		//Remove invalid positoins belonging to the deleted nodes

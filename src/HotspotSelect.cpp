@@ -74,7 +74,7 @@ void CHotspotSelect::CollectNewPositions(int time)
 	{
 		temp_pos = new CPosition();
 		double x = 0, y = 0;
-		CFileHelper::getPositionFromFile(*i, time, x, y);
+		CFileHelper::getLocationFromFile(*i, time, x, y);
 		temp_pos->moveTo(x, y, time);
 		temp_pos->setNode( *i );
 		temp_pos->generateID();

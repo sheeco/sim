@@ -404,4 +404,12 @@
 ###### 2016-03-09  ·  *< 2.6.2 >*
 
 - RFCT：将枚举类名格式改为`_ALL_UPPERCASE`，系统行为宏定义格式改为`_ALL_UPPERCASE_`；
-- RFCT：调整项目的代码目录结构，将 VS 工程和设置文件等移入`.project\`文件夹下（Resharper 的配置导出到文件`.project/resharper.DotSettings`，VS 的配置导出到文件`.project/HDC.vssettings`）；
+- RFCT：调整项目的代码目录结构，将 VS 工程和设置文件等移入`.project/`文件夹下（Resharper 的配置导出到文件`.project/resharper.DotSettings`，VS 的配置导出到文件`.project/vs.vssettings`）；
+
+
+###### 2016-03-09  ·  *< 2.6.3 >*
+
+- RFCT：将轨迹文件从`.newlocation`改为`.trace`文件，并放入`res/$DATASET$/`文件夹中；
+- ADD：数据集名字`DATASET`为可定制参数（尚未添加读取代码）；
+- FIX：之前使用`nodes.size()`替换`NUM_NODE`时造成的错误；
+- MNT：在 git commit message 中使用符号标记更改：`+`添加、`-`删除、`~`修改、`#`优化、`!`修复；
