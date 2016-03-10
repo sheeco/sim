@@ -157,10 +157,10 @@ public:
 		if( TEST_DYNAMIC_NUM_NODE )
 			ChangeNodeNumber(currentTime);
 
+		UpdateNodeStatus(currentTime);
+
 		if( ! CNode::hasNodes(currentTime) )
 			return false;
-
-		UpdateNodeStatus(currentTime);
 
 		HotspotSelection(currentTime);
 

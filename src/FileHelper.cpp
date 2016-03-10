@@ -4,7 +4,7 @@
 extern string DATASET;
 
 
-void CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y)
+bool CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y)
 {
 	FILE *file;
 	char filename[20] = {'\0'};
@@ -24,7 +24,7 @@ void CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y
 		{
 			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << nodeID << ".trace\" ! " << endl;
 			_PAUSE_;
-			exit(1);
+			exit(-1);
 		}
 		while( ! feof( file ) )
 		{
@@ -36,26 +36,29 @@ void CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y
 
 		if( ( time - temp_time ) >= SLOT_MOBILITYMODEL )
 		{
-			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time << endl;
+//			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time << endl;
 			if( time != RUNTIME )
 			{
-				RUNTIME = time;
-				CRoutingProtocol::PrintFinal(time);
+				return false;
+//				RUNTIME = time;
+//				CRoutingProtocol::PrintFinal(time);
 			}
-			debugInfo.close();
-			_ALERT_;
-			exit(time - SLOT_MOBILITYMODEL);
+//			debugInfo.close();
+//			_ALERT_;
+//			exit(time - SLOT_MOBILITYMODEL);
 		}
 		//È¡µÃ×ø±ê
 		x = temp_x;
 		y = temp_y;
 
 		fclose(file);
+		return true;
 	}
 	catch(exception e)
 	{
 		cout << endl << "Error @ CFileHelper::getLocationFromFile() : Unknown error without assumption" << endl;
 		_PAUSE_;
+		return false;
 	}
 }
 

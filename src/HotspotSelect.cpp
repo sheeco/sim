@@ -69,12 +69,23 @@ void CHotspotSelect::CollectNewPositions(int time)
 		return ;
 	CPosition* temp_pos = nullptr;
 
+	//TODO: 待测试
+	//用于筛选出新的死亡节点
+	static vector<int> idNodes = CNode::getIdNodes();
+	vector<int> deadNodes = idNodes;
+	RemoveFromList(deadNodes, CNode::getIdNodes());
+	idNodes = CNode::getIdNodes();
+
 	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到CPosition::positions中
-	for(vector<int>::iterator i = CNode::getIdNodes().begin(); i != CNode::getIdNodes().end(); ++i)
+	for(vector<int>::iterator i = idNodes.begin(); i != idNodes.end(); ++i)
 	{
 		temp_pos = new CPosition();
 		double x = 0, y = 0;
-		CFileHelper::getLocationFromFile(*i, time, x, y);
+		if( ! CFileHelper::getLocationFromFile(*i, time, x, y) )
+		{
+			cout << endl << "Error @ CHotspotSelect::CollectNewPositions() : Cannot find location info for Node " << *i << " at Time " << time << endl;
+			_PAUSE_;
+		}
 		temp_pos->moveTo(x, y, time);
 		temp_pos->setNode( *i );
 		temp_pos->generateID();
@@ -89,7 +100,22 @@ void CHotspotSelect::CollectNewPositions(int time)
 			CPosition::positions.push_back(temp_pos);
 		}
 	}
-	
+
+	//删除死亡节点的position记录
+	if( ! deadNodes.empty() )
+	{
+		for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
+		{
+			if( IfExists( deadNodes, (*ipos)->getNode() ) )
+			{
+				delete *ipos;
+				ipos = CPosition::positions.erase(ipos);
+			}
+			else
+				++ipos;
+		}
+	}
+
 	//IHAR: 删除过期的position记录
 	if( HOTSPOT_SELECT == _improved )
 	{

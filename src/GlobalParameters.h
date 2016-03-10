@@ -93,6 +93,7 @@
 //Slot
 //TODO: add def of namespace to wrap all defs
 #define SLOT 5	// ( s )
+//TODO: should be read from .trace file
 #define SLOT_MOBILITYMODEL 30  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
 //#define SLOT_LOCATION_UPDATE 100	//地理信息收集的slot  ->  CHotspot
 //#define SLOT_HOTSPOT_UPDATE 900	//更新热点和分类的slot  ->  CHotspot

@@ -19,10 +19,10 @@ string DATASET;
 /********************************* Usage & Output ***********************************/
 
 string INFO_LOG;
-ofstream debugInfo("debug.txt", ios::app);
+ofstream debugInfo;
 
 string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
- 	          "<node>      -sink           [][]  -range           []   -prob-trans  []   -energy      []   -time-data   []   -time-run   [] \n"
+ 	          "<node>      -sink           [][]  -range           []   -prob-trans  []   -energy      []   -time-data   []   -time-run    [] \n"
 			  "<data>      -buffer           []  -data-rate       []   -data-size   []  \n"
               "<mac>       -hdc                  -cycle           []   -dc-default  []   -dc-hotspot  [] \n"
 			  "<route>     -epidemic             -prophet              -har              -hop         []   -ttl         []\n"
@@ -281,8 +281,11 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-help" )
 			{
 				cout << INFO_HELP;
+				ofstream help("help.txt", ios::out);
+				help << INFO_HELP;
+				help.close();
 				_PAUSE_;
-				exit(1);
+				exit(0);
 			}
 			else
 				iField++;
@@ -301,6 +304,7 @@ bool ParseParameters(int argc, char* argv[])
 
 void PrintConfiguration()
 {
+	debugInfo.open("debug.txt", ios::app);
 	string logtime;  
 	time_t t;  //ÃëÊ±¼ä  
 	char buffer[65];
@@ -369,7 +373,7 @@ void PrintConfiguration()
 			parameters << "-IHAR " << endl << endl;
 			parameters << "LIFETIME" << TAB << HAR::MAX_MEMORY_TIME << endl << endl;
 
-			debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << CPostSelect::ALPHA << TAB << HAR::BETA << TAB << HAR::MAX_MEMORY_TIME << TAB ;
+			debugInfo << HAR::MAX_MEMORY_TIME << TAB ;
 		}
 
 		else if( HOTSPOT_SELECT == _merge )
@@ -387,8 +391,6 @@ void PrintConfiguration()
 		else
 		{
 			debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << CPostSelect::ALPHA << TAB << HAR::BETA << TAB ;
-			INFO_LOG += "-HAR ";
-			parameters << "-HAR " << endl << endl;
 		}
 
 		parameters << "ALPHA" << TAB << CPostSelect::ALPHA << endl;
@@ -409,12 +411,13 @@ void PrintConfiguration()
 	parameters << endl;
 
 	parameters.close();
-
+	debugInfo.close();
 
 }
 
 bool Run()
 {
+	debugInfo.open("debug.txt", ios::app);
 	int currentTime = 0;
 	while(currentTime <= RUNTIME)
 	{

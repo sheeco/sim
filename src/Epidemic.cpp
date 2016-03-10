@@ -164,10 +164,10 @@ bool CEpidemic::Operate(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		ChangeNodeNumber(currentTime);
 
+	UpdateNodeStatus(currentTime);
+
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
-
-	UpdateNodeStatus(currentTime);
 
 	//调用下层协议HDC，判断是否位于热点区域，更新占空比
 	if( MAC_PROTOCOL == _hdc )

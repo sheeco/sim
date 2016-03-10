@@ -33,13 +33,15 @@ private:
 	int state;  //取值范围在[ - SLOT_SLEEP, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
 	int timeData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
+	bool recyclable;  //在节点死亡之后，指示节点是否仍可被回收，默认为 true，直到 trace 信息终止赋 false（暂未使用，如果有充电行为则应该读取此参数）
 	CHotspot *atHotspot;
 
 	//用于统计输出节点的buffer状态信息
 	int bufferSizeSum;
 	int bufferChangeCount;
 	static int encounterAtHotspot;
-	static int encounterOnRoute;
+	static int encounterActive;  //有效相遇
+	static int encounter;
 	static int visiterAtHotspot;
 	static int visiterOnRoute;;
 
@@ -71,6 +73,7 @@ private:
 		state = 0;
 		timeData = 0;
 		timeDeath = 0;
+		recyclable = true;
 		bufferCapacity = BUFFER_CAPACITY;
 		bufferSizeSum = 0;
 		bufferChangeCount = 0;
@@ -184,6 +187,7 @@ private:
 	static void newNodes(int n)
 	{
 		//优先恢复之前被删除的节点
+		//TODO: 恢复时重新充满能量？
 		for(int i = nodes.size(); i < nodes.size() + n; i++)
 		{
 			if( deletedNodes.empty() )
@@ -333,26 +337,38 @@ public:
 			if( (*inode)->isAlive() )
 			{
 				idNodes.push_back( (*inode)->getID() );
-				++inode;
 			}
 			else
 			{
-				(*inode)->die( currentTime );
-				deadNodes.push_back( *inode );
-				inode = nodes.erase( inode );
+				(*inode)->die( currentTime, true );  //因节点能量耗尽而死亡的节点，仍可回收
 				death = true;
 			}
+			++inode;
 		}
-
+		ClearDeadNodes();
 		if(death)
 			cout << "####  [ Node ]  " << CNode::getNodes().size() << endl;
 
 		return ( ! nodes.empty() );
 	}
 
+	static void ClearDeadNodes()
+	{
+		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
+		{
+			if((*inode)->timeDeath > 0)
+			{
+				deadNodes.push_back( *inode );
+				inode = nodes.erase( inode );
+			}
+			else
+				++inode;
+		}
+	}
+
 	static bool ifNodeExists(int id)
 	{
-		for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
+		for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 		{
 			if((*inode)->getID() == id)
 				return true;
@@ -381,27 +397,44 @@ public:
 	}
 
 	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
-	inline static double getEncounterAtHotspotPercent()
-	{
-		if(encounterAtHotspot == 0)
-			return 0.0;
-		return double(encounterAtHotspot) / double(encounterAtHotspot + encounterOnRoute);
-	}
+	//注意：暂时只支持Prophet路由，其他路由尚未添加相关代码
 	inline static int getEncounter()
 	{
-		return encounterAtHotspot + encounterOnRoute;
+		return encounter;
 	}
 	inline static int getEncounterAtHotspot()
 	{
 		return encounterAtHotspot;
 	}
+	inline static int getEncounterActive()
+	{
+		return encounterActive;
+	}
+	inline static double getEncounterAtHotspotPercent()
+	{
+		if(encounterAtHotspot == 0)
+			return 0.0;
+		return double(encounterAtHotspot) / double(encounter);
+	}
+	inline static double getEncounterActivePercent()
+	{
+		if(encounterActive == 0)
+			return 0.0;
+		return double(encounterActive) / double(encounter);
+	}
 	inline static void encountAtHotspot()
 	{
 		encounterAtHotspot++;
+		encounter++;
 	}
 	inline static void encountOnRoute()
 	{
-		encounterOnRoute++;
+		encounter++;
+	}
+	//注意：此函数必须在调用过encountAtHotspot()或encountOnRoute()之后再调用
+	inline static void encountActive()
+	{
+		encounterActive++;
 	}
 
 	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
@@ -430,7 +463,7 @@ public:
 
 
 	//不设置能量值时，始终返回true
-	bool isAlive() const
+	inline bool isAlive() const
 	{
 		if( energy == 0 )
 			return true;
@@ -444,6 +477,10 @@ public:
 		if( ! isAlive() )
 			return 0;
 		return energy - energyConsumption;
+	}
+	inline bool isRecyclable() const
+	{
+		return recyclable;
 	}
 	inline double getGenerationRate() const
 	{
@@ -471,9 +508,12 @@ public:
 		ID_COUNT++;
 		this->ID = ID_COUNT;		
 	}
-	inline void die(int currentTime)
+	//如果 recycable 为 true，则可以在动态节点个数测试时被恢复
+	//注意：有节点死亡之后，必须调用ClearDeadNodes()
+	inline void die(int currentTime, bool recyclable)
 	{
 		this->timeDeath = currentTime;
+		this->recyclable = recyclable;
 	}
 	inline double getAverageBufferSize() const
 	{
@@ -514,7 +554,7 @@ public:
 			state = SLOT_LISTEN;
 	}
 
-	//更新坐标和工作状态，返回是否出于工作状态
+	//更新坐标和工作状态，返回是否全部节点都仍存活
 	bool updateStatus(int currentTime);
 
 	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus

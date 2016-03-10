@@ -12,6 +12,8 @@
 
 *.bat
 
+*.exe
+
 *.lnk
 
 *.pdf

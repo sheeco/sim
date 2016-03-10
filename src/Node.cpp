@@ -22,7 +22,8 @@ CGeneralNode::_SEND CNode::SEND_MODE = _dump;
 CGeneralNode::_QUEUE CNode::QUEUE_MODE = _fifo;
 
 int CNode::encounterAtHotspot = 0;
-int CNode::encounterOnRoute = 0;
+int CNode::encounterActive = 0;
+int CNode::encounter = 0;
 int CNode::visiterAtHotspot = 0;
 int CNode::visiterOnRoute = 0;
 
@@ -129,10 +130,14 @@ bool CNode::updateStatus(int currentTime)
 
 	//更新坐标
 	double x = 0, y = 0;
-	CFileHelper::getLocationFromFile(ID, currentTime, x, y);
+	if( ! CFileHelper::getLocationFromFile(ID, currentTime, x, y) )
+	{
+		die(currentTime, false);  //因 trace 信息终止而死亡的节点，无法回收
+		return false;
+	}
 	moveTo(x, y, currentTime);
 
-	return state >= 0;
+	return true;
 }
 
 void CNode::updateDeliveryPredsWithSink()

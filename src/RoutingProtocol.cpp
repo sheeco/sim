@@ -49,8 +49,11 @@ void CRoutingProtocol::UpdateNodeStatus(int currentTime)
 		return;
 
 	//cout << endl << "########  < " << currentTime << " >  NODE LOCATION UPDATE" ;
+	bool allAlive = true;
 	for(vector<CNode *>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-		(*inode)->updateStatus(currentTime);
+		allAlive &= (*inode)->updateStatus(currentTime);
+	if( ! allAlive )
+		CNode::ClearDeadNodes();
 }
 
 //void CRoutingProtocol::GenerateData(int currentTime)
@@ -69,7 +72,7 @@ string INFO_BUFFER_STATISTICS =  "#Time	#AvgBufferStateInHistoryOfEachNode \n" ;
 string INFO_DELIVERY_RATIO = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio% \n" ;
 string INFO_DELAY = "#Time	#AvgDelay \n" ;
 string INFO_BUFFER = "#Time	#BufferStateOfEachNode \n" ;
-string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot)	#Encounter	(#EncounterAtHotspot%) \n" ;
+string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot%	#EncounterAtHotspot	#EncounterActive%	#EncounterActive)	#Encounter	 \n" ;
 string INFO_SINK = "#Time	#EncounterAtSink \n" ;
 
 void CRoutingProtocol::PrintInfo(int currentTime)
@@ -111,10 +114,9 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		}
 		encounter << currentTime << TAB;
 		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
-			encounter << CNode::getEncounterAtHotspot() << TAB;
+			encounter << CNode::getEncounterAtHotspotPercent() << TAB << CNode::getEncounterAtHotspot() << TAB 
+					  << CNode::getEncounterActivePercent() << TAB << CNode::getEncounterActive << TAB;
 		encounter << CNode::getEncounter() << TAB;
-		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
-			encounter << CNode::getEncounterAtHotspotPercent();
 		encounter << endl;
 		encounter.close();
 
@@ -216,7 +218,7 @@ void CRoutingProtocol::PrintFinal(int currentTime)
 			debugInfo << HAR::getAverageMergePercent() << TAB << HAR::getAverageOldPercent() << TAB ;
 		if( TEST_HOTSPOT_SIMILARITY )
 			debugInfo << HAR::getAverageSimilarityRatio() << TAB ;
-		debugInfo << CNode::getEncounterAtHotspotPercent() << TAB ;
+		debugInfo << CNode::getEncounterActivePercent() << CNode::getEncounterAtHotspotPercent() << TAB ;
 	}
 	if( ROUTING_PROTOCOL != _har )
 		debugInfo << INFO_LOG.replace(0, 1, "");

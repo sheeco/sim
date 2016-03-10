@@ -413,3 +413,14 @@
 - ADD：数据集名字`DATASET`为可定制参数（尚未添加读取代码）；
 - FIX：之前使用`nodes.size()`替换`NUM_NODE`时造成的错误；
 - MNT：在 git commit message 中使用符号标记更改：`+`添加、`-`删除、`~`修改、`#`优化、`!`修复；
+
+
+###### 2016-03-10  ·  *< 2.6.4 >*
+
+- ADD：不同节点的生存时间最大值可以不同，由 trace 文件决定；
+- MOD：将把死亡节点清除到`CNode::deadNodes`中的操作独立成一个函数`CNode::ClearDeadNodes()`；
+- MOD：由于`CRoutingProtocol::UpdateNodeStatus()`中也可能发生节点删除，将所有的路由协议中的`CNode::hasNodes()`判断移到此步骤之后；
+- FIX：在热点选取之前，丢弃死亡节点的 position 记录（`CHotspotSelect::CollectNewPositions()`）；
+- FIX：热点区域相遇百分比的统计存在的关键性错误（`CProphet::SendData()`）；
+- ADD：`CNode::encounterActive`用于统计有效的节点相遇计数；
+- **TODO：**在`README.md`中，添加 trace 文件的格式和目录位置要求的说明；

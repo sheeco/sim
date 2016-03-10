@@ -68,8 +68,10 @@ void CProphet::SendData(int currentTime)
 				CNode::encountOnRoute();
 
 			//如果处于休眠状态，跳过
-			if( ! (*inode)->isListening() )
-				break;
+			if( ! ( (*inode)->isListening() && (*jnode)->isListening() ) )
+				continue;
+
+			CNode::encountActive();
 
 			//init by node with smaller id
 			CNode *smaller, *greater = nullptr;
@@ -179,10 +181,10 @@ bool CProphet::Operate(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		ChangeNodeNumber(currentTime);
 
+	UpdateNodeStatus(currentTime);
+
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
-
-	UpdateNodeStatus(currentTime);
 
 	//调用下层协议HDC，判断是否位于热点区域，更新占空比
 	if( MAC_PROTOCOL == _hdc )
