@@ -423,4 +423,14 @@
 - FIX：在热点选取之前，丢弃死亡节点的 position 记录（`CHotspotSelect::CollectNewPositions()`）；
 - FIX：热点区域相遇百分比的统计存在的关键性错误（`CProphet::SendData()`）；
 - ADD：`CNode::encounterActive`用于统计有效的节点相遇计数；
-- **TODO：**在`README.md`中，添加 trace 文件的格式和目录位置要求的说明；
+- **TODO：**MNT：在`README.md`中，添加 trace 文件的格式和目录位置要求的说明；
+
+
+###### 2016-03-11  ·  *< 2.6.5 >*
+
+- MOD：平均能耗的统计，从以 byte 为单位改为以 package 为单位；
+- MOD：将增删节点和更新节点位置、工作状态等操作，整理到 MAC 协议层中（暂时全部放入`CHDC`）；
+- RFCT：将输出调试信息的操作分别整理到 MAC 层和路由层的父类和子类中，以实现尽可能多的重用；
+- ADD：增加全局函数`Exit()`，并将输出时间戳的操作统一放入其中；
+- **TODO：**ADD：添加邻居节点发现（Beacon 帧发送和窗口协商）的能耗；
+- **TODO：**ADD：将 MAC 层的基本操作从`CHDC`中移入新增类`CSMac`中；

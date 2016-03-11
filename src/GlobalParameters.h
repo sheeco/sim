@@ -141,6 +141,17 @@ typedef enum _HOTSPOT_SELECT { _original, _improved, _merge } _HOTSPOT_SELECT;
 
 /****************************** GlobalµÄ¸¨Öúº¯Êý *******************************/
 
+inline void Exit(int code)
+{
+	extern string INFO_LOG;
+	extern string FILE_DEBUG;	
+
+	ofstream debug(FILE_DEBUG, ios::app);
+	debug << INFO_LOG;	
+	debug.close();
+	exit(code);
+}
+
 //Randomly product a float number between min and max
 inline double RandomFloat(double min, double max)
 {

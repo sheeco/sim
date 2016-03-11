@@ -3,13 +3,13 @@
 #include "HAR.h"
 //#include <sstream>
 
+extern _HOTSPOT_SELECT HOTSPOT_SELECT;
+
 vector<CHotspot *> CHotspotSelect::copy_hotspotCandidates;
 vector<CPosition *> CHotspotSelect::uncoveredPositions;
 vector<CHotspot *> CHotspotSelect::unselectedHotspots;
 vector<CHotspot *> CHotspotSelect::hotspotsAboveAverage;
 vector<CHotspot *> CHotspotSelect::selectedHotspots;
-
-extern _HOTSPOT_SELECT HOTSPOT_SELECT;
 
 
 void CHotspotSelect::updateHotspotCandidates()

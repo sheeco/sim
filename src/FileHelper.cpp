@@ -2,6 +2,7 @@
 #include "SortHelper.h"
 
 extern string DATASET;
+extern int RUNTIME;
 
 
 bool CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y)
@@ -24,7 +25,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y
 		{
 			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << nodeID << ".trace\" ! " << endl;
 			_PAUSE_;
-			exit(-1);
+			Exit(-1);
 		}
 		while( ! feof( file ) )
 		{
@@ -43,9 +44,9 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y
 //				RUNTIME = time;
 //				CRoutingProtocol::PrintFinal(time);
 			}
-//			debugInfo.close();
+//			debug.close();
 //			_ALERT_;
-//			exit(time - SLOT_MOBILITYMODEL);
+//			Exit(time - SLOT_MOBILITYMODEL);
 		}
 		//È¡µÃ×ø±ê
 		x = temp_x;

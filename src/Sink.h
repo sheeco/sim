@@ -5,6 +5,7 @@
 #include "Route.h"
 #include "GeneralNode.h"
 #include "HAR.h"
+#include "Node.h"
 
 
 class CSink :

@@ -271,6 +271,7 @@ public:
 	static double DEFAULT_DATA_RATE;  //( package / s )
 	static int DATA_SIZE;  //( Byte )
 	static int CTRL_SIZE;
+	static int BEACON_SIZE;
 
 	static int BUFFER_CAPACITY;
 	static int ENERGY;

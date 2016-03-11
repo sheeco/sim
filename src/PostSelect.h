@@ -4,8 +4,6 @@
 #include "Position.h"
 #include "Algorithm.h"
 
-extern string INFO_LOG;
-
 
 class CPostSelect : 
 	public CAlgorithm

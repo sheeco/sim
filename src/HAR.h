@@ -4,16 +4,6 @@
 #include "Hotspot.h"
 #include "Route.h"
 #include "RoutingProtocol.h"
-#include "Node.h"
-
-extern int RUNTIME;
-extern int DATATIME;
-extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-
-/***************************** xHAR ********************************/
-
-extern string INFO_LOG;
-extern ofstream debugInfo;
 
 
 class HAR : 
@@ -145,31 +135,14 @@ public:
 
 	//执行热点选取
 	static void HotspotSelection(int currentTime);
+	//打印热点选取相关信息到文件
+	static void PrintHotspotInfo(int currentTime);
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);
 
-	static bool Operate(int currentTime)
-	{
-		if( ROUTING_PROTOCOL != _har )
-			return false;
+	static void PrintFinal(int currentTime);
 
-		//Node Number Test:
-		if( TEST_DYNAMIC_NUM_NODE )
-			ChangeNodeNumber(currentTime);
-
-		UpdateNodeStatus(currentTime);
-
-		if( ! CNode::hasNodes(currentTime) )
-			return false;
-
-		HotspotSelection(currentTime);
-
-		SendData(currentTime);
-
-		PrintInfo(currentTime);
-
-		return true;
-	}
+	static bool Operate(int currentTime);
 
 };
 

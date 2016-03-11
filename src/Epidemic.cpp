@@ -4,10 +4,8 @@
 #include "HDC.h"
 #include "SortHelper.h"
 
-
 extern _MAC_PROTOCOL MAC_PROTOCOL;
-extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-extern string INFO_SINK;
+extern string INFO_LOG;
 
 int CEpidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
 int CEpidemic::SPOKEN_MEMORY = 0;
@@ -19,10 +17,11 @@ void CEpidemic::SendData(int currentTime)
 		return;
 	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 
+	string INFO_SINK = "#Time	#EncounterAtSink \n";
 	ofstream sink("sink.txt", ios::app);
 	if(currentTime == 0)
 	{
-		sink << INFO_LOG ;
+		sink << endl << INFO_LOG ;
 		sink << INFO_SINK ;
 	}
 
@@ -157,21 +156,13 @@ void CEpidemic::SendData(int currentTime)
 
 bool CEpidemic::Operate(int currentTime)
 {
-	if( ROUTING_PROTOCOL != _epidemic )
-		return false;
-
-	//Node Number Test:
-	if( TEST_DYNAMIC_NUM_NODE )
-		ChangeNodeNumber(currentTime);
-
-	UpdateNodeStatus(currentTime);
+	if( MAC_PROTOCOL == _hdc )
+		CHDC::Operate(currentTime);	
+//	else
+//		CSMAC::Operate(currentTime);
 
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
-
-	//调用下层协议HDC，判断是否位于热点区域，更新占空比
-	if( MAC_PROTOCOL == _hdc )
-		CHDC::UpdateDutyCycleForNodes(currentTime);
 
 	SendData(currentTime);
 

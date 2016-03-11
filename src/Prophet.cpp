@@ -5,9 +5,7 @@
 #include "Sink.h"
 #include "SortHelper.h"
 
-extern _MAC_PROTOCOL MAC_PROTOCOL;
-extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-extern string INFO_SINK;
+extern string INFO_LOG;
 
 
 void CProphet::SendData(int currentTime)
@@ -16,6 +14,7 @@ void CProphet::SendData(int currentTime)
 		return;
 	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 
+	string INFO_SINK = "#Time	#EncounterAtSink \n";
 	ofstream sink("sink.txt", ios::app);
 	if(currentTime == 0)
 	{
@@ -174,21 +173,16 @@ void CProphet::SendData(int currentTime)
 
 bool CProphet::Operate(int currentTime)
 {
-	if( ROUTING_PROTOCOL != _prophet )
-		return false;
-
-	//Node Number Test:
-	if( TEST_DYNAMIC_NUM_NODE )
-		ChangeNodeNumber(currentTime);
-
-	UpdateNodeStatus(currentTime);
+	if( MAC_PROTOCOL == _hdc )
+		CHDC::Operate(currentTime);
+	
+	//TODO: add class smac
+	//TODO: move general mac function in hdc into smac
+//	else
+//		CSMAC::Operate(currentTime);
 
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
-
-	//调用下层协议HDC，判断是否位于热点区域，更新占空比
-	if( MAC_PROTOCOL == _hdc )
-		CHDC::UpdateDutyCycleForNodes(currentTime);
 
 	SendData(currentTime);
 

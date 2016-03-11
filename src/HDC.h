@@ -1,10 +1,6 @@
 #pragma once
 
 #include "MacProtocol.h"
-#include "HAR.h"
-
-extern int DATATIME;
-extern int RUNTIME;
 
 
 class CHDC :
@@ -36,17 +32,11 @@ public:
 	//检查所有Node，如果位于热点区域，更新占空比
 	static void UpdateDutyCycleForNodes(int currentTime);
 
-	static bool Operate(int currentTime)
-	{
-		HAR::HotspotSelection(currentTime);
-
-		PrintInfo(currentTime);
-
-		return true;
-	}
+	static bool Operate(int currentTime);
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);
+	static void PrintFinal(int currentTime);
 
 };
 

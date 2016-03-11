@@ -3,8 +3,6 @@
 #include "FileHelper.h"
 #include "Sink.h"
 
-extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 
 int CNode::SLOT_TOTAL = 0;
@@ -14,6 +12,7 @@ double CNode::HOTSPOT_DUTY_CYCLE = 0;
 double CNode::DEFAULT_DATA_RATE = 0;
 int CNode::DATA_SIZE = 0;
 int CNode::CTRL_SIZE = 0;
+int CNode::BEACON_SIZE = 0;
 
 int CNode::BUFFER_CAPACITY = 0;
 int CNode::ENERGY = 0;

@@ -3,8 +3,6 @@
 #include "SortHelper.h"
 #include "Algorithm.h"
 
-extern string INFO_LOG;
-
 
 //HAR中原始的贪婪hotspot选取方法的包装
 class CHotspotSelect :

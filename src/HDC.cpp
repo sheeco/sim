@@ -1,11 +1,10 @@
 #include "HDC.h"
+#include "HAR.h"
 #include "SortHelper.h"
 
-extern _HOTSPOT_SELECT HOTSPOT_SELECT;
-extern string INFO_HOTSPOT;
-extern string INFO_HOTSPOT_STATISTICS;
-extern string INFO_MERGE;
-extern string INFO_MERGE_DETAILS;
+extern _MAC_PROTOCOL MAC_PROTOCOL;
+extern string FILE_DEBUG;
+extern int RUNTIME;
 
 int CHDC::HOTSPOT_COST_SUM = 0;
 int CHDC::HOTSPOT_COST_COUNT = 0;
@@ -24,7 +23,18 @@ void CHDC::PrintInfo(int currentTime)
 			|| currentTime == RUNTIME  ) )
 		return;
 
-	HAR::PrintInfo(currentTime);
+	HAR::PrintHotspotInfo(currentTime);
+}
+
+void CHDC::PrintFinal(int currentTime)
+{
+	CMacProtocol::PrintFinal(currentTime);
+
+	ofstream debug(FILE_DEBUG, ios::app);
+	if( CRoutingProtocol::TEST_HOTSPOT_SIMILARITY )
+		debug << HAR::getAverageSimilarityRatio() << TAB ;
+	debug.close();
+	
 }
 
 void CHDC::UpdateDutyCycleForNodes(int currentTime)
@@ -86,4 +96,22 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	flash_cout << "####  [ Hotspot Encounter ]  " << encounterRatio << " %                                           " << endl;
 	//flash_cout << "####  [ At Hotspot ]  " << atHotspotCount << " / " << CNode::getNodes().size() << "                              " ;
 
+}
+
+bool CHDC::Operate(int currentTime)
+{
+	//Node Number Test:
+	if( TEST_DYNAMIC_NUM_NODE )
+		ChangeNodeNumber(currentTime);
+
+	//TODO: move update of state after update of dc
+	UpdateNodeStatus(currentTime);
+
+	HAR::HotspotSelection(currentTime);
+
+	//判断是否位于热点区域，更新占空比
+	if( MAC_PROTOCOL == _hdc )
+		CHDC::UpdateDutyCycleForNodes(currentTime);
+
+	return true;
 }

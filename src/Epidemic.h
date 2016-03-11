@@ -3,12 +3,6 @@
 #include "GlobalParameters.h"
 #include "RoutingProtocol.h"
 
-extern int DATATIME;
-extern int RUNTIME;
-
-extern string INFO_LOG;
-extern ofstream debugInfo;
-
 
 class CEpidemic :
 	public CRoutingProtocol

@@ -7,6 +7,8 @@
 #include "Sink.h"
 
 
+/********************************* Global Var *********************************/
+
 //TODO: move these global config to a global CConfiguration parameter
 _MAC_PROTOCOL MAC_PROTOCOL = _smac;
 _ROUTING_PROTOCOL ROUTING_PROTOCOL = _prophet;
@@ -19,7 +21,8 @@ string DATASET;
 /********************************* Usage & Output ***********************************/
 
 string INFO_LOG;
-ofstream debugInfo;
+string FILE_DEBUG = "debug.txt";
+
 
 string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
  	          "<node>      -sink           [][]  -range           []   -prob-trans  []   -energy      []   -time-data   []   -time-run    [] \n"
@@ -44,7 +47,10 @@ void initConfiguration()
 	CSink::SINK_Y = 200;
 	CGeneralNode::TRANS_RANGE = 250;
 	CNode::DATA_SIZE = 400;
-	CNode::CTRL_SIZE = 10;
+	
+	//TODO: find ref for ctrl & beacon size
+	CNode::CTRL_SIZE = 20;
+	CNode::BEACON_SIZE = 10;
 	CNode::DEFAULT_DATA_RATE = 1.0 / 150.0;
 	CNode::BUFFER_CAPACITY = 200;
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
@@ -57,6 +63,15 @@ void initConfiguration()
 
 bool ParseParameters(int argc, char* argv[])
 {
+	ofstream debug(FILE_DEBUG, ios::app);
+	string logtime;  
+	time_t t;  //秒时间  
+	char buffer[65];
+	t = time(nullptr); //获取目前秒时间  
+	strftime(buffer, 64, "%Y-%m-%d %H:%M:%S", localtime(&t));  
+	logtime = string(buffer);
+	INFO_LOG = "#" + logtime + TAB;
+
 	try
 	{
 		int iField = 0;
@@ -107,7 +122,7 @@ bool ParseParameters(int argc, char* argv[])
 			}
 			else if( field == "-dynamic-node-number" )
 			{
-				CRoutingProtocol::TEST_DYNAMIC_NUM_NODE = true;
+				CMacProtocol::TEST_DYNAMIC_NUM_NODE = true;
 				iField++;
 			}
 			else if( field == "-balanced-ratio" )
@@ -285,36 +300,28 @@ bool ParseParameters(int argc, char* argv[])
 				help << INFO_HELP;
 				help.close();
 				_PAUSE_;
-				exit(0);
+				Exit(0);
 			}
 			else
 				iField++;
 
 		}
-
+		debug.close();
 		return true;
 	}
 	catch(exception e)
 	{
 		cout << endl << "Error @ ParseParameters() : Wrong Parameter Format!" << endl;
 		cout << INFO_HELP;
+		debug.close();
 		return false;
 	}
 }
 
 void PrintConfiguration()
 {
-	debugInfo.open("debug.txt", ios::app);
-	string logtime;  
-	time_t t;  //秒时间  
-	char buffer[65];
-	t = time(nullptr); //获取目前秒时间  
-	strftime(buffer, 64, "%Y-%m-%d %H:%M:%S", localtime(&t));  
-	logtime = string(buffer);
-	INFO_LOG = "\n#" + logtime + TAB;
-
 	ofstream parameters("parameters.txt", ios::app);
-	parameters << endl << endl << "#" << logtime << endl << endl;
+	parameters << endl << endl << INFO_LOG << endl << endl;
 
 	parameters << "SLOT TOTAL" << TAB << CNode::SLOT_TOTAL << endl;
 	parameters << "DEFAULT DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
@@ -335,17 +342,18 @@ void PrintConfiguration()
 	parameters << "PROB DATA FORWARD" << TAB << CGeneralNode::PROB_DATA_FORWARD << endl;
 
 	//输出文件为空时，输出文件头
-	debugInfo.seekp(0, ios::end);
-	if( ! debugInfo.tellp() )
-		debugInfo << INFO_DEBUG ;
+	ofstream debug(FILE_DEBUG, ios::app);
+	debug.seekp(0, ios::end);
+	if( ! debug.tellp() )
+		debug << INFO_DEBUG ;
 
-	debugInfo << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_DATA_FORWARD << TAB << CNode::BUFFER_CAPACITY << TAB << CNode::ENERGY << TAB ;
+	debug << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_DATA_FORWARD << TAB << CNode::BUFFER_CAPACITY << TAB << CNode::ENERGY << TAB ;
 	if( CData::useHOP() )
-		debugInfo << CData::MAX_HOP << TAB ;
+		debug << CData::MAX_HOP << TAB ;
 	else 
-		debugInfo << CData::MAX_TTL << TAB ;
+		debug << CData::MAX_TTL << TAB ;
 
-	debugInfo << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
+	debug << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
 	parameters << endl;
 	if( ROUTING_PROTOCOL == _epidemic )
@@ -373,7 +381,7 @@ void PrintConfiguration()
 			parameters << "-IHAR " << endl << endl;
 			parameters << "LIFETIME" << TAB << HAR::MAX_MEMORY_TIME << endl << endl;
 
-			debugInfo << HAR::MAX_MEMORY_TIME << TAB ;
+			debug << HAR::MAX_MEMORY_TIME << TAB ;
 		}
 
 		else if( HOTSPOT_SELECT == _merge )
@@ -384,13 +392,13 @@ void PrintConfiguration()
 			parameters << "RATIO_NEW" << TAB << CHotspot::RATIO_NEW_HOTSPOT << endl;
 			parameters << "RATIO_OLD" << TAB << CHotspot::RATIO_OLD_HOTSPOT << endl;
 
-			debugInfo << CHotspot::RATIO_MERGE_HOTSPOT << TAB << CHotspot::RATIO_OLD_HOTSPOT << TAB ;
+			debug << CHotspot::RATIO_MERGE_HOTSPOT << TAB << CHotspot::RATIO_OLD_HOTSPOT << TAB ;
 
 		}
 
 		else
 		{
-			debugInfo << CNode::HOTSPOT_DUTY_CYCLE << TAB << CPostSelect::ALPHA << TAB << HAR::BETA << TAB ;
+			debug << CNode::HOTSPOT_DUTY_CYCLE << TAB << CPostSelect::ALPHA << TAB << HAR::BETA << TAB ;
 		}
 
 		parameters << "ALPHA" << TAB << CPostSelect::ALPHA << endl;
@@ -398,9 +406,8 @@ void PrintConfiguration()
 		parameters << "HEAT_CO_1" << TAB << HAR::CO_HOTSPOT_HEAT_A1 << endl;
 		parameters << "HEAT_CO_2" << TAB << HAR::CO_HOTSPOT_HEAT_A2 << endl;
 	}
-	//debugInfo.flush();
 
-	if( CRoutingProtocol::TEST_DYNAMIC_NUM_NODE)
+	if( CMacProtocol::TEST_DYNAMIC_NUM_NODE)
 	{
 		INFO_LOG += "-TEST_DYNAMIC_NODE_NUMBER";
 		parameters << endl;
@@ -411,20 +418,16 @@ void PrintConfiguration()
 	parameters << endl;
 
 	parameters.close();
-	debugInfo.close();
+	debug.close();
 
 }
 
 bool Run()
 {
-	debugInfo.open("debug.txt", ios::app);
+	ofstream debug(FILE_DEBUG, ios::app);
 	int currentTime = 0;
 	while(currentTime <= RUNTIME)
 	{
-
-		if( MAC_PROTOCOL == _hdc )
-			CHDC::Operate(currentTime);
-
 		bool dead = false;
 
 		dead = ! CProphet::Operate(currentTime);
@@ -432,16 +435,19 @@ bool Run()
 		if( dead )
 		{
 			RUNTIME = currentTime;
-			CHDC::PrintInfo(currentTime);
-			CProphet::PrintInfo(currentTime);
 			break;
 		}
-
 		currentTime += SLOT;
-
 	}
+	CProphet::PrintFinal(currentTime);
+//	{
+//		RUNTIME = currentTime;
+//		CHDC::PrintInfo(currentTime);
+//		CProphet::PrintInfo(currentTime);
+//		break;
+//	}
 
-	debugInfo.close();
+	debug.close();
 
 	return true;
 }
@@ -459,7 +465,7 @@ int main(int argc, char* argv[])
 	if( ! ParseParameters(argc, argv) )
 	{
 		_PAUSE_;
-		exit(-1);
+		Exit(-1);
 	}
 
 	/********************************* 将log信息和参数信息写入文件 ***********************************/
