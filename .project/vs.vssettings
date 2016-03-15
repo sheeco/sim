@@ -149,6 +149,22 @@
 				<PropertyValue name="WrapColumn">120</PropertyValue>
 				<PropertyValue name="WrapTags">false</PropertyValue>
 			</ToolsOptionsSubCategory>
+			<ToolsOptionsSubCategory name="SQL Server Tools" RegisteredName="SQL Server Tools" PackageName="Text Management Package">
+				<PropertyValue name="TabSize">4</PropertyValue>
+				<PropertyValue name="AutoListMembers">true</PropertyValue>
+				<PropertyValue name="IndentStyle">1</PropertyValue>
+				<PropertyValue name="HideAdvancedMembers">true</PropertyValue>
+				<PropertyValue name="ShowNavigationBar">false</PropertyValue>
+				<PropertyValue name="VirtualSpace">false</PropertyValue>
+				<PropertyValue name="InsertTabs">true</PropertyValue>
+				<PropertyValue name="WordWrapGlyphs">true</PropertyValue>
+				<PropertyValue name="EnableLeftClickForURLs">true</PropertyValue>
+				<PropertyValue name="ShowLineNumbers">false</PropertyValue>
+				<PropertyValue name="WordWrap">false</PropertyValue>
+				<PropertyValue name="IndentSize">4</PropertyValue>
+				<PropertyValue name="CutCopyBlankLines">true</PropertyValue>
+				<PropertyValue name="AutoListParams">true</PropertyValue>
+			</ToolsOptionsSubCategory>
 			<ToolsOptionsSubCategory name="CSharp" RegisteredName="CSharp" PackageName="Text Management Package">
 				<PropertyValue name="TabSize">4</PropertyValue>
 				<PropertyValue name="AutoListMembers">true</PropertyValue>
@@ -774,23 +790,23 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="props" Definition="View.PropertiesWindow"/>
 				<Alias Name="memory1" Definition="Debug.Memory1"/>
 				<Alias Name="memory2" Definition="Debug.Memory2"/>
-				<Alias Name="memory3" Definition="Debug.Memory3"/>
 				<Alias Name="Lcase" Definition="Edit.MakeLowercase"/>
-				<Alias Name="memory4" Definition="Debug.Memory4"/>
-				<Alias Name="locals" Definition="Debug.Locals"/>
+				<Alias Name="memory3" Definition="Debug.Memory3"/>
 				<Alias Name="kb" Definition="Debug.ListCallStack"/>
+				<Alias Name="locals" Definition="Debug.Locals"/>
+				<Alias Name="memory4" Definition="Debug.Memory4"/>
 				<Alias Name="da" Definition="Debug.ListMemory /Ansi"/>
-				<Alias Name="db" Definition="Debug.ListMemory /Format:OneByte"/>
 				<Alias Name="DelEOL" Definition="Edit.DeleteToEOL"/>
+				<Alias Name="db" Definition="Debug.ListMemory /Format:OneByte"/>
 				<Alias Name="dc" Definition="Debug.ListMemory /Format:FourBytes /Ansi"/>
 				<Alias Name="dd" Definition="Debug.ListMemory /Format:FourBytes"/>
 				<Alias Name="df" Definition="Debug.ListMemory /Format:Float"/>
-				<Alias Name="WordWrap" Definition="Edit.ToggleWordWrap"/>
 				<Alias Name="AddProj" Definition="File.AddNewProject"/>
+				<Alias Name="WordWrap" Definition="Edit.ToggleWordWrap"/>
 				<Alias Name="dq" Definition="Debug.ListMemory /Format:EightBytes"/>
 				<Alias Name="du" Definition="Debug.ListMemory /Unicode"/>
-				<Alias Name="designer" Definition="View.ViewDesigner"/>
 				<Alias Name="ListMembers" Definition="Edit.ListMembers"/>
+				<Alias Name="designer" Definition="View.ViewDesigner"/>
 				<Alias Name="code" Definition="View.ViewCode"/>
 				<Alias Name="ParamInfo" Definition="Edit.ParameterInfo"/>
 				<Alias Name="DelHSp" Definition="Edit.DeleteHorizontalWhiteSpace"/>
@@ -802,14 +818,14 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="TileV" Definition="Window.TileVertically"/>
 				<Alias Name="OutlineDefs" Definition="Edit.CollapsetoDefinitions"/>
 				<Alias Name="CloseAll" Definition="Window.CloseAllDocuments"/>
-				<Alias Name="ToggleBook" Definition="Edit.ToggleBookmark"/>
 				<Alias Name="InsertFile" Definition="Edit.InsertFileAsText"/>
+				<Alias Name="ToggleBook" Definition="Edit.ToggleBookmark"/>
 				<Alias Name="autos" Definition="Debug.Autos"/>
 				<Alias Name="SaveAll" Definition="File.SaveAll"/>
 				<Alias Name="new" Definition="File.NewFile"/>
 				<Alias Name="d" Definition="Debug.ListMemory"/>
-				<Alias Name="rtc" Definition="Debug.RunToCursor"/>
 				<Alias Name="navigate" Definition="View.WebBrowser"/>
+				<Alias Name="rtc" Definition="Debug.RunToCursor"/>
 				<Alias Name="g" Definition="Debug.Start"/>
 				<Alias Name="k" Definition="Debug.ListCallStack"/>
 				<Alias Name="format" Definition="Edit.FormatSelection"/>
@@ -817,10 +833,10 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="p" Definition="Debug.StepOver"/>
 				<Alias Name="q" Definition="Debug.StopDebugging"/>
 				<Alias Name="r" Definition="Debug.ListRegisters"/>
-				<Alias Name="t" Definition="Debug.StepInto"/>
 				<Alias Name="~*kb" Definition="Debug.ListCallStack /AllThreads"/>
-				<Alias Name="u" Definition="Debug.ListDisassembly"/>
+				<Alias Name="t" Definition="Debug.StepInto"/>
 				<Alias Name="nf" Definition="File.NewFile"/>
+				<Alias Name="u" Definition="Debug.ListDisassembly"/>
 				<Alias Name="registers" Definition="Debug.Registers"/>
 				<Alias Name="LineCut" Definition="Edit.LineCut"/>
 				<Alias Name="memory" Definition="memory1"/>
@@ -830,9 +846,9 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="DelBOL" Definition="Edit.DeleteToBOL"/>
 				<Alias Name="~*k" Definition="Debug.ListCallStack /AllThreads"/>
 				<Alias Name="NextBook" Definition="Edit.NextBookmark"/>
-				<Alias Name="TaskList" Definition="View.TaskList"/>
-				<Alias Name="Ucase" Definition="Edit.MakeUppercase"/>
 				<Alias Name="NewProj" Definition="File.NewProject"/>
+				<Alias Name="Ucase" Definition="Edit.MakeUppercase"/>
+				<Alias Name="TaskList" Definition="View.TaskList"/>
 				<Alias Name="Untabify" Definition="Edit.UntabifySelectedLines"/>
 				<Alias Name="GotoBrace" Definition="Edit.GotoBrace"/>
 				<Alias Name="cls" Definition="Edit.ClearAll"/>
@@ -841,29 +857,29 @@ CSS 3.0;CSS 3.0</PropertyValue>
 				<Alias Name="log" Definition="Tools.LogCommandWindowOutput"/>
 				<Alias Name="print" Definition="File.Print"/>
 				<Alias Name="op" Definition="File.OpenProject"/>
-				<Alias Name="eval" Definition="Debug.EvaluateStatement"/>
 				<Alias Name="alias" Definition="Tools.Alias"/>
+				<Alias Name="eval" Definition="Debug.EvaluateStatement"/>
 				<Alias Name="watch" Definition="Debug.Watch"/>
 				<Alias Name="cmd" Definition="View.CommandWindow"/>
-				<Alias Name="help" Definition="Help.F1Help"/>
 				<Alias Name="GotoLn" Definition="Edit.GoTo"/>
+				<Alias Name="help" Definition="Help.F1Help"/>
 				<Alias Name="disasm" Definition="Debug.Disassembly"/>
 				<Alias Name="redo" Definition="Edit.Redo"/>
-				<Alias Name="undo" Definition="Edit.Undo"/>
-				<Alias Name="tabify" Definition="Edit.TabifySelectedLines"/>
 				<Alias Name="LineDel" Definition="Edit.LineDelete"/>
+				<Alias Name="tabify" Definition="Edit.TabifySelectedLines"/>
+				<Alias Name="undo" Definition="Edit.Undo"/>
 				<Alias Name="StopOutlining" Definition="Edit.CollapsetoDefinitions"/>
 				<Alias Name="pr" Definition="Debug.StepOut"/>
-				<Alias Name="SaveAs" Definition="File.SaveSelectedItemsAs"/>
 				<Alias Name="FullScreen" Definition="View.FullScreen"/>
+				<Alias Name="SaveAs" Definition="File.SaveSelectedItemsAs"/>
 				<Alias Name="nav" Definition="navigate"/>
-				<Alias Name="SwapAnchor" Definition="Edit.SwapAnchor"/>
 				<Alias Name="exit" Definition="File.Exit"/>
-				<Alias Name="threads" Definition="Debug.Threads"/>
+				<Alias Name="SwapAnchor" Definition="Edit.SwapAnchor"/>
 				<Alias Name="PrevBook" Definition="Edit.PreviousBookmark"/>
+				<Alias Name="threads" Definition="Debug.Threads"/>
 				<Alias Name="close" Definition="File.Close"/>
-				<Alias Name="toolbox" Definition="View.Toolbox"/>
 				<Alias Name="bl" Definition="Debug.Breakpoints"/>
+				<Alias Name="toolbox" Definition="View.Toolbox"/>
 				<Alias Name="bp" Definition="Debug.ToggleBreakpoint"/>
 				<Alias Name="??" Definition="Debug.QuickWatch"/>
 				<Alias Name="StopFind" Definition="Edit.FindInFiles /stop"/>
@@ -1792,19 +1808,19 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<modify_toolbar Menu="{CB26E292-901A-419C-B79D-49BD45C43929}:00002710" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,268,24" DockRectangle="34,0,268,24"/>
 					<modify_toolbar Menu="{F5EAC013-F209-453B-A2F3-CDF43821C24E}:00000302" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,249,24" DockRectangle="3,0,249,24"/>
 					<modify_toolbar Menu="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00010002" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,458,24" DockRectangle="2,0,458,24"/>
+					<modify_toolbar Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,486,24" DockRectangle="10,0,486,24"/>
+					<modify_toolbar Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,234,24" DockRectangle="11,0,234,24"/>
+					<modify_toolbar Menu="{C9522C54-50B0-48C9-A9B8-339140E0FA20}:00001801" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,268,24" DockRectangle="14,0,268,24"/>
+					<modify_toolbar Menu="{6E9EABA0-FDEE-4A1C-8758-E1DCA032A5D3}:00001802" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,297,24" DockRectangle="15,0,297,24"/>
 					<modify_toolbar Menu="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00003010" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,432,24" DockRectangle="9,0,432,24"/>
 					<modify_toolbar Menu="{5D4C0442-C0A2-4BE8-9B4D-AB1C28450942}:00001000" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,133,24" DockRectangle="8,0,133,24"/>
 					<modify_toolbar Menu="{5D8847D1-9A8A-431E-907A-62D9963F07FD}:00000104" Visibility="hide" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,133,24" DockRectangle="37,0,133,24"/>
 					<modify_toolbar Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,466,24" DockRectangle="13,0,466,24"/>
 					<modify_toolbar Menu="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005dc0" Visibility="hide" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,130,24" DockRectangle="32,0,130,24"/>
-					<modify_toolbar Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,486,24" DockRectangle="10,0,486,24"/>
-					<modify_toolbar Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,234,24" DockRectangle="11,0,234,24"/>
 					<modify_toolbar Menu="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00000103" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,212,24" DockRectangle="19,0,212,24"/>
 					<modify_toolbar Menu="{2DC8D6BB-916C-4B80-9C52-FD8FC371ACC2}:00000100" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,188,24" DockRectangle="26,0,188,24"/>
 					<modify_toolbar Menu="{061317B2-F992-435E-A23D-9EAD4B972ED5}:00000102" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,276,24" DockRectangle="25,0,276,24"/>
 					<modify_toolbar Menu="{D709F4D7-0165-472B-B966-105912D13DB8}:00000104" Visibility="hide" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,130,24" DockRectangle="31,0,130,24"/>
-					<modify_toolbar Menu="{C9522C54-50B0-48C9-A9B8-339140E0FA20}:00001801" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,268,24" DockRectangle="14,0,268,24"/>
-					<modify_toolbar Menu="{6E9EABA0-FDEE-4A1C-8758-E1DCA032A5D3}:00001802" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,297,24" DockRectangle="15,0,297,24"/>
 					<modify_toolbar Menu="{068E2583-0872-403B-AF4C-6C2A8F2D8C3E}:00001201" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,71,24" DockRectangle="5,0,71,24"/>
 					<modify_toolbar Menu="{068E2583-0872-403B-AF4C-6C2A8F2D8C3E}:00003203" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,203,24" DockRectangle="18,0,203,24"/>
 					<modify_toolbar Menu="{481A3758-A6D0-43E0-B1B8-4428BE962F8E}:00007202" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,431,24" DockRectangle="4,0,431,24"/>
@@ -1909,6 +1925,13 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<remove Cmd="{B11771F1-F6CB-467E-8B71-428B5CEDCA5F}:00000101" CmdPri="01000000" Group="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00020003" GroupPri="01300000" Menu="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00010002" IsPartialRemoval="true"/>
 					<remove Cmd="{14BCA3AF-5E27-4307-8492-84AF8647EA7C}:00002001" CmdPri="01100000" Group="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00020003" GroupPri="01300000" Menu="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00010002" IsPartialRemoval="true"/>
 					<remove Cmd="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00002001" CmdPri="01100000" Group="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00020003" GroupPri="01300000" Menu="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00010002" IsPartialRemoval="true"/>
+					<remove Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000012" CmdPri="03000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001070" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" IsPartialRemoval="true"/>
+					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000011f" CmdPri="0a000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001074" GroupPri="05000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" IsPartialRemoval="true"/>
+					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000120" CmdPri="0b000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001074" GroupPri="05000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" IsPartialRemoval="true"/>
+					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000014d" CmdPri="0e000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:0000107d" GroupPri="07000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" IsPartialRemoval="true"/>
+					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000046" CmdPri="03000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001078" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="true"/>
+					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000045" CmdPri="04000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001078" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="true"/>
+					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000014b" CmdPri="0c000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:0000107c" GroupPri="05000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="true"/>
 					<remove Cmd="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00002001" CmdPri="02030000" Group="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:0000102b" GroupPri="06000000" Menu="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00003010" IsPartialRemoval="true"/>
 					<remove Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000017" CmdPri="02000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055d" GroupPri="06000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" IsPartialRemoval="true"/>
 					<remove Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000016" CmdPri="03000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055d" GroupPri="06000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" IsPartialRemoval="true"/>
@@ -1923,13 +1946,6 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<remove Cmd="{5BF14E63-E267-4787-B20B-B814FD043B38}:000053fc" CmdPri="02000000" Group="{5BF14E63-E267-4787-B20B-B814FD043B38}:00002f2f" GroupPri="04000000" Menu="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005dc0" IsPartialRemoval="true"/>
 					<remove Cmd="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005404" CmdPri="06000000" Group="{5BF14E63-E267-4787-B20B-B814FD043B38}:00002f2f" GroupPri="04000000" Menu="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005dc0" IsPartialRemoval="true"/>
 					<remove Cmd="{5BF14E63-E267-4787-B20B-B814FD043B38}:0000540c" CmdPri="07000000" Group="{5BF14E63-E267-4787-B20B-B814FD043B38}:00002f2f" GroupPri="04000000" Menu="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005dc0" IsPartialRemoval="true"/>
-					<remove Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000012" CmdPri="03000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001070" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" IsPartialRemoval="true"/>
-					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000011f" CmdPri="0a000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001074" GroupPri="05000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" IsPartialRemoval="true"/>
-					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000120" CmdPri="0b000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001074" GroupPri="05000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" IsPartialRemoval="true"/>
-					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000014d" CmdPri="0e000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:0000107d" GroupPri="07000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" IsPartialRemoval="true"/>
-					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000046" CmdPri="03000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001078" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="true"/>
-					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000045" CmdPri="04000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001078" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="true"/>
-					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000014b" CmdPri="0c000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:0000107c" GroupPri="05000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="true"/>
 					<remove Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000014e" CmdPri="00100000" Group="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00001402" GroupPri="03000000" Menu="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00000103" IsPartialRemoval="true"/>
 					<remove Cmd="{34E61A32-1C10-4052-ABE7-264C46302CE4}:00000002" CmdPri="04000000" Group="{4FE997E0-5BDC-41CD-8E02-A212DAD97CDA}:00000700" GroupPri="01000000" Menu="{2DC8D6BB-916C-4B80-9C52-FD8FC371ACC2}:00000100" IsPartialRemoval="true"/>
 					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000006c" CmdPri="01000000" Group="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:00000550" GroupPri="00200000" Menu="{061317B2-F992-435E-A23D-9EAD4B972ED5}:00000102" IsPartialRemoval="true"/>
@@ -1982,16 +1998,6 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<modify Cmd="{FB41A027-57C5-4F83-9508-C326DCE6D943}:00002932" CmdPri="00100000" Group="{F5EAC013-F209-453B-A2F3-CDF43821C24E}:00001073" GroupPri="00300000" Menu="{F5EAC013-F209-453B-A2F3-CDF43821C24E}:00000302" Icon="{FB41A027-57C5-4F83-9508-C326DCE6D943}:00000013" BeginGroup="true"/>
 					<modify Cmd="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00000012" CmdPri="00400000" Group="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00020001" GroupPri="01000000" Menu="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00010002" Width="55"/>
 					<modify Cmd="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00000014" CmdPri="00300000" Group="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00020002" GroupPri="01100000" Menu="{4BCF92C9-7FEA-4913-AF26-F93582BA9C7A}:00010002" Icon="{E5FD8797-928D-4720-99C6-D9241615013A}:00000001" BeginGroup="false"/>
-					<modify Cmd="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:0000200d" CmdPri="01000000" Group="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00001002" GroupPri="00500000" Menu="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00003010" Width="55"/>
-					<modify Cmd="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00002300" CmdPri="01000000" Group="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00001009" GroupPri="00900000" Menu="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00003010" Icon="{AD7818C6-4420-4479-B0CB-CE68EFF9C2C8}:00000006" BeginGroup="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000006" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055a" GroupPri="04000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000008" BeginGroup="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
-					<modify Cmd="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005212" CmdPri="01000000" Group="{5BF14E63-E267-4787-B20B-B814FD043B38}:00002f2f" GroupPri="04000000" Menu="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005dc0" Icon="{5BF14E63-E267-4787-B20B-B814FD043B38}:0000000d" BeginGroup="false"/>
 					<modify Cmd="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001132" CmdPri="00000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001068" GroupPri="00000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" Width="105"/>
 					<modify Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:000000f5" CmdPri="02000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001070" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" BeginGroup="false" Width="70"/>
 					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000034" CmdPri="00000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001071" GroupPri="02000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:0000000a" BeginGroup="false"/>
@@ -2002,21 +2008,31 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<modify Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000088" CmdPri="05000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001079" GroupPri="02000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000056" BeginGroup="false"/>
 					<modify Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000088" CmdPri="05000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001079" GroupPri="02000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000056" BeginGroup="false"/>
 					<modify Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00000088" CmdPri="05000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001079" GroupPri="02000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000056" BeginGroup="false"/>
+					<modify Cmd="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:0000200d" CmdPri="01000000" Group="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00001002" GroupPri="00500000" Menu="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00003010" Width="55"/>
+					<modify Cmd="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00002300" CmdPri="01000000" Group="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00001009" GroupPri="00900000" Menu="{ADC1BC7B-958B-4548-9F9F-10FC49099825}:00003010" Icon="{AD7818C6-4420-4479-B0CB-CE68EFF9C2C8}:00000006" BeginGroup="false"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000006" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055a" GroupPri="04000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000008" BeginGroup="false"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:00000031" CmdPri="01000000" Group="{234A7FC1-CFE9-4335-9E82-061F86E402C1}:0000055e" GroupPri="07000000" Menu="{74D21312-2AEE-11D1-8BFB-00A0C90F26F7}:00000601" Icon="{9CD93C42-CEEF-45AB-B1B5-6040880C9543}:00000083" BeginGroup="false"/>
+					<modify Cmd="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005212" CmdPri="01000000" Group="{5BF14E63-E267-4787-B20B-B814FD043B38}:00002f2f" GroupPri="04000000" Menu="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005dc0" Icon="{5BF14E63-E267-4787-B20B-B814FD043B38}:0000000d" BeginGroup="false"/>
 					<modify Cmd="{A764E897-518D-11D2-9A89-00C04F79EFC3}:00002101" CmdPri="00200000" Group="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00001401" GroupPri="01000000" Menu="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00000103" Icon="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00000005" Style="0"/>
 					<modify Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00002c13" CmdPri="00100000" Group="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00001403" GroupPri="04000000" Menu="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00000103" BeginGroup="false"/>
 					<modify Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00002c13" CmdPri="00100000" Group="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00001403" GroupPri="04000000" Menu="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00000103" BeginGroup="false"/>
 					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000014e" CmdPri="00108001" Group="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00001403" GroupPri="04000000" Menu="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00000103" Icon="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000003" BeginGroup="false"/>
 				</DefaultCustomizations>
 				<UserCustomizations>
-					<modify_toolbar Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000001" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,642,27" DockRectangle="8,0,642,27"/>
-					<modify_toolbar Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" Visibility="show" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,315,27" DockRectangle="15,0,315,27"/>
+					<modify_toolbar Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000001" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,555,27" DockRectangle="9,0,555,27"/>
+					<modify_toolbar Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" Visibility="show" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,271,27" DockRectangle="17,0,271,27"/>
 					<modify_toolbar Menu="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:0000000e" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,215,27" DockRectangle="9,0,215,27"/>
 					<modify_toolbar Menu="{AA8EB8CD-7A51-11D0-92C3-00A0C9138C45}:00005dc0" Visibility="hide" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,311,27" DockRectangle="27,0,311,27"/>
 					<modify_toolbar Menu="{C9DD4A58-47FB-11D2-83E7-00C04F9902C1}:00000420" Visibility="hide" FullScreen="hide" Dock="top" Row="2" FloatRectangle="0,0,943,27" DockRectangle="0,0,943,27"/>
 					<modify_toolbar Menu="{C9DD4A58-47FB-11D2-83E7-00C04F9902C1}:00000421" Visibility="auto" FullScreen="hide" Dock="top" Row="2" FloatRectangle="0,0,245,24" DockRectangle="2,0,245,24"/>
-					<modify_toolbar Menu="{5D4C0442-C0A2-4BE8-9B4D-AB1C28450942}:00001000" Visibility="show" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,228,27" DockRectangle="24,0,228,27"/>
-					<modify_toolbar Menu="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005dc0" Visibility="hide" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,133,27" DockRectangle="22,0,133,27"/>
 					<modify_toolbar Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00000010" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,495,27" DockRectangle="9,0,495,27"/>
+					<modify_toolbar Menu="{5D4C0442-C0A2-4BE8-9B4D-AB1C28450942}:00001000" Visibility="show" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,228,27" DockRectangle="26,0,228,27"/>
+					<modify_toolbar Menu="{5BF14E63-E267-4787-B20B-B814FD043B38}:00005dc0" Visibility="hide" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,133,27" DockRectangle="22,0,133,27"/>
 					<modify_toolbar Menu="{A764E896-518D-11D2-9A89-00C04F79EFC3}:00000103" Visibility="auto" FullScreen="hide" Dock="top" Row="1" FloatRectangle="0,0,203,27" DockRectangle="10,0,203,27"/>
 					<add Cmd="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000083" CmdPri="01800001" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000101" GroupPri="01000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000000"/>
 					<add Cmd="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000085" CmdPri="1fe00001" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000105" GroupPri="fd000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000000"/>
@@ -2043,8 +2059,8 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000004b" CmdPri="01500000" Group="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:00000553" GroupPri="01030000" Menu="{9ADF33D0-8AAD-11D0-B606-00A0C922E851}:0000000e" IsPartialRemoval="false"/>
 					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:0000008f" CmdPri="02000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001078" GroupPri="01000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="false"/>
 					<remove Cmd="{1496A755-94DE-11D0-8C3F-00C04FC2AAE2}:00002c11" CmdPri="0d000000" Group="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:0000107a" GroupPri="03000000" Menu="{D7E8C5E1-BDB8-11D0-9C88-0000F8040A53}:00001077" IsPartialRemoval="false"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000037a" CmdPri="01000000" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000283" GroupPri="45000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" Icon="{952691C5-34D6-462B-AC56-9AB09770A30D}:00000004" BeginGroup="true"/>
-					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000037a" CmdPri="01000000" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000283" GroupPri="45000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" Icon="{952691C5-34D6-462B-AC56-9AB09770A30D}:00000004" BeginGroup="true"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000037a" CmdPri="01000000" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000283" GroupPri="45000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" BeginGroup="true"/>
+					<modify Cmd="{5EFC7975-14BC-11CF-9B2B-00AA00573819}:0000037a" CmdPri="01000000" Group="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000283" GroupPri="45000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:0000000d" BeginGroup="true"/>
 					<modify Cmd="{57735D06-C920-4415-A2E0-7D6E6FBDFA99}:0000f000" CmdPri="00800001" Group="{4FE997E0-5BDC-41CD-8E02-A212DAD97CDA}:00000733" GroupPri="01000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000700" BeginGroup="false"/>
 					<modify Cmd="{2DC8D6BB-916C-4B80-9C52-FD8FC371ACC2}:00000603" CmdPri="01000000" Group="{4FE997E0-5BDC-41CD-8E02-A212DAD97CDA}:00000723" GroupPri="02000000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000700" BeginGroup="true"/>
 					<modify Cmd="{15061D55-E726-4E3C-97D3-1B871D9B5AE9}:00001213" CmdPri="01000000" Group="{4FE997E0-5BDC-41CD-8E02-A212DAD97CDA}:00000711" GroupPri="02500000" Menu="{D309F791-903F-11D0-9EFC-00A0C911004F}:00000700" BeginGroup="true"/>
@@ -2105,7 +2121,7 @@ CSS 3.0;CSS 3.0</PropertyValue>
 						<Column Name="Bitmap" Width="17" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="ProviderKnowsOrder" Width="25" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="Checked" Width="28" Visibility="Invisible" SortPriority="-1" SortDirection="Up"/>
-						<Column Name="Description" Width="1337" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
+						<Column Name="Description" Width="18" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="File" Width="150" Visibility="Visible" SortPriority="0" SortDirection="Up"/>
 						<Column Name="Line" Width="70" Visibility="Visible" SortPriority="-1" SortDirection="Up"/>
 						<Column Name="Project" Width="150" Visibility="Invisible" SortPriority="-1" SortDirection="Up"/>
@@ -2127,6 +2143,7 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<Scope Name="XML(文本)编辑器" ID="{FA3CD31E-987B-443A-9B81-186104E8DAC1}"/>
 					<Scope Name="文本编辑器" ID="{8B382828-6202-11D1-8870-0000F87579D2}"/>
 					<Scope Name="工作项结果视图" ID="{7026002D-01F6-44E7-95CF-A896C00DA3F8}"/>
+					<Scope Name="ADO.NET 实体数据模型设计器" ID="{C99AEA30-8E36-4515-B76F-496F5A48A6AA}"/>
 					<Scope Name="解决方案资源管理器" ID="{3AE79031-E1BC-11D0-8F78-00A0C9110057}"/>
 					<Scope Name="查询设计器" ID="{B2C40B32-3A37-4CA9-97B9-FA44248B69FF}"/>
 					<Scope Name="Web 浏览器" ID="{E8B06F41-6D01-11D2-AA7D-00C04F990343}"/>
@@ -2138,6 +2155,7 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<Scope Name="F# Interactive" ID="{DEE22B65-9761-4A26-8FB2-759B971D6DFC}"/>
 					<Scope Name="查看设计器" ID="{B968E165-98E0-41F0-8FBE-A8ED1D246A90}"/>
 					<Scope Name="XAML 编辑器" ID="{A4F9FF65-A78C-4650-866D-5069CC4127CF}"/>
+					<Scope Name="Microsoft SQL Server Data Tools，表设计器" ID="{2366CF66-2394-4701-AFCA-37ED7FD41648}"/>
 					<Scope Name="全局" ID="{5EFC7975-14BC-11CF-9B2B-00AA00573819}"/>
 					<Scope Name="类图" ID="{59B0B277-7DDF-4E36-A3ED-02DAC5B9E2FA}"/>
 					<Scope Name="UML 活动图" ID="{950C3878-B510-4BC5-9051-42798A870364}"/>
@@ -2158,14 +2176,18 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<Scope Name="报表设计器" ID="{CB3675B8-701E-4F56-9167-2714E167FF3F}"/>
 					<Scope Name="工作流设计器" ID="{D4D9FCBC-B26A-4C41-AB9F-11FD2466829A}"/>
 					<Scope Name="托管资源编辑器" ID="{FEA4DCC9-3645-44CD-92E7-84B55A16465C}"/>
+					<Scope Name="Page Inspector" ID="{B8F809CA-7D14-4935-8657-727DC294E16B}"/>
 					<Scope Name="编码的 UI 测试编辑器" ID="{E91F82D5-B532-47E9-ADAD-72F96EF9D35F}"/>
 					<Scope Name="并发报告" ID="{5FCCFCD6-6237-4D02-B1DC-B6321AF08CE5}"/>
 					<Scope Name="差异查看器" ID="{79D52DDF-52BC-43F1-9663-B3E85CDCA912}"/>
+					<Scope Name="Microsoft SQL Server Data Tools，架构比较" ID="{00E9D2E3-9044-47D1-978C-BE2825249219}"/>
 					<Scope Name="表设计器" ID="{4194FEE5-6777-419F-A5FC-47A536DF1BDB}"/>
 					<Scope Name="层关系图" ID="{305563E9-FDF9-485B-B73E-D9FEDCC36F2E}"/>
 					<Scope Name="HTML 编辑器设计视图" ID="{CB3FCFEA-03DF-11D1-81D2-00A0C91BBEE3}"/>
 					<Scope Name="HTML 编辑器源视图" ID="{CB3FCFEB-03DF-11D1-81D2-00A0C91BBEE3}"/>
 					<Scope Name="VC 图像编辑器" ID="{C0BA70ED-069E-412B-9C06-7442E28A11B9}"/>
+					<Scope Name="Microsoft SQL Server Data Tools, T-SQL Editor" ID="{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"/>
+					<Scope Name="查询结果" ID="{0058A1F7-65F3-4DB9-B3D0-CA7E64DD73CD}"/>
 					<Scope Name="测试资源管理器" ID="{E1B7D1F8-9B3C-49B1-8F4F-BFC63A88835D}"/>
 					<Scope Name="XML 架构设计器" ID="{DEE6CEF9-3BCA-449A-82A6-FC757D6956FB}"/>
 				</ScopeDefinitions>
@@ -2907,22 +2929,6 @@ CSS 3.0;CSS 3.0</PropertyValue>
 					<Shortcut Command="Window.NextDocumentWindow" Scope="全局">Ctrl+Tab</Shortcut>
 					<Shortcut Command="Window.MoveToMainDocumentGroup" Scope="全局">Alt+`</Shortcut>
 					<Shortcut Command="Window.MoveToMainDocumentGroup" Scope="文本编辑器">Alt+`</Shortcut>
-					<RemoveShortcut Command="Edit.SizeControlDown" Scope="全局">Ctrl+Shift+下箭头</RemoveShortcut>
-					<Shortcut Command="ReSharper.ReSharper_MoveDown" Scope="全局">Ctrl+Shift+下箭头</Shortcut>
-					<RemoveShortcut Command="Edit.NextHighlightedReference" Scope="文本编辑器">Ctrl+Shift+下箭头</RemoveShortcut>
-					<Shortcut Command="ReSharper.ReSharper_MoveDown" Scope="文本编辑器">Ctrl+Shift+下箭头</Shortcut>
-					<RemoveShortcut Command="Edit.SizeControlLeft" Scope="全局">Ctrl+Shift+左箭头</RemoveShortcut>
-					<RemoveShortcut Command="Edit.SizeControlRight" Scope="全局">Ctrl+Shift+右箭头</RemoveShortcut>
-					<RemoveShortcut Command="Edit.PreviousHighlightedReference" Scope="文本编辑器">Ctrl+Shift+上箭头</RemoveShortcut>
-					<Shortcut Command="ReSharper.ReSharper_MoveUp" Scope="文本编辑器">Ctrl+Shift+上箭头</Shortcut>
-					<RemoveShortcut Command="Edit.SizeControlUp" Scope="全局">Ctrl+Shift+上箭头</RemoveShortcut>
-					<Shortcut Command="ReSharper.ReSharper_MoveUp" Scope="全局">Ctrl+Shift+上箭头</Shortcut>
-					<RemoveShortcut Command="ReSharper.ReSharper_MoveLeft" Scope="全局">Ctrl+Shift+左箭头</RemoveShortcut>
-					<RemoveShortcut Command="ReSharper.ReSharper_MoveLeft" Scope="文本编辑器">Ctrl+Shift+左箭头</RemoveShortcut>
-					<RemoveShortcut Command="ReSharper.ReSharper_MoveRight" Scope="文本编辑器">Ctrl+Shift+右箭头</RemoveShortcut>
-					<RemoveShortcut Command="ReSharper.ReSharper_MoveRight" Scope="全局">Ctrl+Shift+右箭头</RemoveShortcut>
-					<Shortcut Command="Edit.WordPreviousExtend" Scope="文本编辑器">Ctrl+Shift+左箭头</Shortcut>
-					<Shortcut Command="Edit.WordNextExtend" Scope="文本编辑器">Ctrl+Shift+右箭头</Shortcut>
 				</UserShortcuts>
 			</KeyboardShortcuts>
 		</Category>
@@ -2972,6 +2978,10 @@ CSS 3.0;CSS 3.0</PropertyValue>
 	<Category name="SQL_Editor" Category="{7d092b67-f9b8-4de4-a60e-298bada6f735}" Package="{cd5a6b66-0d89-4949-b356-361cf0d74372}" RegisteredName="SQL_Editor" PackageName="RadLangSvc.Package, RadLangSvc.VS, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"/>
 	<Category name="Test Tools_Test Project" Category="{83eb4e3c-d916-35f7-0118-10f5d3fd41e9}" Package="{a9405ae6-9ac6-4f0e-a03f-7afe45f6fcb7}" RegisteredName="Test Tools_Test Project">
 		<PropertyValue name="DefaultProjectLanguage">VC</PropertyValue>
+	</Category>
+	<Category name="SQL Server Tools" RegisteredName="SQL Server Tools">
+		<Category name="Database Errors and Warnings" Category="{000CE8DF-39CB-47F7-8FFE-047DB354E987}" Package="{00FEE386-5F9F-4577-99F4-F327FAFC0FB9}" RegisteredName="Database Errors and Warnings" PackageName="Microsoft SQL Server Data Tools"/>
+		<Category name="Online Editing" Category="{0CEF8E75-0396-498B-A411-FC67F6782E9A}" Package="{00FEE386-5F9F-4577-99F4-F327FAFC0FB9}" RegisteredName="Online Editing" PackageName="Microsoft SQL Server Data Tools"/>
 	</Category>
 	<Category name="HTML Tag Specific" Category="{7583bb73-a453-40e8-8951-b6986ddb1d9b}" Package="{1B437D20-F8FE-11D2-A6AE-00104BCC7269}" RegisteredName="HTML Tag Specific" PackageName="Visual Studio HTM Editor Package"/>
 	<Category name="Test Tools_Web Test_SharePoint" Category="{7BEC21FF-13B0-4104-89B0-43FDAE76835E}" Package="{a9405ae6-9ac6-4f0e-a03f-7afe45f6fcb7}" RegisteredName="Test Tools_Web Test_SharePoint" PackageName="Microsoft.VisualStudio.TestTools.TestCaseManagement.QualityToolsPackage, Microsoft.VisualStudio.QualityTools.TestCaseManagement, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

@@ -3,6 +3,7 @@
 #include "Sink.h"
 #include "HDC.h"
 #include "SortHelper.h"
+#include "SMac.h"
 
 extern _MAC_PROTOCOL MAC_PROTOCOL;
 extern string INFO_LOG;
@@ -158,8 +159,8 @@ bool CEpidemic::Operate(int currentTime)
 {
 	if( MAC_PROTOCOL == _hdc )
 		CHDC::Operate(currentTime);	
-//	else
-//		CSMAC::Operate(currentTime);
+	else
+		CSMac::Operate(currentTime);
 
 	if( ! CNode::hasNodes(currentTime) )
 		return false;

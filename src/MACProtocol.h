@@ -23,7 +23,6 @@ protected:
 public:
 
 	static bool TEST_DYNAMIC_NUM_NODE;
-//	static bool TEST_HOTSPOT_SIMILARITY;
 	static int SLOT_CHANGE_NUM_NODE;  //动态节点个数测试时，节点个数发生变化的周期
 
 	CMacProtocol(){};

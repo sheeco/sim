@@ -77,7 +77,10 @@
     <ClCompile Include="..\src\SortHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\MACProtocol.cpp">
+    <ClCompile Include="..\src\MacProtocol.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SMac.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -127,9 +130,6 @@
     <ClInclude Include="..\src\HotspotSelect.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\MACProtocol.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\MANode.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -164,6 +164,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\SortHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MacProtocol.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SMac.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

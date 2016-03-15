@@ -6,6 +6,7 @@
 #include "MANode.h"
 #include "Node.h"
 #include "HDC.h"
+#include "SMac.h"
 
 extern _MAC_PROTOCOL MAC_PROTOCOL;
 extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
@@ -852,8 +853,8 @@ bool HAR::Operate(int currentTime)
 {
 	if( MAC_PROTOCOL == _hdc )
 		CHDC::Operate(currentTime);
-	//		else
-	//			CSMAC::Operate(currentTime);
+	else
+		CSMac::Operate(currentTime);
 
 	if( ! CNode::hasNodes(currentTime) )
 		return false;

@@ -4,6 +4,7 @@
 #include "Node.h"
 #include "Sink.h"
 #include "SortHelper.h"
+#include "SMac.h"
 
 extern string INFO_LOG;
 
@@ -174,12 +175,9 @@ void CProphet::SendData(int currentTime)
 bool CProphet::Operate(int currentTime)
 {
 	if( MAC_PROTOCOL == _hdc )
-		CHDC::Operate(currentTime);
-	
-	//TODO: add class smac
-	//TODO: move general mac function in hdc into smac
-//	else
-//		CSMAC::Operate(currentTime);
+		CHDC::Operate(currentTime);	
+	else
+		CSMac::Operate(currentTime);
 
 	if( ! CNode::hasNodes(currentTime) )
 		return false;

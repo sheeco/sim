@@ -78,7 +78,7 @@
 
 ### Dependencies
 
-- **TODO：**TinyXML
+- **TODO：** TinyXML
 
 
 ### Environment
@@ -207,8 +207,8 @@
 - RFCT：将所有的`g_`系列全局变量都改为相关类内的静态变量（GA等未采用的方法相关的变量未改动）；
 - ADD：增加`CHotspot::ratio`及相关方法和改动，用于测试新的 ratio 计算方法，将在贪婪选取和后续选取过程中用到，可使用命令行参数`-balanced-ratio`选项开启；
 - ADD：增加`poor-hotspot.txt`用于测试投递计数为 0 的热点信息；
-- **TODO：**ADD：应该将动态节点个数测试时的增删节点过程改成随机选取节点；
-- **TODO：**MOD：针对热点的排序应该改成从大到小的；
+- **TODO：** ADD：应该将动态节点个数测试时的增删节点过程改成随机选取节点；
+- **TODO：** MOD：针对热点的排序应该改成从大到小的；
 
 
 ###### 2015-11-25  ·  *< 2.1.1 >*
@@ -361,8 +361,8 @@
 	* `CProcessor`改为`CHelper`；
 	* 将所有辅助函数分类整理到全局（`GlobalParameters.h`）、`CFileHelper`、`CSortHelper`三处；
 	* `CRoute`类继承自`CGeoEntity`；
-- **TODO：**RFCT：将配置参数相关的定义和操作整理到单独的`CConfiguration`类；
-- **TODO：**RFCT：将配置参数的默认值读取改用 XML 实现；
+- **TODO：** RFCT：将配置参数相关的定义和操作整理到单独的`CConfiguration`类；
+- **TODO：** RFCT：将配置参数的默认值读取改用 XML 实现；
 
 
 ###### 2016-03-02  ·  *< 2.5.11 >*
@@ -378,7 +378,7 @@
 - MNT：在`README.md`中的更新日志中加上分类标签，目前包括`ADD：`添加新功能、`MOD：`修改现有实现、`OPT：`功能优化、`BUG：`发现错误、`FIX：`修复错误、`RFCT：`代码重构、`MNT：`版控维护、`NOTE：`附加说明；
 - MNT：在`README.md`中添加 Environment 说明；
 - MNT：将类图文件`ClassDiagram.cd`添加到追踪列表；
-- **TODO：**MNT：重构完成后，将代码合并到master分支；
+- **TODO：** MNT：重构完成后，将代码合并到master分支；
 
 
 ###### 2016-03-04
@@ -393,6 +393,7 @@
 - RFCT：对于热点类型的定义和使用，将`TYPE_MERGE_HOTSPOT`、`TYPE_NEW_HOTSPOT`、`TYPE_OLD_HOTSPOT`等宏定义改为类内的枚举类定义`CHotspot::_TypeHotspot`；
 - RFCT：新增`CConfiguration`顶级类，为之后添加从文件中读取参数配置的功能做准备；
 - RFCT：将主函数中的运行部分移入单独的`Run()`函数；
+- **TODO：** RFCT：整理确定各个类内静态变量的访问权限；
 
 
 ###### 2016-03-08  ·  *< 2.6.1 >*
@@ -413,6 +414,7 @@
 - ADD：数据集名字`DATASET`为可定制参数（尚未添加读取代码）；
 - FIX：之前使用`nodes.size()`替换`NUM_NODE`时造成的错误；
 - MNT：在 git commit message 中使用符号标记更改：`+`添加、`-`删除、`~`修改、`#`优化、`!`修复；
+- **TODO：** ADD：添加数据集名字的自定义；
 
 
 ###### 2016-03-10  ·  *< 2.6.4 >*
@@ -423,7 +425,7 @@
 - FIX：在热点选取之前，丢弃死亡节点的 position 记录（`CHotspotSelect::CollectNewPositions()`）；
 - FIX：热点区域相遇百分比的统计存在的关键性错误（`CProphet::SendData()`）；
 - ADD：`CNode::encounterActive`用于统计有效的节点相遇计数；
-- **TODO：**MNT：在`README.md`中，添加 trace 文件的格式和目录位置要求的说明；
+- **TODO：** MNT：在`README.md`中，添加 trace 文件的格式和目录位置要求的说明；
 
 
 ###### 2016-03-11  ·  *< 2.6.5 >*
@@ -432,5 +434,10 @@
 - MOD：将增删节点和更新节点位置、工作状态等操作，整理到 MAC 协议层中（暂时全部放入`CHDC`）；
 - RFCT：将输出调试信息的操作分别整理到 MAC 层和路由层的父类和子类中，以实现尽可能多的重用；
 - ADD：增加全局函数`Exit()`，并将输出时间戳的操作统一放入其中；
-- **TODO：**ADD：添加邻居节点发现（Beacon 帧发送和窗口协商）的能耗；
-- **TODO：**ADD：将 MAC 层的基本操作从`CHDC`中移入新增类`CSMac`中；
+- **TODO：** ADD：添加邻居节点发现（Beacon 帧发送和窗口协商）的能耗；
+
+
+###### 2016-03-16
+
+- ADD：添加`CSMac`类，并将 MAC 层的基本操作从`CHDC`中移入新增类`CSMac`中；
+- **TODO：** RFCT：将`x`和`y`两个变量包装成`CCoordinate`类；

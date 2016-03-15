@@ -6,18 +6,11 @@ extern _MAC_PROTOCOL MAC_PROTOCOL;
 extern string FILE_DEBUG;
 extern int RUNTIME;
 
-int CHDC::HOTSPOT_COST_SUM = 0;
-int CHDC::HOTSPOT_COST_COUNT = 0;
-double CHDC::MERGE_PERCENT_SUM = 0;
-int CHDC::MERGE_PERCENT_COUNT = 0;
-double CHDC::OLD_PERCENT_SUM = 0;
-int CHDC::OLD_PERCENT_COUNT = 0;
-double CHDC::SIMILARITY_RATIO_SUM = 0;
-int CHDC::SIMILARITY_RATIO_COUNT = 0;
-
 
 void CHDC::PrintInfo(int currentTime)
 {
+	CMacProtocol::PrintInfo(currentTime);
+
 	if( ! ( ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 
 		      && currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
 			|| currentTime == RUNTIME  ) )
@@ -102,16 +95,16 @@ bool CHDC::Operate(int currentTime)
 {
 	//Node Number Test:
 	if( TEST_DYNAMIC_NUM_NODE )
-		ChangeNodeNumber(currentTime);
+		CMacProtocol::ChangeNodeNumber(currentTime);
 
 	//TODO: move update of state after update of dc
-	UpdateNodeStatus(currentTime);
+	CMacProtocol::UpdateNodeStatus(currentTime);
 
 	HAR::HotspotSelection(currentTime);
 
 	//判断是否位于热点区域，更新占空比
 	if( MAC_PROTOCOL == _hdc )
-		CHDC::UpdateDutyCycleForNodes(currentTime);
+		UpdateDutyCycleForNodes(currentTime);
 
 	return true;
 }
