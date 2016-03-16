@@ -9,8 +9,7 @@ class CData :
 //protected:
 
 //	int ID;  //data编号
-//	double x;  //未使用
-//	double y;  //未使用
+//	CCoordinate location;  //未使用
 //	int time;  //该data最后一次状态更新的时间戳，用于校验，初始值应等于timeBirth
 //	bool flag;
 
@@ -59,7 +58,7 @@ private:
 
 public:
 
-	//跳数或TTL倒计数的初始值，在Epidemic中选择一种使用，默认值都是0，必须在main函数中或通过命令行参数赋值
+	//跳数或 TTL 倒计数的初始值，在 Epidemic 中选择一种使用，默认值都是 0，必须在 main 函数中或通过命令行参数赋值
 	//注意：两者不能同时取非零值，因为该值也用于该选项的所有判断
 	static int MAX_HOP;
 	static int MAX_TTL;

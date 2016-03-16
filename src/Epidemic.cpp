@@ -8,7 +8,7 @@
 extern _MAC_PROTOCOL MAC_PROTOCOL;
 extern string INFO_LOG;
 
-int CEpidemic::MAX_QUEUE_SIZE = CNode::BUFFER_CAPACITY;
+int CEpidemic::MAX_QUEUE_SIZE = -1;
 int CEpidemic::SPOKEN_MEMORY = 0;
 
 

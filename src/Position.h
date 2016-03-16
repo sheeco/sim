@@ -18,13 +18,13 @@ private:
 
 public:
 
-	static double CO_POSITION_DECAY;
+//	static double CO_POSITION_DECAY;
 
 	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
 	static vector<CPosition *> positions;
 	static int nPositions;
-	//保存从候选position集合中删除的position，测试用
-	static vector<CPosition *> deletedPositions;
+//	//保存从候选position集合中删除的position，测试用
+//	static vector<CPosition *> deletedPositions;
 
 	CPosition()
 	{
@@ -55,10 +55,10 @@ public:
 	{
 		return weight;
 	}
-	inline void decayWeight()
-	{
-		this->weight /= CO_POSITION_DECAY;
-	}
+//	inline void decayWeight()
+//	{
+//		this->weight /= CO_POSITION_DECAY;
+//	}
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{

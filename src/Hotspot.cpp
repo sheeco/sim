@@ -3,17 +3,18 @@
 #include "Node.h"
 #include "HAR.h"
 
+int CHotspot::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
+vector<CHotspot *> CHotspot::hotspotCandidates;
+vector<CHotspot *> CHotspot::selectedHotspots;
+vector<CHotspot *> CHotspot::oldSelectedHotspots;
+vector<CHotspot *> CHotspot::deletedHotspots;
+
 int CHotspot::SLOT_LOCATION_UPDATE = 100;  //地理信息收集的slot
 int CHotspot::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
 int CHotspot::TIME_HOSPOT_SELECT_START = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 double CHotspot::RATIO_MERGE_HOTSPOT = 1.0;
 double CHotspot::RATIO_NEW_HOTSPOT = 1.0;
 double CHotspot::RATIO_OLD_HOTSPOT = 1.0;
-int CHotspot::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
-vector<CHotspot *> CHotspot::hotspotCandidates;
-vector<CHotspot *> CHotspot::selectedHotspots;
-vector<CHotspot *> CHotspot::oldSelectedHotspots;
-vector<CHotspot *> CHotspot::deletedHotspots;
 
 
 bool CHotspot::ifPositionExists(CPosition* pos)
@@ -80,8 +81,7 @@ void CHotspot::recalculateCenter()
 		sum_y += (*ipos)->getY();
 	}
 
-	this->x = sum_x / coveredPositions.size();
-	this->y = sum_y / coveredPositions.size();
+	this->setLocation( sum_x / coveredPositions.size(), sum_y / coveredPositions.size() );
 }
 
 int CHotspot::getNCoveredPositionsForNode(int inode)
@@ -116,14 +116,14 @@ double CHotspot::calculateRatio()
 		ratio = coveredPositions.size() * double(CNode::getNNodes() - coveredNodes.size() + 1) / double(CNode::getNNodes());
 		return ratio;
 	}
-	else if( HAR::TEST_LEARN )
-	{
-		ratio = 0;
-		for(vector<CPosition*>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
-			ratio += (*ipos)->getWeight();
-		return ratio;
-
-	}
+//	else if( HAR::TEST_LEARN )
+//	{
+//		ratio = 0;
+//		for(vector<CPosition*>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
+//			ratio += (*ipos)->getWeight();
+//		return ratio;
+//
+//	}
 	else
 	{
 		ratio = coveredPositions.size();

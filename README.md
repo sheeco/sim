@@ -393,7 +393,6 @@
 - RFCT：对于热点类型的定义和使用，将`TYPE_MERGE_HOTSPOT`、`TYPE_NEW_HOTSPOT`、`TYPE_OLD_HOTSPOT`等宏定义改为类内的枚举类定义`CHotspot::_TypeHotspot`；
 - RFCT：新增`CConfiguration`顶级类，为之后添加从文件中读取参数配置的功能做准备；
 - RFCT：将主函数中的运行部分移入单独的`Run()`函数；
-- **TODO：** RFCT：整理确定各个类内静态变量的访问权限；
 
 
 ###### 2016-03-08  ·  *< 2.6.1 >*
@@ -440,4 +439,10 @@
 ###### 2016-03-16
 
 - ADD：添加`CSMac`类，并将 MAC 层的基本操作从`CHDC`中移入新增类`CSMac`中；
-- **TODO：** RFCT：将`x`和`y`两个变量包装成`CCoordinate`类；
+
+
+###### 2016-03-16  ·  *< 2.6.6 >*
+
+- FIX：整理路由类和 Mac 类的`PrintInfo()`和`PrintFinal`输出函数；
+- ADD：将`x`和`y`两个变量包装成`CCoordinate`类；
+- RFCT：暂时将各个类内静态变量的访问权限全设为`public`，并将初始化操作都移入`initConfiguration()`；

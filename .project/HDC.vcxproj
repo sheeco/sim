@@ -118,6 +118,7 @@
     <ClInclude Include="..\src\Algorithm.h" />
     <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
+    <ClInclude Include="..\src\Coordinate.h" />
     <ClInclude Include="..\src\Data.h" />
     <ClInclude Include="..\src\Entity.h" />
     <ClInclude Include="..\src\Epidemic.h" />

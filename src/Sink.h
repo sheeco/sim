@@ -14,8 +14,7 @@ class CSink :
 //protected:
 
 //	int ID;  //Sink节点的编号
-//	double x;  //Sink节点x坐标
-//	double y;  //Sink节点y坐标
+//	CCoordinate location;  //Sink节点y坐标
 //	int time;  //更新信息的时间戳
 //	bool flag;
 //	vector<CData> buffer;
@@ -26,15 +25,10 @@ private:
 	static CSink* sink;
 	vector<CRoute> newRoutes;
 
-	//TODO: 参数统一读取 / 类内读取 ？
-	static int SINK_ID;
-	static int BUFFER_CAPACITY;
-
 	CSink()
 	{
 		this->ID = SINK_ID;
-		this->x = SINK_X;
-		this->y = SINK_Y;		
+		this->setLocation(SINK_X, SINK_Y);		
 		this->bufferCapacity = BUFFER_CAPACITY;
 	}
 
@@ -43,8 +37,11 @@ private:
 
 public:
 
+	//TODO: 参数统一读取 / 类内读取 ？
+	static int SINK_ID;
 	static double SINK_X;
 	static double SINK_Y;
+	static int BUFFER_CAPACITY;
 
 	//Sink为单例模式
 	static CSink* getSink()

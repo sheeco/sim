@@ -2,6 +2,7 @@
 #include "Node.h"
 #include "HAR.h"
 #include "HDC.h"
+#include "SMac.h"
 
 extern _MAC_PROTOCOL MAC_PROTOCOL;
 extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
@@ -11,7 +12,7 @@ extern string FILE_DEBUG;
 extern int RUNTIME;
 
 int CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //数据发送slot
-bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = false;
+bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
 
 
 //CRoutingProtocol::CRoutingProtocol()
@@ -29,14 +30,21 @@ string INFO_BUFFER = "#Time	#BufferStateOfEachNode \n" ;
 
 void CRoutingProtocol::PrintInfo(int currentTime)
 {
+	switch( MAC_PROTOCOL )
+	{
+		case _smac:
+			CSMac::PrintInfo(currentTime);
+			break;
+		case _hdc:
+			CHDC::PrintInfo(currentTime);
+			break;
+		default:
+			break;
+	}
+
 	if( ! ( currentTime % SLOT_RECORD_INFO == 0
 			|| currentTime == RUNTIME ) )
 		return;
-
-	if( MAC_PROTOCOL == _hdc )
-		CHDC::PrintInfo(currentTime);
-//	else
-//		CSMAC::PrintInfo(currentTime);
 
 	//投递率、延迟、节点buffer状态统计 ...
 	if( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE  == 0
@@ -162,12 +170,18 @@ void CRoutingProtocol::PrintFinal(int currentTime)
 	else
 		debug << CData::getDeliveryRatio() << TAB ;
 	debug << CData::getAverageDelay() << TAB ;
-
-	if( MAC_PROTOCOL == _hdc && ROUTING_PROTOCOL != _har )
-		CHDC::PrintFinal(currentTime);
-//	else
-//		CSMAC::PrintFinal(currentTime);
-
 	debug.close();
+
+	switch( MAC_PROTOCOL )
+	{
+		case _smac:
+			CSMac::PrintFinal(currentTime);
+			break;
+		case _hdc:
+			CHDC::PrintFinal(currentTime);
+			break;
+		default:
+			break;
+	}
 
 }

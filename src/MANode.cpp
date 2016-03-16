@@ -2,10 +2,11 @@
 
 //TODO: read from xml instead of constant initial value
 int CMANode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
-int CMANode::SPEED = 30;
-int CMANode::BUFFER_CAPACITY = 100;
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
+
+int CMANode::SPEED = 0;
+int CMANode::BUFFER_CAPACITY = 0;
 CGeneralNode::_RECEIVE CMANode::RECEIVE_MODE = _selfish;
 
 

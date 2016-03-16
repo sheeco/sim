@@ -80,16 +80,16 @@ void CHotspotSelect::CollectNewPositions(int time)
 	for(vector<int>::iterator i = idNodes.begin(); i != idNodes.end(); ++i)
 	{
 		temp_pos = new CPosition();
-		double x = 0, y = 0;
-		if( ! CFileHelper::getLocationFromFile(*i, time, x, y) )
+		CCoordinate location;
+		if( ! CFileHelper::getLocationFromFile(*i, time, location) )
 		{
 			cout << endl << "Error @ CHotspotSelect::CollectNewPositions() : Cannot find location info for Node " << *i << " at Time " << time << endl;
 			_PAUSE_;
 		}
-		temp_pos->moveTo(x, y, time);
+		temp_pos->setLocation(location, time);
 		temp_pos->setNode( *i );
 		temp_pos->generateID();
-		if(temp_pos->getID() == -1)
+		if( temp_pos->getID() == -1 )
 		{
 			cout << endl << "Error @ CSortHelper::BuildCandidateHotspots() : Wrong Format"<<endl;
 			_PAUSE_;
@@ -313,9 +313,8 @@ void CHotspotSelect::MergeHotspots(int time)
 			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * CGeneralNode::TRANS_RANGE)
 			{
 				//FIXE: time copied from old or new ?
-				CHotspot *merge = new CHotspot( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 ,
-																				 ( (*iOld)->getY() + (*iNew)->getY() ) / 2 ,
-																				   time );
+				CCoordinate location( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 , ( (*iOld)->getY() + (*iNew)->getY() ) / 2);
+				CHotspot *merge = new CHotspot(location, time);
 				//for merge statistics
 				mergeCount++;
 				//temp << (*iOld)->getNCoveredPosition() << "/" << (*iNew)->getNCoveredPosition() << "/" << merge->getNCoveredPosition() << "," << merge->getAge() << TAB;

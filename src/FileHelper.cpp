@@ -5,7 +5,7 @@ extern string DATASET;
 extern int RUNTIME;
 
 
-bool CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y)
+bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &location)
 {
 	FILE *file;
 	char filename[20] = {'\0'};
@@ -49,8 +49,8 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, double &x, double &y
 //			Exit(time - SLOT_MOBILITYMODEL);
 		}
 		//È¡µÃ×ø±ê
-		x = temp_x;
-		y = temp_y;
+		location.setX(temp_x);
+		location.setY(temp_y);
 
 		fclose(file);
 		return true;

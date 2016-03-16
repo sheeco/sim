@@ -5,21 +5,6 @@
 
 int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 
-int CNode::SLOT_TOTAL = 0;
-double CNode::DEFAULT_DUTY_CYCLE = 0;
-double CNode::HOTSPOT_DUTY_CYCLE = 0; 
-
-double CNode::DEFAULT_DATA_RATE = 0;
-int CNode::DATA_SIZE = 0;
-int CNode::CTRL_SIZE = 0;
-int CNode::BEACON_SIZE = 0;
-
-int CNode::BUFFER_CAPACITY = 0;
-int CNode::ENERGY = 0;
-CGeneralNode::_RECEIVE CNode::RECEIVE_MODE = _loose;
-CGeneralNode::_SEND CNode::SEND_MODE = _dump;
-CGeneralNode::_QUEUE CNode::QUEUE_MODE = _fifo;
-
 int CNode::encounterAtHotspot = 0;
 int CNode::encounterActive = 0;
 int CNode::encounter = 0;
@@ -31,11 +16,26 @@ vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
 vector<CNode *> CNode::deletedNodes;
 
-int CNode::NUM_NODE_MIN = 14;
-int CNode::NUM_NODE_MAX = 34;
-int CNode::NUM_NODE_INIT = 29;
+int CNode::NUM_NODE_MIN = 0;
+int CNode::NUM_NODE_MAX = 0;
+int CNode::NUM_NODE_INIT = 0;
+
+int CNode::SLOT_TOTAL = 0;
+double CNode::DEFAULT_DUTY_CYCLE = 0;
+double CNode::HOTSPOT_DUTY_CYCLE = 0; 
+
+double CNode::DEFAULT_DATA_RATE = 0;
+int CNode::DATA_SIZE = 0;
+int CNode::CTRL_SIZE = 0;
+
+int CNode::BUFFER_CAPACITY = 0;
+int CNode::ENERGY = 0;
+CGeneralNode::_RECEIVE CNode::RECEIVE_MODE = _loose;
+CGeneralNode::_SEND CNode::SEND_MODE = _dump;
+CGeneralNode::_QUEUE CNode::QUEUE_MODE = _fifo;
 
 /**************************************  Prophet  *************************************/
+
 double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
 double CNode::DECAY_RATIO = 0.90;  //0.98(/s)
 double CNode::TRANS_RATIO = 0.20;  //0.25
@@ -56,36 +56,43 @@ void CNode::dropDataIfOverflow()
 	if( buffer.empty() )
 		return;
 
-	//vector<CData> myData;
-	//vector<CData> otherData;
-	//for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); idata++)
-	//{
-	//	if( idata->getNode() == this->ID )
-	//		myData.push_back( *idata );
-	//	else
-	//		otherData.push_back( *idata );
-	//}
-	//otherData = CSortHelper::mergeSort(otherData, CSortHelper::ascendByData);
-	//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByData);
-	////如果超出MAX_QUEUE_SIZE
-	//if(otherData.size() > CEpidemic::MAX_QUEUE_SIZE)
-	//	otherData = vector<CData>( otherData.end() - CEpidemic::MAX_QUEUE_SIZE, otherData.end() );
-	//myData.insert( myData.begin(), otherData.begin(), otherData.end() );
-	////如果总长度溢出
-	//if( myData.size() > bufferCapacity )
-	//{
-	//	cout << endl << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )" << endl;
-	//	myData = vector<CData>( myData.end() - BUFFER_CAPACITY, myData.end() );
-	//}		
+	vector<CData> myData;
 
-	vector<CData> myData = buffer;
-	myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByData);
-	//如果总长度溢出
-	if( myData.size() > bufferCapacity )
+	if( CEpidemic::MAX_QUEUE_SIZE > 0 )
 	{
-		//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )                 " ;
-		myData = vector<CData>( myData.end() - BUFFER_CAPACITY, myData.end() );
+		vector<CData> otherData;
+		for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); idata++)
+		{
+			if( idata->getNode() == this->ID )
+				myData.push_back( *idata );
+			else
+				otherData.push_back( *idata );
+		}
+		otherData = CSortHelper::mergeSort(otherData, CSortHelper::ascendByData);
+		myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByData);
+		//如果超出MAX_QUEUE_SIZE
+		if(otherData.size() > CEpidemic::MAX_QUEUE_SIZE)
+			otherData = vector<CData>( otherData.end() - CEpidemic::MAX_QUEUE_SIZE, otherData.end() );
+		myData.insert( myData.begin(), otherData.begin(), otherData.end() );
+		//如果总长度溢出
+		if( myData.size() > bufferCapacity )
+		{
+			//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )                    " << endl;
+			myData = vector<CData>( myData.end() - BUFFER_CAPACITY, myData.end() );
+		}		
 	}
+	else
+	{
+		myData = buffer;
+		myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByData);
+		//如果总长度溢出
+		if( myData.size() > bufferCapacity )
+		{
+			//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )                 " ;
+			myData = vector<CData>( myData.end() - BUFFER_CAPACITY, myData.end() );
+		}
+	}
+
 	buffer = myData;
 }
 
@@ -128,13 +135,13 @@ bool CNode::updateStatus(int currentTime)
 		decayDeliveryPreds(currentTime);
 
 	//更新坐标
-	double x = 0, y = 0;
-	if( ! CFileHelper::getLocationFromFile(ID, currentTime, x, y) )
+	CCoordinate location;
+	if( ! CFileHelper::getLocationFromFile(ID, currentTime, location) )
 	{
 		die(currentTime, false);  //因 trace 信息终止而死亡的节点，无法回收
 		return false;
 	}
-	moveTo(x, y, currentTime);
+	setLocation(location, currentTime);
 
 	return true;
 }

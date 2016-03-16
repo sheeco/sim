@@ -12,8 +12,7 @@ class CMANode :
 //protected:
 
 //	int ID;  //MA节点的编号
-//	double x;  //MA节点现在的x坐标
-//	double y;  //MA节点现在的y坐标
+//	CCoordinate location;  //MA节点现在的y坐标
 //	int time;  //更新MA节点坐标的时间戳
 //	bool flag;
 
@@ -31,8 +30,6 @@ private:
 	static vector<CMANode *> freeMANodes;
 
 	static int ID_COUNT;
-	static int SPEED;
-	static int BUFFER_CAPACITY;  //TODO: static getter & ref mod
 
 	void init()
 	{
@@ -57,8 +54,7 @@ private:
 	{
 		init();
 		this->route = route;
-		this->x = CSink::SINK_X;
-		this->y = CSink::SINK_Y;
+		this->setLocation(CSink::SINK_X, CSink::SINK_Y);
 		atHotspot = nullptr;
 		this->time = time;
 		generateID();
@@ -67,6 +63,8 @@ private:
 
 public:
 
+	static int SPEED;
+	static int BUFFER_CAPACITY;  //TODO: static getter & ref mod
 	static _RECEIVE RECEIVE_MODE;
 
 	static vector<CMANode *> getMANodes()

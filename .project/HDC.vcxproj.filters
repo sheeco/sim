@@ -172,5 +172,8 @@
     <ClInclude Include="..\src\SMac.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Coordinate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

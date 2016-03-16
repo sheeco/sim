@@ -7,7 +7,7 @@
 #pragma once
 
 #include "GlobalParameters.h"
-#include "Entity.h"
+#include "Coordinate.h"
 
 
 //包含位置坐标、时间戳、ID的基类
@@ -17,8 +17,7 @@ class CBasicEntity :
 protected:
 
 	int ID;
-	double x;
-	double y;
+	CCoordinate location; 
 	int time;
 	bool flag;
 
@@ -26,7 +25,7 @@ protected:
 public:
 
 	CBasicEntity(): 
-		ID(0), x(0), y(0), time(0), flag(false) {};
+		ID(0), time(0), flag(false) {};
 
 	~CBasicEntity(){};
 
@@ -36,66 +35,48 @@ public:
 	{
 		this->ID = ID;
 	}
-	inline void setX(double x)
+	inline int getID() const
 	{
-		this->x = x;
+		return ID;
 	}
-	inline void setY(double y)
+	inline void setLocation(double x, double y)
 	{		
-		this->y = y;
+		this->location.setX(x);
+		this->location.setY(y);
+	}
+	inline void setLocation(CCoordinate location)
+	{		
+		this->location = location;
+	}
+//	inline void setLocation(double x, double y, int time)
+//	{
+//		setLocation(x, y);
+//		this->time = time;
+//	}
+	inline void setLocation(CCoordinate location, int time)
+	{		
+		this->location = location;
+		this->time = time;
+	}
+	inline double getX() const
+	{
+		return location.getX();
+	}
+	inline double getY() const
+	{
+		return location.getY();
+	}
+	inline CCoordinate getLocation() const
+	{
+		return location;
 	}
 	inline void setTime(int time)
 	{
 		this->time = time;
 	}
-	inline double getX() const
-	{
-		return x;
-	}
-	inline double getY() const
-	{
-		return y;
-	}
-	inline int getID() const
-	{
-		return ID;
-	}
 	inline int getTime() const
 	{
 		return time;
-	}
-
-	inline void setLocation(double x, double y, int time)
-	{
-		this->x = x;
-		this->y = y;
-		this->time = time;
-	}
-
-	//清除ID，即视为置为invalid
-	inline void clear()
-	{
-		this->ID = -1;
-	}
-	//virtual CString toString()const{};
-
-	//操作符重载，基于x坐标比较大小，用于position或hotspot间的排序
-	inline int CBasicEntity::operator==(CBasicEntity &it) const
-	//FIXME:精度问题
-	{
-		return (this->x == it.getX());
-	}
-	inline int CBasicEntity::operator!=(CBasicEntity &it) const
-	{
-		return (this->x != it.getX());
-	}
-	inline int CBasicEntity::operator<(CBasicEntity &it) const
-	{
-		return (this->x < it.getX());
-	}
-	inline int CBasicEntity::operator>(CBasicEntity &it) const
-	{
-		return (this->x > it.getX());
 	}
 	inline void setFlag(bool flag)
 	{
@@ -104,6 +85,32 @@ public:
 	inline bool getFlag() const
 	{
 		return flag;
+	}
+
+
+	//清除ID，即视为置为invalid
+	inline void clear()
+	{
+		this->ID = -1;
+	}
+
+	//操作符重载，基于x坐标比较大小，用于position或hotspot间的排序
+	inline int CBasicEntity::operator==(CBasicEntity &it) const
+	//FIXME:精度问题
+	{
+		return (location.getX() == it.getX());
+	}
+	inline int CBasicEntity::operator!=(CBasicEntity &it) const
+	{
+		return (location.getX() != it.getX());
+	}
+	inline int CBasicEntity::operator<(CBasicEntity &it) const
+	{
+		return (location.getX() < it.getX());
+	}
+	inline int CBasicEntity::operator>(CBasicEntity &it) const
+	{
+		return (location.getX() > it.getX());
 	}
 
 	//返回两点间距离
@@ -115,13 +122,6 @@ public:
 		nx = n.getX();
 		ny = n.getY();
 		return sqrt((mx - nx) * (mx - nx) + (my - ny) * (my - ny));
-	}
-
-	inline void moveTo(double x, double y, int t)
-	{
-		this->x = x;
-		this->y = y;
-		this->time = t;
 	}
 
 	//由from向to方向移动，给定时间和速度
@@ -143,15 +143,13 @@ public:
 		{
 			cos = (toX - fromX) / distance;
 			sin = (toY - fromY) / distance;
-			this->setX(fromX +  time * speed * cos);
-			this->setY(fromY + time * speed * sin);
+			this->setLocation(fromX +  time * speed * cos, fromY + time * speed * sin);
 			this->setTime( this->getTime() + time );
 		}
 		//将到达
 		else
 		{
-			this->setX(toX);
-			this->setY(toY);			
+			this->setLocation(toX, toY);			
 			this->setTime( this->getTime() + timeArrival );
 		}
 		return ( time - timeArrival );

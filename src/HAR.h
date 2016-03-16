@@ -63,9 +63,6 @@ private:
 	}
 
 
-	//在每一次贪婪选择之前调用，将从CHotspot::oldSelectedHotspots中寻找投递计数为0的热点删除放入CHotspot::deletedHotspots
-	//并删除其对应的所有position放入CPosition::deletedPositions
-	static void DecayPositionsWithoutDeliveryCount(int currentTime);
 	//根据选取出的hotspot集合得到hotspot class的集合
 	static void HotspotClassification(int currentTime);
 	//对初步得到的hotspot class进行路径优化（TSP 最近邻居算法）
@@ -75,6 +72,10 @@ private:
 
 	//比较此次热点选取的结果与上一次选取结果之间的相似度
 	static void CompareWithOldHotspots(int currentTime);
+
+//	//在每一次贪婪选择之前调用，将从CHotspot::oldSelectedHotspots中寻找投递计数为0的热点删除放入CHotspot::deletedHotspots
+//	//并删除其对应的所有position放入CPosition::deletedPositions
+//	static void DecayPositionsWithoutDeliveryCount(int currentTime);
 
 
 public:
@@ -92,9 +93,9 @@ public:
 	/********************************* merge-HAR ***********************************/
 
 	static int MIN_WAITING_TIME;  //add minimum waiting time to each hotspot
-	static bool TEST_LEARN;
-	static double MIN_POSITION_WEIGHT;
 	static bool TEST_BALANCED_RATIO;
+//	static bool TEST_LEARN;
+//	static double MIN_POSITION_WEIGHT;
 
 	HAR(){};
 	~HAR(){};

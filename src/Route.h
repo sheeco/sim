@@ -11,8 +11,7 @@ class CRoute :
 //
 //protected:
 //
-//	double x;
-//	double y;
+//	CCoordinate location;
 //	int time;
 
 

@@ -14,11 +14,10 @@ class CRoutingProtocol :
 {
 protected:
 
-	static int SLOT_DATA_SEND;  //数据发送slot
-
 
 public:
 
+	static int SLOT_DATA_SEND;  //数据发送slot
 	static bool TEST_HOTSPOT_SIMILARITY;
 
 	CRoutingProtocol(){};

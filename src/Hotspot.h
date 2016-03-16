@@ -53,7 +53,6 @@ private:
 	//从覆盖列表中删除某个position，只有贪婪算法会用到
 	void removePosition(CPosition* pos);
 
-
 	//检查某个node是否在覆盖列表中，必须在generateCoveredNodes之后调用
 	bool ifNodeExists(int inode) const;
 
@@ -72,11 +71,10 @@ private:
 		this->deliveryCounts.push_back(0);		
 	}
 
-	void generateHotspot(double x, double y, int time)
+	void generateHotspot(CCoordinate location, int time)
 	{
 		init();
-		this->setX(x);
-		this->setY(y);
+		this->setLocation(location);
 		this->setTime(time);
 		this->generateID();
 
@@ -136,14 +134,14 @@ public:
 	{
 		init();
 		addPosition(pos);
-		generateHotspot(x, y, time);
+		generateHotspot(pos->getLocation(), time);
 	}
 
 	//由merge函数调用
-	CHotspot(double x, double y, int time)
+	CHotspot(CCoordinate location, int time)
 	{
 		init();
-		generateHotspot(x, y, time);
+		generateHotspot(location, time);
 	}
 
 	~CHotspot(){};

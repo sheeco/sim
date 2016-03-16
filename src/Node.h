@@ -17,8 +17,7 @@ class CNode :
 //protected:
 
 //	int ID;  //node编号
-//	double x;  //node现在的x坐标
-//	double y;  //node现在的y坐标
+//	CCoordinate location;  //node现在的y坐标
 //	int time;  //更新node坐标、工作状态（、Prophet中的衰减）的时间戳
 //	bool flag;
 
@@ -50,10 +49,6 @@ private:
 	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
 	static vector<CNode *> deletedNodes;  //用于暂存Node个数动态变化时被暂时移出的节点
-
-	static int NUM_NODE_MIN;
-	static int NUM_NODE_MAX;
-	static int NUM_NODE_INIT;
 
 	/*************************************  Epidemic  *************************************/
 
@@ -149,7 +144,7 @@ private:
 	
 	//队列管理
 	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
-	//超出MAX_QUEUE_SIZE时从前端丢弃数据，溢出时将从从前端丢弃数据
+	//超出MAX_QUEUE_SIZE时从前端丢弃数据，溢出时将从前端丢弃数据
 	//注意：必须在dropOverdueData之后调用
 	void dropDataIfOverflow();
 
@@ -264,6 +259,10 @@ private:
 
 public:
 
+	static int NUM_NODE_MIN;
+	static int NUM_NODE_MAX;
+	static int NUM_NODE_INIT;
+
 	static int SLOT_TOTAL;
 	static double DEFAULT_DUTY_CYCLE;  //不使用HDC，或者HDC中不在热点区域内时的占空比
 	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
@@ -271,7 +270,6 @@ public:
 	static double DEFAULT_DATA_RATE;  //( package / s )
 	static int DATA_SIZE;  //( Byte )
 	static int CTRL_SIZE;
-	static int BEACON_SIZE;
 
 	static int BUFFER_CAPACITY;
 	static int ENERGY;

@@ -5,6 +5,8 @@
 #include "Prophet.h"
 #include "HDC.h"
 #include "Sink.h"
+#include "SMac.h"
+#include "MANode.h"
 
 
 /********************************* Global Var *********************************/
@@ -38,27 +40,124 @@ string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE
 string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
 
 
-//TODO: 检查所有类内静态变量：(a)决定 private / protected；(b)将参数初始化全部移至此处
+//TODO: 检查所有类内静态变量，决定 private / protected
 //TODO: CConfiguration / CConfigureHelper ?
 //TODO: 默认配置参数改为从 XML 读取
 void initConfiguration()
 {
-	CSink::SINK_X = -200;
-	CSink::SINK_Y = 200;
-	CGeneralNode::TRANS_RANGE = 250;
-	CNode::DATA_SIZE = 400;
-	
-	//TODO: find ref for ctrl & beacon size
-	CNode::CTRL_SIZE = 20;
-	CNode::BEACON_SIZE = 10;
-	CNode::DEFAULT_DATA_RATE = 1.0 / 150.0;
-	CNode::BUFFER_CAPACITY = 200;
-	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
-	CNode::DEFAULT_DUTY_CYCLE = 1.0;
-	CData::MAX_TTL = 0;	
+	/************************************** Default Config **************************************/
+
+	CGeneralNode::TRANS_RANGE = 100;  //transmission range
+	CGeneralNode::PROB_DATA_FORWARD = 1.0;
+
+	CSink::SINK_ID = 0; //0为sink节点预留，传感器节点ID从1开始
+	CSink::SINK_X = 0;
+	CSink::SINK_Y = 0;
+	CSink::BUFFER_CAPACITY = 999999999;  //无限制
+
+	CNode::NUM_NODE_INIT = 0;
+
+	CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //数据发送slot
+	CNode::DEFAULT_DATA_RATE = 0;
+	CNode::DATA_SIZE = 0;
+	CNode::CTRL_SIZE = 0;
+	CMacProtocol::MAC_SIZE = 8;  //Mac Header Size
+
+	CNode::BUFFER_CAPACITY = 0;
+	CNode::ENERGY = 0;
+	CNode::RECEIVE_MODE = CGeneralNode::_loose;
+	CNode::SEND_MODE = CGeneralNode::_dump;
+	CNode::QUEUE_MODE = CGeneralNode::_fifo;
+
+	CNode::SLOT_TOTAL = 0;
+	CNode::DEFAULT_DUTY_CYCLE = 0;
+	CNode::HOTSPOT_DUTY_CYCLE = 0; 
+
+	/********** Dynamic Node Number **********/
+	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
+	CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
+	CNode::NUM_NODE_MIN = 0;
+	CNode::NUM_NODE_MAX = 0;
+	/********** ------------------- **********/
+
+	/*********************************  HAR  *******************************/
+
+	CMANode::SPEED = 30;
+	CMANode::BUFFER_CAPACITY = 100;
+	CMANode::RECEIVE_MODE = CGeneralNode::_selfish;
+
+	/******************************  Epidemic  *****************************/
+
+	CData::MAX_HOP = 0;
+	CData::MAX_TTL = 0;
+
+	CEpidemic::MAX_QUEUE_SIZE = -1;
+	CEpidemic::SPOKEN_MEMORY = 0;
+
+	/******************************  Prophet  ******************************/
+
+	CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
+	CNode::DECAY_RATIO = 0.90;  //0.98(/s)
+	CNode::TRANS_RATIO = 0.20;  //0.25
+
+
+	/**************************  Hotspot Select  ***************************/
+
+	CHotspot::SLOT_LOCATION_UPDATE = 100;  //地理信息收集的slot
+	CHotspot::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
+	CHotspot::TIME_HOSPOT_SELECT_START = CHotspot::SLOT_HOTSPOT_UPDATE;  //no MA node at first
+
+	CPostSelect::ALPHA = 0.03;  //ratio for post selection
+	HAR::BETA = 0.0025;  //ratio for true hotspot
+	//HAR::GAMMA = 0.5;  //ratio for HotspotsAboveAverage
+	HAR::CO_HOTSPOT_HEAT_A1 = 1;
+	HAR::CO_HOTSPOT_HEAT_A2 = 30;
+
+	/******************************* IHAR **********************************/
+
+	HAR::LAMBDA = 0;
+	HAR::MAX_MEMORY_TIME = 3600;
+
+	/***************************** merge-HAR *******************************/
+
+	CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
+	CHotspot::RATIO_MERGE_HOTSPOT = 1.0;
+	CHotspot::RATIO_NEW_HOTSPOT = 1.0;
+	CHotspot::RATIO_OLD_HOTSPOT = 1.0;
+	HAR::MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
+	HAR::TEST_BALANCED_RATIO = false;
+
+	//HAR::TEST_LEARN = false;
+	//CPosition::CO_POSITION_DECAY = 1.0;
+	//HAR::MIN_POSITION_WEIGHT = 0;
+
+
+	/************************************** Necessary Config **************************************/
+
 	DATATIME = 15000;
 	RUNTIME = 15000;
+
+	/*********** Depend on DATASET ***********/
 	DATASET = "KAIST";
+	CGeneralNode::TRANS_RANGE = 250;
+	CSink::SINK_X = -200;  //for KAIST
+	CSink::SINK_Y = 200;
+	CNode::NUM_NODE_INIT = 29;
+	CNode::NUM_NODE_MIN = CNode::NUM_NODE_INIT - 5;
+	CNode::NUM_NODE_MAX = CNode::NUM_NODE_INIT + 5;
+	/*********** ----------------- ***********/
+
+	CGeneralNode::PROB_DATA_FORWARD = 1.0;
+
+	CNode::DEFAULT_DATA_RATE = 1.0 / 30.0;
+	CNode::BUFFER_CAPACITY = 200;
+	CNode::ENERGY = 0;
+
+	CNode::DATA_SIZE = 250;  //Up to 250 Bytes
+	CNode::CTRL_SIZE = 10;
+
+	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
+	CNode::DEFAULT_DUTY_CYCLE = 1.0;
 }
 
 bool ParseParameters(int argc, char* argv[])
@@ -424,9 +523,8 @@ void PrintConfiguration()
 
 bool Run()
 {
-	ofstream debug(FILE_DEBUG, ios::app);
 	int currentTime = 0;
-	while(currentTime <= RUNTIME)
+	while( currentTime <= RUNTIME )
 	{
 		bool dead = false;
 
@@ -439,15 +537,21 @@ bool Run()
 		}
 		currentTime += SLOT;
 	}
-	CProphet::PrintFinal(currentTime);
-//	{
-//		RUNTIME = currentTime;
-//		CHDC::PrintInfo(currentTime);
-//		CProphet::PrintInfo(currentTime);
-//		break;
-//	}
 
-	debug.close();
+	switch( ROUTING_PROTOCOL )
+	{
+		case _prophet:
+			CProphet::PrintFinal(currentTime);
+			break;
+		case _epidemic:
+			CEpidemic::PrintFinal(currentTime);
+			break;
+		case _har:
+			HAR::PrintFinal(currentTime);
+			break;
+		default:
+			break;
+	}
 
 	return true;
 }
@@ -475,6 +579,8 @@ int main(int argc, char* argv[])
 	srand( static_cast<unsigned>(time(nullptr)) ); 
 
 	Run();
+
+	Exit(0);
 
 	_ALERT_;
 }

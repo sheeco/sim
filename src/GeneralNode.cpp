@@ -5,8 +5,9 @@ double CGeneralNode::CONSUMPTION_BYTE_SEND = 0.008;  //( mJ / Byte )
 double CGeneralNode::CONSUMPTION_BYTE_RECIEVE = 0.004;
 double CGeneralNode::CONSUMPTION_LISTEN = 13.5;  // ( mJ / s )
 double CGeneralNode::CONSUMPTION_SLEEP = 0.015;
-int CGeneralNode::TRANS_RANGE = 100;  //transmission range
-double CGeneralNode::PROB_DATA_FORWARD = 1.0;
+
+int CGeneralNode::TRANS_RANGE = 0;  //transmission range
+double CGeneralNode::PROB_DATA_FORWARD = 0;
 
 
 vector<CData> CGeneralNode::sendAllData(_SEND mode)

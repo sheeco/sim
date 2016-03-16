@@ -2,7 +2,7 @@
 
 //#include "Hotspot.h"
 #include "Helper.h"
-
+#include "Coordinate.h"
 
 //包含用于文件解析的函数的类
 class CFileHelper :
@@ -11,7 +11,7 @@ class CFileHelper :
 public:
 
 	//传入nodeID和time，将从文件中解析到的信息赋给pos
-	static bool getLocationFromFile(int nodeID, int time, double &x, double &y);
+	static bool getLocationFromFile(int nodeID, int time, CCoordinate &location);
 	//static CPosition* findPositionByID(vector<CPosition *> positions, int ID);
 
 	////将hotspot的时间、坐标和cover数保存到文件

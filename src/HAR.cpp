@@ -34,12 +34,18 @@ double HAR::BETA = 0.0025;  //ratio for true hotspot
 //double HAR::GAMMA = 0.5;  //ratio for HotspotsAboveAverage
 double HAR::CO_HOTSPOT_HEAT_A1 = 1;
 double HAR::CO_HOTSPOT_HEAT_A2 = 30;
+
+/************************************ IHAR ************************************/
+
 double HAR::LAMBDA = 0;
 int HAR::MAX_MEMORY_TIME = 3600;
+
+/********************************* merge-HAR ***********************************/
+
 int HAR::MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
-bool HAR::TEST_LEARN = false;
-double HAR::MIN_POSITION_WEIGHT = 0;
 bool HAR::TEST_BALANCED_RATIO = false;
+//bool HAR::TEST_LEARN = false;
+//double HAR::MIN_POSITION_WEIGHT = 0;
 
 
 double HAR::getHotspotHeat(CHotspot *hotspot)
@@ -199,8 +205,8 @@ void HAR::HotspotSelection(int currentTime)
 		&& currentTime >= CHotspot::TIME_HOSPOT_SELECT_START ) )
 		return;
 
-	if( TEST_LEARN )
-		DecayPositionsWithoutDeliveryCount(currentTime);
+//	if( TEST_LEARN )
+//		DecayPositionsWithoutDeliveryCount(currentTime);
 
 	CHotspotSelect::CollectNewPositions(currentTime);
 
@@ -806,48 +812,49 @@ void HAR::CompareWithOldHotspots(int currentTime)
 	SIMILARITY_RATIO_COUNT++;
 }
 
-void HAR::DecayPositionsWithoutDeliveryCount(int currentTime)
-{
-	if(currentTime == 0)
-		return ;
-	vector<CPosition*> badPositions;
-	if( CHotspot::oldSelectedHotspots.empty() )
-		return ;
-
-	for(vector<CHotspot*>::iterator ihotspot = CHotspot::oldSelectedHotspots.begin(); ihotspot != CHotspot::oldSelectedHotspots.end(); )
-	{
-		if( (*ihotspot)->getDeliveryCount(currentTime) == 0 )
-		{
-			AddToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
-			//free(*ihotspot);
-			//在mHAR中，应该考虑是否将这些热点排除在归并之外
-			//CHotspot::deletedHotspots.push_back(*ihotspot);
-			//ihotspot = CHotspot::oldSelectedHotspots.erase(ihotspot);
-			++ihotspot;
-		}
-		else
-			++ihotspot;
-	}
-	for(vector<CPosition*>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
-	{
-		if( IfExists(badPositions, *ipos) )
-		{
-			(*ipos)->decayWeight();
-			//Reduce complexity
-			RemoveFromList(badPositions, *ipos);
-			//如果权值低于最小值，直接删除，MIN_POSITION_WEIGHT默认值为1，即不会删除任何position
-			if( (*ipos)->getWeight() < MIN_POSITION_WEIGHT )
-			{
-				CPosition::deletedPositions.push_back(*ipos);
-				ipos = CPosition::positions.erase(ipos);
-			}
-			else
-				++ipos;
-		}
-		else
-			++ipos;
-	}
-}
+//void HAR::DecayPositionsWithoutDeliveryCount(int currentTime)
+//{
+//	if(currentTime == 0)
+//		return ;
+//	vector<CPosition*> badPositions;
+//	if( CHotspot::oldSelectedHotspots.empty() )
+//		return ;
+//
+//	for(vector<CHotspot*>::iterator ihotspot = CHotspot::oldSelectedHotspots.begin(); ihotspot != CHotspot::oldSelectedHotspots.end(); )
+//	{
+//		if( (*ihotspot)->getDeliveryCount(currentTime) == 0 )
+//		{
+//			AddToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
+//			//free(*ihotspot);
+//			//在mHAR中，应该考虑是否将这些热点排除在归并之外
+//			//CHotspot::deletedHotspots.push_back(*ihotspot);
+//			//ihotspot = CHotspot::oldSelectedHotspots.erase(ihotspot);
+//			++ihotspot;
+//		}
+//		else
+//			++ihotspot;
+//	}
+//	for(vector<CPosition*>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
+//	{
+//		if( IfExists(badPositions, *ipos) )
+//		{
+//			(*ipos)->decayWeight();
+//			//Reduce complexity
+//			RemoveFromList(badPositions, *ipos);
+//			//如果权值低于最小值，直接删除，MIN_POSITION_WEIGHT默认值为1，即不会删除任何position
+////			if( (*ipos)->getWeight() < MIN_POSITION_WEIGHT )
+////			{
+////				CPosition::deletedPositions.push_back(*ipos);
+////				ipos = CPosition::positions.erase(ipos);
+////			}
+////			else
+////				++ipos;
+//			++ipos;
+//		}
+//		else
+//			++ipos;
+//	}
+//}
 
 bool HAR::Operate(int currentTime)
 {
