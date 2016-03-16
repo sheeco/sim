@@ -7,8 +7,8 @@
 #include "Epidemic.h"
 #include "Hotspot.h"
 
-extern _MAC_PROTOCOL MAC_PROTOCOL;
-extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
+//extern _MAC_PROTOCOL MAC_PROTOCOL;
+//extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
 
 
 class CNode :

@@ -92,13 +92,13 @@
 
 //Slot
 //TODO: add def of namespace to wrap all defs
-#define SLOT 5	// ( s )
+//#define SLOT 5	// ( s )
 //TODO: should be read from .trace file
-#define SLOT_MOBILITYMODEL 30  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
+//#define SLOT_MOBILITYMODEL 30  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
 //#define SLOT_LOCATION_UPDATE 100	//地理信息收集的slot  ->  CHotspot
 //#define SLOT_HOTSPOT_UPDATE 900	//更新热点和分类的slot  ->  CHotspot
 //#define SLOT_DATA_SEND SLOT_MOBILITYMODEL	//数据发送slot  ->  CRoutingProtocol
-#define SLOT_RECORD_INFO 100  //记录数据投递率和数据投递时延的slot
+//#define SLOT_RECORD_INFO 100  //记录数据投递率和数据投递时延的slot
 
 //Simple Macro Def
 #define PI 3.1415926535
@@ -130,243 +130,282 @@ using std::pair;
 using std::iterator;
 using std::exception;
 
-/******************************** Config Const ********************************/
 
-typedef enum _MAC_PROTOCOL { _smac, _hdc } _MAC_PROTOCOL;
-typedef enum _ROUTING_PROTOCOL { _har, _prophet, _epidemic } _ROUTING_PROTOCOL;
-typedef enum _HOTSPOT_SELECT { _original, _improved, _merge } _HOTSPOT_SELECT;
+/********************************** Global Namespace ***********************************/
 
-
-//TODO: wrap these funcs with a namespace
-
-/****************************** Global的辅助函数 *******************************/
-
-inline void Exit(int code)
+namespace global
 {
+	/******************************** Config Const ********************************/
+
+	typedef enum _MAC_PROTOCOL { _smac, _hdc } _MAC_PROTOCOL;
+	typedef enum _ROUTING_PROTOCOL { _har, _prophet, _epidemic } _ROUTING_PROTOCOL;
+	typedef enum _HOTSPOT_SELECT { _original, _improved, _merge } _HOTSPOT_SELECT;
+
+
+	/********************************* Global Var *********************************/
+
+	//TODO: move these global config to a global CConfiguration parameter
+	extern _MAC_PROTOCOL MAC_PROTOCOL;
+	extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
+	extern _HOTSPOT_SELECT HOTSPOT_SELECT;
+
+	extern int DATATIME;
+	extern int RUNTIME;
+	extern string DATASET;
+	extern int SLOT;  // ( s )
+	extern int SLOT_MOBILITYMODEL;  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
+	extern int SLOT_RECORD_INFO;  //记录数据投递率和数据投递时延的slot
+
+	/********************************* Usage & Output ***********************************/
+
 	extern string INFO_LOG;
-	extern string FILE_DEBUG;	
+	extern string INFO_HELP;
 
-	ofstream debug(FILE_DEBUG, ios::app);
-	debug << INFO_LOG;	
-	debug.close();
-	exit(code);
-}
+	extern string FILE_DEBUG;
+	extern string INFO_DEBUG;
 
-//Randomly product a float number between min and max
-inline double RandomFloat(double min, double max)
-{
-	if(min == max)
-		return min;
-	if(min > max)
+	extern string INFO_DELIVERY_RATIO;
+	extern string INFO_DELAY;
+	extern string INFO_ENERGY_CONSUMPTION;
+	extern string INFO_ENCOUNTER;
+	extern string INFO_SINK;
+	extern string INFO_BUFFER;
+	extern string INFO_BUFFER_STATISTICS;
+
+	extern string INFO_HOTSPOT;
+	extern string INFO_AT_HOTSPOT;
+	extern string INFO_HOTSPOT_STATISTICS;
+	extern string INFO_MERGE;
+	extern string INFO_MERGE_DETAILS;
+	extern string INFO_MA;
+	extern string INFO_BUFFER_MA;
+	extern string INFO_ED;
+
+
+	/****************************** Global Func *******************************/
+
+	inline void Exit(int code)
 	{
-		double temp = max;
-		max = min;
-		min = temp;
+		ofstream debug(FILE_DEBUG, ios::app);
+		debug << INFO_LOG;	
+		debug.close();
+		exit(code);
 	}
-	return min + double( rand() ) / RAND_MAX * (max - min);
-}
 
-//Randomly product a int number between min and max (cannot reach max)
-inline int RandomInt(int min, int max)
-{
-	if (min == max)
-		return min;
-	if(min > max)
+	//Randomly product a float number between min and max
+	inline double RandomFloat(double min, double max)
 	{
-		int temp = max;
-		max = min;
-		min = temp;
-	}
-	return min + rand() % (max - min);
-}
-
-//在min到max的范围内生成size个不重复的随机数
-inline vector<int> RandomIntList(int min, int max, int size)
-{
-	vector<int> result;
-	int temp = -1;
-	if(size > (max - min))
-	{
-		vector<int> temp_order;
-		for(int i = min; i < max; i++)
+		if(min == max)
+			return min;
+		if(min > max)
 		{
-			temp_order.push_back(i);
+			double temp = max;
+			max = min;
+			min = temp;
 		}
-		while(! temp_order.empty())
+		return min + double( rand() ) / RAND_MAX * (max - min);
+	}
+
+	//Randomly product a int number between min and max (cannot reach max)
+	inline int RandomInt(int min, int max)
+	{
+		if (min == max)
+			return min;
+		if(min > max)
 		{
-			vector<int>::iterator it = temp_order.begin();
-			int bet = RandomInt(0, temp_order.size());
-			temp = temp_order.at(bet);
-			result.push_back(temp);
-			temp_order.erase(it + bet);
+			int temp = max;
+			max = min;
+			min = temp;
 		}
-		return result;
+		return min + rand() % (max - min);
 	}
 
-	bool duplicate;
-	if(size == 1)
+	//在min到max的范围内生成size个不重复的随机数
+	inline vector<int> RandomIntList(int min, int max, int size)
 	{
-		result.push_back(min);
-		return result;
-	}
-
-	for(int i = 0; i < size; i++)
-	{
-		do
+		vector<int> result;
+		int temp = -1;
+		if(size > (max - min))
 		{
-			duplicate = false;
-			temp = RandomInt(min, max);
-			for(int j = 0; j < result.size(); j++)
+			vector<int> temp_order;
+			for(int i = min; i < max; i++)
 			{
-				if(result[j] == temp)
+				temp_order.push_back(i);
+			}
+			while(! temp_order.empty())
+			{
+				vector<int>::iterator it = temp_order.begin();
+				int bet = RandomInt(0, temp_order.size());
+				temp = temp_order.at(bet);
+				result.push_back(temp);
+				temp_order.erase(it + bet);
+			}
+			return result;
+		}
+
+		bool duplicate;
+		if(size == 1)
+		{
+			result.push_back(min);
+			return result;
+		}
+
+		for(int i = 0; i < size; i++)
+		{
+			do
+			{
+				duplicate = false;
+				temp = RandomInt(min, max);
+				for(int j = 0; j < result.size(); j++)
 				{
-					duplicate = true;
+					if(result[j] == temp)
+					{
+						duplicate = true;
+						break;
+					}
+				}
+			}while(duplicate);
+			if(temp < 0)
+			{
+				cout << endl << "Error @ RandomIntList() : temp < 0" << endl;
+				_PAUSE_;
+			}
+			else
+				result.push_back(temp);
+		}
+		return result;
+	}
+
+	//为浮点数保留n位小数，四舍五入
+	inline double NDigitFloat(double original, int n)
+	{
+		if( ZERO(original) )
+			return 0;
+		if( n < 0 )
+			return original;
+		if( n == 0 )
+			return ROUND(original);
+
+		original *= pow(10, n);
+		original = ROUND( original );
+		original /= pow(10, n);
+		return original;
+	}
+
+	//圆形区域面积
+	inline double AreaCircle(double radius)
+	{
+		return radius * radius * PI;
+	}
+
+	//检查vector中是否已存在某个元素
+	template <class E>
+	bool IfExists(vector<E> list, E elem)
+	{
+		for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+		{
+			if(*i == elem)
+				return true;
+		}
+		return false;
+	}
+
+	template <class E>
+	bool IfExists(vector<E> list, E elem, bool(*comp)(E, E))
+	{
+		for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+		{
+			if(comp(*i, elem))
+				return true;
+		}
+		return false;
+	}
+
+	template <class E>
+	void AddToListUniquely(vector<E> &list, E n)
+	{
+		if( ! IfExists(list, n))
+			list.push_back(n);
+	}
+
+	template <class E>
+	void AddToListUniquely(vector<E> &des, vector<E> src)
+	{
+		for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
+			AddToListUniquely(des, *i);
+	}
+
+	template <class E>
+	void RemoveFromList(vector<E> &list, E elem)
+	{
+		for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+		{
+			if(*i == elem)
+			{
+				list.erase(i);
+				return ;
+			}
+		}
+	}
+
+	template <class E>
+	void RemoveFromList(vector<E> &list, E elem, bool(*comp)(E, E))
+	{
+		for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+		{
+			if(comp(*i, elem))
+			{
+				list.erase(i);
+				return ;
+			}
+		}
+	}
+
+	template <class E>
+	void RemoveFromList(vector<E> &des, vector<E> src)
+	{
+		for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
+			RemoveFromList(des, *i);
+	}
+
+	template <class E>
+	void RemoveFromList(vector<E> &des, vector<E> src, bool(*comp)(E, E))
+	{
+		for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
+			RemoveFromList(des, *i, comp);
+	}
+
+	template <class E>
+	vector<E> GetItemsByID(vector<E> list, vector<int> ids)
+	{
+		vector<E> result;
+		for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
+		{
+			for(typename vector<E>::iterator item = list.begin(); item != list.end(); ++item)
+			{
+				if( *item == *id )
+				{
+					result.push_back(*item);
 					break;
 				}
 			}
-		}while(duplicate);
-		if(temp < 0)
-		{
-			cout << endl << "Error @ RandomIntList() : temp < 0" << endl;
-			_PAUSE_;
 		}
-		else
-			result.push_back(temp);
+		return result;
 	}
-	return result;
-}
 
-//为浮点数保留n位小数，四舍五入
-inline double NDigitFloat(double original, int n)
-{
-	if( ZERO(original) )
-		return 0;
-	if( n < 0 )
-		return original;
-	if( n == 0 )
-		return ROUND(original);
-
-	original *= pow(10, n);
-	original = ROUND( original );
-	original /= pow(10, n);
-	return original;
-}
-
-inline double AreaCircle(double radius)
-{
-	return radius * radius * PI;
-}
-
-//检查vector中是否已存在某个元素
-template <class E>
-bool IfExists(vector<E> list, E elem)
-{
-	for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+	//释放指针vector
+	template <class E>
+	void FreePointerVector(vector<E *> &v)
 	{
-		if(*i == elem)
-			return true;
-	}
-	return false;
-}
-
-template <class E>
-bool IfExists(vector<E> list, E elem, bool(*comp)(E, E))
-{
-	for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
-	{
-		if(comp(*i, elem))
-			return true;
-	}
-	return false;
-}
-
-template <class E>
-void AddToListUniquely(vector<E> &list, E n)
-{
-	//for(vector<int>::iterator i = list.begin(); i != list.end(); i++)
-	//{
-	//	if(*i == n)
-	//		return ;
-	//}
-	if( ! IfExists(list, n))
-		list.push_back(n);
-}
-
-template <class E>
-void AddToListUniquely(vector<E> &des, vector<E> src)
-{
-	for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
-		AddToListUniquely(des, *i);
-}
-
-template <class E>
-void RemoveFromList(vector<E> &list, E elem)
-{
-	for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
-	{
-		if(*i == elem)
+		vector<E *>::iterator it;
+		for(it = v.begin(); it != v.end(); ++it)
 		{
-			list.erase(i);
-			return ;
+			if(*it != nullptr)
+				delete *it;
 		}
+		v.clear();
 	}
+
 }
 
-template <class E>
-void RemoveFromList(vector<E> &list, E elem, bool(*comp)(E, E))
-{
-	for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
-	{
-		if(comp(*i, elem))
-		{
-			list.erase(i);
-			return ;
-		}
-	}
-}
-
-template <class E>
-void RemoveFromList(vector<E> &des, vector<E> src)
-{
-	for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
-		RemoveFromList(des, *i);
-}
-
-template <class E>
-void RemoveFromList(vector<E> &des, vector<E> src, bool(*comp)(E, E))
-{
-	for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
-		RemoveFromList(des, *i, comp);
-}
-
-//FIXME: 使用二重mergesort优化复杂度
-template <class E>
-vector<E> GetItemsByID(vector<E> list, vector<int> ids)
-{
-	vector<E> result;
-	for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
-	{
-		for(typename vector<E>::iterator item = list.begin(); item != list.end(); ++item)
-		{
-			if( *item == *id )
-			{
-				result.push_back(*item);
-				break;
-			}
-		}
-	}
-	return result;
-}
-
-//释放指针vector
-template <class E>
-void FreePointerVector(vector<E *> &v)
-{
-	vector<E *>::iterator it;
-	for(it = v.begin(); it != v.end(); ++it)
-	{
-		if(*it != nullptr)
-			delete *it;
-	}
-	v.clear();
-}
+using namespace global;

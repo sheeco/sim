@@ -1,43 +1,43 @@
 #pragma once
 
+#include "GlobalParameters.h"
 #include "SortHelper.h"
 #include "PostSelect.h"
 #include "Prophet.h"
 #include "HDC.h"
 #include "Sink.h"
-#include "SMac.h"
 #include "MANode.h"
 
 
-/********************************* Global Var *********************************/
-
-//TODO: move these global config to a global CConfiguration parameter
-_MAC_PROTOCOL MAC_PROTOCOL = _smac;
-_ROUTING_PROTOCOL ROUTING_PROTOCOL = _prophet;
-_HOTSPOT_SELECT HOTSPOT_SELECT = _original;
-
-int DATATIME = 0;
-int RUNTIME = 0;
-string DATASET;
-
-/********************************* Usage & Output ***********************************/
-
-string INFO_LOG;
-string FILE_DEBUG = "debug.txt";
-
-
-string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
- 	          "<node>      -sink           [][]  -range           []   -prob-trans  []   -energy      []   -time-data   []   -time-run    [] \n"
-			  "<data>      -buffer           []  -data-rate       []   -data-size   []  \n"
-              "<mac>       -hdc                  -cycle           []   -dc-default  []   -dc-hotspot  [] \n"
-			  "<route>     -epidemic             -prophet              -har              -hop         []   -ttl         []\n"
-			  "<prophet>   -spoken           []  -queue           [] \n"
-              "<hs>        -hs                   -ihs                  -mhs              -alpha       []   -beta        []   -heat      [][] \n"
-              "<ihar>      -lambda           []  -lifetime        [] \n"
-			  "<mhar>      -merge            []  -old             [] \n"
-              "<test>      -dynamic-node-number  -hotspot-similarity   -balanced-ratio \n\n" ;
-
-string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
+///********************************* Global Var *********************************/
+//
+////TODO: move these global config to a global CConfiguration parameter
+//_MAC_PROTOCOL MAC_PROTOCOL = _smac;
+//_ROUTING_PROTOCOL ROUTING_PROTOCOL = _prophet;
+//_HOTSPOT_SELECT HOTSPOT_SELECT = _original;
+//
+//int DATATIME = 0;
+//int RUNTIME = 0;
+//string DATASET;
+//
+///********************************* Usage & Output ***********************************/
+//
+//string INFO_LOG;
+//string FILE_DEBUG = "debug.txt";
+//
+//
+//string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
+// 	          "<node>      -sink           [][]  -range           []   -prob-trans  []   -energy      []   -time-data   []   -time-run    [] \n"
+//			  "<data>      -buffer           []  -data-rate       []   -data-size   []  \n"
+//              "<mac>       -hdc                  -cycle           []   -dc-default  []   -dc-hotspot  [] \n"
+//			  "<route>     -epidemic             -prophet              -har              -hop         []   -ttl         []\n"
+//			  "<prophet>   -spoken           []  -queue           [] \n"
+//              "<hs>        -hs                   -ihs                  -mhs              -alpha       []   -beta        []   -heat      [][] \n"
+//              "<ihar>      -lambda           []  -lifetime        [] \n"
+//			  "<mhar>      -merge            []  -old             [] \n"
+//              "<test>      -dynamic-node-number  -hotspot-similarity   -balanced-ratio \n\n" ;
+//
+//string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
 
 
 //TODO: 检查所有类内静态变量，决定 private / protected

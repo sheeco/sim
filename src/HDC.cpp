@@ -1,10 +1,11 @@
+#include "GlobalParameters.h"
 #include "HDC.h"
 #include "HAR.h"
 #include "SortHelper.h"
 
-extern _MAC_PROTOCOL MAC_PROTOCOL;
-extern string FILE_DEBUG;
-extern int RUNTIME;
+//extern _MAC_PROTOCOL MAC_PROTOCOL;
+//extern string FILE_DEBUG;
+//extern int RUNTIME;
 
 
 void CHDC::PrintInfo(int currentTime)

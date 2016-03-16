@@ -1,3 +1,4 @@
+#include "GlobalParameters.h"
 #include "HAR.h"
 #include "HotspotSelect.h"
 #include "PostSelect.h"
@@ -8,12 +9,12 @@
 #include "HDC.h"
 #include "SMac.h"
 
-extern _MAC_PROTOCOL MAC_PROTOCOL;
-extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-extern _HOTSPOT_SELECT HOTSPOT_SELECT;
-extern string INFO_LOG;
-extern string FILE_DEBUG;
-extern int RUNTIME;
+//extern _MAC_PROTOCOL MAC_PROTOCOL;
+//extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
+//extern _HOTSPOT_SELECT HOTSPOT_SELECT;
+//extern string INFO_LOG;
+//extern string FILE_DEBUG;
+//extern int RUNTIME;
 
 vector<CHotspot *> HAR::m_hotspots;
 vector<CRoute> HAR::m_routes;
@@ -592,15 +593,6 @@ void HAR::SendData(int currentTime)
 	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
 	delivery_hotspot.close();
 }
-
-string INFO_HOTSPOT = "#Time	#HotspotCount \n" ;
-string INFO_AT_HOTSPOT = "#Time	#VisitAtHotspot	#VisitSum	#VisitAtHotspotPercent \n" ;
-string INFO_HOTSPOT_STATISTICS = "#Time	#CoverSum	#HotspotCount	#AvgCover \n" ;
-string INFO_MERGE = "#Time	#MergeHotspotCount	#MergeHotspotPercent	#OldHotspotCount	#OldHotspotPercent	#NewHotspotCount	#NewHotspotPercent \n" ;
-string INFO_MERGE_DETAILS = "#Time	#HotspotType/#MergeAge ... \n" ;
-string INFO_MA = "#Time	#MACount	#AvgMAWayPointCount \n" ;
-string INFO_ED = "#Time	#EstimatedDelay \n" ;
-string INFO_BUFFER_MA = "#Time	#BufferStateOfEachMA \n" ;
 
 void HAR::PrintHotspotInfo(int currentTime)
 {

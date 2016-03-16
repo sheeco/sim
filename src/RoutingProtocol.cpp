@@ -4,12 +4,12 @@
 #include "HDC.h"
 #include "SMac.h"
 
-extern _MAC_PROTOCOL MAC_PROTOCOL;
-extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-extern _HOTSPOT_SELECT HOTSPOT_SELECT;
-extern string INFO_LOG;
-extern string FILE_DEBUG;
-extern int RUNTIME;
+//extern _MAC_PROTOCOL MAC_PROTOCOL;
+//extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
+//extern _HOTSPOT_SELECT HOTSPOT_SELECT;
+//extern string INFO_LOG;
+//extern string FILE_DEBUG;
+//extern int RUNTIME;
 
 int CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //Êý¾Ý·¢ËÍslot
 bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
@@ -22,11 +22,6 @@ bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
 //CRoutingProtocol::~CRoutingProtocol()
 //{
 //}
-
-string INFO_BUFFER_STATISTICS =  "#Time	#AvgBufferStateInHistoryOfEachNode \n" ;
-string INFO_DELIVERY_RATIO = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio% \n" ;
-string INFO_DELAY = "#Time	#AvgDelay \n" ;
-string INFO_BUFFER = "#Time	#BufferStateOfEachNode \n" ;
 
 void CRoutingProtocol::PrintInfo(int currentTime)
 {

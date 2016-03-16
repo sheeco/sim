@@ -1,8 +1,8 @@
+#include "GlobalParameters.h"
 #include "FileHelper.h"
-#include "SortHelper.h"
 
-extern string DATASET;
-extern int RUNTIME;
+//extern string DATASET;
+//extern int RUNTIME;
 
 
 bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &location)

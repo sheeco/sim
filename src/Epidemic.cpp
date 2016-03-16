@@ -1,3 +1,4 @@
+#include "GlobalParameters.h"
 #include "Epidemic.h"
 #include "Node.h"
 #include "Sink.h"
@@ -5,8 +6,8 @@
 #include "SortHelper.h"
 #include "SMac.h"
 
-extern _MAC_PROTOCOL MAC_PROTOCOL;
-extern string INFO_LOG;
+//extern _MAC_PROTOCOL MAC_PROTOCOL;
+//extern string INFO_LOG;
 
 int CEpidemic::MAX_QUEUE_SIZE = -1;
 int CEpidemic::SPOKEN_MEMORY = 0;
@@ -18,7 +19,6 @@ void CEpidemic::SendData(int currentTime)
 		return;
 	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 
-	string INFO_SINK = "#Time	#EncounterAtSink \n";
 	ofstream sink("sink.txt", ios::app);
 	if(currentTime == 0)
 	{

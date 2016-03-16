@@ -6,7 +6,7 @@
 #include "SortHelper.h"
 #include "SMac.h"
 
-extern string INFO_LOG;
+//extern string INFO_LOG;
 
 
 void CProphet::SendData(int currentTime)
@@ -15,7 +15,6 @@ void CProphet::SendData(int currentTime)
 		return;
 	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 
-	string INFO_SINK = "#Time	#EncounterAtSink \n";
 	ofstream sink("sink.txt", ios::app);
 	if(currentTime == 0)
 	{

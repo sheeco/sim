@@ -1,11 +1,11 @@
 #include "MacProtocol.h"
 #include "Node.h"
 
-extern _MAC_PROTOCOL MAC_PROTOCOL;
-extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-extern string INFO_LOG;
-extern string FILE_DEBUG;
-extern int RUNTIME;
+//extern _MAC_PROTOCOL MAC_PROTOCOL;
+//extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
+//extern string INFO_LOG;
+//extern string FILE_DEBUG;
+//extern int RUNTIME;
 
 int CMacProtocol::MAC_SIZE = 0;  //Mac Header Size
 bool CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
@@ -51,10 +51,6 @@ void CMacProtocol::UpdateNodeStatus(int currentTime)
 	if( ! allAlive )
 		CNode::ClearDeadNodes();
 }
-
-
-string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEC	(#SumEC	#NodeCount	#CurrentEnergy...) \n" ;
-string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot%	#EncounterAtHotspot	#EncounterActive%	#EncounterActive)	#Encounter	 \n" ;
 
 void CMacProtocol::PrintInfo(int currentTime)
 {

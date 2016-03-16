@@ -446,3 +446,8 @@
 - FIX：整理路由类和 Mac 类的`PrintInfo()`和`PrintFinal`输出函数；
 - ADD：将`x`和`y`两个变量包装成`CCoordinate`类；
 - RFCT：暂时将各个类内静态变量的访问权限全设为`public`，并将初始化操作都移入`initConfiguration()`；
+- FIX：根据 ref，修改`DATA_SIZE`最大值为 250 字节，`CTRL_SIZE`参考值为 10 字节，将原`BEACON_SIZE`改为`MAC_SIZE`，参考值为 8 字节；
+
+###### 2016-03-17  ·  *< 2.6.7 >*
+
+- ADD：将所有全局变量和辅助函数，包装到命名空间`namespace global`；

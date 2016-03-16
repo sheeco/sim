@@ -96,6 +96,7 @@
     <ClCompile Include="..\src\Epidemic.cpp" />
     <ClCompile Include="..\src\FileHelper.cpp" />
     <ClCompile Include="..\src\GeneralNode.cpp" />
+    <ClCompile Include="..\src\GlobalParameters.cpp" />
     <ClCompile Include="..\src\HAR.cpp" />
     <ClCompile Include="..\src\HDC.cpp" />
     <ClCompile Include="..\src\Hotspot.cpp" />

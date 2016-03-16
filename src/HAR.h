@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GlobalParameters.h"
 #include "Hotspot.h"
 #include "Route.h"
 #include "RoutingProtocol.h"
