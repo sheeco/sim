@@ -1,15 +1,7 @@
 #include "RoutingProtocol.h"
 #include "Node.h"
-#include "HAR.h"
-#include "HDC.h"
 #include "SMac.h"
-
-//extern _MAC_PROTOCOL MAC_PROTOCOL;
-//extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-//extern _HOTSPOT_SELECT HOTSPOT_SELECT;
-//extern string INFO_LOG;
-//extern string FILE_DEBUG;
-//extern int RUNTIME;
+#include "HDC.h"
 
 int CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //Êý¾Ý·¢ËÍslot
 bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;

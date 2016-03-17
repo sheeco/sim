@@ -9,7 +9,7 @@ vector<CHotspot *> CHotspot::selectedHotspots;
 vector<CHotspot *> CHotspot::oldSelectedHotspots;
 vector<CHotspot *> CHotspot::deletedHotspots;
 
-int CHotspot::SLOT_LOCATION_UPDATE = 100;  //地理信息收集的slot
+int CHotspot::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
 int CHotspot::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
 int CHotspot::TIME_HOSPOT_SELECT_START = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 double CHotspot::RATIO_MERGE_HOTSPOT = 1.0;

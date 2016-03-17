@@ -92,9 +92,11 @@
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Ctrl.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
     <ClCompile Include="..\src\Epidemic.cpp" />
     <ClCompile Include="..\src\FileHelper.cpp" />
+    <ClCompile Include="..\src\GeneralData.cpp" />
     <ClCompile Include="..\src\GeneralNode.cpp" />
     <ClCompile Include="..\src\GlobalParameters.cpp" />
     <ClCompile Include="..\src\HAR.cpp" />
@@ -106,6 +108,7 @@
     <ClCompile Include="..\src\MANode.cpp" />
     <ClCompile Include="..\src\Node.cpp" />
     <ClCompile Include="..\src\NodeRepair.cpp" />
+    <ClCompile Include="..\src\Package.cpp" />
     <ClCompile Include="..\src\Position.cpp" />
     <ClCompile Include="..\src\PostSelect.cpp" />
     <ClCompile Include="..\src\Prophet.cpp" />
@@ -120,10 +123,12 @@
     <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Coordinate.h" />
+    <ClInclude Include="..\src\Ctrl.h" />
     <ClInclude Include="..\src\Data.h" />
     <ClInclude Include="..\src\Entity.h" />
     <ClInclude Include="..\src\Epidemic.h" />
     <ClInclude Include="..\src\FileHelper.h" />
+    <ClInclude Include="..\src\GeneralData.h" />
     <ClInclude Include="..\src\GeneralNode.h" />
     <ClInclude Include="..\src\GeoEntity.h" />
     <ClInclude Include="..\src\GlobalParameters.h" />
@@ -136,6 +141,7 @@
     <ClInclude Include="..\src\MANode.h" />
     <ClInclude Include="..\src\Node.h" />
     <ClInclude Include="..\src\NodeRepair.h" />
+    <ClInclude Include="..\src\Package.h" />
     <ClInclude Include="..\src\Position.h" />
     <ClInclude Include="..\src\PostSelect.h" />
     <ClInclude Include="..\src\Process.h" />

@@ -7,42 +7,13 @@
 #include "HDC.h"
 #include "Sink.h"
 #include "MANode.h"
+#include "Epidemic.h"
 
 
-///********************************* Global Var *********************************/
-//
-////TODO: move these global config to a global CConfiguration parameter
-//_MAC_PROTOCOL MAC_PROTOCOL = _smac;
-//_ROUTING_PROTOCOL ROUTING_PROTOCOL = _prophet;
-//_HOTSPOT_SELECT HOTSPOT_SELECT = _original;
-//
-//int DATATIME = 0;
-//int RUNTIME = 0;
-//string DATASET;
-//
-///********************************* Usage & Output ***********************************/
-//
-//string INFO_LOG;
-//string FILE_DEBUG = "debug.txt";
-//
-//
-//string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
-// 	          "<node>      -sink           [][]  -range           []   -prob-trans  []   -energy      []   -time-data   []   -time-run    [] \n"
-//			  "<data>      -buffer           []  -data-rate       []   -data-size   []  \n"
-//              "<mac>       -hdc                  -cycle           []   -dc-default  []   -dc-hotspot  [] \n"
-//			  "<route>     -epidemic             -prophet              -har              -hop         []   -ttl         []\n"
-//			  "<prophet>   -spoken           []  -queue           [] \n"
-//              "<hs>        -hs                   -ihs                  -mhs              -alpha       []   -beta        []   -heat      [][] \n"
-//              "<ihar>      -lambda           []  -lifetime        [] \n"
-//			  "<mhar>      -merge            []  -old             [] \n"
-//              "<test>      -dynamic-node-number  -hotspot-similarity   -balanced-ratio \n\n" ;
-//
-//string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
-
-
-//TODO: 检查所有类内静态变量，决定 private / protected
-//TODO: CConfiguration / CConfigureHelper ?
-//TODO: 默认配置参数改为从 XML 读取
+// TODO: move all func definition into cpp file except for inline func
+// TODO: 检查所有类内静态变量，决定 private / protected
+// TODO: CConfiguration / CConfigureHelper ?
+// TODO: 默认配置参数改为从 XML 读取
 void initConfiguration()
 {
 	/************************************** Default Config **************************************/
@@ -72,6 +43,7 @@ void initConfiguration()
 	CNode::SLOT_TOTAL = 0;
 	CNode::DEFAULT_DUTY_CYCLE = 0;
 	CNode::HOTSPOT_DUTY_CYCLE = 0; 
+	CNode::DEFAULT_SLOT_WAIT = 0; 
 
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
@@ -103,7 +75,7 @@ void initConfiguration()
 
 	/**************************  Hotspot Select  ***************************/
 
-	CHotspot::SLOT_LOCATION_UPDATE = 100;  //地理信息收集的slot
+	CHotspot::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
 	CHotspot::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
 	CHotspot::TIME_HOSPOT_SELECT_START = CHotspot::SLOT_HOTSPOT_UPDATE;  //no MA node at first
 
@@ -158,6 +130,7 @@ void initConfiguration()
 
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
+	CNode::DEFAULT_SLOT_WAIT = 10; 
 }
 
 bool ParseParameters(int argc, char* argv[])
@@ -558,7 +531,7 @@ bool Run()
 
 int main(int argc, char* argv[])
 {
-	//TODO: release 版本中应改为 while(1) 循环
+	// TODO: release 版本中应改为 while(1) 循环
 
 	/************************************ 参数默认值 *************************************/
 

@@ -1,9 +1,6 @@
 #include "GlobalParameters.h"
 #include "FileHelper.h"
 
-//extern string DATASET;
-//extern int RUNTIME;
-
 
 bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &location)
 {
@@ -15,8 +12,8 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 
 	try
 	{
-		//TODO: 改为 .trace 文件
-		//TODO: 文件第一行读取 SLOT_MOBILITY
+		// TODO: 改为 .trace 文件
+		// TODO: 文件第一行读取 SLOT_MOBILITY
 		sprintf(filename, "%d.trace", nodeID);  //新的 location 文件，将 time 和坐标信息都包含在内
 		string filepath = "../res/" + DATASET + "/" + filename;  //.exe 文件必须在 bin/ 文件夹下
 		file = fopen(filepath.c_str(),"rb");

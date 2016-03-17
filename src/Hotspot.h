@@ -21,7 +21,7 @@ protected:
 
 	typedef enum _TYPE_HOTSPOT {_new_hotspot, _old_hotspot, _merge_hotspot } _TYPE_HOTSPOT;
 
-	//TODO: current public static attr should be converted to protected amap
+	// TODO: current public static attr should be converted to protected amap
 	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
 	static vector<CHotspot *> hotspotCandidates;
 	static vector<CHotspot *> selectedHotspots;
@@ -120,7 +120,7 @@ private:
 
 public:
 
-	static int SLOT_LOCATION_UPDATE;  //地理信息收集的slot
+	static int SLOT_POSITION_UPDATE;  //地理信息收集的slot
 	static int SLOT_HOTSPOT_UPDATE;	 //更新热点和分类的slot
 	static int TIME_HOSPOT_SELECT_START;  //no MA node at first
 

@@ -3,10 +3,6 @@
 #include "HAR.h"
 #include "SortHelper.h"
 
-//extern _MAC_PROTOCOL MAC_PROTOCOL;
-//extern string FILE_DEBUG;
-//extern int RUNTIME;
-
 
 void CHDC::PrintInfo(int currentTime)
 {
@@ -98,7 +94,7 @@ bool CHDC::Operate(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
 
-	//TODO: move update of state after update of dc
+	// TODO: move update of state after update of dc
 	CMacProtocol::UpdateNodeStatus(currentTime);
 
 	HAR::HotspotSelection(currentTime);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MacProtocol.h"
+#include "Node.h"
 
 
 class CSMac :
@@ -8,8 +9,10 @@ class CSMac :
 {
 public:
 
-	CSMac(void){};
-	~CSMac(void){};
+	CSMac(){};
+	~CSMac(){};
+
+	static void DetectNeighborNode(CNode* node, int currentTime);
 
 	static bool Operate(int currentTime);
 

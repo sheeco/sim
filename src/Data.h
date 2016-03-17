@@ -1,10 +1,10 @@
 #pragma once
 
-#include "BasicEntity.h"
+#include "GeneralData.h"
 
 
 class CData : 
-	public CBasicEntity
+	public CGeneralData
 {
 //protected:
 
@@ -12,15 +12,16 @@ class CData :
 //	CCoordinate location;  //未使用
 //	int time;  //该data最后一次状态更新的时间戳，用于校验，初始值应等于timeBirth
 //	bool flag;
+//	int node;  //所属node
+//	int timeBirth;  //生成时间
+//	int size;  //byte
+//	int HOP;
 
 
 private:
 
-	int node;  //所属node
-	int timeBirth;  //生成时间
 	int timeArrival;  //到达sink的时间
 	//跳数或TTL倒计数，在Epidemic中选择一种使用
-	int HOP;
 	int TTL;
 
 	static int ID_MASK;
@@ -38,12 +39,10 @@ private:
 		init();
 	};
 
-	void init()
+	void init() override
 	{
-		this->node = 0;
-		this->timeBirth = 0;
+		CGeneralData::init();
 		this->timeArrival = -1;
-		this->HOP = 0;
 		this->TTL = 0;
 	}
 
@@ -63,12 +62,12 @@ public:
 	static int MAX_HOP;
 	static int MAX_TTL;
 
-	CData(int node, int timeBirth)
+	CData(int node, int timeBirth, int byte)
 	{
 		init();
 		this->node = node;
-		this->timeBirth = timeBirth;
-		this->time = timeBirth;
+		this->time = this->timeBirth = timeBirth;
+		this->size = byte;
 		this->generateID();
 		this->HOP = MAX_HOP;
 		this->TTL = MAX_TTL;
@@ -104,21 +103,9 @@ public:
 	}
 
 	//setters & getters
-	inline void setNode(int node)
-	{
-		this->node = node;
-	}
-	inline int getTimeBirth() const
-	{
-		return timeBirth;
-	}
 	inline int getTimeArrival() const
 	{
 		return timeArrival;
-	}
-	inline int getNode() const
-	{
-		return node;
 	}
 
 	//重载比较操作符，用于mergeSort
@@ -174,13 +161,13 @@ public:
 			return TTL <= 0;
 	}
 	
-	//判断是否允许转发（HOP > 1），不允许则不放入SV中
+	//判断是否允许转发（HOP > 0），不允许则不放入SV中
 	inline bool allowForward() const
 	{
 		if( ! useHOP() )
 			return true;
 		else
-			return HOP > 1;
+			return HOP > 0;
 	}
 
 	static bool useHOP()

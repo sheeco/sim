@@ -1,13 +1,9 @@
-#include "GlobalParameters.h"
 #include "Epidemic.h"
 #include "Node.h"
 #include "Sink.h"
+#include "SMac.h"
 #include "HDC.h"
 #include "SortHelper.h"
-#include "SMac.h"
-
-//extern _MAC_PROTOCOL MAC_PROTOCOL;
-//extern string INFO_LOG;
 
 int CEpidemic::MAX_QUEUE_SIZE = -1;
 int CEpidemic::SPOKEN_MEMORY = 0;

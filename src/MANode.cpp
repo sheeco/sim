@@ -1,6 +1,6 @@
 #include "MANode.h"
 
-//TODO: read from xml instead of constant initial value
+// TODO: read from xml instead of constant initial value
 int CMANode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;

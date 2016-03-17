@@ -9,13 +9,6 @@
 #include "HDC.h"
 #include "SMac.h"
 
-//extern _MAC_PROTOCOL MAC_PROTOCOL;
-//extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-//extern _HOTSPOT_SELECT HOTSPOT_SELECT;
-//extern string INFO_LOG;
-//extern string FILE_DEBUG;
-//extern int RUNTIME;
-
 vector<CHotspot *> HAR::m_hotspots;
 vector<CRoute> HAR::m_routes;
 int HAR::HOTSPOT_COST_SUM = 0;

@@ -1,6 +1,5 @@
-#pragma once
-
 #include "GlobalParameters.h"
+
 
 namespace global
 {
@@ -12,7 +11,7 @@ namespace global
 	int RUNTIME = 0;
 	string DATASET;
 	int SLOT = 5;
-	//TODO: should be read from .trace file
+	// TODO: should be read from .trace file
 	int SLOT_MOBILITYMODEL = 30;
 	int SLOT_RECORD_INFO = 100;
 

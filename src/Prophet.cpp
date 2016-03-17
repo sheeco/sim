@@ -1,12 +1,10 @@
-#include "Prophet.h"
 #include "GlobalParameters.h"
-#include "HDC.h"
 #include "Node.h"
 #include "Sink.h"
-#include "SortHelper.h"
 #include "SMac.h"
-
-//extern string INFO_LOG;
+#include "HDC.h"
+#include "Prophet.h"
+#include "SortHelper.h"
 
 
 void CProphet::SendData(int currentTime)

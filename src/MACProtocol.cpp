@@ -1,11 +1,5 @@
-#include "MacProtocol.h"
 #include "Node.h"
-
-//extern _MAC_PROTOCOL MAC_PROTOCOL;
-//extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-//extern string INFO_LOG;
-//extern string FILE_DEBUG;
-//extern int RUNTIME;
+#include "MacProtocol.h"
 
 int CMacProtocol::MAC_SIZE = 0;  //Mac Header Size
 bool CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;

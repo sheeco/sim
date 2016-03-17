@@ -64,7 +64,7 @@ private:
 public:
 
 	static int SPEED;
-	static int BUFFER_CAPACITY;  //TODO: static getter & ref mod
+	static int BUFFER_CAPACITY;  // TODO: static getter & ref mod
 	static _RECEIVE RECEIVE_MODE;
 
 	static vector<CMANode *> getMANodes()
@@ -201,7 +201,7 @@ public:
 		else
 		{
 			cout << endl << "Error @ CMANode::getDataTolerance() : RECEIVE_MODE = " << RECEIVE_MODE << endl;
-			//TODO: add Exit( proper code ) after all errors
+			// TODO: add Exit( proper code ) after all errors
 			_PAUSE_;
 			Exit(-1);
 		}

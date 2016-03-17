@@ -9,7 +9,7 @@
 #include "GlobalParameters.h"
 
 
-//TODO: def in this class or create multiple derived class ?
+// TODO: def in this class or create multiple derived class ?
 class CConfiguration
 {
 public:

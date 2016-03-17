@@ -1,9 +1,6 @@
 #include "HotspotSelect.h"
 #include "FileHelper.h"
 #include "HAR.h"
-//#include <sstream>
-
-//extern _HOTSPOT_SELECT HOTSPOT_SELECT;
 
 vector<CHotspot *> CHotspotSelect::copy_hotspotCandidates;
 vector<CPosition *> CHotspotSelect::uncoveredPositions;
@@ -65,11 +62,11 @@ void CHotspotSelect::updateStatus()
 
 void CHotspotSelect::CollectNewPositions(int time)
 {
-	if( ! ( time % CHotspot::SLOT_LOCATION_UPDATE == 0 && time > 0 ) )
+	if( ! ( time % CHotspot::SLOT_POSITION_UPDATE == 0 && time > 0 ) )
 		return ;
 	CPosition* temp_pos = nullptr;
 
-	//TODO: 待测试
+	// TODO: 待测试
 	//用于筛选出新的死亡节点
 	static vector<int> idNodes = CNode::getIdNodes();
 	vector<int> deadNodes = idNodes;
