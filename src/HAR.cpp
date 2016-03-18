@@ -367,224 +367,224 @@ void HAR::MANodeRouteDesign(int currentTime)
 
 void HAR::SendData(int currentTime)
 {
-	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
-		return;
-	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
-
-	//记录waiting time信息
-	ofstream waiting_time("waiting-time.txt", ios::app);
-	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
-	{
-		waiting_time << endl << INFO_LOG;
-		waiting_time << "#Time" << TAB << "#MANodeID" << TAB << "#HotspotID" << TAB << "#HotspotType/HotspotAge" << TAB 
-					 << "#Cover" << TAB << "#Heat" << TAB << "#WaitingTime" << endl;
-	}
-	waiting_time.close();
-	ofstream delivery_hotspot("delivery-hotspot.txt", ios::app);
-	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
-	{
-		delivery_hotspot << endl << INFO_LOG;
-		delivery_hotspot << "#Time" << TAB << "#DeliveryCountForSingleHotspotInThisSlot ..." << endl;
-	}
-	//用于存储hotspot及其投递计数的静态拷贝
-	//由于输出相关信息时（900s时的热点将在2700s时被输出）该热点的全局唯一指针已经被释放，所以存储的是该热点的浅拷贝，不能用于其他用途，否则将影响热点记录的唯一性
-	static vector<CHotspot> deliveryCounts;  
-	ofstream delivery_statistics("delivery-statistics.txt", ios::app);
-	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
-	{
-		delivery_statistics << endl << INFO_LOG;
-		delivery_statistics << "#Time" << TAB << "#DeliveryAtHotspotCount" << TAB << "#DeliveryTotalCount" << TAB << "#DeliveryAtHotspotPercent" << endl;
-	}
-	//用于测试投递计数为0的热点信息，按照投递计数降序输出所有热点的覆盖的position数、node数、ratio、投递计数
-	ofstream hotspot_rank("hotspot-rank.txt", ios::app);
-	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
-	{
-		hotspot_rank << endl << INFO_LOG;
-		hotspot_rank << "#WorkTime" << TAB << "#ID" << TAB << "#Location" << TAB << "#nPosition, nNode" << TAB << "#Ratio" << TAB << "#Tw" << TAB << "#DeliveryCount" << endl;
-	}
-	//用于统计过期热点的投递计数时判断是否应当输出时间
-	static bool hasMoreNewRoutes = false;
-
-	//更新所有MA的位置
-	for(auto iMANode = CMANode::getMANodes().begin(); iMANode != CMANode::getMANodes().end(); )
-	{
-
-		//重置flag为true
-		(*iMANode)->setFlag(true);
-		do
-		{
-			(*iMANode)->updateLocation(currentTime);
-			//如果到达sink，投递MA的所有数据
-			if( CBasicEntity::getDistance( **iMANode, *CSink::getSink()) <= CGeneralNode::TRANS_RANGE )
-			{
-				if((*iMANode)->getBufferSize() > 0)
-				{
-					flash_cout << "####  ( MA " << (*iMANode)->getID() << " deliver " << (*iMANode)->getBufferSize() << " data to Sink )               " ; 
-					CSink::getSink()->receiveData(currentTime, (*iMANode)->sendAllData(CGeneralNode::_dump));
-				}
-				if( (*iMANode)->routeIsOverdue() )
-				{
-					//保留过期路径，用于稍后统计旧热点的投递计数信息
-					vector<CBasicEntity *> overdueHotspots = (*iMANode)->getRoute()->getWayPoints();
-
-					//更新路线，取得新的热点集合
-					if( CSink::getSink()->hasMoreNewRoutes() )
-					{
-						//热点集合发生更新，输出已完成统计的热点投递计数集合，和上一轮热点选取的时间
-						if( ! hasMoreNewRoutes )
-						{
-							if( ! deliveryCounts.empty() )
-							{
-								//按照投递计数降序排列，2700s时输出900s选出的热点在(900, 1800)期间的投递计数，传入的参数应为1800
-								int endTime =  currentTime - CHotspot::SLOT_HOTSPOT_UPDATE;
-								deliveryCounts = CSortHelper::mergeSortByDeliveryCount(deliveryCounts, (endTime) );
-								for(vector<CHotspot>::iterator ihotspot = deliveryCounts.begin(); ihotspot != deliveryCounts.end(); ++ihotspot)
-								{
-									delivery_hotspot << ihotspot->getDeliveryCount( currentTime - CHotspot::SLOT_HOTSPOT_UPDATE ) << TAB ;
-									hotspot_rank << ihotspot->getTime() << "-" << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB << ihotspot->getID() << TAB << ihotspot->getX() << "," << ihotspot->getY() << TAB << ihotspot->getNCoveredPosition() << "," << ihotspot->getNCoveredNodes() << TAB 
-										<< ihotspot->getRatio() << TAB << ihotspot->getWaitingTime(endTime) << TAB << ihotspot->getDeliveryCount(endTime) << endl;
-
-								}
-								delivery_hotspot << endl;
-								deliveryCounts.clear();
-							}
-							delivery_hotspot << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB ;
-							delivery_statistics << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB << CData::getDeliveryAtHotspotCount() << TAB 
-								<< CData::getDeliveryTotalCount() << TAB << CData::getDeliveryAtHotspotPercent() << endl;
-							delivery_statistics.close();
-							hasMoreNewRoutes = true;
-						}
-
-						(*iMANode)->updateRoute(CSink::getSink()->popRoute());
-						flash_cout << "####  ( MA " << (*iMANode)->getID() << " update route )               " ;
-					}
-					//FIXME: 若路线数目变少，删除多余的MA
-					else
-					{
-						(*iMANode)->setFlag(false);
-					}
-
-					//统计旧热点的投递计数信息
-					for(vector<CBasicEntity *>::iterator iHotspot = overdueHotspots.begin(); iHotspot != overdueHotspots.end(); ++iHotspot)
-					{
-						if( (*iHotspot)->getID() == CSink::getSink()->getID() )
-							continue;
-						CHotspot *hotspot = static_cast<CHotspot *>(*iHotspot);
-						deliveryCounts.push_back( *hotspot );
-					}
-					if( ! (*iMANode)->getFlag() )
-						break;
-				}
-				else if( ! CSink::getSink()->hasMoreNewRoutes() )
-				{
-					//热点集合更新结束，重置flag
-					hasMoreNewRoutes = false;
-				}
-			}
-			//如果到达hotspot，waitingTime尚未获取
-			if(   (*iMANode)->isAtHotspot() 
-					&& (*iMANode)->getWaitingTime() < 0 )
-			{
-				waiting_time.open("waiting-time.txt", ios::app);
-
-				CHotspot *atHotspot = (*iMANode)->getAtHotspot();
-				int temp = ROUND( getWaitingTime(currentTime, atHotspot) );
-				//FIXME: 如果不允许Buffer溢出，Buffer已满时即直接跳过waiting
-				if( ( CMANode::RECEIVE_MODE == CGeneralNode::_selfish ) && (*iMANode)->isFull() )
-					(*iMANode)->setWaitingTime( 0 );
-				else
-				{
-					(*iMANode)->setWaitingTime( temp );
-					atHotspot->addWaitingTime( temp );
-					flash_cout << "####  ( MA " << (*iMANode)->getID() << " wait for " << temp << " )                               " ;
-					//if(temp == 0)
-					//	(*iMANode)->setAtHotspot(nullptr);
-				}
-
-				//记录waiting time信息
-				if( temp > 0)
-				{
-					waiting_time << atHotspot->getTime() << TAB << (*iMANode)->getID() << TAB << atHotspot->getID() << TAB ;
-					switch( atHotspot->getCandidateType() )
-					{
-						case CHotspot::_old_hotspot: 
-							waiting_time << "O/" ;
-							break;
-						case CHotspot::_merge_hotspot: 
-							waiting_time << "M/" ;
-							break;
-						case CHotspot::_new_hotspot: 
-							waiting_time << "N/" ;
-							break;
-						default:
-							break;
-					}
-					waiting_time << atHotspot->getAge() << TAB << atHotspot->getNCoveredPosition() << TAB 
-								 << atHotspot->getHeat() << TAB << temp << endl;
-				}
-				waiting_time.close();	
-
-			}
-		}while((*iMANode)->getTime() < currentTime);
-		
-		//删除多余的MA
-		if( ! (*iMANode)->getFlag() )
-		{
-			(*iMANode)->turnFree();
-			continue;
-		}
-		else
-			++iMANode;	
-	}
-
-	//投递数据
-	for(auto iMANode = CMANode::getMANodes().begin(); iMANode != CMANode::getMANodes().end(); ++iMANode)
-	{
-		for(auto inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-		{
-			if( ( CMANode::RECEIVE_MODE == CGeneralNode::_selfish ) && (*iMANode)->isFull() )
-				break;
-			if(CBasicEntity::getDistance( **iMANode, **inode ) > CGeneralNode::TRANS_RANGE)
-				continue;
-
-			//对于热点上和路径上分别统计相遇次数
-			if( (*iMANode)->isAtHotspot() )
-				CNode::encountAtHotspot();
-			else
-				CNode::encountOnRoute();
-
-			if( ! (*inode)->hasData() )
-				continue;
-
-			vector<CData> data;
-			int capacity = (*iMANode)->getDataTolerance();
-			if( capacity > 0 )
-			{
-				data = (*inode)->sendData(capacity);
-				(*iMANode)->receiveData(currentTime, data);			
-			}
-			flash_cout << "####  ( Node " << (*inode)->getID() << " send " << data.size() << " data to MA " << (*iMANode)->getID() << " )                    " ;
-
-			//对于热点上和路径上分别统计数据投递计数
-			if( (*iMANode)->isAtHotspot() )
-			{
-				CData::deliverAtHotspot( data.size() );
-				(*iMANode)->getAtHotspot()->addDeliveryCount( data.size() );
-			}
-			else
-				CData::deliverOnRoute( data.size() );
-
-		}
-	}
-
-	//更新所有节点的buffer状态记录
-	for(auto inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-		(*inode)->recordBufferStatus();
-
-	//控制台输出时保留一位小数
-	double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
-	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
-	delivery_hotspot.close();
+//	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
+//		return;
+//	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
+//
+//	//记录waiting time信息
+//	ofstream waiting_time("waiting-time.txt", ios::app);
+//	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
+//	{
+//		waiting_time << endl << INFO_LOG;
+//		waiting_time << "#Time" << TAB << "#MANodeID" << TAB << "#HotspotID" << TAB << "#HotspotType/HotspotAge" << TAB 
+//					 << "#Cover" << TAB << "#Heat" << TAB << "#WaitingTime" << endl;
+//	}
+//	waiting_time.close();
+//	ofstream delivery_hotspot("delivery-hotspot.txt", ios::app);
+//	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
+//	{
+//		delivery_hotspot << endl << INFO_LOG;
+//		delivery_hotspot << "#Time" << TAB << "#DeliveryCountForSingleHotspotInThisSlot ..." << endl;
+//	}
+//	//用于存储hotspot及其投递计数的静态拷贝
+//	//由于输出相关信息时（900s时的热点将在2700s时被输出）该热点的全局唯一指针已经被释放，所以存储的是该热点的浅拷贝，不能用于其他用途，否则将影响热点记录的唯一性
+//	static vector<CHotspot> deliveryCounts;  
+//	ofstream delivery_statistics("delivery-statistics.txt", ios::app);
+//	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
+//	{
+//		delivery_statistics << endl << INFO_LOG;
+//		delivery_statistics << "#Time" << TAB << "#DeliveryAtHotspotCount" << TAB << "#DeliveryTotalCount" << TAB << "#DeliveryAtHotspotPercent" << endl;
+//	}
+//	//用于测试投递计数为0的热点信息，按照投递计数降序输出所有热点的覆盖的position数、node数、ratio、投递计数
+//	ofstream hotspot_rank("hotspot-rank.txt", ios::app);
+//	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
+//	{
+//		hotspot_rank << endl << INFO_LOG;
+//		hotspot_rank << "#WorkTime" << TAB << "#ID" << TAB << "#Location" << TAB << "#nPosition, nNode" << TAB << "#Ratio" << TAB << "#Tw" << TAB << "#DeliveryCount" << endl;
+//	}
+//	//用于统计过期热点的投递计数时判断是否应当输出时间
+//	static bool hasMoreNewRoutes = false;
+//
+//	//更新所有MA的位置
+//	for(auto iMANode = CMANode::getMANodes().begin(); iMANode != CMANode::getMANodes().end(); )
+//	{
+//
+//		//重置flag为true
+//		(*iMANode)->setFlag(true);
+//		do
+//		{
+//			(*iMANode)->updateLocation(currentTime);
+//			//如果到达sink，投递MA的所有数据
+//			if( CBasicEntity::getDistance( **iMANode, *CSink::getSink()) <= CGeneralNode::TRANS_RANGE )
+//			{
+//				if((*iMANode)->getBufferSize() > 0)
+//				{
+//					flash_cout << "####  ( MA " << (*iMANode)->getID() << " deliver " << (*iMANode)->getBufferSize() << " data to Sink )               " ; 
+//					CSink::getSink()->receiveData(currentTime, (*iMANode)->sendAllData(CGeneralNode::_dump));
+//				}
+//				if( (*iMANode)->routeIsOverdue() )
+//				{
+//					//保留过期路径，用于稍后统计旧热点的投递计数信息
+//					vector<CBasicEntity *> overdueHotspots = (*iMANode)->getRoute()->getWayPoints();
+//
+//					//更新路线，取得新的热点集合
+//					if( CSink::getSink()->hasMoreNewRoutes() )
+//					{
+//						//热点集合发生更新，输出已完成统计的热点投递计数集合，和上一轮热点选取的时间
+//						if( ! hasMoreNewRoutes )
+//						{
+//							if( ! deliveryCounts.empty() )
+//							{
+//								//按照投递计数降序排列，2700s时输出900s选出的热点在(900, 1800)期间的投递计数，传入的参数应为1800
+//								int endTime =  currentTime - CHotspot::SLOT_HOTSPOT_UPDATE;
+//								deliveryCounts = CSortHelper::mergeSortByDeliveryCount(deliveryCounts, (endTime) );
+//								for(vector<CHotspot>::iterator ihotspot = deliveryCounts.begin(); ihotspot != deliveryCounts.end(); ++ihotspot)
+//								{
+//									delivery_hotspot << ihotspot->getDeliveryCount( currentTime - CHotspot::SLOT_HOTSPOT_UPDATE ) << TAB ;
+//									hotspot_rank << ihotspot->getTime() << "-" << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB << ihotspot->getID() << TAB << ihotspot->getX() << "," << ihotspot->getY() << TAB << ihotspot->getNCoveredPosition() << "," << ihotspot->getNCoveredNodes() << TAB 
+//										<< ihotspot->getRatio() << TAB << ihotspot->getWaitingTime(endTime) << TAB << ihotspot->getDeliveryCount(endTime) << endl;
+//
+//								}
+//								delivery_hotspot << endl;
+//								deliveryCounts.clear();
+//							}
+//							delivery_hotspot << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB ;
+//							delivery_statistics << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB << CData::getDeliveryAtHotspotCount() << TAB 
+//								<< CData::getDeliveryTotalCount() << TAB << CData::getDeliveryAtHotspotPercent() << endl;
+//							delivery_statistics.close();
+//							hasMoreNewRoutes = true;
+//						}
+//
+//						(*iMANode)->updateRoute(CSink::getSink()->popRoute());
+//						flash_cout << "####  ( MA " << (*iMANode)->getID() << " update route )               " ;
+//					}
+//					//FIXME: 若路线数目变少，删除多余的MA
+//					else
+//					{
+//						(*iMANode)->setFlag(false);
+//					}
+//
+//					//统计旧热点的投递计数信息
+//					for(vector<CBasicEntity *>::iterator iHotspot = overdueHotspots.begin(); iHotspot != overdueHotspots.end(); ++iHotspot)
+//					{
+//						if( (*iHotspot)->getID() == CSink::getSink()->getID() )
+//							continue;
+//						CHotspot *hotspot = static_cast<CHotspot *>(*iHotspot);
+//						deliveryCounts.push_back( *hotspot );
+//					}
+//					if( ! (*iMANode)->getFlag() )
+//						break;
+//				}
+//				else if( ! CSink::getSink()->hasMoreNewRoutes() )
+//				{
+//					//热点集合更新结束，重置flag
+//					hasMoreNewRoutes = false;
+//				}
+//			}
+//			//如果到达hotspot，waitingTime尚未获取
+//			if(   (*iMANode)->isAtHotspot() 
+//					&& (*iMANode)->getWaitingTime() < 0 )
+//			{
+//				waiting_time.open("waiting-time.txt", ios::app);
+//
+//				CHotspot *atHotspot = (*iMANode)->getAtHotspot();
+//				int temp = ROUND( getWaitingTime(currentTime, atHotspot) );
+//				//FIXME: 如果不允许Buffer溢出，Buffer已满时即直接跳过waiting
+//				if( ( CMANode::RECEIVE_MODE == CGeneralNode::_selfish ) && (*iMANode)->isFull() )
+//					(*iMANode)->setWaitingTime( 0 );
+//				else
+//				{
+//					(*iMANode)->setWaitingTime( temp );
+//					atHotspot->addWaitingTime( temp );
+//					flash_cout << "####  ( MA " << (*iMANode)->getID() << " wait for " << temp << " )                               " ;
+//					//if(temp == 0)
+//					//	(*iMANode)->setAtHotspot(nullptr);
+//				}
+//
+//				//记录waiting time信息
+//				if( temp > 0)
+//				{
+//					waiting_time << atHotspot->getTime() << TAB << (*iMANode)->getID() << TAB << atHotspot->getID() << TAB ;
+//					switch( atHotspot->getCandidateType() )
+//					{
+//						case CHotspot::_old_hotspot: 
+//							waiting_time << "O/" ;
+//							break;
+//						case CHotspot::_merge_hotspot: 
+//							waiting_time << "M/" ;
+//							break;
+//						case CHotspot::_new_hotspot: 
+//							waiting_time << "N/" ;
+//							break;
+//						default:
+//							break;
+//					}
+//					waiting_time << atHotspot->getAge() << TAB << atHotspot->getNCoveredPosition() << TAB 
+//								 << atHotspot->getHeat() << TAB << temp << endl;
+//				}
+//				waiting_time.close();	
+//
+//			}
+//		}while((*iMANode)->getTime() < currentTime);
+//		
+//		//删除多余的MA
+//		if( ! (*iMANode)->getFlag() )
+//		{
+//			(*iMANode)->turnFree();
+//			continue;
+//		}
+//		else
+//			++iMANode;	
+//	}
+//
+//	//投递数据
+//	for(auto iMANode = CMANode::getMANodes().begin(); iMANode != CMANode::getMANodes().end(); ++iMANode)
+//	{
+//		for(auto inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
+//		{
+//			if( ( CMANode::RECEIVE_MODE == CGeneralNode::_selfish ) && (*iMANode)->isFull() )
+//				break;
+//			if(CBasicEntity::getDistance( **iMANode, **inode ) > CGeneralNode::TRANS_RANGE)
+//				continue;
+//
+//			//对于热点上和路径上分别统计相遇次数
+//			if( (*iMANode)->isAtHotspot() )
+//				CNode::encountAtHotspot();
+//			else
+//				CNode::encountOnRoute();
+//
+//			if( ! (*inode)->hasData() )
+//				continue;
+//
+//			vector<CData> data;
+//			int capacity = (*iMANode)->getDataTolerance();
+//			if( capacity > 0 )
+//			{
+//				data = (*inode)->sendData(capacity);
+//				(*iMANode)->receiveData(currentTime, data);			
+//			}
+//			flash_cout << "####  ( Node " << (*inode)->getID() << " send " << data.size() << " data to MA " << (*iMANode)->getID() << " )                    " ;
+//
+//			//对于热点上和路径上分别统计数据投递计数
+//			if( (*iMANode)->isAtHotspot() )
+//			{
+//				CData::deliverAtHotspot( data.size() );
+//				(*iMANode)->getAtHotspot()->addDeliveryCount( data.size() );
+//			}
+//			else
+//				CData::deliverOnRoute( data.size() );
+//
+//		}
+//	}
+//
+//	//更新所有节点的buffer状态记录
+//	for(auto inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
+//		(*inode)->recordBufferStatus();
+//
+//	//控制台输出时保留一位小数
+//	double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
+//	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
+//	delivery_hotspot.close();
 }
 
 void HAR::PrintHotspotInfo(int currentTime)

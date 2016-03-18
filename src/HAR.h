@@ -5,6 +5,7 @@
 #include "RoutingProtocol.h"
 
 
+// TODO: rewrite
 class HAR : 
 	public CRoutingProtocol
 {

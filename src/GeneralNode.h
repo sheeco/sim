@@ -7,7 +7,10 @@
 #pragma once
 
 #include "Data.h"
+//#include "Package.h"
 
+
+class CPackage;
 
 class CGeneralNode :
 	public CBasicEntity
@@ -19,8 +22,6 @@ protected:
 	int energy;
 	double energyConsumption;
 
-	static double CONSUMPTION_BYTE_SEND;
-	static double CONSUMPTION_BYTE_RECIEVE;
 	static double CONSUMPTION_LISTEN;
 	static double CONSUMPTION_SLEEP;
 
@@ -42,8 +43,11 @@ public:
 		_lifo   //可发送配额有限时，优先从尾部发送
 	} _QUEUE;
 
+	static double CONSUMPTION_BYTE_SEND;
+	static double CONSUMPTION_BYTE_RECIEVE;
 	static int TRANS_RANGE;  //transmission range
 	static double PROB_DATA_FORWARD;
+	static int CTRL_SIZE;
 
 	CGeneralNode()
 	{
@@ -54,23 +58,42 @@ public:
 
 	virtual ~CGeneralNode(){};
 
-	inline double getEnergyConsumption() const
+	double getEnergyConsumption() const
 	{
 		return energyConsumption;
 	}
-	inline bool hasData() const
+	void consumeEnergy(double cons)
+	{
+		this->energyConsumption += cons;
+	}
+	bool hasData() const
 	{
 		return ( ! buffer.empty() );
 	}
-	inline int getBufferSize() const
+	int getBufferSize() const
 	{
 		return buffer.size();
 	}
+	vector<CData> getAllData() const
+	{
+		return buffer;
+	}
+
+	virtual bool isListening() const
+	{
+		return true;
+	}
+
+	CPackage sendRTS(int currentTime);
+
+//	virtual void receivePackage(CPackage* package, int currentTime);
+
+//	virtual vector<CData> bufferData(int time, vector<CData> datas);
 
 
-	virtual vector<CData> sendAllData(_SEND mode) = 0;
+//	virtual vector<CData> sendAllData(_SEND mode);
 
-	virtual bool receiveData(int time, vector<CData> datas) = 0;
+//	virtual bool receiveData(int time, vector<CData> datas);
 
 };
 

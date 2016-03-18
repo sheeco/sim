@@ -207,12 +207,21 @@ public:
 		}
 	}
 
-	vector<CData>  sendAllData(_SEND mode) override
+	bool isListening() const override
 	{
-		return CGeneralNode::sendAllData(mode);
+		return true;
 	}
 
-	bool receiveData(int time, vector<CData> datas) override;
+//	void receivePackage(CPackage* package, int currentTime) override
+//	{
+//	}
+
+//	vector<CData>  sendAllData(_SEND mode) override
+//	{
+//		return CGeneralNode::sendAllData(mode);
+//	}
+
+//	bool receiveData(int time, vector<CData> datas) override;
 
 	//MA移动，更新time时刻的位置
 	void updateLocation(int time);

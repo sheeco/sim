@@ -46,14 +46,6 @@ private:
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
 	static vector<CNode *> deletedNodes;  //用于暂存Node个数动态变化时被暂时移出的节点
 
-	/*************************************  Epidemic  *************************************/
-
-	vector<int> summaryVector;
-	map<CNode *, int> spokenCache;
-
-	/**************************************  Prophet  *************************************/
-
-	map<int, double> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
 
 	void init();
 
@@ -61,35 +53,36 @@ private:
 
 	CNode(double generationRate);
 
+	~CNode();
+
 	static void initNodes();
 
 	void generateData(int currentTime);
 
+
+	/****************************************  MAC  ***************************************/
+
+//	CPackage sendCTSWithIndex(CNode* dst, int currentTime);
+	CPackage sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
+
+//	vector<CData> bufferData(int time, vector<CData> datas) override;
+
+
+
 	/*************************************  Epidemic  *************************************/
 
-	//将删除过期的消息（仅当使用TTL时）
-	void dropOverdueData(int currentTime);
+	vector<int> summaryVector;
+	map<CNode *, int> spokenCache;
 
-	//队列管理
-	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
-	//超出MAX_QUEUE_SIZE时从前端丢弃数据，溢出时将从前端丢弃数据
-	//注意：必须在dropOverdueData之后调用
-	void dropDataIfOverflow();
+	// TODO: 
+//	vector<CData> getDataBySV(vector<int> sv);
+//	vector<CData> getDataBySV(vector<int> sv, int max);
 
-	//注意：需要在每次收到数据之后、投递数据之后、生成新数据之后调用此函数
-	void updateBufferStatus(int currentTime);
-
-	//更新SV（HOP <= 1的消息不会放入SV）
-	//注意：应确保调用之前buffer状态为最新，且需要在每次发送SV、收到SV并计算requestList之前调用此函数
-	void updateSummaryVector();
 
 	/**************************************  Prophet  *************************************/
 
-	//待测试
-	static void newNodes(int n);
 
-	//待测试
-	static void removeNodes(int n);
+	map<int, double> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
 
 	void initDeliveryPreds();
 
@@ -109,21 +102,34 @@ public:
 
 	static double DEFAULT_DATA_RATE;  //( package / s )
 	static int DATA_SIZE;  //( Byte )
-	static int CTRL_SIZE;
 
 	static int BUFFER_CAPACITY;
 	static int ENERGY;
+	static int SPOKEN_MEMORY;  //在这个时间内交换过数据的节点暂时不再交换数据
 	static _RECEIVE RECEIVE_MODE;
 	static _SEND SEND_MODE;
 	static _QUEUE QUEUE_MODE;
 
 	/****************************************  MAC  ***************************************/
 
+	// TODO: trigger operations here ?
+	// *TODO: move even between 2 locations ?
+	// TODO: how to trigger RTS ?
 	//更新坐标和工作状态，返回是否全部节点都仍存活
 	bool updateStatus(int currentTime);
 
+//	void receivePackage(CPackage* package, int currentTime) override;
+
+	bool hasSpokenRecently(CNode* node, int currentTime);
+
+	void addToSpokenCache(CNode* node, int t);
+
+	vector<CData> getDataByRequestList(vector<int> requestList);
+
+	void checkDataByAck(vector<CData> ack);
+
 	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus
-	bool isListening() const;
+	bool isListening() const override;
 
 	//在热点处提高 dc
 	void raiseDutyCycle();
@@ -139,26 +145,38 @@ public:
 		this->recyclable = recyclable;
 	}
 
-	// TODO: don't send RTS if has received any RTS ?
-	bool hasRTS()
+	// TODO: skip sending RTS if I has received any RTS ? yes if *trans delay countable
+	bool skipRTS()
 	{
 		return false;
 	}
 
-	CPackage sendRTS(int currentTime);
+//	void receiveRTS(CPackage package);
 
-	void receiveRTS(CPackage package);
-	//返回收到 RTS 的所有节点
 
-	CPackage sendCTS(CNode* dst, int currentTime);
+	/**************************************  Epidemic  *************************************/
 
-	// TODO: 
-	void receivePackage(CPackage package);
+	void setBuffer(vector<CData> buffer)
+	{
+		this->buffer = buffer;
+	}
 
-	static vector<CNode*> broadcastPackage(CPackage package);
+	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
+	vector<CData> dropOverdueData(int currentTime);
 
-	// TODO: 
-	static void transmitPackage(CPackage package);
+	//队列管理
+	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
+	//超出MAX_QUEUE_SIZE时从前端丢弃数据，溢出时将从前端丢弃数据并返回
+	//注意：必须在dropOverdueData之后调用
+	vector<CData> dropDataIfOverflow();
+
+	//注意：需要在每次收到数据之后、投递数据之后、生成新数据之后调用此函数
+	vector<CData> updateBufferStatus(int currentTime);
+
+	//更新SV（HOP <= 1的消息不会放入SV）
+	//注意：应确保调用之前buffer状态为最新，且需要在每次发送SV、收到SV并计算requestList之前调用此函数
+	vector<int> updateSummaryVector();
+
 
 	/**************************************  Prophet  *************************************/
 
@@ -166,9 +184,13 @@ public:
 	static double DECAY_RATIO;
 	static double TRANS_RATIO;
 
+	map<int, double> getDeliveryPreds() const
+	{
+		return deliveryPreds;
+	}
+	void updateDeliveryPredsWith(int node, map<int, double> preds);
+	void updateDeliveryPredsWithSink();
 
-
-	~CNode(){};
 
 	static vector<CNode *>& getNodes();
 
@@ -179,10 +201,17 @@ public:
 
 	static vector<int>& getIdNodes();
 
+	//待测试
+	static void newNodes(int n);
+
+	//待测试
+	static void removeNodes(int n);
+
 	static bool finiteEnergy();
 
 	static bool hasNodes(int currentTime);
 
+	//将死亡节点整理移出
 	static void ClearDeadNodes();
 
 	static bool ifNodeExists(int id);
@@ -334,44 +363,31 @@ public:
 	//更新buffer状态记录，以便计算buffer status
 	void recordBufferStatus();
 
-	vector<CData> sendAllData(_SEND mode) override;
+//	vector<CData> sendAllData(_SEND mode) override;
 
-	vector<CData> sendData(int n);
+//	vector<CData> sendData(int n);
 
-	bool receiveData(int time, vector<CData> datas) override;
-
+//	bool receiveData(int time, vector<CData> datas) override;
 
 	/*************************************  Epidemic  *************************************/
 
-	bool hasSpokenRecently(CNode* node, int currentTime);
-
-	void addToSpokenCache(CNode* node, int t);
-
 	//FIXME: 如果不忽略传输延迟，则以下所有send和receive函数都必须加入传输延迟的计算
 
-	vector<int> sendSummaryVector();
+//	vector<int> sendSummaryVector();
 
-	vector<int> receiveSummaryVector(vector<int> sv);
+//	vector<int> receiveSummaryVector(vector<int> sv);
 
-	//传入对方节点的SV，计算并返回请求传输的数据ID列表
-	vector<int> sendRequestList(vector<int> sv);
+//	//传入对方节点的SV，计算并返回请求传输的数据ID列表
+//	vector<int> sendRequestList(vector<int> sv);
 
-	vector<int> receiveRequestList(vector<int> req);
-
-	vector<CData> sendDataByRequestList(vector<int> requestList);
+//	vector<int> receiveRequestList(vector<int> req);
 
 
 	/**************************************  Prophet  *************************************/
 
-	void updateDeliveryPredsWith(int node, map<int, double> preds);
-
-	void updateDeliveryPredsWithSink();
-
-	map<int, double> sendDeliveryPreds();
-
-	map<int, double> receiveDeliveryPredsAndSV(map<int, double> preds, vector<int>& sv);
-
-	vector<CData> sendDataByPredsAndSV(map<int, double> preds, vector<int> &sv);
+//	map<int, double> sendDeliveryPreds();
+//
+//	map<int, double> receiveDeliveryPredsAndSV(map<int, double> preds, vector<int>& sv);
 
 	//在限定范围内随机增删一定数量的node
 	static int ChangeNodeNumber();

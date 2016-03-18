@@ -324,6 +324,30 @@ namespace global
 		v.clear();
 	}
 
+	template <class E>
+	E getObject(E* ptr)
+	{
+		return *ptr;
+	}
+
+	template <class E, class RTN>
+	vector<RTN> Iterate(vector<E> list, RTN(* operation)(E))
+	{
+		vector<RTN> rtn;
+		for(auto item = list.begin(); item != list.end(); ++item)
+			rtn.push_back( operation(*item) );
+		return rtn;
+	}
+
+	template <class E>
+	double Accumulate(vector<E> list, double(* value)(E))
+	{
+		double rtn = 0;
+		for(auto item = list.begin(); item != list.end(); ++item)
+			rtn += operation(*item);
+		return rtn;
+	}
+
 }
 
 using namespace global;

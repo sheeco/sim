@@ -51,26 +51,36 @@ public:
 		return sink;
 	}
 
-	//从Node收取数据
-	bool receiveData(int timeArrival, vector<CData> data) override
+	bool isListening() const override
 	{
-		RemoveFromList( data, sink->buffer );
-		for(auto idata = data.begin(); idata != data.end(); ++idata)
-		{
-			idata->arriveSink(timeArrival);
-			sink->buffer.push_back(*idata);
-		}
-		//实际上无需统计sink的能耗
-		sink->energyConsumption += CONSUMPTION_BYTE_RECIEVE * CNode::DATA_SIZE * data.size();
 		return true;
 	}
 
-	vector<CData> sendAllData(_SEND mode) override
-	{
-		cout << "Errror @ CSink::sendAllData() : This function mustn't be called !" << endl;
-		_PAUSE_;
-		return vector<CData>();
-	}
+//	void receivePackage(CPackage* package, int currentTime) override;
+
+	static vector<CData> bufferData(int time, vector<CData> datas);
+
+
+//	//从Node收取数据
+//	bool receiveData(int timeArrival, vector<CData> data) override
+//	{
+//		RemoveFromList( data, sink->buffer );
+//		for(auto idata = data.begin(); idata != data.end(); ++idata)
+//		{
+//			idata->arriveSink(timeArrival);
+//			sink->buffer.push_back(*idata);
+//		}
+//		//实际上无需统计sink的能耗
+//		sink->energyConsumption += CONSUMPTION_BYTE_RECIEVE * CNode::DATA_SIZE * data.size();
+//		return true;
+//	}
+
+//	vector<CData> sendAllData(_SEND mode) override
+//	{
+//		cout << "Errror @ CSink::sendAllData() : This function mustn't be called !" << endl;
+//		_PAUSE_;
+//		return vector<CData>();
+//	}
 
 	//取得新的路线集合
 	static inline void setNewRoutes(vector<CRoute> newRoutes)

@@ -11,7 +11,7 @@
 
 void CSMac::DetectNeighborNode(CNode* node, int currentTime)
 {
-//	if( node->hasRTS() )
+//	if( node->skipRTS() )
 //		return;
 //
 //	vector<CNode*> dstNodes;

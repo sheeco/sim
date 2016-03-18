@@ -2,27 +2,27 @@
 #include "MacProtocol.h"
 
 
-CPackage::CPackage()
+CPackage::CPackage() : src(nullptr), dst(nullptr)
 {
-	init(nullptr);
+	init();
 }
 
-CPackage::CPackage(CNode* node, CCtrl ctrl)
+CPackage::CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl) : src(&node), dst(&dst)
 {
-	init(node);
+	init();
 	content.push_back( new CCtrl(ctrl) );
 }
 
-CPackage::CPackage(CNode* node, CCtrl ctrl_a, CCtrl ctrl_b)
+CPackage::CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl_a, CCtrl ctrl_b) : src(&node), dst(&dst)
 {
-	init(node);
+	init();
 	content.push_back( new CCtrl(ctrl_a) );
 	content.push_back( new CCtrl(ctrl_a) );
 }
 
-CPackage::CPackage(CNode* node, CCtrl ctrl, vector<CData> datas)
+CPackage::CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl, vector<CData> datas) : src(&node), dst(&dst)
 {
-	init(node);
+	init();
 	content.push_back( new CCtrl(ctrl) );
 	vector<CData*> copy_data;
 	for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); ++ idata)
@@ -38,9 +38,8 @@ CPackage::~CPackage()
 	content.clear();
 }
 
-void CPackage::init(CNode* node)
+void CPackage::init()
 {
-	this->node = node;
 	this->macHeader = CMacProtocol::MAC_SIZE;
 }
 

@@ -328,8 +328,8 @@
 
 ###### 2016-02-20  ·  *< 2.5.5 >*
 
-- RFCT：原宏定义`DATA_GENERATE_RATE`、`BYTE_PER_CTRL`和`BYTE_PER_DATA`移入`CNode`中的静态成员变量`CNode::DEFAULT_DATA_RATE`、`CNode::DATA_SIZE`和`CNode::CTRL_SIZE`；
-- NOTE：`CNode::DATA_SIZE`和`CNode::CTRL_SIZE`的比例太小时，HDC 的平均能耗将比普通 DC 更大；比例越大，改善效果越明显；
+- RFCT：原宏定义`DATA_GENERATE_RATE`、`BYTE_PER_CTRL`和`BYTE_PER_DATA`移入`CNode`中的静态成员变量`CNode::DEFAULT_DATA_RATE`、`CNode::DATA_SIZE`和`CGeneralNode::CTRL_SIZE`；
+- NOTE：`CNode::DATA_SIZE`和`CGeneralNode::CTRL_SIZE`的比例太小时，HDC 的平均能耗将比普通 DC 更大；比例越大，改善效果越明显；
 - NOTE：`CNode::BUFFER_CAPACITY`和`CNode::DEFAULT_DATA_RATE`的比例减小，投递率整体下降；比例越大，投递率整体上升；
 
 
@@ -456,4 +456,11 @@
 
 ###### 2016-03-17
 
-- ADD：添加类`CGeneralData`、`CCtrl`、`CPackage`，和函数`CNode::broadcastPackage()`、`CNode::transmitPackage()`、`CNode::sendRTS()`、`CNode::receiveRTS()`、`CNode::sendCTS()`、`CNode::receivePackage()`；
+- ADD：添加类`CGeneralData`、`CCtrl`、`CPackage`，和函数`CNode::broadcastPackage()`、`::transmitPackage()`、`::sendRTS()`、`::receiveRTS()`、`::sendCTS()`、`::receivePackage()`；
+
+
+###### 2016-03-18  ·  *< 2.6.8 >*
+
+- ADD：将数据通信的操作整合到`CMacProtocol::broadcastPackage()`、`::transmitPackage()`；
+- ADD：将数据发送的响应流程整合到`CMacProtocol::receivePackage()`、`CProphet::bufferData()`，但暂时只实现了 Prophet 路由；
+- **TODO：** ADD：重写 Epidemic 路由和 HAR 路由的数据通信流程；

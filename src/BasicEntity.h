@@ -25,7 +25,7 @@ protected:
 public:
 
 	CBasicEntity(): 
-		ID(0), time(0), flag(false) {};
+		ID(-1), time(0), flag(false) {};
 
 	~CBasicEntity(){};
 

@@ -15,8 +15,16 @@ private:
 
 public:
 
+	static int MAX_DATA_TRANS;
+
 	CProphet(){};
 	~CProphet(){};
+
+	// TODO: check hop
+	//select data to sent based on preds
+	static vector<CData> selectDataByIndex(CNode* node, CCtrl* ctrl);
+
+	static vector<CData> bufferData(CNode* node, vector<CData> datas, int time) /*override*/;
 
 	static bool Operate(int currentTime);
 

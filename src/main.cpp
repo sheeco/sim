@@ -31,11 +31,12 @@ void initConfiguration()
 	CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //Êý¾Ý·¢ËÍslot
 	CNode::DEFAULT_DATA_RATE = 0;
 	CNode::DATA_SIZE = 0;
-	CNode::CTRL_SIZE = 0;
+	CGeneralNode::CTRL_SIZE = 0;
 	CMacProtocol::MAC_SIZE = 8;  //Mac Header Size
 
 	CNode::BUFFER_CAPACITY = 0;
 	CNode::ENERGY = 0;
+	CNode::SPOKEN_MEMORY = 0;
 	CNode::RECEIVE_MODE = CGeneralNode::_loose;
 	CNode::SEND_MODE = CGeneralNode::_dump;
 	CNode::QUEUE_MODE = CGeneralNode::_fifo;
@@ -64,14 +65,13 @@ void initConfiguration()
 	CData::MAX_TTL = 0;
 
 	CEpidemic::MAX_QUEUE_SIZE = -1;
-	CEpidemic::SPOKEN_MEMORY = 0;
 
 	/******************************  Prophet  ******************************/
 
 	CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
 	CNode::DECAY_RATIO = 0.90;  //0.98(/s)
 	CNode::TRANS_RATIO = 0.20;  //0.25
-
+	CProphet::MAX_DATA_TRANS = 0;
 
 	/**************************  Hotspot Select  ***************************/
 
@@ -124,9 +124,10 @@ void initConfiguration()
 	CNode::DEFAULT_DATA_RATE = 1.0 / 30.0;
 	CNode::BUFFER_CAPACITY = 200;
 	CNode::ENERGY = 0;
+	CNode::SPOKEN_MEMORY = 0;
 
 	CNode::DATA_SIZE = 250;  //Up to 250 Bytes
-	CNode::CTRL_SIZE = 10;
+	CGeneralNode::CTRL_SIZE = 10;
 
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
@@ -300,7 +301,7 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-spoken" )
 			{
 				if(iField < argc - 1)
-					CEpidemic::SPOKEN_MEMORY = atoi( argv[ iField + 1 ] );
+					CNode::SPOKEN_MEMORY = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 

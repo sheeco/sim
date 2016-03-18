@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GeneralData.h"
+#include "Data.h"
 
 
 class CCtrl :
@@ -17,17 +18,23 @@ class CCtrl :
 //	int size;  //byte
 //	int HOP;
 
-protected:
-	
-	friend class CNode;
-	typedef enum _TYPE_CTRL {_rts, _cts, _ack, _pred} _TYPE_CTRL;
+public:
+
+	typedef enum _TYPE_CTRL 
+	{
+		_rts, 
+		_cts, 
+		_ack, 
+		_index  //data index ( delivery preds & summary vector )
+	} _TYPE_CTRL;
 
 
 private:
 
-	int dst;  //-1: 默认广播
 	_TYPE_CTRL type;
 	map<int, double> pred;
+	vector<int> sv;
+	vector<CData> ack;  //直接传递 CData 类，方便操作，实际应传递 sv
 
 	void init() override;
 
@@ -36,9 +43,12 @@ private:
 
 public:
 
+	//RTS / CTS
 	CCtrl(int node, int timeBirth, int byte, _TYPE_CTRL type);
-	CCtrl(int node, int dst, int timeBirth, int byte, _TYPE_CTRL type);
-	CCtrl(int node, int dst, int timeBirth, map<int, double> pred, int byte, _TYPE_CTRL type);
+	//ACK
+	CCtrl(int node, vector<CData> datas, int timeBirth, int byte, _TYPE_CTRL type);
+	//data index ( delivery preds & summary vector )
+	CCtrl(int node, map<int, double> pred, vector<int> sv, int timeBirth, int byte, _TYPE_CTRL type);
 	~CCtrl();
 
 	_TYPE_CTRL getType() const
@@ -49,6 +59,16 @@ public:
 	map<int, double> getPred() const
 	{
 		return pred;
+	}
+
+	vector<int> getSV() const
+	{
+		return sv;
+	}
+
+	vector<CData> getACK() const
+	{
+		return ack;
 	}
 
 

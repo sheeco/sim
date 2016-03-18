@@ -10,33 +10,33 @@ int CMANode::BUFFER_CAPACITY = 0;
 CGeneralNode::_RECEIVE CMANode::RECEIVE_MODE = _selfish;
 
 
-bool CMANode::receiveData(int time, vector<CData> datas)
-{
-	if(buffer.size() > BUFFER_CAPACITY)
-	{
-		cout << endl << "Error @ CMANode::receiveData() : buffer overflown"<<endl;
-		_PAUSE_;
-		return false;
-	}
-	int num = datas.size();
-
-	//不允许溢出，即仅在Buffer有空余时才接收数据
-	if( RECEIVE_MODE == _selfish)
-	{
-		if(buffer.size() == BUFFER_CAPACITY)
-			return false;
-		if(datas.size() + buffer.size() > BUFFER_CAPACITY)
-			num = BUFFER_CAPACITY - buffer.size();
-	}
-	for(int i = 0; i < num; i++)
-	{
-		if(buffer.size() == BUFFER_CAPACITY)
-			buffer.erase(buffer.begin());  //如果buffer已满，删除最早的一个Data
-		buffer.push_back(datas[i]);
-	}
-	energyConsumption += num * (CONSUMPTION_BYTE_SEND * 4 + CONSUMPTION_BYTE_RECIEVE * 3);
-	return true;
-}
+//bool CMANode::receiveData(int time, vector<CData> datas)
+//{
+//	if(buffer.size() > BUFFER_CAPACITY)
+//	{
+//		cout << endl << "Error @ CMANode::receiveData() : buffer overflown"<<endl;
+//		_PAUSE_;
+//		return false;
+//	}
+//	int num = datas.size();
+//
+//	//不允许溢出，即仅在Buffer有空余时才接收数据
+//	if( RECEIVE_MODE == _selfish)
+//	{
+//		if(buffer.size() == BUFFER_CAPACITY)
+//			return false;
+//		if(datas.size() + buffer.size() > BUFFER_CAPACITY)
+//			num = BUFFER_CAPACITY - buffer.size();
+//	}
+//	for(int i = 0; i < num; i++)
+//	{
+//		if(buffer.size() == BUFFER_CAPACITY)
+//			buffer.erase(buffer.begin());  //如果buffer已满，删除最早的一个Data
+//		buffer.push_back(datas[i]);
+//	}
+//	energyConsumption += num * (CONSUMPTION_BYTE_SEND * 4 + CONSUMPTION_BYTE_RECIEVE * 3);
+//	return true;
+//}
 
 void CMANode::updateLocation(int time)
 {

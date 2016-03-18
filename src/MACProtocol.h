@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Protocol.h"
-
+#include "GeneralNode.h"
 
 class CMacProtocol :
 	public CProtocol
@@ -29,6 +29,11 @@ public:
 
 	CMacProtocol(){};
 	~CMacProtocol(){};
+
+	static void receivePackage(CGeneralNode& node, CPackage* package, int currentTime);
+
+	static bool broadcastPackage(CPackage* package, int currentTime);
+	static bool transmitPackage(CPackage* package, CGeneralNode* dst, int currentTime);
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);

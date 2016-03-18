@@ -24,7 +24,7 @@ public:
 	//template <class E>
 	//static vector<E> mergeSort(vector<E> v, bool(*Comp)(E, E));
 
-	//CData按照时间排序
+	//CData按照生成时间排序
 	static vector<CData> merge(vector<CData> left, vector<CData> right, bool(*Comp)(CData, CData));
 	static vector<CData> mergeSort(vector<CData> v, bool(*Comp)(CData, CData));
 
@@ -51,7 +51,7 @@ public:
 	static bool ascendByRatio(CHotspot *left, CHotspot *right);
 	static bool descendByInt(int left, int right){	return left > right;	};
 	static bool ascendByInt(int left, int right){	return left < right;	};
-	static bool ascendByData(CData left, CData right){	return left < right;	};
+	static bool ascendByTimeBirth(CData left, CData right){	return left < right;	};
 	static bool ascendByID(CNode *left, CNode *right){	return left->getID() < right->getID();	};
 
 };
