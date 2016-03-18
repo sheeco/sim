@@ -22,10 +22,13 @@ private:
 	double generationRate;
 	double dutyCycle;
 
+	//  [ ----------SLEEP----------> | ----LISTEN----> ]
+
+	int state;  //取值范围在[ - SLOT_SLEEP, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
 	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
 	int SLOT_LISTEN;  //由SLOT_TOTAL和DC计算得到
-	int SLOT_WAIT;  //发送 RTS 之前等待的时间
-	int state;  //取值范围在[ - SLOT_SLEEP, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
+	int SLOT_DISCOVER;  //发送 RTS 之前等待邻居节点发现的时间
+
 	int timeData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
 	bool recyclable;  //在节点死亡之后，指示节点是否仍可被回收，默认为 true，直到 trace 信息终止赋 false（暂未使用，如果有充电行为则应该读取此参数）
@@ -38,7 +41,9 @@ private:
 	static int encounterActive;  //有效相遇
 	static int encounter;
 	static int visiterAtHotspot;
-	static int visiterOnRoute;;
+	static int visiterOnRoute;
+	static int transmitSuccessful;  //成功的数据传输
+	static int transmit;
 
 	static int ID_COUNT;
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
@@ -62,9 +67,13 @@ private:
 
 	/****************************************  MAC  ***************************************/
 
-//	CPackage sendCTSWithIndex(CNode* dst, int currentTime);
-	CPackage sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
+	//待测试
+	static void newNodes(int n);
+	//待测试
+	static void removeNodes(int n);
 
+//	CPackage sendCTSWithIndex(CNode* dst, int currentTime);
+//	CPackage sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
 //	vector<CData> bufferData(int time, vector<CData> datas) override;
 
 
@@ -74,7 +83,6 @@ private:
 	vector<int> summaryVector;
 	map<CNode *, int> spokenCache;
 
-	// TODO: 
 //	vector<CData> getDataBySV(vector<int> sv);
 //	vector<CData> getDataBySV(vector<int> sv, int max);
 
@@ -85,7 +93,6 @@ private:
 	map<int, double> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
 
 	void initDeliveryPreds();
-
 	void decayDeliveryPreds(int currentTime);
 
 
@@ -98,7 +105,7 @@ public:
 	static int SLOT_TOTAL;
 	static double DEFAULT_DUTY_CYCLE;  //不使用HDC，或者HDC中不在热点区域内时的占空比
 	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
-	static int DEFAULT_SLOT_WAIT;
+	static int DEFAULT_SLOT_DISCOVER;
 
 	static double DEFAULT_DATA_RATE;  //( package / s )
 	static int DATA_SIZE;  //( Byte )
@@ -112,11 +119,16 @@ public:
 
 	/****************************************  MAC  ***************************************/
 
+	//在限定范围内随机增删一定数量的node
+	static int ChangeNodeNumber();
+
 	// TODO: trigger operations here ?
 	// *TODO: move even between 2 locations ?
 	// TODO: how to trigger RTS ?
 	//更新坐标和工作状态，返回是否全部节点都仍存活
 	bool updateStatus(int currentTime);
+
+//	void receiveRTS(CPackage package);
 
 //	void receivePackage(CPackage* package, int currentTime) override;
 
@@ -124,18 +136,65 @@ public:
 
 	void addToSpokenCache(CNode* node, int t);
 
-	vector<CData> getDataByRequestList(vector<int> requestList);
+	//由给出的ID列表提取对应数据
+	vector<CData> getDataByRequestList(vector<int> requestList) const;
 
+	//（仅SEND_MODE == _dump时）删除 ACK 的数据
 	void checkDataByAck(vector<CData> ack);
 
+	// TODO: skip sending RTS if node has received any RTS ? yes if *trans delay countable
+	//标记已收到过其他节点的 RTS (暂未使用)
+	bool skipRTS()
+	{
+		return false;
+	}
+
+
+	/*************************** DC相关 ***************************/
+
+	//判断是否正在监听
 	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus
 	bool isListening() const override;
+
+	//判断是否遇到了邻居节点发现时槽
+	//注意：调用此函数之前必须确保已updateStatus
+	bool isDiscovering() const
+	{
+		return state == SLOT_DISCOVER;
+	}
 
 	//在热点处提高 dc
 	void raiseDutyCycle();
 
 	//在非热点处降低 dc
 	void resetDutyCycle();
+
+	/*************************** ------- ***************************/
+
+	/*************************** 能耗相关 ***************************/
+
+	//不设置能量值时，始终返回true
+	bool isAlive() const 
+	{
+		if( energy == 0 )
+			return true;
+		else if( energy - energyConsumption <= 0 )
+			return false;
+		else
+			return true;
+	}
+
+	double getEnergy() const 
+	{
+		if( ! isAlive() )
+			return 0;
+		return energy - energyConsumption;
+	}
+
+	bool isRecyclable() const 
+	{
+		return recyclable;
+	}
 
 	//如果 recycable 为 true，则可以在动态节点个数测试时被恢复
 	//注意：有节点死亡之后，必须调用ClearDeadNodes()
@@ -145,26 +204,33 @@ public:
 		this->recyclable = recyclable;
 	}
 
-	// TODO: skip sending RTS if I has received any RTS ? yes if *trans delay countable
-	bool skipRTS()
-	{
-		return false;
-	}
+	static bool finiteEnergy();
 
-//	void receiveRTS(CPackage package);
+	static bool hasNodes(int currentTime);
+
+	static double getSumEnergyConsumption();
+
+	//将死亡节点整理移出
+	static void ClearDeadNodes();
+
+
+	/*************************** ------- ***************************/
 
 
 	/**************************************  Epidemic  *************************************/
 
-	void setBuffer(vector<CData> buffer)
+	/*************************** 队列管理 ***************************/
+
+	//手动将数据压入 buffer，不伴随其他任何操作
+	//注意：必须在调用此函数之后手动调用 updateBufferStatus() 检查溢出
+	void pushIntoBuffer(vector<CData> datas)
 	{
-		this->buffer = buffer;
+		AddToListUniquely( this->buffer, datas );
 	}
 
 	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
 	vector<CData> dropOverdueData(int currentTime);
 
-	//队列管理
 	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
 	//超出MAX_QUEUE_SIZE时从前端丢弃数据，溢出时将从前端丢弃数据并返回
 	//注意：必须在dropOverdueData之后调用
@@ -173,8 +239,10 @@ public:
 	//注意：需要在每次收到数据之后、投递数据之后、生成新数据之后调用此函数
 	vector<CData> updateBufferStatus(int currentTime);
 
-	//更新SV（HOP <= 1的消息不会放入SV）
-	//注意：应确保调用之前buffer状态为最新，且需要在每次发送SV、收到SV并计算requestList之前调用此函数
+	/*************************** ------- ***************************/
+
+	//获取最新 SV（HOP == 0 的消息不会放入SV）
+	//注意：应确保调用之前buffer状态为最新
 	vector<int> updateSummaryVector();
 
 
@@ -201,51 +269,47 @@ public:
 
 	static vector<int>& getIdNodes();
 
-	//待测试
-	static void newNodes(int n);
-
-	//待测试
-	static void removeNodes(int n);
-
-	static bool finiteEnergy();
-
-	static bool hasNodes(int currentTime);
-
-	//将死亡节点整理移出
-	static void ClearDeadNodes();
-
 	static bool ifNodeExists(int id);
 
 	//该节点不存在时无返回值所以将出错，所以必须在每次调用之前调用函数ifNodeExists()进行检查
 	static CNode* getNodeByID(int id);
 
-	static double getSumEnergyConsumption();
 
+	/*************************** 相遇 & 访问 & 传输计数 ***************************/
 
 	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
 	//注意：暂时只支持Prophet路由，其他路由尚未添加相关代码
+	static void encountAtHotspot() 
+	{
+		encounterAtHotspot++;
+	}
+	static void encount() 
+	{
+		encounter++;
+	}
+	static void encountActive() 
+	{
+		encounterActive++;
+	}
+
 	static int getEncounter() 
 	{
 		return encounter;
 	}
-
 	static int getEncounterAtHotspot() 
 	{
 		return encounterAtHotspot;
 	}
-
 	static int getEncounterActive()
 	{
 		return encounterActive;
 	}
-
 	static double getEncounterAtHotspotPercent() 
 	{
 		if(encounterAtHotspot == 0)
 			return 0.0;
 		return double(encounterAtHotspot) / double(encounter);
 	}
-
 	static double getEncounterActivePercent() 
 	{
 		if(encounterActive == 0)
@@ -253,73 +317,57 @@ public:
 		return double(encounterActive) / double(encounter);
 	}
 
-	static void encountAtHotspot() 
-	{
-		encounterAtHotspot++;
-		encounter++;
-	}
-
-	static void encountOnRoute() 
-	{
-		encounter++;
-	}
-
-	//注意：此函数必须在调用过encountAtHotspot()或encountOnRoute()之后再调用
-	static void encountActive() 
-	{
-		encounterActive++;
-	}
-
 	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
+	static void visitAtHotspot() 
+	{
+		visiterAtHotspot++;
+	}
+	static void visitOnRoute() 
+	{
+		visiterOnRoute++;
+	}
+
 	static double getVisiterAtHotspotPercent() 
 	{
 		if(visiterAtHotspot == 0)
 			return 0.0;
 		return double(visiterAtHotspot) / double(visiterAtHotspot + visiterOnRoute);
 	}
-
 	static int getVisiter() 
 	{
 		return visiterAtHotspot + visiterOnRoute;
 	}
-
 	static int getVisiterAtHotspot() 
 	{
 		return visiterAtHotspot;
 	}
 
-	static void visitAtHotspot() 
+	//数据传输计数：用于统计数据传输成功的百分比
+	static void transmitTry()
 	{
-		visiterAtHotspot++;
+		transmit++;
+	}
+	static void transmitSucceed()
+	{
+		transmitSuccessful++;
 	}
 
-	static void visitOnRoute() 
+	static int getTransmit()
 	{
-		visiterOnRoute++;
+		return transmit;
+	}
+	static int getTransmitSuccessful()
+	{
+		return transmitSuccessful;
+	}
+	static double getTransmitSuccessfulPercent()
+	{
+		if(transmitSuccessful == 0)
+			return 0.0;
+		return double(transmitSuccessful) / double(transmit);
 	}
 
-	//不设置能量值时，始终返回true
-	bool isAlive() const 
-	{
-		if( energy == 0 )
-			return true;
-		else if( energy - energyConsumption <= 0 )
-			return false;
-		else
-			return true;
-	}
-
-	double getEnergy() const 
-	{
-		if( ! isAlive() )
-			return 0;
-		return energy - energyConsumption;
-	}
-
-	bool isRecyclable() const 
-	{
-		return recyclable;
-	}
+	/*************************** ------- ***************************/
 
 	double getGenerationRate() const 
 	{
@@ -388,9 +436,6 @@ public:
 //	map<int, double> sendDeliveryPreds();
 //
 //	map<int, double> receiveDeliveryPredsAndSV(map<int, double> preds, vector<int>& sv);
-
-	//在限定范围内随机增删一定数量的node
-	static int ChangeNodeNumber();
 
 };
 

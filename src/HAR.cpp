@@ -365,8 +365,8 @@ void HAR::MANodeRouteDesign(int currentTime)
 }
 
 
-void HAR::SendData(int currentTime)
-{
+//void HAR::SendData(int currentTime)
+//{
 //	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 //		return;
 //	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
@@ -585,7 +585,7 @@ void HAR::SendData(int currentTime)
 //	double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
 //	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
 //	delivery_hotspot.close();
-}
+//}
 
 void HAR::PrintHotspotInfo(int currentTime)
 {
@@ -843,19 +843,19 @@ void HAR::CompareWithOldHotspots(int currentTime)
 
 bool HAR::Operate(int currentTime)
 {
-	if( MAC_PROTOCOL == _hdc )
-		CHDC::Operate(currentTime);
-	else
-		CSMac::Operate(currentTime);
-
-	if( ! CNode::hasNodes(currentTime) )
-		return false;
-
-	HotspotSelection(currentTime);
-
-	SendData(currentTime);
-
-	PrintInfo(currentTime);
+//	if( MAC_PROTOCOL == _hdc )
+//		CHDC::Operate(currentTime);
+//	else
+//		CSMac::Operate(currentTime);
+//
+//	if( ! CNode::hasNodes(currentTime) )
+//		return false;
+//
+//	HotspotSelection(currentTime);
+//
+//	SendData(currentTime);
+//
+//	PrintInfo(currentTime);
 
 	return true;
 }

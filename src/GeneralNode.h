@@ -84,7 +84,7 @@ public:
 		return true;
 	}
 
-	CPackage sendRTS(int currentTime);
+	CPackage* sendRTS(int currentTime);
 
 //	virtual void receivePackage(CPackage* package, int currentTime);
 

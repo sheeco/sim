@@ -69,17 +69,21 @@ namespace global
 
 	/********************************* Usage & Output ***********************************/
 
+	// TODO: print info into different folders
+
 	extern string INFO_LOG;
 	extern string INFO_HELP;
 
 	extern string FILE_DEBUG;
 	extern string INFO_DEBUG;
 
+	extern string INFO_ENCOUNTER;
+	extern string INFO_TRANSMIT;
+	extern string INFO_ENERGY_CONSUMPTION;
+	extern string INFO_SINK;
+
 	extern string INFO_DELIVERY_RATIO;
 	extern string INFO_DELAY;
-	extern string INFO_ENERGY_CONSUMPTION;
-	extern string INFO_ENCOUNTER;
-	extern string INFO_SINK;
 	extern string INFO_BUFFER;
 	extern string INFO_BUFFER_STATISTICS;
 
@@ -121,6 +125,8 @@ namespace global
 	// prob between [0, 1]
 	inline bool Bet(double prob)
 	{
+		if( prob == 1.0 )
+			return true;
 		return RandomFloat(0, 1) <= prob;
 	}
 

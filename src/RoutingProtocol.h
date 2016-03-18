@@ -20,8 +20,8 @@ public:
 	static int SLOT_DATA_SEND;  //数据发送slot
 	static bool TEST_HOTSPOT_SIMILARITY;
 
-	CRoutingProtocol(){};
-	~CRoutingProtocol(){};
+	CRoutingProtocol();
+	~CRoutingProtocol();
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);

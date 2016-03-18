@@ -67,8 +67,8 @@ private:
 	static void HotspotClassification(int currentTime);
 	//对初步得到的hotspot class进行路径优化（TSP 最近邻居算法）
 	static void MANodeRouteDesign(int currentTime);
-	//在特定时槽上发送数据
-	static void SendData(int currentTime);
+//	//在特定时槽上发送数据
+//	static void SendData(int currentTime);
 
 	//比较此次热点选取的结果与上一次选取结果之间的相似度
 	static void CompareWithOldHotspots(int currentTime);

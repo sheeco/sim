@@ -15,6 +15,10 @@ bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
 //{
 //}
 
+CRoutingProtocol::CRoutingProtocol() {}
+
+CRoutingProtocol::~CRoutingProtocol() {}
+
 void CRoutingProtocol::PrintInfo(int currentTime)
 {
 	switch( MAC_PROTOCOL )
@@ -56,40 +60,6 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		}
 		delay << currentTime << TAB << CData::getAverageDelay() << endl;
 		delay.close();
-
-//		//MA和节点 / 节点间的相遇次数
-//		ofstream encounter("encounter.txt", ios::app);
-//		if(currentTime == 0)
-//		{
-//			encounter << INFO_LOG ;
-//			encounter << INFO_ENCOUNTER ;
-//		}
-//		encounter << currentTime << TAB;
-//		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
-//			encounter << CNode::getEncounterAtHotspotPercent() << TAB << CNode::getEncounterAtHotspot() << TAB 
-//					  << CNode::getEncounterActivePercent() << TAB << CNode::getEncounterActive << TAB;
-//		encounter << CNode::getEncounter() << TAB;
-//		encounter << endl;
-//		encounter.close();
-
-//		//平均能耗
-//		ofstream energy_consumption("energy-consumption.txt", ios::app);
-//		if(currentTime == 0)
-//		{
-//			energy_consumption << INFO_LOG ; 
-//			energy_consumption << INFO_ENERGY_CONSUMPTION ;
-//		}
-//		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() ;
-//		if( CNode::finiteEnergy() )
-//		{			
-//			//节点剩余能量
-//			energy_consumption << TAB << CNode::getSumEnergyConsumption() << TAB << CNode::getNodes().size() << TAB;
-//			vector<CNode *> allNodes = CNode::getAllNodes(true);
-//			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
-//				energy_consumption << (*inode)->getEnergy() << TAB;
-//		}
-//		energy_consumption << endl;
-//		energy_consumption.close();
 
 		//每个节点buffer状态的历史平均值
 		ofstream buffer("buffer-node-statistics.txt", ios::app);

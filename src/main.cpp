@@ -44,7 +44,7 @@ void initConfiguration()
 	CNode::SLOT_TOTAL = 0;
 	CNode::DEFAULT_DUTY_CYCLE = 0;
 	CNode::HOTSPOT_DUTY_CYCLE = 0; 
-	CNode::DEFAULT_SLOT_WAIT = 0; 
+	CNode::DEFAULT_SLOT_DISCOVER = 0; 
 
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
@@ -106,6 +106,11 @@ void initConfiguration()
 
 	/************************************** Necessary Config **************************************/
 
+	SLOT = 1;
+	// TODO: should be read from .trace file
+	SLOT_MOBILITYMODEL = 30;
+	SLOT_RECORD_INFO = 100;
+
 	DATATIME = 15000;
 	RUNTIME = 15000;
 
@@ -131,7 +136,7 @@ void initConfiguration()
 
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
-	CNode::DEFAULT_SLOT_WAIT = 10; 
+	CNode::DEFAULT_SLOT_DISCOVER = 10; 
 }
 
 bool ParseParameters(int argc, char* argv[])
@@ -502,7 +507,23 @@ bool Run()
 	{
 		bool dead = false;
 
-		dead = ! CProphet::Operate(currentTime);
+		switch( ROUTING_PROTOCOL )
+		{
+			case _prophet:
+				dead = ! CProphet::Operate(currentTime);
+				break;
+
+			case _epidemic:
+				dead = ! CEpidemic::Operate(currentTime);
+				break;
+
+			case _har:
+				dead = ! HAR::Operate(currentTime);
+				break;
+
+			default:
+				break;
+		}
 
 		if( dead )
 		{
@@ -517,12 +538,15 @@ bool Run()
 		case _prophet:
 			CProphet::PrintFinal(currentTime);
 			break;
+
 		case _epidemic:
 			CEpidemic::PrintFinal(currentTime);
 			break;
+
 		case _har:
 			HAR::PrintFinal(currentTime);
 			break;
+
 		default:
 			break;
 	}

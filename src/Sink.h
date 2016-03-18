@@ -25,6 +25,9 @@ private:
 	static CSink* sink;
 	vector<CRoute> newRoutes;
 
+	static int encounterActive;  //有效相遇
+	static int encounter;
+
 	CSink()
 	{
 		this->ID = SINK_ID;
@@ -56,9 +59,34 @@ public:
 		return true;
 	}
 
-//	void receivePackage(CPackage* package, int currentTime) override;
+	//相遇计数：统计节点和 sink 的相遇
+	static void encount() 
+	{
+		encounter++;
+	}
+	static void encountActive() 
+	{
+		encounterActive++;
+	}
+
+	static int getEncounter() 
+	{
+		return encounter;
+	}
+	static int getEncounterActive()
+	{
+		return encounterActive;
+	}
+	static double getEncounterActivePercent() 
+	{
+		if(encounterActive == 0)
+			return 0.0;
+		return double(encounterActive) / double(encounter);
+	}
 
 	static vector<CData> bufferData(int time, vector<CData> datas);
+
+//	void receivePackage(CPackage* package, int currentTime) override;
 
 
 //	//从Node收取数据
@@ -81,6 +109,9 @@ public:
 //		_PAUSE_;
 //		return vector<CData>();
 //	}
+
+
+	/********************************************* HAR路由 ***********************************************/
 
 	//取得新的路线集合
 	static inline void setNewRoutes(vector<CRoute> newRoutes)

@@ -8,8 +8,8 @@
 int CEpidemic::MAX_QUEUE_SIZE = -1;
 
 
-void CEpidemic::SendData(int currentTime)
-{
+//void CEpidemic::SendData(int currentTime)
+//{
 //	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 //		return;
 //	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
@@ -148,21 +148,21 @@ void CEpidemic::SendData(int currentTime)
 //	sink << currentTime << TAB << nEncounterAtSink << endl;
 //	sink.close();
 //
-}
+//}
 
 bool CEpidemic::Operate(int currentTime)
 {
-	if( MAC_PROTOCOL == _hdc )
-		CHDC::Operate(currentTime);	
-	else
-		CSMac::Operate(currentTime);
-
-	if( ! CNode::hasNodes(currentTime) )
-		return false;
-
-	SendData(currentTime);
-
-	PrintInfo(currentTime);
+//	if( MAC_PROTOCOL == _hdc )
+//		CHDC::Operate(currentTime);	
+//	else
+//		CSMac::Operate(currentTime);
+//
+//	if( ! CNode::hasNodes(currentTime) )
+//		return false;
+//
+//	SendData(currentTime);
+//
+//	PrintInfo(currentTime);
 
 	return true;
 }

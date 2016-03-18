@@ -15,6 +15,8 @@ int CNode::encounterActive = 0;
 int CNode::encounter = 0;
 int CNode::visiterAtHotspot = 0;
 int CNode::visiterOnRoute = 0;
+int CNode::transmitSuccessful = 0;
+int CNode::transmit = 0;
 
 vector<CNode*> CNode::nodes;
 vector<int> CNode::idNodes;
@@ -28,7 +30,7 @@ int CNode::NUM_NODE_INIT = 0;
 int CNode::SLOT_TOTAL = 0;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
-int CNode:: DEFAULT_SLOT_WAIT = 0; 
+int CNode:: DEFAULT_SLOT_DISCOVER = 0; 
 
 double CNode::DEFAULT_DATA_RATE = 0;
 int CNode::DATA_SIZE = 0;
@@ -51,8 +53,7 @@ void CNode::init()
 {
 	generationRate = 0;
 	atHotspot = nullptr;
-	SLOT_LISTEN = 0;
-	SLOT_SLEEP = 0;
+	SLOT_DISCOVER = DEFAULT_SLOT_DISCOVER;
 	state = 0;
 	timeData = 0;
 	timeDeath = 0;
@@ -61,6 +62,8 @@ void CNode::init()
 	bufferSizeSum = 0;
 	bufferChangeCount = 0;
 	dutyCycle = DEFAULT_DUTY_CYCLE;
+	SLOT_LISTEN = dutyCycle * SLOT_TOTAL;
+	SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
 	energy = ENERGY;
 }
 
@@ -264,13 +267,13 @@ void CNode::resetDutyCycle()
 //	return package;
 //}
 
-CPackage CNode::sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime)
-{
-	CCtrl index(ID, deliveryPreds, updateSummaryVector(), currentTime, CTRL_SIZE, CCtrl::_index);
-	CPackage package( *this, *dst, index, datas);
-	energyConsumption += package.getSize() * CONSUMPTION_BYTE_SEND;
-	return package;
-}
+//CPackage CNode::sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime)
+//{
+//	CCtrl index(ID, deliveryPreds, updateSummaryVector(), currentTime, CTRL_SIZE, CCtrl::_index);
+//	CPackage package( *this, *dst, index, datas);
+//	energyConsumption += package.getSize() * CONSUMPTION_BYTE_SEND;
+//	return package;
+//}
 
 void CNode::checkDataByAck(vector<CData> ack)
 {
@@ -616,7 +619,7 @@ void CNode::decayDeliveryPreds(int currentTime)
 		deliveryPreds[ imap->first ] = imap->second * pow( DECAY_RATIO, ( currentTime - time ) / SLOT_MOBILITYMODEL );
 }
 
-// TODO: stop if at RTS slot / waken slot
+// TODO: check LISTEN cons calculation if *move
 bool CNode::updateStatus(int currentTime)
 {
 	if( time == currentTime )
@@ -629,26 +632,47 @@ bool CNode::updateStatus(int currentTime)
 	int timeSleep = 0;
 
 	//更新工作状态
-	state = ( state + SLOT_SLEEP + timeIncre ) % SLOT_TOTAL - SLOT_SLEEP;
+	int newState = ( state + SLOT_SLEEP + timeIncre ) % SLOT_TOTAL - SLOT_SLEEP;
+
+	//如果遇到邻居节点发现时槽，在此时槽上暂停
+	if( oldState < SLOT_DISCOVER
+		&& newState > SLOT_DISCOVER )
+	{
+		state = SLOT_DISCOVER;
+		timeIncre = SLOT_DISCOVER - oldState;
+		currentTime = time + timeIncre;
+	}
+	else
+		state = newState;
 
 	//计算监听和休眠能耗
 	timeListen += nCycle * SLOT_LISTEN;
 	if( oldState != state )
 	{
+		//  [			------------|=====>     ]
+
 		if( oldState <= 0 && state > 0 )
 			timeListen += state;
+
+		//  [				        |  =========]
+		//  [---------------->      |           ]
 
 		else if( oldState >= 0 && state <= 0 )
 			timeListen += SLOT_LISTEN - oldState;
 
+		//  [				        |  ===>     ]
+
 		else if( oldState > 0 && state > 0 && oldState < state )
 			timeListen += state - oldState;
+
+		//  [				        |      =====]
+		//  [-----------------------|==>       ]
 
 		else if( state > 0 && oldState > 0 && state < oldState )
 			timeListen += SLOT_LISTEN - ( oldState - state );
 	}
 	timeSleep = timeIncre - timeListen;
-	energyConsumption += timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP;
+	consumeEnergy( timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP );
 
 	//生成数据
 	generateData(currentTime);
@@ -782,7 +806,7 @@ void CNode::recordBufferStatus()
 //	return req;
 //}
 
-vector<CData> CNode::getDataByRequestList(vector<int> requestList) 
+vector<CData> CNode::getDataByRequestList(vector<int> requestList) const
 {
 	if( requestList.empty() )
 		return vector<CData>();

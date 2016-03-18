@@ -2,6 +2,7 @@
 #include "FileHelper.h"
 
 
+// TODO: add CTrace to avoid frequent file reading
 bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &location)
 {
 	FILE *file;

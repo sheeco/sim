@@ -12,7 +12,7 @@ public:
 	CSMac(){};
 	~CSMac(){};
 
-	static void DetectNeighborNode(CNode* node, int currentTime);
+//	static void DetectNeighborNode(CNode* node, int currentTime);
 
 	static bool Operate(int currentTime);
 

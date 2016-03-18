@@ -41,6 +41,9 @@ CPackage::~CPackage()
 void CPackage::init()
 {
 	this->macHeader = CMacProtocol::MAC_SIZE;
+	if( dst != nullptr
+		&& dst->getID() == -1 )
+		dst = nullptr;
 }
 
 int CPackage::getSize() const

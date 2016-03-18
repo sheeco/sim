@@ -9,8 +9,8 @@
 //{
 //}
 
-void CSMac::DetectNeighborNode(CNode* node, int currentTime)
-{
+//void CSMac::DetectNeighborNode(CNode* node, int currentTime)
+//{
 //	if( node->skipRTS() )
 //		return;
 //
@@ -21,7 +21,7 @@ void CSMac::DetectNeighborNode(CNode* node, int currentTime)
 //	{
 //		(*idst)->receiveRTS( rts );
 //	}
-}
+//}
 
 bool CSMac::Operate(int currentTime)
 {
@@ -29,11 +29,7 @@ bool CSMac::Operate(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
 
-//	for(vector<CNode*>::iterator inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-//	{
-//	}
-		
-	CMacProtocol::UpdateNodeStatus(currentTime);
+	TransmitData(currentTime);
 
 	return true;
 }

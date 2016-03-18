@@ -4,26 +4,13 @@
 #include "SortHelper.h"
 
 
-void CHDC::PrintInfo(int currentTime)
+CHDC::CHDC()
 {
-	CMacProtocol::PrintInfo(currentTime);
-
-	if( ! ( ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 
-		      && currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
-			|| currentTime == RUNTIME  ) )
-		return;
-
-	HAR::PrintHotspotInfo(currentTime);
+	
 }
 
-void CHDC::PrintFinal(int currentTime)
+CHDC::~CHDC()
 {
-	CMacProtocol::PrintFinal(currentTime);
-
-	ofstream debug(FILE_DEBUG, ios::app);
-	if( CRoutingProtocol::TEST_HOTSPOT_SIMILARITY )
-		debug << HAR::getAverageSimilarityRatio() << TAB ;
-	debug.close();
 	
 }
 
@@ -88,20 +75,41 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 
 }
 
+void CHDC::PrintInfo(int currentTime)
+{
+	CMacProtocol::PrintInfo(currentTime);
+
+	if( ! ( ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 
+		      && currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
+			|| currentTime == RUNTIME  ) )
+		return;
+
+	HAR::PrintHotspotInfo(currentTime);
+}
+
+void CHDC::PrintFinal(int currentTime)
+{
+	CMacProtocol::PrintFinal(currentTime);
+
+	ofstream debug(FILE_DEBUG, ios::app);
+	if( CRoutingProtocol::TEST_HOTSPOT_SIMILARITY )
+		debug << HAR::getAverageSimilarityRatio() << TAB ;
+	debug.close();
+	
+}
+
 bool CHDC::Operate(int currentTime)
 {
 	//Node Number Test:
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
 
-	// TODO: move update of state after update of dc
-	CMacProtocol::UpdateNodeStatus(currentTime);
-
 	HAR::HotspotSelection(currentTime);
 
-	//判断是否位于热点区域，更新占空比
-	if( MAC_PROTOCOL == _hdc )
-		UpdateDutyCycleForNodes(currentTime);
+	UpdateDutyCycleForNodes(currentTime);
+
+	TransmitData(currentTime);
 
 	return true;
 }
+

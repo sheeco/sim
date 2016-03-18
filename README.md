@@ -462,5 +462,12 @@
 ###### 2016-03-18  ·  *< 2.6.8 >*
 
 - ADD：将数据通信的操作整合到`CMacProtocol::broadcastPackage()`、`::transmitPackage()`；
-- ADD：将数据发送的响应流程整合到`CMacProtocol::receivePackage()`、`CProphet::bufferData()`，但暂时只实现了 Prophet 路由；
+- ADD：将数据发送的响应流程整合到`CMacProtocol::receivePackage()`，涉及到路由层的操作提交给相应路由类处理（暂时只实现了 Prophet 路由，`CProphet::bufferData()`和`::selectDataByIndex`）；
+
+
+###### 2016-03-18  ·  *< 3.0.0 >*  ·  *完善 MAC 层*
+
+- ADD：完成新定义的函数`CMacProtocol::broadcastPackage()`、`::transmitPackage()`、`::receivePackage()`、`CProphet::bufferData()`、`::selectDataByIndex`；
+- MOD：删除原有的`CRoutingProtocol::SendData()`系列实现；
+- NOTE：暂时只实现了 Prophet 路由，未测试；未重写 Epidemic 路由和 HAR 路由；
 - **TODO：** ADD：重写 Epidemic 路由和 HAR 路由的数据通信流程；

@@ -10,10 +10,9 @@ namespace global
 	int DATATIME = 0;
 	int RUNTIME = 0;
 	string DATASET;
-	int SLOT = 5;
-	// TODO: should be read from .trace file
-	int SLOT_MOBILITYMODEL = 30;
-	int SLOT_RECORD_INFO = 100;
+	int SLOT = 0;
+	int SLOT_MOBILITYMODEL = 0;
+	int SLOT_RECORD_INFO = 0;
 
 	string INFO_LOG;
 	string INFO_HELP = "\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
@@ -28,13 +27,15 @@ namespace global
 					   "<test>      -dynamic-node-number  -hotspot-similarity   -balanced-ratio \n\n" ;
 
 	string FILE_DEBUG = "debug.txt";
-	string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery	#Delay	#EnergyConsumption	(#NetworkTime)	(#EncounterAtHotspot)	#Log \n" ;
+	string INFO_DEBUG = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime #Node)	#Log \n" ;
+
+	string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot%	#EncounterAtHotspot	#EncounterActive%	#EncounterActive)	#Encounter	 \n" ;
+	string INFO_TRANSMIT = "#Time	(#TransmitSuccessful%	#TransmitSuccessful	#Transmit \n" ;
+	string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEC	(#SumEC	#NodeCount	#CurrentEnergy...) \n" ;
+	string INFO_SINK = "#Time	#EncounterAtSink \n";  // TODO: unprinted
 
 	string INFO_DELIVERY_RATIO = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio% \n" ;
 	string INFO_DELAY = "#Time	#AvgDelay \n" ;
-	string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEC	(#SumEC	#NodeCount	#CurrentEnergy...) \n" ;
-	string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot%	#EncounterAtHotspot	#EncounterActive%	#EncounterActive)	#Encounter	 \n" ;
-	string INFO_SINK = "#Time	#EncounterAtSink \n";
 	string INFO_BUFFER = "#Time	#BufferStateOfEachNode \n" ;
 	string INFO_BUFFER_STATISTICS =  "#Time	#AvgBufferStateInHistoryOfEachNode \n" ;
 

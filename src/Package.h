@@ -34,6 +34,10 @@ public:
 	{
 		return src;
 	}
+	inline CGeneralNode* getDestNode() const
+	{
+		return dst;
+	}
 	inline vector<CGeneralData*> getContent() const
 	{
 		return content;

@@ -9,8 +9,8 @@
 int CProphet::MAX_DATA_TRANS = 0;
 
 
-void CProphet::SendData(int currentTime)
-{
+//void CProphet::SendData(int currentTime)
+//{
 //	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 //		return;
 //	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
@@ -169,7 +169,11 @@ void CProphet::SendData(int currentTime)
 //	sink << currentTime << TAB << nEncounterAtSink << endl;
 //	sink.close();
 //
-}
+//}
+
+CProphet::CProphet() {}
+
+CProphet::~CProphet() {}
 
 vector<CData> CProphet::selectDataByIndex(CNode* node, CCtrl* ctrl)
 {
@@ -201,9 +205,7 @@ vector<CData> CProphet::bufferData(CNode* node, vector<CData> datas, int time)
 	for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); ++idata)
 		idata->arriveAnotherNode(time);
 
-	vector<CData> buffer = node->getAllData();
-	AddToListUniquely(buffer, datas);
-	node->setBuffer(buffer);
+	node->pushIntoBuffer(datas);
 	vector<CData> ack = datas;
 
 	vector<CData> overflow = node->updateBufferStatus(time);
@@ -215,15 +217,13 @@ vector<CData> CProphet::bufferData(CNode* node, vector<CData> datas, int time)
 
 bool CProphet::Operate(int currentTime)
 {
+	if( ! CNode::hasNodes(currentTime) )
+		return false;
+
 	if( MAC_PROTOCOL == _hdc )
 		CHDC::Operate(currentTime);	
 	else
 		CSMac::Operate(currentTime);
-
-	if( ! CNode::hasNodes(currentTime) )
-		return false;
-
-	SendData(currentTime);
 
 	PrintInfo(currentTime);
 

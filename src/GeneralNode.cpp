@@ -32,11 +32,11 @@ int CGeneralNode::CTRL_SIZE = 0;
 //	}
 //}
 
-CPackage CGeneralNode::sendRTS(int currentTime) 
+CPackage* CGeneralNode::sendRTS(int currentTime) 
 {
 	CCtrl rts(ID, currentTime, CTRL_SIZE, CCtrl::_rts);
-	CPackage package(*this, CGeneralNode(), rts);
-	energyConsumption += package.getSize() * CONSUMPTION_BYTE_SEND;
+	CPackage* package = new CPackage(*this, CGeneralNode(), rts);
+	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
 	return package;
 }
 
