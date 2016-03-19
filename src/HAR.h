@@ -101,7 +101,7 @@ public:
 	~HAR(){};
 
 
-	//用于最终debug结果的统计和记录
+	//用于最终final结果的统计和记录
 	static inline double getAverageHotspotCost()
 	{
 		if( HOTSPOT_COST_COUNT == 0 )

@@ -62,11 +62,11 @@ public:
 	//相遇计数：统计节点和 sink 的相遇
 	static void encount() 
 	{
-		encounter++;
+		++encounter;
 	}
 	static void encountActive() 
 	{
-		encounterActive++;
+		++encounterActive;
 	}
 
 	static int getEncounter() 

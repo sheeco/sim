@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <io.h>
 #include <afx.h>
 #include <iostream>
 #include <fstream>
@@ -9,6 +10,7 @@
 #include <vector>
 #include <cmath>
 #include <map>
+#include <direct.h>
 
 
 //Simple Macro Def
@@ -33,7 +35,9 @@ using std::ios;
 using std::cin;
 using std::cout;
 using std::endl;
+using std::fstream;
 using std::ofstream;
+using std::ifstream;
 using std::string;
 using std::vector;
 using std::map;
@@ -71,29 +75,55 @@ namespace global
 
 	// TODO: print info into different folders
 
+	extern string TIMESTAMP;
+	extern string PATH_TRACE;
+	extern string PATH_LOG;
+	extern string PATH_FINAL;
+
 	extern string INFO_LOG;
+	extern string FILE_PARAMETES;
+	extern string FILE_HELP;
 	extern string INFO_HELP;
+	extern string FILE_FINAL;
+	extern string INFO_FINAL;
 
-	extern string FILE_DEBUG;
-	extern string INFO_DEBUG;
-
+	extern string FILE_ENCOUNTER;
 	extern string INFO_ENCOUNTER;
+	extern string FILE_TRANSMIT;
 	extern string INFO_TRANSMIT;
+	extern string FILE_ENERGY_CONSUMPTION;
 	extern string INFO_ENERGY_CONSUMPTION;
+	extern string FILE_SINK;
 	extern string INFO_SINK;
 
-	extern string INFO_DELIVERY_RATIO;
+	extern string FILE_DELIVERY_RATIO_900;
+	extern string INFO_DELIVERY_RATIO_900;
+	extern string FILE_DELIVERY_RATIO_100;
+	extern string INFO_DELIVERY_RATIO_100;
+	extern string FILE_DELAY;
 	extern string INFO_DELAY;
+	extern string FILE_BUFFER;
 	extern string INFO_BUFFER;
+	extern string FILE_BUFFER_STATISTICS;
 	extern string INFO_BUFFER_STATISTICS;
 
+	extern string FILE_HOTSPOT;
 	extern string INFO_HOTSPOT;
+	extern string FILE_HOTSPOT_SIMILARITY;
+	extern string INFO_HOTSPOT_SIMILARITY;
+	extern string FILE_AT_HOTSPOT;
 	extern string INFO_AT_HOTSPOT;
+	extern string FILE_HOTSPOT_STATISTICS;
 	extern string INFO_HOTSPOT_STATISTICS;
+	extern string FILE_MERGE;
 	extern string INFO_MERGE;
+	extern string FILE_MERGE_DETAILS;
 	extern string INFO_MERGE_DETAILS;
+	extern string FILE_MA;
 	extern string INFO_MA;
+	extern string FILE_BUFFER_MA;
 	extern string INFO_BUFFER_MA;
+	extern string FILE_ED;
 	extern string INFO_ED;
 
 
@@ -101,10 +131,81 @@ namespace global
 
 	inline void Exit(int code)
 	{
-		ofstream debug(FILE_DEBUG, ios::app);
-		debug << INFO_LOG;	
-		debug.close();
+		time_t seconds;  //秒时间  
+		char temp_time[65];
+		seconds = time(nullptr); //获取目前秒时间  
+		strftime(temp_time, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));  
+		string finalTime(temp_time);
+
+		if( code == 0 )
+		{
+			ifstream finalInput(PATH_LOG + FILE_FINAL, ios::in);
+			if( finalInput.is_open()
+				&& ( ! finalInput.eof() ) )
+			{
+				// Copy final file to father folder
+
+				ofstream copy(PATH_FINAL + FILE_FINAL, ios::app);
+				char temp[101] = {'\0'};
+				copy.seekp(0, ios::end);
+				if( ! copy.tellp() )
+				{
+					copy << INFO_FINAL << endl;
+				}
+				finalInput.getline(temp, 100);  //skip head line
+				finalInput.getline(temp, 100);
+				string finalInfo(temp);
+				copy << finalInfo << INFO_LOG << TAB << "@" << finalTime << endl;
+				copy.close();
+			}			
+		}
+
+		// Print final time
+
+		if( code >= 0 )
+		{
+			fstream final( PATH_LOG + FILE_FINAL, ios::app | ios::in);
+			final << INFO_LOG << TAB << "@" << finalTime << endl;	
+			final.close();
+		}
+		if( code == 0 )
+		{
+			// Remove name prefix '.' in front of log folder
+
+			if( _access( PATH_LOG.c_str(), 02 ) == 0 )  //if writeable
+			{
+				string path = PATH_LOG.substr( 0, PATH_LOG.rfind("/"));
+				string name = PATH_LOG.substr( PATH_LOG.rfind("/") + 1, PATH_LOG.npos);
+				if( name.find(".") != name.npos )  //if '.' found in filename
+				{
+					name.erase( name.find(".") , 1);
+					string newPath = path + name;
+					if( _access( newPath.c_str(), 00 ) != 0 )  //if no collision
+					{
+						rename(PATH_LOG.c_str(), newPath.c_str());
+						PATH_LOG = newPath;
+					}
+				}
+			}
+
+			// Unhide folder
+			LPWSTR wstr = CString( PATH_LOG.c_str()).AllocSysString();
+			int attr = GetFileAttributes( wstr );
+			if ( (attr & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN )
+			{
+				SetFileAttributes(wstr, attr & ~FILE_ATTRIBUTE_HIDDEN);
+			}
+		}
+
 		exit(code);
+	}
+
+	// TODO: 
+	inline void Exit(int code, string error)
+	{
+		ofstream errorFile;
+
+		Exit(code);
 	}
 
 	// TODO: find all refs & replace with Bet()
@@ -152,7 +253,7 @@ namespace global
 		if(size > (max - min))
 		{
 			vector<int> temp_order;
-			for(int i = min; i < max; i++)
+			for(int i = min; i < max; ++i)
 			{
 				temp_order.push_back(i);
 			}
@@ -174,13 +275,13 @@ namespace global
 			return result;
 		}
 
-		for(int i = 0; i < size; i++)
+		for(int i = 0; i < size; ++i)
 		{
 			do
 			{
 				duplicate = false;
 				temp = RandomInt(min, max);
-				for(int j = 0; j < result.size(); j++)
+				for(int j = 0; j < result.size(); ++j)
 				{
 					if(result[j] == temp)
 					{

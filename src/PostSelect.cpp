@@ -67,7 +67,7 @@ CHotspot* CPostSelect::findBestHotspotForNode(int inode)
 		for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 		{
 			if((*ipos)->getNode() == inode)
-				coverCount++;
+				++coverCount;
 		}
 		if(coverCount > maxCoverCount)
 		{

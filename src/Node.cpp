@@ -85,7 +85,7 @@ CNode::~CNode()
 void CNode::initNodes() {
 	if( nodes.empty() && deadNodes.empty() )
 	{
-		for(int i = 0; i < NUM_NODE_INIT; i++)
+		for(int i = 0; i < NUM_NODE_INIT; ++i)
 		{
 			double generationRate = DEFAULT_DATA_RATE;
 			if(i % 5 == 0)
@@ -223,7 +223,7 @@ CNode* CNode::getNodeByID(int id)
 double CNode::getSumEnergyConsumption() 
 {
 	double sumEnergyConsumption = 0;
-	auto allNodes = CNode::getAllNodes(false);
+	auto allNodes = getAllNodes(false);
 	for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 		sumEnergyConsumption += (*inode)->getEnergyConsumption();
 	return sumEnergyConsumption;
@@ -547,7 +547,7 @@ void CNode::newNodes(int n)
 {
 	//优先恢复之前被删除的节点
 	// TODO: 恢复时重新充满能量？
-	for(int i = nodes.size(); i < nodes.size() + n; i++)
+	for(int i = nodes.size(); i < nodes.size() + n; ++i)
 	{
 		if( deletedNodes.empty() )
 			break;
@@ -557,7 +557,7 @@ void CNode::newNodes(int n)
 		--n;
 	}
 	//如果仍不足数，构造新的节点
-	for(int i = nodes.size(); i < nodes.size() + n; i++)
+	for(int i = nodes.size(); i < nodes.size() + n; ++i)
 	{
 		double generationRate = DEFAULT_DATA_RATE;
 		if(i % 5 == 0)
@@ -606,7 +606,7 @@ void CNode::initDeliveryPreds()
 	if( ! deliveryPreds.empty() )
 		return;
 
-	for(int id = 0; id <= nodes.size(); id++)
+	for(int id = 0; id <= nodes.size(); ++id)
 	{
 		if( id != ID )
 			deliveryPreds[id] = INIT_DELIVERY_PRED;
@@ -615,6 +615,7 @@ void CNode::initDeliveryPreds()
 
 void CNode::decayDeliveryPreds(int currentTime) 
 {
+	// TODO: refine decay ratio ?
 	for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap)
 		deliveryPreds[ imap->first ] = imap->second * pow( DECAY_RATIO, ( currentTime - time ) / SLOT_MOBILITYMODEL );
 }
@@ -675,11 +676,13 @@ bool CNode::updateStatus(int currentTime)
 	consumeEnergy( timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP );
 
 	//生成数据
-	generateData(currentTime);
+	if( currentTime <= DATATIME )
+		generateData(currentTime);
 
 
 	/**************************************  Prophet  *************************************/
-	if( ROUTING_PROTOCOL == _prophet )
+	if( ROUTING_PROTOCOL == _prophet 
+		&& (currentTime % SLOT_MOBILITYMODEL) == 0 )
 		decayDeliveryPreds(currentTime);
 
 	//更新坐标
@@ -704,8 +707,11 @@ bool CNode::isListening() const
 
 void CNode::recordBufferStatus() 
 {
+	if( timeDeath > 0 )
+		return;
+
 	bufferSizeSum += buffer.size();
-	bufferChangeCount++;
+	++bufferChangeCount;
 }
 
 //vector<CData> CNode::sendAllData(_SEND mode) 
@@ -784,7 +790,7 @@ void CNode::recordBufferStatus()
 //		{
 //			if( CData::getNodeByMask( *id ) != this->ID )
 //			{
-//				count++;
+//				++count;
 //				++id;
 //			}
 //		}

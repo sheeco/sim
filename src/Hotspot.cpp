@@ -90,7 +90,7 @@ int CHotspot::getNCoveredPositionsForNode(int inode)
 	for(vector<CPosition *>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
 	{
 		if((*ipos)->getNode() == inode)
-			count++;
+			++count;
 	}
 	return count;
 }

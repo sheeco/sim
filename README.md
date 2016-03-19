@@ -3,7 +3,7 @@
 
 
 
-### debug.txt
+### final.txt
 
     #DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Period	#DefaultDC	
 	(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log
@@ -471,3 +471,17 @@
 - MOD：删除原有的`CRoutingProtocol::SendData()`系列实现；
 - NOTE：暂时只实现了 Prophet 路由，未测试；未重写 Epidemic 路由和 HAR 路由；
 - **TODO：** ADD：重写 Epidemic 路由和 HAR 路由的数据通信流程；
+
+
+###### 2016-03-18  ·  *< 3.1.0 >*
+
+- RFCT：添加`FILE_xxx`和`PATH_xxx`系列全局变量，易于管理和更改；
+- ADD：将输出文件的后缀改为`.log`，不同运行结果将放入标注时间戳的不同文件夹下（如`../test/.xxxx-xx-xx xx:xx:xx`），运行完成之后去除`.`前缀；
+- MOD：最终的输出文件由`debug.txt`更名为`final.txt`，并拷贝到父文件夹中（仅当正常运行完成退出时）；
+- ADD：对所有的退出标记不同的代码，代码 0 为正常运行完成退出，小于 0 为未开始运行的直接退出，大于 0 为错误代码；
+- FIX：初步测试新的 MAC 层函数，修复一些小错误；
+- OPT：替换掉所有不必要的前置递加操作符`++var`；
+- **BUG：**`final.txt`拷贝到父文件夹出错；
+- **BUG：**输出文件夹重命名失败；
+- **TODO：** ADD：重新添加所有的控制台输出；
+- **TODO：** ADD：将出错信息输出到文件；当文件夹为空时删除文件夹？；

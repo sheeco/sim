@@ -28,7 +28,7 @@ CGeneralNode::_RECEIVE CMANode::RECEIVE_MODE = _selfish;
 //		if(datas.size() + buffer.size() > BUFFER_CAPACITY)
 //			num = BUFFER_CAPACITY - buffer.size();
 //	}
-//	for(int i = 0; i < num; i++)
+//	for(int i = 0; i < num; ++i)
 //	{
 //		if(buffer.size() == BUFFER_CAPACITY)
 //			buffer.erase(buffer.begin());  //如果buffer已满，删除最早的一个Data

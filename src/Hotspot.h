@@ -79,7 +79,7 @@ private:
 		this->generateID();
 
 		//重置flag
-		for(int i = 0; i < CPosition::nPositions; i++)
+		for(int i = 0; i < CPosition::nPositions; ++i)
 			CPosition::positions[i]->setFlag(false);
 
 		bool modified;
@@ -88,7 +88,7 @@ private:
 		{
 			modified = false;
 			//对新的hotspot重心，再次遍历position
-			for(int i = 0; i < CPosition::nPositions; i++)
+			for(int i = 0; i < CPosition::nPositions; ++i)
 			{
 				if(CPosition::positions[i]->getFlag())
 					continue;
@@ -283,7 +283,7 @@ public:
 	//自动生成ID，需手动调用，为了确保热点ID的唯一性，制作临时拷贝时不应调用此函数
 	inline void generateID()
 	{
-		ID_COUNT++;
+		++ID_COUNT;
 		this->ID = ID_COUNT;
 	}
 

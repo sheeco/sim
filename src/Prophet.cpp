@@ -15,10 +15,10 @@ int CProphet::MAX_DATA_TRANS = 0;
 //		return;
 //	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 //
-//	ofstream sink("sink.txt", ios::app);
+//	ofstream sink( PATH_LOG + FILE_SINK, ios::app);
 //	if(currentTime == 0)
 //	{
-//		sink << INFO_LOG ;
+//		sink << INFO_LOG << endl ;
 //		sink << INFO_SINK ;
 //	}
 //
@@ -46,7 +46,7 @@ int CProphet::MAX_DATA_TRANS = 0;
 //				flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
 //				CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
 //				(*inode)->updateDeliveryPredsWithSink();
-//				nEncounterAtSink++;
+//				++nEncounterAtSink;
 //			}
 //		}
 //

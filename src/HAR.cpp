@@ -47,7 +47,7 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 	int nCoveredNodes = hotspot->getNCoveredNodes();
 	double sum_generationRate = 0;
 	vector<int> coveredNodes = hotspot->getCoveredNodes();
-	for(int i = 0; i < coveredNodes.size(); i++)
+	for(int i = 0; i < coveredNodes.size(); ++i)
 	{
 		if( ! CNode::ifNodeExists( coveredNodes[i] ) )
 		{
@@ -69,7 +69,7 @@ double HAR::getWaitingTime(int currentTime, CHotspot *hotspot)
 	vector<int> coveredNodes = hotspot->getCoveredNodes();
 	vector<int> nCoveredPositionsForNode;
 
-	for(int i = 0; i < coveredNodes.size(); i++)
+	for(int i = 0; i < coveredNodes.size(); ++i)
 	{
 		int temp_time = currentTime;
 		double temp;
@@ -89,7 +89,7 @@ double HAR::getWaitingTime(int currentTime, CHotspot *hotspot)
 		if(temp >= BETA)
 		{
 			result *= temp;
-			count_trueHotspot++;
+			++count_trueHotspot;
 		}
 	}
 	//FIXME: 如果不是true hotspot，waiting time为0
@@ -105,7 +105,7 @@ double HAR::getWaitingTime(int currentTime, CHotspot *hotspot)
 double HAR::getSumGenerationRate(vector<int> nodes)
 {
 	double sum = 0;
-	for(int i = 0; i < nodes.size(); i++)
+	for(int i = 0; i < nodes.size(); ++i)
 	{
 		if( ! CNode::ifNodeExists( nodes[i] ) )
 			continue;
@@ -272,11 +272,11 @@ void HAR::HotspotClassification(int currentTime)
 			double ratio = 0;
 			int size_waypoints = route.getNWayPoints();
 			//遍历所有剩余hotspot，选择ratio最大的hotspot添加
-			for(int ihotspot = 0; ihotspot < temp_hotspots.size(); ihotspot++)
+			for(int ihotspot = 0; ihotspot < temp_hotspots.size(); ++ihotspot)
 			{
 				double min_length_increment = -1;
 				double best_front = -1;
-				for(int i = 0; i < size_waypoints; i++)  //先寻找最小路径增量？？
+				for(int i = 0; i < size_waypoints; ++i)  //先寻找最小路径增量？？
 				{
 					double length_increment = route.getAddingDistance(i, temp_hotspots[ihotspot]);
 					if(length_increment < min_length_increment
@@ -354,7 +354,7 @@ void HAR::MANodeRouteDesign(int currentTime)
 	if(CMANode::getMANodes().size() < routes.size())
 	{
 		int num_newMANodes = routes.size() - CMANode::getMANodes().size();
-		for(int i = 0; i < num_newMANodes; i++)
+		for(int i = 0; i < num_newMANodes; ++i)
 		{
 			CMANode::newMANode(CSink::getSink()->popRoute(), currentTime);
 		}
@@ -375,32 +375,32 @@ void HAR::MANodeRouteDesign(int currentTime)
 //	ofstream waiting_time("waiting-time.txt", ios::app);
 //	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
 //	{
-//		waiting_time << endl << INFO_LOG;
+//		waiting_time << endl << INFO_LOG << endl ;
 //		waiting_time << "#Time" << TAB << "#MANodeID" << TAB << "#HotspotID" << TAB << "#HotspotType/HotspotAge" << TAB 
 //					 << "#Cover" << TAB << "#Heat" << TAB << "#WaitingTime" << endl;
 //	}
 //	waiting_time.close();
-//	ofstream delivery_hotspot("delivery-hotspot.txt", ios::app);
+//	ofstream delivery_hotspot( PATH_LOG + FILE_DELIVERY_HOTSPOT, ios::app);
 //	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
 //	{
-//		delivery_hotspot << endl << INFO_LOG;
-//		delivery_hotspot << "#Time" << TAB << "#DeliveryCountForSingleHotspotInThisSlot ..." << endl;
+//		delivery_hotspot << endl << INFO_LOG << endl ;
+//		delivery_hotspot << INFO_DELIVERY_HOTSPOT ;
 //	}
 //	//用于存储hotspot及其投递计数的静态拷贝
 //	//由于输出相关信息时（900s时的热点将在2700s时被输出）该热点的全局唯一指针已经被释放，所以存储的是该热点的浅拷贝，不能用于其他用途，否则将影响热点记录的唯一性
 //	static vector<CHotspot> deliveryCounts;  
-//	ofstream delivery_statistics("delivery-statistics.txt", ios::app);
+//	ofstream delivery_statistics( PATH_LOG + FILE_DELIVERY_STATISTICS, ios::app);
 //	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
 //	{
-//		delivery_statistics << endl << INFO_LOG;
-//		delivery_statistics << "#Time" << TAB << "#DeliveryAtHotspotCount" << TAB << "#DeliveryTotalCount" << TAB << "#DeliveryAtHotspotPercent" << endl;
+//		delivery_statistics << endl << INFO_LOG << endl ;
+//		delivery_statistics << INFO_DELIVERY_STATISTICS ;
 //	}
 //	//用于测试投递计数为0的热点信息，按照投递计数降序输出所有热点的覆盖的position数、node数、ratio、投递计数
-//	ofstream hotspot_rank("hotspot-rank.txt", ios::app);
+//	ofstream hotspot_rank( PATH_LOG + FILE_HOTSPOT_RANK, ios::app);
 //	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
 //	{
-//		hotspot_rank << endl << INFO_LOG;
-//		hotspot_rank << "#WorkTime" << TAB << "#ID" << TAB << "#Location" << TAB << "#nPosition, nNode" << TAB << "#Ratio" << TAB << "#Tw" << TAB << "#DeliveryCount" << endl;
+//		hotspot_rank << endl << INFO_LOG << endl ;
+//		hotspot_rank << INFO_HOTSPOT_RANK ;
 //	}
 //	//用于统计过期热点的投递计数时判断是否应当输出时间
 //	static bool hasMoreNewRoutes = false;
@@ -593,20 +593,20 @@ void HAR::PrintHotspotInfo(int currentTime)
 		return;
 	
 	//热点个数
-	ofstream hotspot("hotspot.txt", ios::app);
+	ofstream hotspot( PATH_LOG + FILE_HOTSPOT, ios::app);
 	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
 	{
-		hotspot << endl << INFO_LOG ;
+		hotspot << endl << INFO_LOG << endl ;
 		hotspot << INFO_HOTSPOT ;
 	}
 	hotspot << currentTime << TAB << CHotspot::selectedHotspots.size() << endl; 
 	hotspot.close();
 
 	//节点在热点内的百分比（从热点选取开始时开始统计）
-	ofstream at_hotspot("at-hotspot.txt", ios::app);
+	ofstream at_hotspot( PATH_LOG + FILE_AT_HOTSPOT, ios::app);
 	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
 	{
-		at_hotspot << endl << INFO_LOG ; 
+		at_hotspot << endl << INFO_LOG << endl ; 
 		at_hotspot << INFO_AT_HOTSPOT ;
 	}
 	at_hotspot << currentTime << TAB << CNode::getVisiterAtHotspot() << TAB << CNode::getVisiter() << TAB << CNode::getVisiterAtHotspotPercent() << endl;
@@ -637,13 +637,13 @@ void HAR::PrintInfo(int currentTime)
 
 	//用于计算热点个数历史平均值
 	HOTSPOT_COST_SUM += m_hotspots.size();
-	HOTSPOT_COST_COUNT++;
+	++HOTSPOT_COST_COUNT;
 
 	//热点质量统计信息
-	ofstream hotspot_statistics("hotspot-statistics.txt", ios::app);
+	ofstream hotspot_statistics( PATH_LOG + FILE_HOTSPOT_STATISTICS, ios::app);
 	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
 	{
-		hotspot_statistics << endl << INFO_LOG ;
+		hotspot_statistics << endl << INFO_LOG << endl ;
 		hotspot_statistics << INFO_HOTSPOT_STATISTICS ;
 	}
 	int sumCover = 0;
@@ -660,14 +660,14 @@ void HAR::PrintInfo(int currentTime)
 			int mergeCount = 0;
 			int oldCount = 0;
 			int newCount = 0;
-			ofstream merge("merge.txt", ios::app);
-			ofstream merge_details("merge-details.txt", ios::app);
+			ofstream merge( PATH_LOG + FILE_MERGE, ios::app);
+			ofstream merge_details( PATH_LOG + FILE_MERGE_DETAILS, ios::app);
 
 			if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
 			{
-				merge << endl << INFO_LOG ;
+				merge << endl << INFO_LOG << endl ;
 				merge << INFO_MERGE ;
-				merge_details << endl << INFO_LOG ;
+				merge_details << endl << INFO_LOG << endl ;
 				merge_details << INFO_MERGE_DETAILS ;
 			}
 			merge_details << currentTime << TAB;
@@ -678,17 +678,17 @@ void HAR::PrintInfo(int currentTime)
 				if( (*ihotspot)->getCandidateType() == CHotspot::_merge_hotspot )
 				{
 					merge_details << "M/" << (*ihotspot)->getAge() << TAB;
-					mergeCount++;
+					++mergeCount;
 				}
 				else if( (*ihotspot)->getCandidateType() == CHotspot::_old_hotspot )
 				{
 					merge_details << "O/" << (*ihotspot)->getAge() << TAB;
-					oldCount++;
+					++oldCount;
 				}
 				else
 				{
 					merge_details << "N/" << (*ihotspot)->getAge() << TAB;
-					newCount++;
+					++newCount;
 				}
 			}
 
@@ -699,9 +699,9 @@ void HAR::PrintInfo(int currentTime)
 
 			//用于计算归并热点和旧热点所占比例的历史平均值信息
 			MERGE_PERCENT_SUM += double( mergeCount ) / double( total );
-			MERGE_PERCENT_COUNT++;
+			++MERGE_PERCENT_COUNT;
 			OLD_PERCENT_SUM += double( oldCount ) / double( total );
-			OLD_PERCENT_COUNT++;
+			++OLD_PERCENT_COUNT;
 
 			merge.close();
 			merge_details.close();
@@ -709,10 +709,10 @@ void HAR::PrintInfo(int currentTime)
 	}
 
 	//MA节点个数
-	ofstream ma("ma.txt", ios::app);
+	ofstream ma( PATH_LOG + FILE_MA, ios::app);
 	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
 	{
-		ma << endl << INFO_LOG ;
+		ma << endl << INFO_LOG << endl ;
 		ma << INFO_MA ;
 	}
 	ma << currentTime << TAB << m_routes.size() << TAB << ( double( m_hotspots.size() ) / double( m_routes.size() ) ) << endl;
@@ -720,16 +720,16 @@ void HAR::PrintInfo(int currentTime)
 
 	//用于计算MA节点个数的历史平均值信息
 	MA_COST_SUM += m_routes.size();
-	MA_COST_COUNT++;
+	++MA_COST_COUNT;
 	//用于计算MA路点（热点）平均个数的历史平均值信息
 	MA_WAYPOINT_SUM += double( m_hotspots.size() ) / double( m_routes.size() );
-	MA_WAYPOINT_COUNT++;
+	++MA_WAYPOINT_COUNT;
 
 	//ED即平均投递延迟的理论值
-	ofstream ed("ed.txt", ios::app);
+	ofstream ed( PATH_LOG + FILE_ED, ios::app);
 	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
 	{
-		ed << endl << INFO_LOG ;
+		ed << endl << INFO_LOG << endl ;
 		ed << INFO_ED ;
 	}
 	ed << currentTime << TAB << calculateEDTime(currentTime) << endl;
@@ -740,10 +740,10 @@ void HAR::PrintInfo(int currentTime)
 	if( currentTime % SLOT_RECORD_INFO == 0 )
 	{
 		//每个MA的当前buffer状态
-		ofstream buffer_ma("buffer-ma.txt", ios::app);
+		ofstream buffer_ma( PATH_LOG + FILE_BUFFER_MA, ios::app);
 		if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
 		{
-			buffer_ma << endl << INFO_LOG ;
+			buffer_ma << endl << INFO_LOG << endl ;
 			buffer_ma << INFO_BUFFER_MA ;
 		}
 		buffer_ma << currentTime << TAB;
@@ -760,15 +760,15 @@ void HAR::PrintFinal(int currentTime)
 {
 	CRoutingProtocol::PrintFinal(currentTime);
 
-	//最终debug输出（补充）
-	ofstream debug(FILE_DEBUG, ios::app);
-	debug << getAverageMACost() << TAB ;
-	debug << CData::getDeliveryAtHotspotPercent() << TAB ;
+	//最终final输出（补充）
+	ofstream final( PATH_LOG + FILE_FINAL, ios::app);
+	final << getAverageMACost() << TAB ;
+	final << CData::getDeliveryAtHotspotPercent() << TAB ;
 	if( HOTSPOT_SELECT == _merge )
-		debug << getAverageMergePercent() << TAB << getAverageOldPercent() << TAB ;
+		final << getAverageMergePercent() << TAB << getAverageOldPercent() << TAB ;
 	if( TEST_HOTSPOT_SIMILARITY )
-		debug << getAverageSimilarityRatio() << TAB ;
-	debug.close();
+		final << getAverageSimilarityRatio() << TAB ;
+	final.close();
 	
 }
 
@@ -781,12 +781,11 @@ void HAR::CompareWithOldHotspots(int currentTime)
 	double oldArea = CHotspot::oldSelectedHotspots.size() * AreaCircle(CGeneralNode::TRANS_RANGE) - CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots);
 	double newArea = CHotspot::selectedHotspots.size() * AreaCircle(CGeneralNode::TRANS_RANGE) - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
 
-	ofstream similarity("similarity.txt", ios::app);
+	ofstream similarity( PATH_LOG + FILE_HOTSPOT_SIMILARITY, ios::app);
 	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START + CHotspot::SLOT_HOTSPOT_UPDATE )
 	{
-		similarity << INFO_LOG;
-		similarity << "#Time" << TAB << "#Overlap/Old" << TAB << "#Overlap/New" << TAB
-				   << "#OverlapArea" << TAB << "#OldArea" << TAB << "#NewArea" << endl;
+		similarity << endl << endl << INFO_LOG << endl ;
+		similarity << INFO_HOTSPOT_SIMILARITY;
 	}
 	similarity << currentTime << TAB << ( overlapArea / oldArea ) << TAB << ( overlapArea / newArea ) << TAB
 			   << overlapArea << TAB << oldArea << TAB << newArea << endl;
@@ -794,7 +793,7 @@ void HAR::CompareWithOldHotspots(int currentTime)
 
 	//用于计算最终选取出的热点的前后相似度的历史平均值信息
 	SIMILARITY_RATIO_SUM += overlapArea / oldArea;
-	SIMILARITY_RATIO_COUNT++;
+	++SIMILARITY_RATIO_COUNT;
 }
 
 //void HAR::DecayPositionsWithoutDeliveryCount(int currentTime)

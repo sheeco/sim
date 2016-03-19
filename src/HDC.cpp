@@ -91,10 +91,10 @@ void CHDC::PrintFinal(int currentTime)
 {
 	CMacProtocol::PrintFinal(currentTime);
 
-	ofstream debug(FILE_DEBUG, ios::app);
+	ofstream final( PATH_LOG + FILE_FINAL, ios::app);
 	if( CRoutingProtocol::TEST_HOTSPOT_SIMILARITY )
-		debug << HAR::getAverageSimilarityRatio() << TAB ;
-	debug.close();
+		final << HAR::getAverageSimilarityRatio() << TAB ;
+	final.close();
 	
 }
 

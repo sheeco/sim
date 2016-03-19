@@ -36,7 +36,7 @@ private:
 
 	CData()
 	{
-		init();
+		CData::init();
 	};
 
 	void init() override
@@ -50,7 +50,7 @@ private:
 	//ID = node_id * 10 000 000 + data_counter ，用于在SV中识别Data来源
 	inline void generateID()
 	{
-		ID_COUNT++;
+		++ID_COUNT;
 		this->ID = node * ID_MASK + ID_COUNT;
 	}
 
@@ -64,7 +64,7 @@ public:
 
 	CData(int node, int timeBirth, int byte)
 	{
-		init();
+		CData::init();
 		this->node = node;
 		this->time = this->timeBirth = timeBirth;
 		this->size = byte;
@@ -137,17 +137,18 @@ public:
 	{
 		this->timeArrival = timeArrival;
 		this->time = timeArrival;
-		ARRIVAL_COUNT++;
+		++ARRIVAL_COUNT;
 		DELAY_SUM += timeArrival - timeBirth;
 	}
 
+	// TODO: call this func when receiving anything
 	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
 	//注意：数据发送方应在发送之前检查剩余HOP大于1
-	inline void arriveAnotherNode(int currentTime)
+	inline void arriveAnotherNode(int currentTime) override
 	{
-		if( useHOP() )
-			this->HOP--;
-		else
+		CGeneralData::arriveAnotherNode(currentTime);
+
+		if( useTTL() )
 			this->TTL -= ( currentTime - time );
 		this->time = currentTime;
 	}

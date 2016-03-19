@@ -42,30 +42,30 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		|| currentTime == RUNTIME )
 	{
 		//数据投递率-900（用于debug）
-		ofstream delivery_ratio("delivery-ratio-900.txt", ios::app);
+		ofstream delivery_ratio( PATH_LOG + FILE_DELIVERY_RATIO_900, ios::app);
 		if(currentTime == 0)
 		{
-			delivery_ratio << INFO_LOG ;
-			delivery_ratio << INFO_DELIVERY_RATIO ;
+			delivery_ratio << endl << INFO_LOG << endl ;
+			delivery_ratio << INFO_DELIVERY_RATIO_900 ;
 		}
 		delivery_ratio << currentTime << TAB << CData::getDeliveryCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		//数据投递延迟
-		ofstream delay("delay.txt", ios::app);
+		ofstream delay( PATH_LOG + FILE_DELAY, ios::app);
 		if(currentTime == 0)
 		{
-			delay << INFO_LOG ;
+			delay << endl << INFO_LOG << endl ;
 			delay << INFO_DELAY ;
 		}
 		delay << currentTime << TAB << CData::getAverageDelay() << endl;
 		delay.close();
 
 		//每个节点buffer状态的历史平均值
-		ofstream buffer("buffer-node-statistics.txt", ios::app);
+		ofstream buffer( PATH_LOG + FILE_BUFFER_STATISTICS, ios::app);
 		if(currentTime == 0)
 		{
-			buffer << INFO_LOG ;
+			buffer << endl << INFO_LOG << endl ;
 			buffer << INFO_BUFFER_STATISTICS ;
 		}
 		buffer << currentTime << TAB;
@@ -87,20 +87,20 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		|| currentTime == RUNTIME)
 	{
 		//数据投递率-100（用于绘制曲线）
-		ofstream delivery_ratio("delivery-ratio-100.txt", ios::app);
+		ofstream delivery_ratio( PATH_LOG + FILE_DELIVERY_RATIO_100, ios::app);
 		if(currentTime == 0)
 		{
-			delivery_ratio << INFO_LOG;
-			delivery_ratio << INFO_DELIVERY_RATIO ;
+			delivery_ratio << endl << INFO_LOG << endl ;
+			delivery_ratio << INFO_DELIVERY_RATIO_100 ;
 		}
 		delivery_ratio << currentTime << TAB << CData::getDeliveryCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		//每个节点的当前buffer状态
-		ofstream buffer("buffer-node.txt", ios::app);
+		ofstream buffer( PATH_LOG + FILE_BUFFER, ios::app);
 		if(currentTime == 0)
 		{
-			buffer << INFO_LOG ;
+			buffer << endl << INFO_LOG << endl ;
 			buffer << INFO_BUFFER ;
 		}
 		buffer << currentTime << TAB;
@@ -111,6 +111,8 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 				buffer << "-" << TAB ;
 			else
 				buffer << (*inode)->getBufferSize() << "  " ;
+
+			(*inode)->recordBufferStatus();
 		}
 		buffer << endl;
 		buffer.close();
@@ -121,13 +123,13 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 
 void CRoutingProtocol::PrintFinal(int currentTime)
 {
-	ofstream debug(FILE_DEBUG, ios::app);
+	ofstream final( PATH_LOG + FILE_FINAL, ios::app);
 	if( CNode::finiteEnergy() )
-		debug << CData::getDeliveryCount() << TAB ;
+		final << CData::getDeliveryCount() << TAB ;
 	else
-		debug << CData::getDeliveryRatio() << TAB ;
-	debug << CData::getAverageDelay() << TAB ;
-	debug.close();
+		final << CData::getDeliveryRatio() << TAB ;
+	final << CData::getAverageDelay() << TAB ;
+	final.close();
 
 	switch( MAC_PROTOCOL )
 	{

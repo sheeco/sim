@@ -6,7 +6,7 @@
 bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &location)
 {
 	FILE *file;
-	char filename[20] = {'\0'};
+	char buffer[20] = {'\0'};
 	double temp_time = 0;
 	double temp_x = 0;
 	double temp_y = 0;
@@ -15,15 +15,15 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 	{
 		// TODO: 改为 .trace 文件
 		// TODO: 文件第一行读取 SLOT_MOBILITY
-		sprintf(filename, "%d.trace", nodeID);  //新的 location 文件，将 time 和坐标信息都包含在内
-		string filepath = "../res/" + DATASET + "/" + filename;  //.exe 文件必须在 bin/ 文件夹下
-		file = fopen(filepath.c_str(),"rb");
+		sprintf(buffer, "%d.trace", nodeID);  //新的 location 文件，将 time 和坐标信息都包含在内
+		string filepath = PATH_TRACE + DATASET + "/" + buffer;  //.exe 文件必须在 bin/ 文件夹下
 
+		file = fopen(filepath.c_str(),"rb");
 		if( file == nullptr)
 		{
-			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << nodeID << ".trace\" ! " << endl;
+			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << filepath << "\" ! " << endl;
 			_PAUSE_;
-			Exit(-1);
+			Exit(2);
 		}
 		while( ! feof( file ) )
 		{
@@ -42,9 +42,9 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 //				RUNTIME = time;
 //				CRoutingProtocol::PrintFinal(time);
 			}
-//			debug.close();
+//			final.close();
 //			_ALERT_;
-//			Exit(time - SLOT_MOBILITYMODEL);
+//			Exit(2);
 		}
 		//取得坐标
 		location.setX(temp_x);
@@ -111,7 +111,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 //				hotspot = new CHotspot();
 //				hotspot->setID(temp_id);
 //				hotspot->setLocation(temp_x, temp_y, temp_time);
-//				for(int i = 0; i < temp_n_position; i++)
+//				for(int i = 0; i < temp_n_position; ++i)
 //				{
 //					file >> temp_position_id;
 //					CPosition *position = findPositionByID(positions, temp_n_position);
@@ -145,7 +145,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 
 //void CFileHelper::writeHotspotToFile(char *filename, vector<CHotspot *> list_hotspot, bool withDetail)
 //{
-//	for(vector<CHotspot *>::iterator it = list_hotspot.begin(); it != list_hotspot.end(); it++)
+//	for(vector<CHotspot *>::iterator it = list_hotspot.begin(); it != list_hotspot.end(); ++it)
 //	{
 //		if(*it != nullptr)
 //			writeHotspotToFile(filename, *it, withDetail);
@@ -161,7 +161,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 //{
 //	int coverSum = 0;
 //	ofstream file(filename, ios::app);
-//	for(vector<CHotspot *>::iterator it = list_hotspot.begin(); it != list_hotspot.end(); it++)
+//	for(vector<CHotspot *>::iterator it = list_hotspot.begin(); it != list_hotspot.end(); ++it)
 //	{
 //		if(*it != nullptr)
 //		{

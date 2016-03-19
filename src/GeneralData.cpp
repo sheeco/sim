@@ -3,7 +3,7 @@
 
 CGeneralData::CGeneralData()
 {
-	init();
+	CGeneralData::init();
 }
 
 CGeneralData::~CGeneralData()
@@ -12,7 +12,7 @@ CGeneralData::~CGeneralData()
 
 void CGeneralData::init()
 {
-	this->node = 0;
+	this->node = -1;
 	this->timeBirth = 0;
 	this->size = 0;
 	this->HOP = 0;

@@ -46,7 +46,7 @@ private:
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{
-		ID_COUNT++;
+		++ID_COUNT;
 		this->ID = ID_COUNT;
 	}
 
@@ -187,6 +187,7 @@ public:
 			return false;
 	}	
 
+	// TODO: send tolerance / MAX_DATA_TRANS during as index
 	//接收数据时，返回允许接收的最大数据数
 	inline int getDataTolerance() const
 	{
@@ -198,13 +199,6 @@ public:
 			return tolerance;
 		else if( RECEIVE_MODE == _loose )
 			return bufferCapacity;
-		else
-		{
-			cout << endl << "Error @ CMANode::getDataTolerance() : RECEIVE_MODE = " << RECEIVE_MODE << endl;
-			// TODO: add Exit( proper code ) after all errors
-			_PAUSE_;
-			Exit(-1);
-		}
 	}
 
 	bool isListening() const override

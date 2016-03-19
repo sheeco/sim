@@ -281,15 +281,15 @@ public:
 	//注意：暂时只支持Prophet路由，其他路由尚未添加相关代码
 	static void encountAtHotspot() 
 	{
-		encounterAtHotspot++;
+		++encounterAtHotspot;
 	}
 	static void encount() 
 	{
-		encounter++;
+		++encounter;
 	}
 	static void encountActive() 
 	{
-		encounterActive++;
+		++encounterActive;
 	}
 
 	static int getEncounter() 
@@ -320,11 +320,11 @@ public:
 	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
 	static void visitAtHotspot() 
 	{
-		visiterAtHotspot++;
+		++visiterAtHotspot;
 	}
 	static void visitOnRoute() 
 	{
-		visiterOnRoute++;
+		++visiterOnRoute;
 	}
 
 	static double getVisiterAtHotspotPercent() 
@@ -345,11 +345,11 @@ public:
 	//数据传输计数：用于统计数据传输成功的百分比
 	static void transmitTry()
 	{
-		transmit++;
+		++transmit;
 	}
 	static void transmitSucceed()
 	{
-		transmitSuccessful++;
+		++transmitSuccessful;
 	}
 
 	static int getTransmit()
@@ -396,7 +396,7 @@ public:
 
 	void generateID() 
 	{
-		ID_COUNT++;
+		++ID_COUNT;
 		this->ID = ID_COUNT;		
 	}
 

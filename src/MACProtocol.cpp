@@ -18,6 +18,8 @@ CMacProtocol::~CMacProtocol()
 
 void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int currentTime) 
 {
+	// Make local copy
+	package = new CPackage(*package);
 	gnode.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECIEVE );
 
 	vector<CGeneralData*> contents = package->getContent();
@@ -33,7 +35,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		CCtrl* ctrlPiggback = nullptr;
 		vector<CData> dataToSend;
 
-		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); ++icontent)
 		{
 			
 			/***************************************** rcv Ctrl Message *****************************************/
@@ -53,6 +55,9 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						//if RTS is from sink, send CTS & datas
 						if( ctrl->getNode() == CSink::SINK_ID )
 						{
+							if( gnode.getAllData().empty() )
+								return;
+
 							dataToSend = node->getAllData();
 						}
 						//skip if has spoken recently
@@ -100,8 +105,6 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 					default:
 						break;
 				}
-
-				++icontent;
 			}
 
 			/******************************************* rcv Data *******************************************/
@@ -181,6 +184,8 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 				if( ! ack.empty() )
 					ctrlToSend = new CCtrl(CSink::SINK_ID, ack, currentTime, CGeneralNode::CTRL_SIZE, CCtrl::_ack);
 			}
+			else
+				++icontent;
 		}
 
 		/********************************** snd ***********************************/
@@ -272,8 +277,8 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 
 		
 	}
-	if( ! rcv )
-		free(package);
+	
+	free(package);
 
 	// TODO: sort by distance with src node ?
 	return rcv;
@@ -332,6 +337,7 @@ void CMacProtocol::TransmitData(int currentTime)
 {
 	UpdateNodeStatus(currentTime);
 
+	// TODO: sink receive RTS / send by slot ?
 	broadcastPackage( CSink::getSink()->sendRTS(currentTime) , currentTime );
 
 	vector<CNode*> nodes = CNode::getNodes();
@@ -353,10 +359,10 @@ void CMacProtocol::PrintInfo(int currentTime)
 		|| currentTime == RUNTIME )
 	{
 		//MA和节点 / 节点间的相遇次数
-		ofstream encounter("encounter.txt", ios::app);
+		ofstream encounter( PATH_LOG + FILE_ENCOUNTER, ios::app);
 		if(currentTime == 0)
 		{
-			encounter << INFO_LOG ;
+			encounter <<  endl << INFO_LOG << endl ;
 			encounter << INFO_ENCOUNTER ;
 		}
 		encounter << currentTime << TAB;
@@ -368,21 +374,21 @@ void CMacProtocol::PrintInfo(int currentTime)
 		encounter.close();
 
 		//数据传输
-		ofstream transmit("transmit.txt", ios::app);
+		ofstream transmit( PATH_LOG + FILE_TRANSMIT, ios::app);
 		if(currentTime == 0)
 		{
-			transmit << INFO_LOG ;
+			transmit << endl << INFO_LOG << endl ;
 			transmit << INFO_TRANSMIT ;
 		}
-		transmit << currentTime << TAB << CNode::getTransmitSuccessfulPercent() << TAB << CNode::getTransmitSuccessful() << TAB << CNode::getEncounter() << TAB;
+		transmit << currentTime << TAB << CNode::getTransmitSuccessfulPercent() << TAB << CNode::getTransmitSuccessful() << TAB << CNode::getTransmit() << TAB;
 		transmit << endl;
 		transmit.close();
 
 		//平均能耗
-		ofstream energy_consumption("energy-consumption.txt", ios::app);
+		ofstream energy_consumption( PATH_LOG + FILE_ENERGY_CONSUMPTION, ios::app);
 		if(currentTime == 0)
 		{
-			energy_consumption << INFO_LOG ; 
+			energy_consumption <<  endl << INFO_LOG << endl ; 
 			energy_consumption << INFO_ENERGY_CONSUMPTION ;
 		}
 		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() ;
@@ -403,15 +409,15 @@ void CMacProtocol::PrintInfo(int currentTime)
 
 void CMacProtocol::PrintFinal(int currentTime)
 {
-	ofstream debug(FILE_DEBUG, ios::app);
-	debug << CData::getAverageEnergyConsumption() << TAB << CNode::getTransmitSuccessfulPercent() << TAB << CNode::getEncounterActivePercent() << TAB ;
+	ofstream final( PATH_LOG + FILE_FINAL, ios::app);
+	final << CData::getAverageEnergyConsumption() << TAB << CNode::getTransmitSuccessfulPercent() << TAB << CNode::getEncounterActivePercent() << TAB ;
 	if( MAC_PROTOCOL == _hdc )
 	{
-		debug << CNode::getEncounterAtHotspotPercent() << TAB ;
+		final << CNode::getEncounterAtHotspotPercent() << TAB ;
 	}
 	if( CNode::finiteEnergy() )
-		debug << currentTime << TAB << CNode::getNodes().size() << TAB ;
+		final << currentTime << TAB << CNode::getNodes().size() << TAB ;
 
-	debug.close();
+	final.close();
 
 }

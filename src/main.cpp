@@ -14,7 +14,7 @@
 // TODO: 检查所有类内静态变量，决定 private / protected
 // TODO: CConfiguration / CConfigureHelper ?
 // TODO: 默认配置参数改为从 XML 读取
-void initConfiguration()
+void InitConfiguration()
 {
 	/************************************** Default Config **************************************/
 
@@ -139,17 +139,16 @@ void initConfiguration()
 	CNode::DEFAULT_SLOT_DISCOVER = 10; 
 }
 
+void Help()
+{
+	cout << INFO_HELP << endl;
+	ofstream help(FILE_HELP, ios::out);
+	help << INFO_HELP;
+	help.close();
+}
+
 bool ParseParameters(int argc, char* argv[])
 {
-	ofstream debug(FILE_DEBUG, ios::app);
-	string logtime;  
-	time_t t;  //秒时间  
-	char buffer[65];
-	t = time(nullptr); //获取目前秒时间  
-	strftime(buffer, 64, "%Y-%m-%d %H:%M:%S", localtime(&t));  
-	logtime = string(buffer);
-	INFO_LOG = "#" + logtime + TAB;
-
 	try
 	{
 		int iField = 0;
@@ -161,67 +160,55 @@ bool ParseParameters(int argc, char* argv[])
 			if( field == "-hdc" )
 			{
 				MAC_PROTOCOL = _hdc;
-				iField++;
+				++iField;
 			}
 			else if( field == "-prophet" )
 			{
 				ROUTING_PROTOCOL = _prophet;
-				iField++;
+				++iField;
 			}
 			else if( field == "-epidemic" )
 			{
 				ROUTING_PROTOCOL = _epidemic;
-				iField++;
+				++iField;
 			}
 			else if( field == "-har" )
 			{
 				ROUTING_PROTOCOL = _har;
-				iField++;
+				++iField;
 			}
 			else if( field == "-hs" )
 			{
 				HOTSPOT_SELECT = _original;
-				iField++;
+				++iField;
 			}
 			else if( field == "-ihs" )
 			{
 				HOTSPOT_SELECT = _improved;
-				iField++;
+				++iField;
 			}
 			else if( field == "-mhs" )
 			{
 				HOTSPOT_SELECT = _merge;
-				iField++;
+				++iField;
 			}
 			else if( field == "-hotspot-similarity" )
 			{
 				CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
-				iField++;
+				++iField;
 			}
 			else if( field == "-dynamic-node-number" )
 			{
 				CMacProtocol::TEST_DYNAMIC_NUM_NODE = true;
-				iField++;
+				++iField;
 			}
 			else if( field == "-balanced-ratio" )
 			{
 				HAR::TEST_BALANCED_RATIO = true;
-				iField++;
+				++iField;
 			}
 
 			//整型参数
-			else if( field == "-range" )
-			{
-				if(iField < argc - 1)
-					CGeneralNode::TRANS_RANGE = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}			
-			else if( field == "-lifetime" )
-			{
-				if(iField < argc - 1)
-					HAR::MAX_MEMORY_TIME = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
 			else if( field == "-time-data" )
 			{
 				if(iField < argc - 1)
@@ -239,6 +226,27 @@ bool ParseParameters(int argc, char* argv[])
 
 				if( CNode::finiteEnergy() )
 					RUNTIME = DATATIME = 999999;
+			}
+			else if( field == "-slot" )
+			{
+				if(iField < argc - 1)
+					SLOT = atoi( argv[ iField + 1 ] );
+
+				if( SLOT > SLOT_MOBILITYMODEL )
+					SLOT = SLOT_MOBILITYMODEL;
+				iField += 2;
+			}
+			else if( field == "-range" )
+			{
+				if(iField < argc - 1)
+					CGeneralNode::TRANS_RANGE = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}			
+			else if( field == "-lifetime" )
+			{
+				if(iField < argc - 1)
+					HAR::MAX_MEMORY_TIME = atoi( argv[ iField + 1 ] );
+				iField += 2;
 			}
 			else if( field == "-cycle" )
 			{
@@ -369,39 +377,80 @@ bool ParseParameters(int argc, char* argv[])
 				iField += 3;
 			}
 
+			//字符串参数
+			else if( field == "-dataset" )
+			{
+				if(iField < argc - 2)
+				{
+					char arg[20] = {'\0'};
+					strcpy(arg, argv[ iField + 1 ]);
+					DATASET = string( _strupr( arg ) );
+				}
+				iField += 2;
+			}			
+
 
 			//输出help信息
 			else if( field == "-help" )
 			{
-				cout << INFO_HELP;
-				ofstream help("help.txt", ios::out);
-				help << INFO_HELP;
-				help.close();
+				Help();
 				_PAUSE_;
-				Exit(0);
+				Exit(-1);
 			}
 			else
-				iField++;
+				++iField;
 
 		}
-		debug.close();
-		return true;
 	}
 	catch(exception e)
 	{
 		cout << endl << "Error @ ParseParameters() : Wrong Parameter Format!" << endl;
-		cout << INFO_HELP;
-		debug.close();
+		Help();
+		_PAUSE_;
+		Exit(1);
 		return false;
 	}
+
+	// Generate timestamp & output path
+
+	// Create output path
+	if( access(PATH_LOG.c_str(), 00) != 0 )
+		_mkdir(PATH_LOG.c_str());
+
+	time_t seconds;  //秒时间  
+	char temp[65] = {'\0'};
+	string timestring;
+	seconds = time(nullptr); //获取目前秒时间  
+	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));  
+	TIMESTAMP = string(temp);
+	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));  
+	timestring = string(temp);
+	INFO_LOG = "@" + TIMESTAMP + TAB;
+//	PATH_LOG += "." + TIMESTAMP + "/";
+	PATH_LOG += "." + timestring + "/";
+
+	// Create output path
+	if( access( PATH_LOG.c_str(), 00 ) != 0 )
+		_mkdir( PATH_LOG.c_str() );
+
+	// Hide folder
+	LPWSTR wstr = CString( PATH_LOG.c_str()).AllocSysString();
+	int attr = GetFileAttributes( wstr );
+	if ( (attr & FILE_ATTRIBUTE_HIDDEN) == 0 )
+	{
+		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
+	}
+
+	return true;
+
 }
 
 void PrintConfiguration()
 {
-	ofstream parameters("parameters.txt", ios::app);
+	ofstream parameters( PATH_LOG + FILE_PARAMETES, ios::app);
 	parameters << endl << endl << INFO_LOG << endl << endl;
 
-	parameters << "SLOT TOTAL" << TAB << CNode::SLOT_TOTAL << endl;
+	parameters << "CYCLE" << TAB << CNode::SLOT_TOTAL << endl;
 	parameters << "DEFAULT DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
 	if( MAC_PROTOCOL == _hdc )
 		parameters << "HOTSPOT DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
@@ -420,63 +469,63 @@ void PrintConfiguration()
 	parameters << "PROB DATA FORWARD" << TAB << CGeneralNode::PROB_DATA_FORWARD << endl;
 
 	//输出文件为空时，输出文件头
-	ofstream debug(FILE_DEBUG, ios::app);
-	debug.seekp(0, ios::end);
-	if( ! debug.tellp() )
-		debug << INFO_DEBUG ;
+	ofstream final( PATH_LOG + FILE_FINAL, ios::app);
+	final.seekp(0, ios::end);
+	if( ! final.tellp() )
+		final << INFO_FINAL ;
 
-	debug << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_DATA_FORWARD << TAB << CNode::BUFFER_CAPACITY << TAB << CNode::ENERGY << TAB ;
+	final << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_DATA_FORWARD << TAB << CNode::BUFFER_CAPACITY << TAB << CNode::ENERGY << TAB ;
 	if( CData::useHOP() )
-		debug << CData::MAX_HOP << TAB ;
+		final << CData::MAX_HOP << TAB ;
 	else 
-		debug << CData::MAX_TTL << TAB ;
+		final << CData::MAX_TTL << TAB ;
 
-	debug << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
+	final << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
 	parameters << endl;
 	if( ROUTING_PROTOCOL == _epidemic )
 	{
-		INFO_LOG += "-Epidemic ";
-		parameters << "-Epidemic ";
+		INFO_LOG += "$Epidemic ";
+		parameters << "$Epidemic ";
 	}
 	else if( ROUTING_PROTOCOL == _prophet )
 	{
-		INFO_LOG += "-Prophet ";
-		parameters << "-Prophet ";
+		INFO_LOG += "$Prophet ";
+		parameters << "$Prophet ";
 	}
 
 	if( MAC_PROTOCOL == _hdc )
 	{
-		INFO_LOG += "-HDC ";
-		parameters << "-HDC ";
+		INFO_LOG += "$HDC ";
+		parameters << "$HDC ";
 	}
 
 	if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
 	{
 		if( HOTSPOT_SELECT == _improved )
 		{
-			INFO_LOG += "-IHAR ";
-			parameters << "-IHAR " << endl << endl;
+			INFO_LOG += "$IHAR ";
+			parameters << "$IHAR " << endl << endl;
 			parameters << "LIFETIME" << TAB << HAR::MAX_MEMORY_TIME << endl << endl;
 
-			debug << HAR::MAX_MEMORY_TIME << TAB ;
+			final << HAR::MAX_MEMORY_TIME << TAB ;
 		}
 
 		else if( HOTSPOT_SELECT == _merge )
 		{
-			INFO_LOG += "-mHAR ";
-			parameters << "-mHAR " << endl << endl;
+			INFO_LOG += "$mHAR ";
+			parameters << "$mHAR " << endl << endl;
 			parameters << "RATIO_MERGE" << TAB << CHotspot::RATIO_MERGE_HOTSPOT << endl;
 			parameters << "RATIO_NEW" << TAB << CHotspot::RATIO_NEW_HOTSPOT << endl;
 			parameters << "RATIO_OLD" << TAB << CHotspot::RATIO_OLD_HOTSPOT << endl;
 
-			debug << CHotspot::RATIO_MERGE_HOTSPOT << TAB << CHotspot::RATIO_OLD_HOTSPOT << TAB ;
+			final << CHotspot::RATIO_MERGE_HOTSPOT << TAB << CHotspot::RATIO_OLD_HOTSPOT << TAB ;
 
 		}
 
 		else
 		{
-			debug << CNode::HOTSPOT_DUTY_CYCLE << TAB << CPostSelect::ALPHA << TAB << HAR::BETA << TAB ;
+			final << CNode::HOTSPOT_DUTY_CYCLE << TAB << CPostSelect::ALPHA << TAB << HAR::BETA << TAB ;
 		}
 
 		parameters << "ALPHA" << TAB << CPostSelect::ALPHA << endl;
@@ -487,16 +536,15 @@ void PrintConfiguration()
 
 	if( CMacProtocol::TEST_DYNAMIC_NUM_NODE)
 	{
-		INFO_LOG += "-TEST_DYNAMIC_NODE_NUMBER";
+		INFO_LOG += "#DYNAMIC_NODE_NUMBER";
 		parameters << endl;
-		parameters << "-TEST_DYNAMIC_NODE_NUMBER" << endl;
+		parameters << "#DYNAMIC_NODE_NUMBER" << endl;
 	}
 
-	INFO_LOG += "\n";
 	parameters << endl;
 
 	parameters.close();
-	debug.close();
+	final.close();
 
 }
 
@@ -560,15 +608,11 @@ int main(int argc, char* argv[])
 
 	/************************************ 参数默认值 *************************************/
 
-	initConfiguration();
+	InitConfiguration();
 
 	/************************************ 命令行参数解析 *************************************/
 
-	if( ! ParseParameters(argc, argv) )
-	{
-		_PAUSE_;
-		Exit(-1);
-	}
+	ParseParameters(argc, argv);
 
 	/********************************* 将log信息和参数信息写入文件 ***********************************/
 	

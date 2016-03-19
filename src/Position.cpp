@@ -10,7 +10,7 @@ vector<CPosition *> CPosition::positions;
 
 int CPosition::getIndexOfPosition(CPosition* pos)
 {
-	for(int i = 0; i < nPositions; i++)
+	for(int i = 0; i < nPositions; ++i)
 	{
 		if(positions[i] == pos)
 			return i;

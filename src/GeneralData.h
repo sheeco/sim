@@ -30,10 +30,10 @@ public:
 	virtual ~CGeneralData();
 
 	//setters & getters
-	inline void setNode(int node)
-	{
-		this->node = node;
-	}
+//	inline void setNode(int node)
+//	{
+//		this->node = node;
+//	}
 	inline int getNode() const
 	{
 		return node;
@@ -47,7 +47,15 @@ public:
 		return size;
 	}
 
-//	inline bool allowForward() const
+	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
+	//注意：数据发送方应在发送之前检查剩余HOP大于1
+	virtual inline void arriveAnotherNode(int currentTime)
+	{
+		if( HOP > 0 )
+			this->HOP--;
+	}
+
+	//	inline bool allowForward() const
 //	{
 //		return HOP > 0;
 //	}

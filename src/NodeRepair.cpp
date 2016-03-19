@@ -28,7 +28,7 @@ int CNodeRepair::countForNode(vector<CHotspot *> hotspots, int n) const
 		for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 		{
 			if((*ipos)->getNode() == n)
-				count++;
+				++count;
 		}
 	}
 	return count;
@@ -46,7 +46,7 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 		for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 		{
 			if((*ipos)->getNode() == inode)
-				coverCount++;
+				++coverCount;
 		}
 		if(coverCount > maxCoverCount)
 		{

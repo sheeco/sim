@@ -25,7 +25,7 @@ public:
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);
-	//最终debug输出
+	//最终final输出
 	static void PrintFinal(int currentTime);
 
 };

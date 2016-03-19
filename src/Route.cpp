@@ -17,7 +17,7 @@ void CRoute::updateLength()
 		_PAUSE_;
 	}
 	length = 0;
-	for(int i = 0, j = 1; i < waypoints.size(); i++, j = (j + 1) % waypoints.size())
+	for(int i = 0, j = 1; i < waypoints.size(); ++i, j = (j + 1) % waypoints.size())
 		length += CBasicEntity::getDistance(*waypoints[i], *waypoints[j]);
 	toPoint = 1;  //toPoint指向sink之后的第一个点
 }

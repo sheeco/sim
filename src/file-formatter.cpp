@@ -19,10 +19,16 @@ int main(int argc, char* argv[])
 		nfile = atoi( argv[1] );
 	if( argc >= 3 )  //2nd arg: relative file path
 		path = argv[2];
-	if( ! _access("0.newlocation", 0) )  //if file exists
+
+	// 00 Existence only
+	// 02 Write permission
+	// 04 Read permission
+	// 06 Read and write permission
+
+	if( _access("0.newlocation", 00) == 0 )  //if file exists
 		incre = 1;
 
-	for(int new_id = 1; new_id <= nfile; new_id++)
+	for(int new_id = 1; new_id <= nfile; ++new_id)
 	{
 		string new_name(".trace");
 		string old_name(".newlocation");
@@ -38,10 +44,11 @@ int main(int argc, char* argv[])
 		old_name.insert(0, buff_0);
 		old_name.insert(0, path);
 
-		if( ! _access(old_name.c_str(), 0) )
+		if( _access(old_name.c_str(), 02) == 0
+			&& _access(new_name.c_str(), 00) != 0 )  //if writeable
 			rename(old_name.c_str(), new_name.c_str());
-		
-		if( new_id >= nfile )
+		else
 			break;
 	}
+
 }

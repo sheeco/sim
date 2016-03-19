@@ -81,16 +81,15 @@ void CHotspotSelect::CollectNewPositions(int time)
 		if( ! CFileHelper::getLocationFromFile(*i, time, location) )
 		{
 			cout << endl << "Error @ CHotspotSelect::CollectNewPositions() : Cannot find location info for Node " << *i << " at Time " << time << endl;
-			_PAUSE_;
+			Exit(2);
 		}
 		temp_pos->setLocation(location, time);
 		temp_pos->setNode( *i );
 		temp_pos->generateID();
 		if( temp_pos->getID() == -1 )
 		{
-			cout << endl << "Error @ CSortHelper::BuildCandidateHotspots() : Wrong Format"<<endl;
-			_PAUSE_;
-			break;
+			cout << endl << "Error @ CSortHelper::BuildCandidateHotspots() : Wrong format in trace file" << endl;
+			Exit(2);
 		}
 		else
 		{
@@ -183,7 +182,7 @@ void CHotspotSelect::GreedySelect(int time)
 		int index_best_hotspot = -1;
 		double best_ratio = 0;
 		//遍历所有ratio高于GAMMA水平(1/2)的hotspot，调整其中心
-		for(int i = 0; i < hotspotsAboveAverage.size(); i++)
+		for(int i = 0; i < hotspotsAboveAverage.size(); ++i)
 		{
 			bool modified = false;
 			vector<CPosition *> temp_positions = hotspotsAboveAverage[i]->getCoveredPositions();
@@ -258,7 +257,7 @@ void CHotspotSelect::GreedySelect(int time)
 			(*ihotspot)->removePositionList(temp_positions);
 
 	
-		for(int j = 0; j < temp_positions.size(); j++)
+		for(int j = 0; j < temp_positions.size(); ++j)
 		{
 			CPosition *temp_pos = temp_positions[j];
 			for(vector<CPosition *>::iterator ipos = uncoveredPositions.begin(); ipos != uncoveredPositions.end(); ++ipos)
@@ -291,7 +290,7 @@ void CHotspotSelect::MergeHotspots(int time)
 	//sort new hotspots by x coordinates
 	CHotspot::hotspotCandidates = CSortHelper::mergeSort(CHotspot::hotspotCandidates, CSortHelper::ascendByLocationX);
 
-	for(vector<CHotspot *>::iterator iOld = CHotspot::oldSelectedHotspots.begin(); iOld != CHotspot::oldSelectedHotspots.end(); /* iOld++*/ )
+	for(vector<CHotspot *>::iterator iOld = CHotspot::oldSelectedHotspots.begin(); iOld != CHotspot::oldSelectedHotspots.end(); /* ++iOld*/ )
 	{
 		CHotspot *best_merge = nullptr;
 
@@ -299,7 +298,7 @@ void CHotspotSelect::MergeHotspots(int time)
 		int max_cover = -1;
 		int index_max_hotspot = -1;
 		int i = 0;
-		for(vector<CHotspot *>::iterator iNew = CHotspot::hotspotCandidates.begin(); iNew != CHotspot::hotspotCandidates.end(); ++iNew, i++)
+		for(vector<CHotspot *>::iterator iNew = CHotspot::hotspotCandidates.begin(); iNew != CHotspot::hotspotCandidates.end(); ++iNew, ++i)
 		{
 			//for (x within range)
 			if( (*iNew)->getX() + 2 * CGeneralNode::TRANS_RANGE <= (*iOld)->getX() )
@@ -313,7 +312,7 @@ void CHotspotSelect::MergeHotspots(int time)
 				CCoordinate location( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 , ( (*iOld)->getY() + (*iNew)->getY() ) / 2);
 				CHotspot *merge = new CHotspot(location, time);
 				//for merge statistics
-				mergeCount++;
+				++mergeCount;
 				//temp << (*iOld)->getNCoveredPosition() << "/" << (*iNew)->getNCoveredPosition() << "/" << merge->getNCoveredPosition() << "," << merge->getAge() << TAB;
 
 				//update the best merge index
@@ -350,7 +349,7 @@ void CHotspotSelect::MergeHotspots(int time)
 			//															   (*iOld)->getTime() );
 
 			CHotspot *old = *iOld;
-			oldCount++;
+			++oldCount;
 			old->setCandidateType(CHotspot::_old_hotspot);
 			old->setAge( old->getAge() + 1 );
 

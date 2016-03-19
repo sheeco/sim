@@ -14,10 +14,10 @@ int CEpidemic::MAX_QUEUE_SIZE = -1;
 //		return;
 //	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 //
-//	ofstream sink("sink.txt", ios::app);
+//	ofstream sink( PATH_LOG + FILE_SINK, ios::app);
 //	if(currentTime == 0)
 //	{
-//		sink << endl << INFO_LOG ;
+//		sink << endl << INFO_LOG << endl ;
 //		sink << INFO_SINK ;
 //	}
 //
@@ -38,7 +38,7 @@ int CEpidemic::MAX_QUEUE_SIZE = -1;
 //			//deliver data to sink
 //			flash_cout << "####  ( Node " << (*inode)->getID() << " deliver " << (*inode)->getBufferSize() << " data to Sink )                    " ;
 //			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
-//			nEncounterAtSink++;
+//			++nEncounterAtSink;
 //		}
 //
 //		//scan other nodes and forward data

@@ -62,7 +62,7 @@ public:
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{
-		ID_COUNT++;
+		++ID_COUNT;
 		this->ID = ID_COUNT;
 	}
 
