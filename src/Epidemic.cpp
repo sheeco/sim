@@ -14,7 +14,7 @@ int CEpidemic::MAX_QUEUE_SIZE = -1;
 //		return;
 //	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 //
-//	ofstream sink( PATH_LOG + FILE_SINK, ios::app);
+//	ofstream sink( PATH_ROOT + PATH_LOG + FILE_SINK, ios::app);
 //	if(currentTime == 0)
 //	{
 //		sink << endl << INFO_LOG << endl ;

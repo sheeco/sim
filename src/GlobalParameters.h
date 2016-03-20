@@ -1,16 +1,16 @@
 #pragma once
 
+#include <afx.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <io.h>
-#include <afx.h>
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
 #include <cmath>
+#include <vector>
 #include <map>
-#include <direct.h>
+#include <direct.h>  //_mkdir()
 
 
 //Simple Macro Def
@@ -18,7 +18,6 @@
 #define ROUND(x) (x - floor(x) >= 0.5) ? (int)ceil(x) : (int)floor(x)
 #define EQUAL(x, y) fabs( x - y ) < 0.000001
 #define ZERO(x) fabs(x) < 0.000001
-//#define AREA_SINGLE_HOTSPOT TRANS_RANGE * TRANS_RANGE * PI  ->  AreaCircle(CGeneralNode::TRANS_RANGE)
 
 //Output & Debug
 #define TAB '\t'
@@ -26,6 +25,10 @@
 #define _PAUSE_ _ALERT_; system("pause")
 #define _ALERT_ cout << '\a'
 #define flash_cout cout << CR  //控制台输出位置回到行首，在动态显示的输出时使用 flash_cout 代替 cout 即可
+
+//User Defined ERRNO
+#define EFINISH 0  //finish execution successfully
+#define ESKIP -2  //exit without execution
 
 /********************************** Namespace Lib ***********************************/
 
@@ -52,9 +55,20 @@ namespace global
 {
 	/******************************** Config Const ********************************/
 
-	typedef enum _MAC_PROTOCOL { _smac, _hdc } _MAC_PROTOCOL;
-	typedef enum _ROUTING_PROTOCOL { _har, _prophet, _epidemic } _ROUTING_PROTOCOL;
-	typedef enum _HOTSPOT_SELECT { _original, _improved, _merge } _HOTSPOT_SELECT;
+	typedef enum _MAC_PROTOCOL { 
+		_smac, 
+		_hdc 
+	} _MAC_PROTOCOL;
+	typedef enum _ROUTING_PROTOCOL { 
+		_har, 
+		_prophet, 
+		_epidemic 
+	} _ROUTING_PROTOCOL;
+	typedef enum _HOTSPOT_SELECT { 
+		_original, 
+		_improved, 
+		_merge 
+	} _HOTSPOT_SELECT;
 
 
 	/********************************* Global Var *********************************/
@@ -78,7 +92,7 @@ namespace global
 	extern string TIMESTAMP;
 	extern string PATH_TRACE;
 	extern string PATH_LOG;
-	extern string PATH_FINAL;
+	extern string PATH_ROOT;
 
 	extern string INFO_LOG;
 	extern string FILE_PARAMETES;
@@ -137,23 +151,39 @@ namespace global
 		strftime(temp_time, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));  
 		string finalTime(temp_time);
 
-		if( code == 0 )
+//		// Remove entire folder if empty & exit directly
+//
+//		LPWSTR pathContent = CString( (PATH_ROOT + PATH_LOG + "*.*").c_str()).AllocSysString();
+//		LPWSTR pathFolder = CString( (PATH_ROOT + PATH_LOG).c_str()).AllocSysString();
+//		CFileFind tempFind;
+//		bool anyContentFound = (bool) tempFind.FindFile(pathContent);
+//		if( ! anyContentFound )
+//		{
+//			//去掉文件的系统和隐藏属性
+//			SetFileAttributes(pathFolder, FILE_ATTRIBUTE_NORMAL);
+//			remove( (PATH_ROOT + PATH_LOG).c_str() );
+//
+//			exit(code);
+//		}
+
+		// Copy final file to father folder
+
+		if( code == EFINISH )
 		{
-			ifstream finalInput(PATH_LOG + FILE_FINAL, ios::in);
+			ifstream finalInput(PATH_ROOT + PATH_LOG + FILE_FINAL, ios::in);
 			if( finalInput.is_open()
 				&& ( ! finalInput.eof() ) )
 			{
-				// Copy final file to father folder
 
-				ofstream copy(PATH_FINAL + FILE_FINAL, ios::app);
-				char temp[101] = {'\0'};
+				ofstream copy(PATH_ROOT + FILE_FINAL, ios::app);
+				char temp[310] = {'\0'};
 				copy.seekp(0, ios::end);
 				if( ! copy.tellp() )
 				{
-					copy << INFO_FINAL << endl;
+					copy << INFO_FINAL ;
 				}
-				finalInput.getline(temp, 100);  //skip head line
-				finalInput.getline(temp, 100);
+				finalInput.getline(temp, 300);  //skip head line
+				finalInput.getline(temp, 300);
 				string finalInfo(temp);
 				copy << finalInfo << INFO_LOG << TAB << "@" << finalTime << endl;
 				copy.close();
@@ -162,34 +192,31 @@ namespace global
 
 		// Print final time
 
-		if( code >= 0 )
+		if( code >= EFINISH )
 		{
-			fstream final( PATH_LOG + FILE_FINAL, ios::app | ios::in);
+			fstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app | ios::in);
 			final << INFO_LOG << TAB << "@" << finalTime << endl;	
 			final.close();
 		}
-		if( code == 0 )
-		{
-			// Remove name prefix '.' in front of log folder
 
-			if( _access( PATH_LOG.c_str(), 02 ) == 0 )  //if writeable
+		// Remove name prefix '.' in front of log folder
+
+		if( code == EFINISH )
+		{
+
+			if( _access( (PATH_ROOT + PATH_LOG).c_str(), 02 ) == 0 
+				&& ( PATH_LOG.find(".") != PATH_LOG.npos ) )   //if writeable & '.' found in filename
 			{
-				string path = PATH_LOG.substr( 0, PATH_LOG.rfind("/"));
-				string name = PATH_LOG.substr( PATH_LOG.rfind("/") + 1, PATH_LOG.npos);
-				if( name.find(".") != name.npos )  //if '.' found in filename
+				string newPathLog = PATH_LOG.substr( 1, PATH_LOG.npos);
+				if( _access( (PATH_ROOT + newPathLog).c_str(), 00 ) != 0 )  //if no collision
 				{
-					name.erase( name.find(".") , 1);
-					string newPath = path + name;
-					if( _access( newPath.c_str(), 00 ) != 0 )  //if no collision
-					{
-						rename(PATH_LOG.c_str(), newPath.c_str());
-						PATH_LOG = newPath;
-					}
+					rename((PATH_ROOT + PATH_LOG).c_str(), (PATH_ROOT + newPathLog).c_str());
+					PATH_LOG = newPathLog;
 				}
 			}
 
 			// Unhide folder
-			LPWSTR wstr = CString( PATH_LOG.c_str()).AllocSysString();
+			LPWSTR wstr = CString( (PATH_ROOT + PATH_LOG).c_str()).AllocSysString();
 			int attr = GetFileAttributes( wstr );
 			if ( (attr & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN )
 			{

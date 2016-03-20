@@ -3,7 +3,7 @@
 
 
 
-### final.txt
+### final.log
 
     #DataTime	#RunTime	#TransProb	#Spoken	#TTL	#Period	#DefaultDC	
 	(#HotspotDC	#Alpha	#Beta	#Memory)	#Delivery	#Delay	#Energy	#Log
@@ -85,6 +85,7 @@
 
 - Visual Studio Ultimate 2012 Update 5 ( 11.0.61219.00 )
 - Resharper 10.0.1
+- [Versioning Controlled Build](http://www.codeproject.com/Articles/5851/Versioning-Controlled-Build)
 
 
 ### Files
@@ -107,7 +108,7 @@
     
     ---
     
-    README.txt
+    README.md
     
     GlobalParameters.h
     
@@ -465,23 +466,31 @@
 - ADD：将数据发送的响应流程整合到`CMacProtocol::receivePackage()`，涉及到路由层的操作提交给相应路由类处理（暂时只实现了 Prophet 路由，`CProphet::bufferData()`和`::selectDataByIndex`）；
 
 
-###### 2016-03-18  ·  *< 3.0.0 >*  ·  *完善 MAC 层*
+###### 2016-03-18  ·  *< 3.0.0 >*  ·  *重写 MAC 层*
 
 - ADD：完成新定义的函数`CMacProtocol::broadcastPackage()`、`::transmitPackage()`、`::receivePackage()`、`CProphet::bufferData()`、`::selectDataByIndex`；
 - MOD：删除原有的`CRoutingProtocol::SendData()`系列实现；
 - NOTE：暂时只实现了 Prophet 路由，未测试；未重写 Epidemic 路由和 HAR 路由；
 - **TODO：** ADD：重写 Epidemic 路由和 HAR 路由的数据通信流程；
+        
 
-
-###### 2016-03-18  ·  *< 3.1.0 >*
+###### 2016-03-20  ·  *< 3.1.0 >*
 
 - RFCT：添加`FILE_xxx`和`PATH_xxx`系列全局变量，易于管理和更改；
 - ADD：将输出文件的后缀改为`.log`，不同运行结果将放入标注时间戳的不同文件夹下（如`../test/.xxxx-xx-xx xx:xx:xx`），运行完成之后去除`.`前缀；
-- MOD：最终的输出文件由`debug.txt`更名为`final.txt`，并拷贝到父文件夹中（仅当正常运行完成退出时）；
+- MOD：最终的输出文件由`debug.txt`更名为`final.log`，并拷贝到父文件夹中（仅当正常运行完成退出时）；
 - ADD：对所有的退出标记不同的代码，代码 0 为正常运行完成退出，小于 0 为未开始运行的直接退出，大于 0 为错误代码；
 - FIX：初步测试新的 MAC 层函数，修复一些小错误；
 - OPT：替换掉所有不必要的前置递加操作符`++var`；
-- **BUG：**`final.txt`拷贝到父文件夹出错；
-- **BUG：**输出文件夹重命名失败；
+
+
+###### 2016-03-20  ·  *< 3.1.5923.38461 >*
+
+- ADD：添加生成版本号配置文件`AssemblyInfo.cpp`和`HDC.rc`，并修改相关的项目属性为“使用公共语言运行时支持(/clr)”、“多线程DLL(\MD)”、“在共享DLL中使用MFC”；
+- MNT：使用 VS 插件 Versioning Controlled Build 进行版本号管理；
+- MNT：改用 MS 默认的版本号规则，编译号和修订号由生成日期和时间决定，同时定义对可执行文件写入的属性信息；
+- ADD：使用`ERRONO`标记程序的返回值，并自定义扩展错误代码；
+- FIX：`final.txt`拷贝到父文件夹出错；
+- FIX：输出文件夹重命名失败；
 - **TODO：** ADD：重新添加所有的控制台输出；
-- **TODO：** ADD：将出错信息输出到文件；当文件夹为空时删除文件夹？；
+- **TODO：** RFCT：将`GlobalParameters.h`和`main.cpp`中的全局辅助函数放入`CRunHelper` ?

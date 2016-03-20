@@ -359,7 +359,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		|| currentTime == RUNTIME )
 	{
 		//MA和节点 / 节点间的相遇次数
-		ofstream encounter( PATH_LOG + FILE_ENCOUNTER, ios::app);
+		ofstream encounter( PATH_ROOT + PATH_LOG + FILE_ENCOUNTER, ios::app);
 		if(currentTime == 0)
 		{
 			encounter <<  endl << INFO_LOG << endl ;
@@ -374,7 +374,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		encounter.close();
 
 		//数据传输
-		ofstream transmit( PATH_LOG + FILE_TRANSMIT, ios::app);
+		ofstream transmit( PATH_ROOT + PATH_LOG + FILE_TRANSMIT, ios::app);
 		if(currentTime == 0)
 		{
 			transmit << endl << INFO_LOG << endl ;
@@ -385,7 +385,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		transmit.close();
 
 		//平均能耗
-		ofstream energy_consumption( PATH_LOG + FILE_ENERGY_CONSUMPTION, ios::app);
+		ofstream energy_consumption( PATH_ROOT + PATH_LOG + FILE_ENERGY_CONSUMPTION, ios::app);
 		if(currentTime == 0)
 		{
 			energy_consumption <<  endl << INFO_LOG << endl ; 
@@ -409,7 +409,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 
 void CMacProtocol::PrintFinal(int currentTime)
 {
-	ofstream final( PATH_LOG + FILE_FINAL, ios::app);
+	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
 	final << CData::getAverageEnergyConsumption() << TAB << CNode::getTransmitSuccessfulPercent() << TAB << CNode::getEncounterActivePercent() << TAB ;
 	if( MAC_PROTOCOL == _hdc )
 	{

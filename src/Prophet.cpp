@@ -15,7 +15,7 @@ int CProphet::MAX_DATA_TRANS = 0;
 //		return;
 //	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
 //
-//	ofstream sink( PATH_LOG + FILE_SINK, ios::app);
+//	ofstream sink( PATH_ROOT + PATH_LOG + FILE_SINK, ios::app);
 //	if(currentTime == 0)
 //	{
 //		sink << INFO_LOG << endl ;

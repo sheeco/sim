@@ -19,7 +19,7 @@ public:
 	//static void writeHotspotToFile(char *filename, vector<CHotspot *> list_hotspot, bool withDetail);
 	//static void writeHotspotStatisics(int time, char *filename, vector<CHotspot *> list_hotspot);
 	
-	//从hotspot_detail.txt获取hotspot信息，构造hotspot，需要传入所需的positions
+	//从hotspot_detail.log获取hotspot信息，构造hotspot，需要传入所需的positions
 	//static vector<CHotspot *> getHotspotFromFile(char *filename, int time, vector<CPosition *> positions);
 	//static void SaveHotspotsToFile(int time, vector<CHotspot *> hotspots);
 

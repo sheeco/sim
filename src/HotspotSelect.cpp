@@ -81,20 +81,12 @@ void CHotspotSelect::CollectNewPositions(int time)
 		if( ! CFileHelper::getLocationFromFile(*i, time, location) )
 		{
 			cout << endl << "Error @ CHotspotSelect::CollectNewPositions() : Cannot find location info for Node " << *i << " at Time " << time << endl;
-			Exit(2);
+			Exit(ENOEXEC);
 		}
 		temp_pos->setLocation(location, time);
 		temp_pos->setNode( *i );
 		temp_pos->generateID();
-		if( temp_pos->getID() == -1 )
-		{
-			cout << endl << "Error @ CSortHelper::BuildCandidateHotspots() : Wrong format in trace file" << endl;
-			Exit(2);
-		}
-		else
-		{
-			CPosition::positions.push_back(temp_pos);
-		}
+		CPosition::positions.push_back(temp_pos);
 	}
 
 	//删除死亡节点的position记录

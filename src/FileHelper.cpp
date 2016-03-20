@@ -23,7 +23,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 		{
 			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << filepath << "\" ! " << endl;
 			_PAUSE_;
-			Exit(2);
+			Exit(ENOENT);
 		}
 		while( ! feof( file ) )
 		{
@@ -44,7 +44,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 			}
 //			final.close();
 //			_ALERT_;
-//			Exit(2);
+//			Exit(ENOEXEC);
 		}
 		//È¡µÃ×ø±ê
 		location.setX(temp_x);
@@ -181,7 +181,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 
 //void CFileHelper::SaveHotspotsToFile(int time, vector<CHotspot *> hotspots)
 //{
-//	ofstream toFile("hotspots.txt");
+//	ofstream toFile("hotspots.log");
 //	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 //		toFile<<time<< TAB <<(*ihotspot)->getX()<< TAB <<(*ihotspot)->getY()<< TAB <<(*ihotspot)->getID()<< TAB <<(*ihotspot)->getNCoveredPosition()<<endl;
 //}

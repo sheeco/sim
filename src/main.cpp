@@ -395,7 +395,7 @@ bool ParseParameters(int argc, char* argv[])
 			{
 				Help();
 				_PAUSE_;
-				Exit(-1);
+				Exit(ESKIP);
 			}
 			else
 				++iField;
@@ -407,34 +407,33 @@ bool ParseParameters(int argc, char* argv[])
 		cout << endl << "Error @ ParseParameters() : Wrong Parameter Format!" << endl;
 		Help();
 		_PAUSE_;
-		Exit(1);
+		Exit(EINVAL);
 		return false;
 	}
 
 	// Generate timestamp & output path
 
-	// Create output path
-	if( access(PATH_LOG.c_str(), 00) != 0 )
-		_mkdir(PATH_LOG.c_str());
+	// Create root path (../test/) if doesn't exist
+	if( access(PATH_ROOT.c_str(), 00) != 0 )
+		_mkdir(PATH_ROOT.c_str());
 
 	time_t seconds;  //秒时间  
 	char temp[65] = {'\0'};
-	string timestring;
 	seconds = time(nullptr); //获取目前秒时间  
 	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));  
 	TIMESTAMP = string(temp);
 	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));  
+	string timestring;
 	timestring = string(temp);
 	INFO_LOG = "@" + TIMESTAMP + TAB;
-//	PATH_LOG += "." + TIMESTAMP + "/";
-	PATH_LOG += "." + timestring + "/";
+	PATH_LOG = "." + timestring + "/";
 
-	// Create output path
-	if( access( PATH_LOG.c_str(), 00 ) != 0 )
-		_mkdir( PATH_LOG.c_str() );
+	// Create log path
+	if( access( (PATH_ROOT + PATH_LOG).c_str(), 00 ) != 0 )
+		_mkdir( (PATH_ROOT + PATH_LOG).c_str() );
 
 	// Hide folder
-	LPWSTR wstr = CString( PATH_LOG.c_str()).AllocSysString();
+	LPWSTR wstr = CString( (PATH_ROOT + PATH_LOG).c_str()).AllocSysString();
 	int attr = GetFileAttributes( wstr );
 	if ( (attr & FILE_ATTRIBUTE_HIDDEN) == 0 )
 	{
@@ -447,7 +446,7 @@ bool ParseParameters(int argc, char* argv[])
 
 void PrintConfiguration()
 {
-	ofstream parameters( PATH_LOG + FILE_PARAMETES, ios::app);
+	ofstream parameters( PATH_ROOT + PATH_LOG + FILE_PARAMETES, ios::app);
 	parameters << endl << endl << INFO_LOG << endl << endl;
 
 	parameters << "CYCLE" << TAB << CNode::SLOT_TOTAL << endl;
@@ -469,7 +468,7 @@ void PrintConfiguration()
 	parameters << "PROB DATA FORWARD" << TAB << CGeneralNode::PROB_DATA_FORWARD << endl;
 
 	//输出文件为空时，输出文件头
-	ofstream final( PATH_LOG + FILE_FINAL, ios::app);
+	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
 	final.seekp(0, ios::end);
 	if( ! final.tellp() )
 		final << INFO_FINAL ;
@@ -622,7 +621,7 @@ int main(int argc, char* argv[])
 
 	Run();
 
-	Exit(0);
+	Exit(EFINISH);
 
 	_ALERT_;
 }
