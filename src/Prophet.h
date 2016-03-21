@@ -17,6 +17,14 @@ public:
 
 	static int MAX_DATA_TRANS;
 
+#ifdef USE_PRED_TOLERANCE
+
+	static double TOLERANCE_PRED;
+//	static double DECAY_RATIO_TOLERANCE_PRED;
+
+#endif
+
+
 	CProphet();
 	~CProphet();
 

@@ -8,6 +8,13 @@
 
 int CProphet::MAX_DATA_TRANS = 0;
 
+#ifdef USE_PRED_TOLERANCE
+
+double CProphet::TOLERANCE_PRED = 0;
+//double CProphet::DECAY_RATIO_TOLERANCE_PRED = 1;
+
+#endif
+
 
 //void CProphet::SendData(int currentTime)
 //{
@@ -178,8 +185,14 @@ CProphet::~CProphet() {}
 vector<CData> CProphet::selectDataByIndex(CNode* node, CCtrl* ctrl)
 {
 	vector<CData> datas;
-	if( ctrl->getPred().find(CSink::getSink()->getID())->second >= node->getDeliveryPreds().find(CSink::getSink()->getID())->second 
-		|| node->isFull() )
+	double predNode = node->getDeliveryPreds().find(CSink::getSink()->getID())->second;
+	double predDst = ctrl->getPred().find(CSink::getSink()->getID())->second;
+#ifdef USE_PRED_TOLERANCE
+	predDst += TOLERANCE_PRED;
+#endif
+
+	if( node->isFull()
+		|| predDst >= predNode )
 	{		
 		vector<int> req = ctrl->getSV();
 		RemoveFromList(req, node->updateSummaryVector());

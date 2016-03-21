@@ -30,6 +30,10 @@
 #define EFINISH 0  //finish execution successfully
 #define ESKIP -2  //exit without execution
 
+//Optional Macro to enable #ifdef (for uncertain try)
+#define USE_PRED_TOLERANCE
+
+
 /********************************** Namespace Lib ***********************************/
 
 // TODO: 尝试使用用户namespace包裹当前所有用户类型定义

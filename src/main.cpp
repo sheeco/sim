@@ -73,6 +73,13 @@ void InitConfiguration()
 	CNode::TRANS_RATIO = 0.20;  //0.25
 	CProphet::MAX_DATA_TRANS = 0;
 
+#ifdef USE_PRED_TOLERANCE
+
+	CProphet::TOLERANCE_PRED = 0;
+//	DECAY_RATIO_TOLERANCE_PRED = 1;
+
+#endif
+
 	/**************************  Hotspot Select  ***************************/
 
 	CHotspot::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
@@ -137,6 +144,15 @@ void InitConfiguration()
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
 	CNode::DEFAULT_SLOT_DISCOVER = 10; 
+
+	/** Opt **/
+#ifdef USE_PRED_TOLERANCE
+
+	CProphet::TOLERANCE_PRED = 0.2;
+//	DECAY_RATIO_TOLERANCE_PRED = 1;
+
+#endif
+
 }
 
 void Help()
