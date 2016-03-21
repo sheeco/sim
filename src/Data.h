@@ -24,7 +24,7 @@ private:
 	//跳数或TTL倒计数，在Epidemic中选择一种使用
 	int TTL;
 
-	static int ID_MASK;
+//	static int ID_MASK;
 
 	//用于统计投递率和时延的静态变量
 	static int ID_COUNT;  //数值等于data的总数
@@ -51,7 +51,8 @@ private:
 	inline void generateID()
 	{
 		++ID_COUNT;
-		this->ID = node * ID_MASK + ID_COUNT;
+//		this->ID = node * ID_MASK + ID_COUNT;
+		this->ID = ID_COUNT;
 	}
 
 
@@ -193,10 +194,10 @@ public:
 		else
 			return MAX_TTL > 0;	
 	}
-	static int getNodeByMask(int id)
-	{
-		return id / ID_MASK;
-	}
+//	static int getNodeByMask(int id)
+//	{
+//		return id / ID_MASK;
+//	}
 
 	//统计数据
 	static int getDataCount()

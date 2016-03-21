@@ -17,7 +17,7 @@ CPackage::CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl_a, CCtrl c
 {
 	init();
 	content.push_back( new CCtrl(ctrl_a) );
-	content.push_back( new CCtrl(ctrl_a) );
+	content.push_back( new CCtrl(ctrl_b) );
 }
 
 CPackage::CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl, vector<CData> datas) : src(&node), dst(&dst)

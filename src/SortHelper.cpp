@@ -17,8 +17,8 @@ bool CSortHelper::ascendByRatio(CHotspot *left, CHotspot *right)
 //vector<E> CSortHelper::merge(vector<E> left, vector<E> right, bool(*Comp)(E, E))
 //{
 //	vector<E> result;
-//	typename vector<E>::size_type li = 0;
-//	typename vector<E>::size_type ri = 0;
+//	vector<E>::size_type li = 0;
+//	vector<E>::size_type ri = 0;
 //	while(li < left.size()
 //		&& ri < right.size())
 //	{
@@ -42,7 +42,7 @@ bool CSortHelper::ascendByRatio(CHotspot *left, CHotspot *right)
 //	if(v.size() == 1)
 //		return vector<E>(1, v[0]);
 //
-//	typename vector<E>::iterator mid = v.begin() + v.size() / 2;
+//	vector<E>::iterator mid = v.begin() + v.size() / 2;
 //	vector<E> left(v.begin(), mid);
 //	vector<E> right(mid, v.end());
 //	left = mergeSort(left, Comp);

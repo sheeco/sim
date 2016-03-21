@@ -178,7 +178,8 @@ CProphet::~CProphet() {}
 vector<CData> CProphet::selectDataByIndex(CNode* node, CCtrl* ctrl)
 {
 	vector<CData> datas;
-	if( ctrl->getPred().find(CSink::getSink()->getID())->second > node->getDeliveryPreds().find(CSink::getSink()->getID())->second )
+	if( ctrl->getPred().find(CSink::getSink()->getID())->second >= node->getDeliveryPreds().find(CSink::getSink()->getID())->second 
+		|| node->isFull() )
 	{		
 		vector<int> req = ctrl->getSV();
 		RemoveFromList(req, node->updateSummaryVector());

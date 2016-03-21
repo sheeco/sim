@@ -814,7 +814,7 @@ void CNode::recordBufferStatus()
 
 vector<CData> CNode::getDataByRequestList(vector<int> requestList) const
 {
-	if( requestList.empty() )
+	if( requestList.empty() || buffer.empty() )
 		return vector<CData>();
 
 	vector<CData> result;

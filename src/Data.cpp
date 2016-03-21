@@ -1,7 +1,7 @@
 #include "Data.h"
 #include "Node.h"
 
-int CData::ID_MASK = 10000000;
+//int CData::ID_MASK = 10000000;
 int CData::ID_COUNT = 0;
 int CData::ARRIVAL_COUNT = 0;
 double CData::DELAY_SUM = 0;

@@ -27,7 +27,7 @@ namespace global
 		" <run>       -time-data        []   -time-run        []   -slot        []   -dataset     [] \n"
 		" <node>      -sink           [][]   -range           []   -prob-trans  []   -energy      []   \n"
 		" <data>      -buffer           []   -data-rate       []   -data-size   []   -dataset     []   \n"
-		" <mac>       -hdc                   -cycle           []   -dc-default  []   -dc-hotspot  []   \n"
+		" <mac>       -hdc                   -cycle           []   -discover    []   -dc-default  []   -dc-hotspot  []   \n"
 		" <route>     -epidemic              -prophet              -har              -hop         []   -ttl         []   \n"
 		" <prophet>   -spoken           []   -queue           []   \n"
 		" <hs>        -ihs                   -mhs                  -alpha       []   -beta        []   -heat      [][] \n"

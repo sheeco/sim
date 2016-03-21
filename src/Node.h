@@ -221,6 +221,11 @@ public:
 
 	/*************************** 队列管理 ***************************/
 
+	bool isFull()
+	{
+		return buffer.size() == bufferCapacity;
+	}
+
 	//手动将数据压入 buffer，不伴随其他任何操作
 	//注意：必须在调用此函数之后手动调用 updateBufferStatus() 检查溢出
 	void pushIntoBuffer(vector<CData> datas)

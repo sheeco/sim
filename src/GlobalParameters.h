@@ -354,7 +354,7 @@ namespace global
 	template <class E>
 	bool IfExists(vector<E> list, E elem)
 	{
-		for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+		for(vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 		{
 			if(*i == elem)
 				return true;
@@ -365,7 +365,7 @@ namespace global
 	template <class E>
 	bool IfExists(vector<E> list, E elem, bool(*comp)(E, E))
 	{
-		for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+		for(vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 		{
 			if(comp(*i, elem))
 				return true;
@@ -383,14 +383,14 @@ namespace global
 	template <class E>
 	void AddToListUniquely(vector<E> &des, vector<E> src)
 	{
-		for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
+		for(vector<E>::iterator i = src.begin(); i != src.end(); ++i)
 			AddToListUniquely(des, *i);
 	}
 
 	template <class E>
 	void RemoveFromList(vector<E> &list, E elem)
 	{
-		for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+		for(vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 		{
 			if(*i == elem)
 			{
@@ -403,7 +403,7 @@ namespace global
 	template <class E>
 	void RemoveFromList(vector<E> &list, E elem, bool(*comp)(E, E))
 	{
-		for(typename vector<E>::iterator i = list.begin(); i != list.end(); ++i)
+		for(vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 		{
 			if(comp(*i, elem))
 			{
@@ -416,14 +416,14 @@ namespace global
 	template <class E>
 	void RemoveFromList(vector<E> &des, vector<E> src)
 	{
-		for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
+		for(vector<E>::iterator i = src.begin(); i != src.end(); ++i)
 			RemoveFromList(des, *i);
 	}
 
 	template <class E>
 	void RemoveFromList(vector<E> &des, vector<E> src, bool(*comp)(E, E))
 	{
-		for(typename vector<E>::iterator i = src.begin(); i != src.end(); ++i)
+		for(vector<E>::iterator i = src.begin(); i != src.end(); ++i)
 			RemoveFromList(des, *i, comp);
 	}
 
@@ -433,7 +433,8 @@ namespace global
 		vector<E> result;
 		for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
 		{
-			for(typename vector<E>::iterator item = list.begin(); item != list.end(); ++item)
+//			for(vector<E>::iterator item = list.begin(); item != list.end(); ++item)
+			for(auto item = list.begin(); item != list.end(); ++item)
 			{
 				if( *item == *id )
 				{

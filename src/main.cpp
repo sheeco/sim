@@ -254,6 +254,12 @@ bool ParseParameters(int argc, char* argv[])
 					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-discover" )
+			{
+				if(iField < argc - 1)
+					CNode::DEFAULT_SLOT_DISCOVER = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-dc-default" )
 			{
 				if(iField < argc - 1)

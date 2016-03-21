@@ -7,7 +7,7 @@
     <LocalDebuggerWorkingDirectory>..\build\$(Configuration)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>-slot 5 -time-data 100 -time-run 100 -prob-trans 1 -buffer 500 -data-rate 30 -cycle 300 -dc-default 0.2 -dc-hotspot 0.6 -prophet</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-slot 5 -time-data 1000 -time-run 1000 -prob-trans 1 -buffer 500 -data-rate 30 -cycle 60 -dc-default 1.0 -dc-hotspot 0.6 -prophet</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>..\build\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

@@ -63,6 +63,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						//skip if has spoken recently
 						else if( node->hasSpokenRecently(dynamic_cast<CNode*>(dst), currentTime) )
 						{
+							flash_cout << "####  ( Node " << node->getID() << "  --- skip ---  Node " << dst->getID() << " )                " ;
 							return;
 						}
 						else
@@ -100,6 +101,12 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						node->addToSpokenCache( (CNode*)(&dst), currentTime );
 						//clear data with ack
 						node->checkDataByAck( ctrl->getACK() );
+
+						if( dst->getID() == CSink::SINK_ID )
+							flash_cout << "####  ( Node " << node->getID() << "  ---- " << ctrl->getACK().size() << " ---->  Sink )                       " ;
+						else
+							flash_cout << "####  ( Node " << node->getID() << "  ---- " << ctrl->getACK().size() << " ---->  Node " << dst->getID() << " )                       " ;
+
 						break;
 
 					default:
@@ -296,7 +303,9 @@ bool CMacProtocol::transmitPackage(CPackage* package, CGeneralNode* dst, int cur
 			receivePackage(*dst, package, currentTime);
 			CNode::transmitSucceed();
 			return true;
-		}		
+		}
+		else
+			flash_cout << "####  ( Node " << package->getSourceNode()->getID() << "  xxxx fail xxxx  Node " << dst->getID() << " )              " ;
 	}
 	free(package);
 	
@@ -335,6 +344,14 @@ void CMacProtocol::UpdateNodeStatus(int currentTime)
 
 void CMacProtocol::TransmitData(int currentTime)
 {
+	static bool print = false;
+	if( currentTime == 0 
+		|| print )
+	{
+		cout << endl << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
+		print = false;
+	}
+
 	UpdateNodeStatus(currentTime);
 
 	// TODO: sink receive RTS / send by slot ?
@@ -345,6 +362,13 @@ void CMacProtocol::TransmitData(int currentTime)
 	{
 		if( (*inode)->isDiscovering() )
 			broadcastPackage( (*inode)->sendRTS(currentTime), currentTime );
+	}
+
+	if( ( currentTime + SLOT ) % SLOT_RECORD_INFO == 0 )
+	{
+		double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
+		flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl;
+		print = true;
 	}
 }
 
@@ -367,9 +391,8 @@ void CMacProtocol::PrintInfo(int currentTime)
 		}
 		encounter << currentTime << TAB;
 		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
-			encounter << CNode::getEncounterAtHotspotPercent() << TAB << CNode::getEncounterAtHotspot() << TAB 
-					  << CNode::getEncounterActivePercent() << TAB << CNode::getEncounterActive << TAB;
-		encounter << CNode::getEncounter() << TAB;
+			encounter << CNode::getEncounterAtHotspotPercent() << TAB << CNode::getEncounterAtHotspot() << TAB;
+		encounter << CNode::getEncounterActivePercent() << TAB << CNode::getEncounterActive() << TAB << CNode::getEncounter() << TAB;
 		encounter << endl;
 		encounter.close();
 
