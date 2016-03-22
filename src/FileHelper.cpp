@@ -21,9 +21,11 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 		file = fopen(filepath.c_str(),"rb");
 		if( file == nullptr)
 		{
-			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << filepath << "\" ! " << endl;
+			stringstream error;
+			error << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << filepath << "\" ! ";
+			cout << endl << error << endl;
 			_PAUSE_;
-			Exit(ENOENT);
+			Exit(ENOENT, error.str());
 		}
 		while( ! feof( file ) )
 		{
@@ -35,7 +37,9 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 
 		if( ( time - temp_time ) >= SLOT_MOBILITYMODEL )
 		{
-//			cout << endl << "Error @ CFileHelper::getLocationFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time << endl;
+			stringstream error;
+			error << "Error @ CFileHelper::getLocationFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time;
+//			cout << endl << error << endl;
 			if( time != RUNTIME )
 			{
 				return false;
@@ -44,7 +48,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 			}
 //			final.close();
 //			_ALERT_;
-//			Exit(ENOEXEC);
+//			Exit(ENOEXEC, error.str);
 		}
 		//È¡µÃ×ø±ê
 		location.setX(temp_x);

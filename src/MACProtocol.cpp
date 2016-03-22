@@ -63,7 +63,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						//skip if has spoken recently
 						else if( node->hasSpokenRecently(dynamic_cast<CNode*>(dst), currentTime) )
 						{
-							flash_cout << "####  ( Node " << node->getID() << "  --- skip ---  Node " << dst->getID() << " )                " ;
+							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(dst->getID(), 2) << " )                " ;
 							return;
 						}
 						else
@@ -103,9 +103,9 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						node->checkDataByAck( ctrl->getACK() );
 
 						if( dst->getID() == CSink::SINK_ID )
-							flash_cout << "####  ( Node " << node->printID() << "  ---- " << ctrl->getACK().size() << " ---->  Sink )       " ;
+							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >----" << NDigitString( ctrl->getACK().size(), 3, ' ') << " ---->  Sink )       " ;
 						else
-							flash_cout << "####  ( Node " << node->printID() << "  ---- " << ctrl->getACK().size() << " ---->  Node " << dst->printID() << "   )                       " ;
+							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >----" << NDigitString( ctrl->getACK().size(), 3, ' ') << " ---->  Node " << NDigitString(dst->getID(), 2) << "   )                       " ;
 
 						break;
 
@@ -306,7 +306,7 @@ bool CMacProtocol::transmitPackage(CPackage* package, CGeneralNode* dst, int cur
 			return true;
 		}
 		else
-			flash_cout << "####  ( Node " << package->getSourceNode()->printID() << "  xxxx fail xxxx  Node " << dst->printID() << " )     " ;
+			flash_cout << "####  ( Node " << NDigitString( package->getSourceNode()->getID(), 2) << "  xxxxx fail xxxxx  Node " << NDigitString( dst->getID(), 2) << " )     " ;
 	}
 	free(package);
 	

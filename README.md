@@ -20,7 +20,7 @@
 
 	                                 !!!!!! ALL CASE SENSITIVE !!!!!!
 
-	<node>      -sink           [][];  -range           [];   -prob-trans  [];   -energy      [];   
+	<node>      -sink           [][];  -trans-range           [];   -trans-prob  [];   -energy      [];   
 				-time-data        [];  -time-run        [];
 	<data>      -buffer           [];  -data-rate       [];   -data-size   [];
 	<mac>       -hdc;                  -cycle           [];   -dc-default  [];   -dc-hotspot  [];
@@ -563,3 +563,9 @@
 - FIX：模板类函数`GetItemsByID()`可能不能成功调用？
 - FIX：`CProphet::selectDataByIndex()`的错误；
 - FIX：`CMacProtocol::receivePackage()`的迭代错误；
+
+
+###### 2016-03-22  ·  *< 3.1.5925.29760 >*
+
+- OPT：运行发生异常退出时，输出错误信息到文件`error.log`；
+- OPT：优化命令行参数的使用帮助信息；

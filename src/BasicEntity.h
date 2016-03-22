@@ -39,12 +39,6 @@ public:
 	{
 		return ID;
 	}
-	inline string printID() const
-	{
-		char buff[5];
-		sprintf(buff, "%2d", getID());
-		return string(buff);
-	}
 	inline void setLocation(double x, double y)
 	{		
 		this->location.setX(x);

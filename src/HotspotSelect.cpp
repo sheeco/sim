@@ -80,8 +80,11 @@ void CHotspotSelect::CollectNewPositions(int time)
 		CCoordinate location;
 		if( ! CFileHelper::getLocationFromFile(*i, time, location) )
 		{
-			cout << endl << "Error @ CHotspotSelect::CollectNewPositions() : Cannot find location info for Node " << *i << " at Time " << time << endl;
-			Exit(ENOEXEC);
+			stringstream error;
+			error << "Error @ CHotspotSelect::CollectNewPositions() : Cannot find location info for Node " << *i << " at Time ";
+			cout << endl << error << time << endl;
+			_PAUSE_;
+			Exit(ENOEXEC, error.str());
 		}
 		temp_pos->setLocation(location, time);
 		temp_pos->setNode( *i );

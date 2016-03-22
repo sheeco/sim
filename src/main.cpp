@@ -260,7 +260,7 @@ bool ParseParameters(int argc, char* argv[])
 					SLOT_LOG = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-range" )
+			else if( field == "-trans-range" )
 			{
 				if(iField < argc - 1)
 					CGeneralNode::TRANS_RANGE = atoi( argv[ iField + 1 ] );
@@ -380,7 +380,7 @@ bool ParseParameters(int argc, char* argv[])
 					CHotspot::RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-prob-trans" )
+			else if( field == "-trans-prob" )
 			{
 				if(iField < argc - 1)
 					CGeneralNode::PROB_DATA_FORWARD = atof( argv[ iField + 1 ] );
@@ -452,10 +452,12 @@ bool ParseParameters(int argc, char* argv[])
 	}
 	catch(exception e)
 	{
-		cout << endl << "Error @ ParseParameters() : Wrong Parameter Format!" << endl;
+		stringstream error;
+		error << "Error @ ParseParameters() : Wrong Parameter Format!";
+		cout << endl << error << endl;
 		Help();
 		_PAUSE_;
-		Exit(EINVAL);
+		Exit(EINVAL, error.str());
 		return false;
 	}
 

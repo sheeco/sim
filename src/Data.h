@@ -179,25 +179,27 @@ public:
 
 	static bool useHOP()
 	{
-		if( MAX_HOP > 0 && MAX_TTL > 0 )
-		{
-			cout << endl << "Error @ CData::useHOP() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
-			_PAUSE_;
-			return false;
-		}
-		else
-			return MAX_HOP > 0;
+//		if( MAX_HOP > 0 && MAX_TTL > 0 )
+//		{
+//			cout << endl << "Error @ CData::useHOP() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
+//			_PAUSE_;
+//			return false;
+//		}
+//		else
+		
+		return MAX_HOP > 0;
 	}
 	static bool useTTL()
 	{
-		if( MAX_HOP > 0 && MAX_TTL > 0 )
-		{
-			cout << endl << "Error @ CData::useTTL() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
-			_PAUSE_;
-			return false;
-		}
-		else
-			return MAX_TTL > 0;	
+//		if( MAX_HOP > 0 && MAX_TTL > 0 )
+//		{
+//			cout << endl << "Error @ CData::useTTL() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
+//			_PAUSE_;
+//			return false;
+//		}
+//		else
+			
+		return MAX_TTL > 0;	
 	}
 //	static int getNodeByMask(int id)
 //	{

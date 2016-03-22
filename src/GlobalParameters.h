@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <io.h>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <cmath>
 #include <vector>
 #include <map>
@@ -42,10 +44,13 @@ using std::ios;
 using std::cin;
 using std::cout;
 using std::endl;
+using std::setw;
+using std::setfill;
 using std::fstream;
 using std::ofstream;
 using std::ifstream;
 using std::string;
+using std::stringstream;
 using std::vector;
 using std::map;
 using std::pair;
@@ -103,6 +108,7 @@ namespace global
 	extern string FILE_PARAMETES;
 	extern string FILE_HELP;
 	extern string INFO_HELP;
+	extern string FILE_ERROR;
 	extern string FILE_FINAL;
 	extern string INFO_FINAL;
 
@@ -235,7 +241,9 @@ namespace global
 	// TODO: 
 	inline void Exit(int code, string error)
 	{
-		ofstream errorFile;
+		ofstream errorFile(PATH_ROOT + PATH_LOG + FILE_ERROR, ios::app);
+		errorFile << error << endl << endl;
+		errorFile.close();
 
 		Exit(code);
 	}
@@ -347,6 +355,18 @@ namespace global
 		original = ROUND( original );
 		original /= pow(10, n);
 		return original;
+	}
+
+	inline string NDigitString(int input, int n, char ch)
+	{
+		stringstream ss;
+		ss << setw(n) << setfill(ch) << input;
+		return ss.str();
+	}
+
+	inline string NDigitString(int input, int n)
+	{
+		return NDigitString(input, n, '0');
 	}
 
 	//圆形区域面积

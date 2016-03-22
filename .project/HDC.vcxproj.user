@@ -6,9 +6,8 @@
     <LocalDebuggerWorkingDirectory>..\debug\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>
-    </LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-slot 30 -trans-prob 1 -buffer 500 -data-rate 30 -cycle 300 -dc-default 0.4 -prophet -pred-tolerance 0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>..\release\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>..\debug\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>
