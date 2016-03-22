@@ -616,7 +616,7 @@ void HAR::PrintHotspotInfo(int currentTime)
 
 void HAR::PrintInfo(int currentTime)
 {
-	if( ! ( ( currentTime % SLOT_RECORD_INFO == 0 
+	if( ! ( ( currentTime % SLOT_LOG == 0 
 		      && currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
 			|| currentTime == RUNTIME  ) )
 		return;
@@ -737,7 +737,7 @@ void HAR::PrintInfo(int currentTime)
 
 
 	//Buffer
-	if( currentTime % SLOT_RECORD_INFO == 0 )
+	if( currentTime % SLOT_LOG == 0 )
 	{
 		//每个MA的当前buffer状态
 		ofstream buffer_ma( PATH_ROOT + PATH_LOG + FILE_BUFFER_MA, ios::app);

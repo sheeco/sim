@@ -39,13 +39,6 @@ private:
 		CData::init();
 	};
 
-	void init() override
-	{
-		CGeneralData::init();
-		this->timeArrival = -1;
-		this->TTL = 0;
-	}
-
 	//自动生成ID
 	//ID = node_id * 10 000 000 + data_counter ，用于在SV中识别Data来源
 	inline void generateID()
@@ -53,6 +46,16 @@ private:
 		++ID_COUNT;
 //		this->ID = node * ID_MASK + ID_COUNT;
 		this->ID = ID_COUNT;
+	}
+
+
+protected:
+
+	void init()
+	{
+		CGeneralData::init();
+		this->timeArrival = -1;
+		this->TTL = 0;
 	}
 
 
@@ -121,6 +124,7 @@ public:
 		return this->ID == rt.getID();
 	}
 
+	// TODO: need test
 	//重载操作符==用于根据ID判断identical
 	bool operator == (int id) const
 	{
@@ -145,12 +149,13 @@ public:
 	// TODO: call this func when receiving anything
 	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
 	//注意：数据发送方应在发送之前检查剩余HOP大于1
-	inline void arriveAnotherNode(int currentTime) override
+	inline void arriveAnotherNode(int currentTime)
 	{
 		CGeneralData::arriveAnotherNode(currentTime);
 
 		if( useTTL() )
 			this->TTL -= ( currentTime - time );
+		this->timeArrival = currentTime;
 		this->time = currentTime;
 	}
 
@@ -222,6 +227,8 @@ public:
 		return DELAY_SUM / ARRIVAL_COUNT;
 	}
 	static double getAverageEnergyConsumption();
+
+	static vector<CData> GetItemsByID(vector<CData> list, vector<int> ids);
 
 };
 

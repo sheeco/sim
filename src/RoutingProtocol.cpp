@@ -33,7 +33,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			break;
 	}
 
-	if( ! ( currentTime % SLOT_RECORD_INFO == 0
+	if( ! ( currentTime % SLOT_LOG == 0
 			|| currentTime == RUNTIME ) )
 		return;
 
@@ -83,7 +83,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 	}
 
 	//数据投递率、节点buffer状态
-	if(currentTime % SLOT_RECORD_INFO == 0
+	if(currentTime % SLOT_LOG == 0
 		|| currentTime == RUNTIME)
 	{
 		//数据投递率-100（用于绘制曲线）

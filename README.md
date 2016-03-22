@@ -555,3 +555,11 @@
 - MNT：调整和统一 `README.md` 的格式；
 - TEST：投递概率容差；
 - **TODO：** RFCT：对于不确定尝试和新增的可选功能，尽量使用条件编译和宏定义包裹变量和成员函数定义；
+
+
+###### 2016-03-22  ·  *< 3.1.5925.19658 >*
+
+- ADD：添加命令行参数 `-pred-tolerance`、`-log-path`、`-log-slot`；
+- FIX：模板类函数`GetItemsByID()`可能不能成功调用？
+- FIX：`CProphet::selectDataByIndex()`的错误；
+- FIX：`CMacProtocol::receivePackage()`的迭代错误；

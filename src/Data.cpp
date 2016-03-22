@@ -19,3 +19,20 @@ double CData::getAverageEnergyConsumption()
 	else
 		return CNode::getSumEnergyConsumption() / ARRIVAL_COUNT;
 }
+
+vector<CData> CData::GetItemsByID(vector<CData> list, vector<int> ids)
+{
+	vector<CData> result;
+	for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
+	{
+		for(vector<CData>::iterator item = list.begin(); item != list.end(); ++item)
+		{
+			if( item->getID() == *id )
+			{
+				result.push_back(*item);
+				break;
+			}
+		}
+	}
+	return result;
+}

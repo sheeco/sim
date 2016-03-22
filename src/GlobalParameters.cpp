@@ -12,25 +12,25 @@ namespace global
 	string DATASET;
 	int SLOT = 0;
 	int SLOT_MOBILITYMODEL = 0;
-	int SLOT_RECORD_INFO = 0;
+	int SLOT_LOG = 0;
 
 	string TIMESTAMP;
 	string PATH_TRACE = "../res/";
 	string PATH_LOG = "";  // " YY-MM-DD-HH-MM-SS/ "
-	string PATH_ROOT = "../test/";
+	string PATH_ROOT = "../log/";
 
 	string INFO_LOG;
 	string FILE_PARAMETES = "parameters.log";
 	string FILE_HELP = "help.txt";
 	string INFO_HELP = 
 		"\n                                 !!!!!! ALL CASE SENSITIVE !!!!!! \n"
-		" <run>       -time-data        []   -time-run        []   -slot        []   -dataset     [] \n"
-		" <node>      -sink           [][]   -range           []   -prob-trans  []   -energy      []   \n"
-		" <data>      -buffer           []   -data-rate       []   -data-size   []   -dataset     []   \n"
-		" <mac>       -hdc                   -cycle           []   -discover    []   -dc-default  []   -dc-hotspot  []   \n"
-		" <route>     -epidemic              -prophet              -har              -hop         []   -ttl         []   \n"
-		" <prophet>   -spoken           []   -queue           []   \n"
-		" <hs>        -ihs                   -mhs                  -alpha       []   -beta        []   -heat      [][] \n"
+		" <run>       -time-data        []   -time-run        []   -slot            []   -dataset     []   -log-path    []   -log-slot  [] \n"
+		" <node>      -sink           [][]   -range           []   -prob-trans      []   -energy      []   \n"
+		" <data>      -buffer           []   -data-rate       []   -data-size       []   -dataset     []   \n"
+		" <mac>       -hdc                   -cycle           []   -discover        []   -dc-default  []   -dc-hotspot  [] \n"
+		" <route>     -epidemic              -prophet              -har                  -hop         []   -ttl         [] \n"
+		" <prophet>   -spoken           []   -queue           []   -pred-tolerance  [] \n"
+		" <hs>        -ihs                   -mhs                  -alpha           []   -beta        []   -heat      [][] \n"
 		" <ihar>      -lambda           []   -lifetime        []   \n"
 		" <mhar>      -merge            []   -old             []   \n"
 		" <test>      -dynamic-node-number   -hotspot-similarity   -balanced-ratio \n\n" ;

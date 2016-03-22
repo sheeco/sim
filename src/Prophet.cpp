@@ -194,9 +194,17 @@ vector<CData> CProphet::selectDataByIndex(CNode* node, CCtrl* ctrl)
 	if( node->isFull()
 		|| predDst >= predNode )
 	{		
-		vector<int> req = ctrl->getSV();
-		RemoveFromList(req, node->updateSummaryVector());
-		datas = node->getDataByRequestList( req );
+		vector<int> rcvSV = ctrl->getSV();
+
+		if( ! rcvSV.empty() )
+		{	
+			vector<int> mySV = node->updateSummaryVector();
+			RemoveFromList(mySV, rcvSV);
+			datas = node->getDataByRequestList( mySV );
+		}
+		else
+			datas = node->getAllData();
+
 		if( MAX_DATA_TRANS > 0
 			&& datas.size() > MAX_DATA_TRANS )
 		{

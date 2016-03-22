@@ -39,6 +39,12 @@ public:
 	{
 		return ID;
 	}
+	inline string printID() const
+	{
+		char buff[5];
+		sprintf(buff, "%2d", getID());
+		return string(buff);
+	}
 	inline void setLocation(double x, double y)
 	{		
 		this->location.setX(x);
@@ -124,36 +130,11 @@ public:
 		return sqrt((mx - nx) * (mx - nx) + (my - ny) * (my - ny));
 	}
 
+	static vector<CBasicEntity*> GetItemsByID(vector<CBasicEntity*> list, vector<int> ids);
+
 	//由from向to方向移动，给定时间和速度
 	//如果足够到达to位置，则返回大于等于 0 的剩余时间（精确到整数）；否则返回值小于 0
-	int moveTo(CBasicEntity to, int time, double speed)
-	{
-		double fromX, fromY, toX, toY;
-		fromX = this->getX();
-		fromY = this->getY();
-		toX = to.getX();
-		toY = to.getY();
-
-		double sin, cos, distance;
-		distance = sqrt((fromX - toX) * (fromX - toX) + (fromY - toY) * (fromY - toY));
-
-		//尚未到达
-		int timeArrival = distance / speed;
-		if( timeArrival > time )
-		{
-			cos = (toX - fromX) / distance;
-			sin = (toY - fromY) / distance;
-			this->setLocation(fromX +  time * speed * cos, fromY + time * speed * sin);
-			this->setTime( this->getTime() + time );
-		}
-		//将到达
-		else
-		{
-			this->setLocation(toX, toY);			
-			this->setTime( this->getTime() + timeArrival );
-		}
-		return ( time - timeArrival );
-	}
+	int moveTo(CBasicEntity to, int time, double speed);
 
 };
 

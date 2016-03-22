@@ -35,7 +35,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		CCtrl* ctrlPiggback = nullptr;
 		vector<CData> dataToSend;
 
-		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); ++icontent)
+		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
 		{
 			
 			/***************************************** rcv Ctrl Message *****************************************/
@@ -103,15 +103,16 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						node->checkDataByAck( ctrl->getACK() );
 
 						if( dst->getID() == CSink::SINK_ID )
-							flash_cout << "####  ( Node " << node->getID() << "  ---- " << ctrl->getACK().size() << " ---->  Sink )                       " ;
+							flash_cout << "####  ( Node " << node->printID() << "  ---- " << ctrl->getACK().size() << " ---->  Sink )       " ;
 						else
-							flash_cout << "####  ( Node " << node->getID() << "  ---- " << ctrl->getACK().size() << " ---->  Node " << dst->getID() << " )                       " ;
+							flash_cout << "####  ( Node " << node->printID() << "  ---- " << ctrl->getACK().size() << " ---->  Node " << dst->printID() << "   )                       " ;
 
 						break;
 
 					default:
 						break;
 				}
+				++icontent;
 			}
 
 			/******************************************* rcv Data *******************************************/
@@ -305,7 +306,7 @@ bool CMacProtocol::transmitPackage(CPackage* package, CGeneralNode* dst, int cur
 			return true;
 		}
 		else
-			flash_cout << "####  ( Node " << package->getSourceNode()->getID() << "  xxxx fail xxxx  Node " << dst->getID() << " )              " ;
+			flash_cout << "####  ( Node " << package->getSourceNode()->printID() << "  xxxx fail xxxx  Node " << dst->printID() << " )     " ;
 	}
 	free(package);
 	
@@ -364,17 +365,17 @@ void CMacProtocol::TransmitData(int currentTime)
 			broadcastPackage( (*inode)->sendRTS(currentTime), currentTime );
 	}
 
-	if( ( currentTime + SLOT ) % SLOT_RECORD_INFO == 0 )
+	if( ( currentTime + SLOT ) % SLOT_LOG == 0 )
 	{
 		double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
-		flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl;
+		flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                             " << endl;
 		print = true;
 	}
 }
 
 void CMacProtocol::PrintInfo(int currentTime)
 {
-	if( ! ( currentTime % SLOT_RECORD_INFO == 0
+	if( ! ( currentTime % SLOT_LOG == 0
 			|| currentTime == RUNTIME ) )
 		return;
 

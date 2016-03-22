@@ -36,7 +36,7 @@ private:
 	vector<int> sv;
 	vector<CData> ack;  //直接传递 CData 类，方便操作，实际应传递 sv
 
-	void init() override;
+	void init();
 
 	CCtrl();
 

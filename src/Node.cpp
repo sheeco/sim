@@ -818,7 +818,7 @@ vector<CData> CNode::getDataByRequestList(vector<int> requestList) const
 		return vector<CData>();
 
 	vector<CData> result;
-	result = GetItemsByID(buffer, requestList);
+	result = CData::GetItemsByID(buffer, requestList);
 	return result;
 }
 

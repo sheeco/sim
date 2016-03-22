@@ -56,6 +56,7 @@ using std::exception;
 /********************************** Global Namespace ***********************************/
 
 namespace global
+//class CGlobalHelper
 {
 	/******************************** Config Const ********************************/
 
@@ -87,7 +88,7 @@ namespace global
 	extern string DATASET;
 	extern int SLOT;  // ( s )
 	extern int SLOT_MOBILITYMODEL;  //移动模型中的slot，由数据文件中得来（NCSU模型中为30）
-	extern int SLOT_RECORD_INFO;  //记录数据投递率和数据投递时延的slot
+	extern int SLOT_LOG;  //记录数据投递率和数据投递时延的slot
 
 	/********************************* Usage & Output ***********************************/
 
@@ -431,24 +432,24 @@ namespace global
 			RemoveFromList(des, *i, comp);
 	}
 
-	template <class E>
-	vector<E> GetItemsByID(vector<E> list, vector<int> ids)
-	{
-		vector<E> result;
-		for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
-		{
-//			for(vector<E>::iterator item = list.begin(); item != list.end(); ++item)
-			for(auto item = list.begin(); item != list.end(); ++item)
-			{
-				if( *item == *id )
-				{
-					result.push_back(*item);
-					break;
-				}
-			}
-		}
-		return result;
-	}
+//	template <class E>
+//	vector<E> GetItemsByID(vector<E> list, vector<int> ids)  -> CBasicEntity
+//	{
+//		vector<E> result;
+//		for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
+//		{
+////			for(vector<E>::iterator item = list.begin(); item != list.end(); ++item)
+//			for(auto item = list.begin(); item != list.end(); ++item)
+//			{
+//				if( *item == *id )
+//				{
+//					result.push_back(*item);
+//					break;
+//				}
+//			}
+//		}
+//		return result;
+//	}
 
 	//释放指针vector
 	template <class E>

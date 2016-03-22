@@ -154,7 +154,7 @@ public:
 
 	//判断是否正在监听
 	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus
-	bool isListening() const override;
+	bool isListening() const;
 
 	//判断是否遇到了邻居节点发现时槽
 	//注意：调用此函数之前必须确保已updateStatus

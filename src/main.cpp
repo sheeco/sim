@@ -14,6 +14,8 @@
 // TODO: 检查所有类内静态变量，决定 private / protected
 // TODO: CConfiguration / CConfigureHelper ?
 // TODO: 默认配置参数改为从 XML 读取
+// TODO: MulitCast ?
+
 void InitConfiguration()
 {
 	/************************************** Default Config **************************************/
@@ -116,7 +118,7 @@ void InitConfiguration()
 	SLOT = 1;
 	// TODO: should be read from .trace file
 	SLOT_MOBILITYMODEL = 30;
-	SLOT_RECORD_INFO = 100;
+	SLOT_LOG = 100;
 
 	DATATIME = 15000;
 	RUNTIME = 15000;
@@ -252,6 +254,12 @@ bool ParseParameters(int argc, char* argv[])
 					SLOT = SLOT_MOBILITYMODEL;
 				iField += 2;
 			}
+			else if( field == "-log-slot" )
+			{
+				if(iField < argc - 1)
+					SLOT_LOG = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-range" )
 			{
 				if(iField < argc - 1)
@@ -378,6 +386,14 @@ bool ParseParameters(int argc, char* argv[])
 					CGeneralNode::PROB_DATA_FORWARD = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-pred-tolerance" )
+			{
+#ifdef USE_PRED_TOLERANCE
+				if(iField < argc - 1)
+					CProphet::TOLERANCE_PRED = atof( argv[ iField + 1 ] );
+				iField += 2;
+#endif
+			}
 
 			//带两个或以上数值的参数
 			else if( field == "-sink" )
@@ -407,6 +423,16 @@ bool ParseParameters(int argc, char* argv[])
 					char arg[20] = {'\0'};
 					strcpy(arg, argv[ iField + 1 ]);
 					DATASET = string( _strupr( arg ) );
+				}
+				iField += 2;
+			}			
+			else if( field == "-log-path" )
+			{
+				if(iField < argc - 2)
+				{
+					char arg[20] = {'\0'};
+					strcpy(arg, argv[ iField + 1 ]);
+					PATH_ROOT = "../" + string( _strupr( arg ) ) + "/";
 				}
 				iField += 2;
 			}			
