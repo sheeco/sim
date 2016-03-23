@@ -167,9 +167,9 @@
 
 *在 Git Commit Comment 中使用快速标签：*
 
-　　 `ADD：` 添加新功能、`MOD：` 修改现有实现、`OPT：` 功能优化、`TRY：` 不确定尝试；
-　　 `BUG：` 发现错误、`FIX：` 修复错误、`TEST：` 功能测试；
-　　 `RFCT：` 代码重构、`MNT：` 版控维护、`NOTE：` 附加说明、`TODO：` 计划任务；
+　　 `ADD` 添加新功能、`MOD` 修改现有实现、`OPT` 功能优化、`TRY` 不确定尝试；
+　　 `BUG` 待修复错误、`FIX` 修复错误、`TEST` 功能测试；
+　　 `RFCT` 代码重构、`MNT` 版控维护、`NOTE` 附加说明、`TODO` 计划任务；
 
 
 
@@ -560,17 +560,23 @@
 ###### 2016-03-22  ·  *< 3.1.5925.19658 >*
 
 - ADD：添加命令行参数 `-pred-tolerance`、`-log-path`、`-log-slot`；
-- FIX：模板类函数`GetItemsByID()`可能不能成功调用？
-- FIX：`CProphet::selectDataByIndex()`的错误；
-- FIX：`CMacProtocol::receivePackage()`的迭代错误；
+- FIX：模板类函数 `GetItemsByID()` 可能不能成功调用？
+- FIX：`CProphet::selectDataByIndex()` 的错误；
+- FIX：`CMacProtocol::receivePackage()` 的迭代错误；
 
 
 ###### 2016-03-22  ·  *< 3.1.5925.29760 >*
 
-- OPT：运行发生异常退出时，输出错误信息到文件`error.log`；
+- OPT：运行发生异常退出时，输出错误信息到文件 `error.log`；
 - OPT：优化命令行参数的使用帮助信息；
 
 
-###### 2016-03-23  ·  *< 3.1.5926.11722 >*
+###### 2016-03-23  ·  *< 3.2.5926.22497 >*
 
 - RFCT：规范化变量命名和 getter 函数名；
+- FIX：更改节点是否将进行邻居节点发现的方法， 添加成员变量 `CNode::discovering`，以修复 `CMacProtocol::broadcastPackage()` 中节点相遇和数据传输计数重复计算的问题；
+- FIX：更改数据传输计数的计算方法，单方节点收到一组数据就认为是一次数据传输成功；
+- ADD：添加成员变量 `CNode::encounterActiveAtHotspot`，更改相遇计数的计算方法；
+- ADD：添加节点工作状态随机初始化的可选功能，由变量 `CMacProtocol::RANDOM_STATE_INIT` 标记，命令行参数 `-random-state`；
+- **TODO：** ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC　单独绑定的功能；
+- **TODO：** RFCT：将热点选取的相关输出分离移入到 `CHotspotSelect` 类中；

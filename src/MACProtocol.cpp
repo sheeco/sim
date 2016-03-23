@@ -3,6 +3,7 @@
 #include "Sink.h"
 #include "Prophet.h"
 
+bool CMacProtocol::RANDOM_STATE_INIT = false;
 int CMacProtocol::SIZE_HEADER_MAC = 0;  //Mac Header Size
 bool CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
 int CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
@@ -33,14 +34,20 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		CNode* node = dynamic_cast<CNode*>(&gnode);
 		CCtrl* ctrlToSend = nullptr;
 		CCtrl* ctrlPiggback = nullptr;
-		vector<CData> dataToSend;
+		vector<CData>* dataToSend = nullptr;  //空指针代表不要求数据传输操作，指针指向空vector代表没有适合传输的数据
 
 		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
 		{
 			
 			/***************************************** rcv Ctrl Message *****************************************/
 
-			if( typeid(**icontent) == typeid(CCtrl) )
+			//如果被告知没有需要传输的数据，则不发送ACK，但也认为传输成功
+			if( *icontent == nullptr )
+			{
+				CNode::transmitSucceed();
+				++icontent;
+			}
+			else if( typeid(**icontent) == typeid(CCtrl) )
 			{
 				CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
 				switch( ctrl->getType() )
@@ -49,8 +56,6 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 					/*************************************** rcv RTS **************************************/
 
 					case CCtrl::_rts:
-						//CTS
-						ctrlToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 
 						//if RTS is from sink, send CTS & datas
 						if( ctrl->getNode() == CSink::SINK_ID )
@@ -58,7 +63,10 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 							if( gnode.getAllData().empty() )
 								return;
 
-							dataToSend = node->getAllData();
+							//向其他节点发送Index / 向Sink发送数据时，就认为算作一次数据传输尝试
+							CNode::transmitTry();
+
+							dataToSend = new vector<CData>( node->getAllData() );
 						}
 						//skip if has spoken recently
 						else if( node->hasSpokenRecently(dynamic_cast<CNode*>(dst), currentTime) )
@@ -68,6 +76,12 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						}
 						else
 						{
+							//CTS
+							ctrlToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+
+							//向其他节点发送Index / 向Sink发送数据时，就认为算作一次数据传输尝试
+							CNode::transmitTry();
+
 							//piggyback with data index otherwise
 							ctrlPiggback = new CCtrl(node->getID(), node->getDeliveryPreds(), node->updateSummaryVector(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_index);
 							node->skipRTS();  //（暂未使用）
@@ -80,6 +94,10 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 					/*************************************** rcv CTS **************************************/
 
 					case CCtrl::_cts:
+
+						//向其他节点发送Index / 向Sink发送数据时，就认为算作一次数据传输尝试
+						CNode::transmitTry();
+
 						//data index
 						ctrlToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), node->updateSummaryVector(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_index);
 
@@ -89,23 +107,25 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 					/****************************** rcv Data Index ( dp + sv ) ****************************/
 
 					case CCtrl::_index:
+
 						//update preds
 						node->updateDeliveryPredsWith( dst->getID(), ctrl->getPred() );
 
-						dataToSend = CProphet::selectDataByIndex(node, ctrl);
+						dataToSend = new vector<CData>( CProphet::selectDataByIndex(node, ctrl) );
 						break;
 			
 					/*************************************** rcv ACK **************************************/
 
 					case CCtrl::_ack:
+
 						node->addToSpokenCache( (CNode*)(&dst), currentTime );
 						//clear data with ack
 						node->checkDataByAck( ctrl->getACK() );
 
 						if( dst->getID() == CSink::SINK_ID )
-							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >----" << NDigitString( ctrl->getACK().size(), 3, ' ') << " ---->  Sink )       " ;
+							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
 						else
-							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >----" << NDigitString( ctrl->getACK().size(), 3, ' ') << " ---->  Node " << NDigitString(dst->getID(), 2) << "   )                       " ;
+							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(dst->getID(), 2) << " )                       " ;
 
 						break;
 
@@ -119,6 +139,8 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 			else if( typeid(**icontent) == typeid(CData) )
 			{
+				CNode::transmitSucceed();
+
 				//extract data content
 				vector<CData> datas;
 				do
@@ -131,6 +153,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 				vector<CData> ack;
 				ack = CProphet::bufferData(node, datas, currentTime);
 				//ACK
+				//如果收到的数据全部被丢弃，则不发送ACK
 				if( ! ack.empty() )
 					ctrlToSend = new CCtrl(node->getID(), ack, currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
 			}
@@ -145,10 +168,13 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 			{
 				packageToSend = new CPackage(*node, *dst, *ctrlToSend, *ctrlPiggback);		
 				free(ctrlPiggback);
+				ctrlPiggback = nullptr;
 			}
-			else if( ! dataToSend.empty() )
+			else if( dataToSend != nullptr )
 			{
-				packageToSend = new CPackage(*node, *dst, *ctrlToSend, dataToSend);		
+				packageToSend = new CPackage(*node, *dst, *ctrlToSend, *dataToSend);
+				free(dataToSend);
+				dataToSend = nullptr;
 			}
 			else
 			{
@@ -156,6 +182,13 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 			}
 		
 			free(ctrlToSend);
+			ctrlToSend = nullptr;
+		}
+		else if( dataToSend != nullptr )
+		{
+			packageToSend = new CPackage(*node, *dst, *dataToSend);
+			free(dataToSend);
+			dataToSend = nullptr;
 		}
 		else
 		{
@@ -177,6 +210,8 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		{
 			if( typeid(**icontent) == typeid(CData) )
 			{
+				CNode::transmitSucceed();
+
 				//extract data content
 				vector<CData> datas;
 				do
@@ -207,6 +242,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 	}
 	
 	free(package);
+	package = nullptr;
 
 }
 
@@ -227,29 +263,27 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 	{
 
 		CNode* srcNode = dynamic_cast<CNode*>( gnode );	
-		for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
+		for(vector<CNode*>::iterator dstNode = nodes.begin(); dstNode != nodes.end(); ++dstNode)
 		{
 			//skip itself
-			if( (*inode)->getID() == srcNode->getID() )
+			if( (*dstNode)->getID() == srcNode->getID() )
 				continue;
 
-			if( CBasicEntity::getDistance( *srcNode, **inode ) <= CGeneralNode::RANGE_TRANS )
+			if( CBasicEntity::getDistance( *srcNode, **dstNode ) <= CGeneralNode::RANGE_TRANS )
 			{
-				CNode::encount();
-
-				if( (*inode)->isAtHotspot() || srcNode->isAtHotspot() )
-					CNode::encountAtHotspot();
-
-				if( (*inode)->isListening() )
+				if( (*dstNode)->isListening() )
 				{
-					CNode::encountActive();
+					if( ! (*dstNode)->isDiscovering() )  //避免重复计算
+					{
+						CNode::encountActive();
+						if( (*dstNode)->isAtHotspot() || srcNode->isAtHotspot() )
+							CNode::encountActiveAtHotspot();
+					}
 
-					CNode::transmitTry();
 					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
 						rcv = true;
-						receivePackage(**inode, package, currentTime);
-						CNode::transmitSucceed();
+						receivePackage(**dstNode, package, currentTime);
 					}
 				}
 			}
@@ -272,12 +306,10 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 				{
 					CSink::encountActive();
 
-					CNode::transmitTry();
 					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
 						rcv = true;
 						receivePackage(**inode, package, currentTime);
-						CNode::transmitSucceed();
 					}
 				}
 			}
@@ -297,16 +329,13 @@ bool CMacProtocol::transmitPackage(CPackage* package, CGeneralNode* dst, int cur
 {
 	if( dst->isListening() )
 	{
-		CNode::transmitTry();
-
 		if( Bet(CGeneralNode::PROB_TRANS) )
 		{
 			receivePackage(*dst, package, currentTime);
-			CNode::transmitSucceed();
 			return true;
 		}
 		else
-			flash_cout << "####  ( Node " << NDigitString( package->getSrcNode()->getID(), 2) << "  xxxxx fail xxxxx  Node " << NDigitString( dst->getID(), 2) << " )     " ;
+			flash_cout << "####  ( Node " << NDigitString( package->getSrcNode()->getID(), 2) << "  >----  fail  xxxx>  Node " << NDigitString( dst->getID(), 2) << " )     " ;
 	}
 	free(package);
 	
@@ -318,7 +347,7 @@ void CMacProtocol::ChangeNodeNumber(int currentTime)
 	if( ! ( currentTime % SLOT_CHANGE_NUM_NODE == 0 ) )
 		return;
 
-	cout << endl << "########  < " << currentTime << " >  NODE NUMBER CHANGE" ;
+	flash_cout << endl << "########  < " << currentTime << " >  NODE NUMBER CHANGE" ;
 	
 	int delta = CNode::ChangeNodeNumber();
 
@@ -349,7 +378,7 @@ void CMacProtocol::TransmitData(int currentTime)
 	if( currentTime == 0 
 		|| print )
 	{
-		cout << endl << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
+		flash_cout << "########  < " << currentTime << " >  DATA DELIVERY            " << endl ;
 		print = false;
 	}
 
@@ -359,16 +388,29 @@ void CMacProtocol::TransmitData(int currentTime)
 	broadcastPackage( CSink::getSink()->sendRTS(currentTime) , currentTime );
 
 	vector<CNode*> nodes = CNode::getNodes();
-	for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
+	for(vector<CNode*>::iterator srcNode = nodes.begin(); srcNode != nodes.end(); ++srcNode )
 	{
-		if( (*inode)->isDiscovering() )
-			broadcastPackage( (*inode)->sendRTS(currentTime), currentTime );
+		for(vector<CNode*>::iterator dstNode = srcNode; dstNode != nodes.end(); ++dstNode)
+		{
+			if( CBasicEntity::getDistance( **srcNode, **dstNode ) <= CGeneralNode::RANGE_TRANS )
+			{
+				CNode::encount();
+				if( (*dstNode)->isAtHotspot() || (*srcNode)->isAtHotspot() )  //避免重复计算
+					CNode::encountAtHotspot();
+			}
+		}
+
+		if( (*srcNode)->isDiscovering() )
+		{
+			broadcastPackage( (*srcNode)->sendRTS(currentTime), currentTime );
+			(*srcNode)->finishDiscovering();
+		}
 	}
 
 	if( ( currentTime + SLOT ) % SLOT_LOG == 0 )
 	{
 		double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
-		flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                             " << endl;
+		flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                             " << endl << endl;
 		print = true;
 	}
 }
@@ -392,7 +434,10 @@ void CMacProtocol::PrintInfo(int currentTime)
 		}
 		encounter << currentTime << TAB;
 		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
+		{
+			encounter << CNode::getPercentEncounterActiveAtHotspot() << TAB << CNode::getEncounterActiveAtHotspot() << TAB;
 			encounter << CNode::getPercentEncounterAtHotspot() << TAB << CNode::getEncounterAtHotspot() << TAB;
+		}
 		encounter << CNode::getPercentEncounterActive() << TAB << CNode::getEncounterActive() << TAB << CNode::getEncounter() << TAB;
 		encounter << endl;
 		encounter.close();

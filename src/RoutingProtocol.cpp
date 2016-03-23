@@ -61,6 +61,16 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		delay << currentTime << TAB << CData::getAverageDelay() << endl;
 		delay.close();
 
+		//数据投递跳数
+		ofstream hop( PATH_ROOT + PATH_LOG + FILE_HOP, ios::app);
+		if(currentTime == 0)
+		{
+			hop << endl << INFO_LOG << endl ;
+			hop << INFO_HOP ;
+		}
+		hop << currentTime << TAB << CData::getAverageHOP() << endl;
+		hop.close();
+
 		//每个节点buffer状态的历史平均值
 		ofstream buffer( PATH_ROOT + PATH_LOG + FILE_BUFFER_STATISTICS, ios::app);
 		if(currentTime == 0)
@@ -128,7 +138,7 @@ void CRoutingProtocol::PrintFinal(int currentTime)
 		final << CData::getCountDelivery() << TAB ;
 	else
 		final << CData::getDeliveryRatio() << TAB ;
-	final << CData::getAverageDelay() << TAB ;
+	final << CData::getAverageDelay() << TAB << CData::getAverageHOP() << TAB ;
 	final.close();
 
 	switch( MAC_PROTOCOL )

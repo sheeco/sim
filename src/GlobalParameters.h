@@ -127,6 +127,8 @@ namespace global
 	extern string INFO_DELIVERY_RATIO_100;
 	extern string FILE_DELAY;
 	extern string INFO_DELAY;
+	extern string FILE_HOP;
+	extern string INFO_HOP;
 	extern string FILE_BUFFER;
 	extern string INFO_BUFFER;
 	extern string FILE_BUFFER_STATISTICS;
@@ -271,7 +273,7 @@ namespace global
 		return RandomFloat(0, 1) <= prob;
 	}
 
-	//Randomly product a int number between min and max (cannot reach max)
+	//Randomly product a int number between [min, max)
 	inline int RandomInt(int min, int max)
 	{
 		if (min == max)

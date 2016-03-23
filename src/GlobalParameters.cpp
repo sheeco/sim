@@ -56,6 +56,7 @@ namespace global
 		" -discover             []    每个工作周期中，开始邻居节点发现之前的监听时间（默认 10）； \n "
 		" -dc-default           []    默认占空比，即监听时间占整个工作周期的比例（默认 1.0）； \n "
 		" -dc-hotspot           []    *HDC 中热点区域使用的占空比； \n "
+		" -random-state               采用随机的节点初始工作状态，即异步的占空比； \n "
 
 		"\n <route>                     < 路由层参数 >  \n\n "
 
@@ -98,10 +99,10 @@ namespace global
 
 	string FILE_ERROR = "error.log";
 	string FILE_FINAL = "final.log";
-	string INFO_FINAL = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime #Node)	#Log \n" ;
+	string INFO_FINAL = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#HOP/TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay/	#HOP/	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime	#Node)	#Log \n" ;
 
 	string FILE_ENCOUNTER = "encounter.log";
-	string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot%	#EncounterAtHotspot	#EncounterActive%	#EncounterActive)	#Encounter	 \n" ;
+	string INFO_ENCOUNTER = "#Time	(#EncounterActiveAtHotspot%	#EncounterActiveAtHotspot	#EncounterAtHotspot%	#EncounterAtHotspot)	#EncounterActive%	#EncounterActive	#Encounter	 \n" ;
 	string FILE_TRANSMIT = "transmit.log";
 	string INFO_TRANSMIT = "#Time	(#TransmitSuccessful%	#TransmitSuccessful	#Transmit \n" ;
 	string FILE_ENERGY_CONSUMPTION = "energy-consumption.log";
@@ -115,6 +116,8 @@ namespace global
 	string INFO_DELIVERY_RATIO_100 = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio% \n" ;
 	string FILE_DELAY = "delay.log";
 	string INFO_DELAY	 = "#Time	#AvgDelay \n" ;
+	string FILE_HOP = "hop.log";
+	string INFO_HOP	 = "#Time	#AvgHOP \n" ;
 	string FILE_BUFFER = "buffer.log";
 	string INFO_BUFFER = "#Time	#BufferStateOfEachNode \n" ;
 	// TODO: all 0 in output

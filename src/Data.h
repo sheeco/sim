@@ -30,6 +30,7 @@ private:
 	static int COUNT_ID;  //数值等于data的总数
 	static int COUNT_ARRIVAL;  //到达的数据计数
 	static double SUM_DELAY;  //时延加和，用于计算平均时延
+	static double SUM_HOP;  //跳数加和，用于计算平均跳数
 
 	static int COUNT_DELIVERY_AT_HOTSPOT;  //在热点处得到投递的数据计数
 	static int COUNT_DELIVERY_ON_ROUTE;  //在路径上得到投递的数据计数
@@ -144,6 +145,7 @@ public:
 		this->time = timeArrival;
 		++COUNT_ARRIVAL;
 		SUM_DELAY += timeArrival - timeBirth;
+		SUM_HOP += -HOP;
 	}
 
 	// TODO: call this func when receiving anything
@@ -227,6 +229,12 @@ public:
 		if(COUNT_ARRIVAL == 0)
 			return 0;
 		return SUM_DELAY / COUNT_ARRIVAL;
+	}
+	static double getAverageHOP()
+	{
+		if(COUNT_ARRIVAL == 0)
+			return 0;
+		return SUM_HOP / COUNT_ARRIVAL;
 	}
 	static double getAverageEnergyConsumption();
 

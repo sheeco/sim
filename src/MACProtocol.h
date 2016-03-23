@@ -36,6 +36,7 @@ public:
 
 	static int SIZE_HEADER_MAC;  //Mac Header Size
 
+	static bool RANDOM_STATE_INIT;  //是否初始化所有节点的工作状态为随机的
 	static bool TEST_DYNAMIC_NUM_NODE;
 	static int SLOT_CHANGE_NUM_NODE;  //动态节点个数测试时，节点个数发生变化的周期
 

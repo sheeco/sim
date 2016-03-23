@@ -28,6 +28,7 @@ private:
 	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
 	int SLOT_LISTEN;  //由SLOT_TOTAL和DC计算得到
 	int SLOT_DISCOVER;  //发送 RTS 之前等待邻居节点发现的时间
+	bool discovering;  //用于标记是否正在进行邻居节点发现，本次发现完毕将置false
 
 	int timeData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
@@ -38,6 +39,7 @@ private:
 	int sumBufferRecord;
 	int countBufferRecord;
 	static int encounterAtHotspot;
+	static int encounterActiveAtHotspot;
 	static int encounterActive;  //有效相遇
 	static int encounter;
 	static int visiterAtHotspot;
@@ -160,7 +162,13 @@ public:
 	//注意：调用此函数之前必须确保已updateStatus
 	bool isDiscovering() const
 	{
-		return state == SLOT_DISCOVER;
+		return discovering;
+	}
+
+	//标记本次邻居节点发现已经完成
+	void finishDiscovering()
+	{
+		this->discovering = false;
 	}
 
 	//在热点处提高 dc
@@ -284,30 +292,48 @@ public:
 
 	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
 	//注意：暂时只支持Prophet路由，其他路由尚未添加相关代码
-	static void encountAtHotspot() 
-	{
-		++encounterAtHotspot;
-	}
+	//所有可能的相遇（与MAC和路由协议无关，只与数据集和统计时槽有关）
 	static void encount() 
 	{
 		++encounter;
 	}
+	//邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
 	static void encountActive() 
 	{
 		++encounterActive;
+	}
+	//热点区域所有可能的相遇（只与数据集和热点选取有关）
+	static void encountAtHotspot() 
+	{
+		++encounterAtHotspot;
+	}
+	//热点区域内邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
+	static void encountActiveAtHotspot() 
+	{
+		++encounterActiveAtHotspot;
 	}
 
 	static int getEncounter() 
 	{
 		return encounter;
 	}
+	static int getEncounterActive()
+	{
+		return encounterActive;
+	}
 	static int getEncounterAtHotspot() 
 	{
 		return encounterAtHotspot;
 	}
-	static int getEncounterActive()
+	static int getEncounterActiveAtHotspot() 
 	{
-		return encounterActive;
+		return encounterActiveAtHotspot;
+	}
+	static double getPercentEncounterActiveAtHotspot() 
+	{
+		if(encounterActiveAtHotspot == 0)
+			return 0.0;
+		return double(encounterActiveAtHotspot) / double(encounter);
 	}
 	static double getPercentEncounterAtHotspot() 
 	{
@@ -348,10 +374,12 @@ public:
 	}
 
 	//数据传输计数：用于统计数据传输成功的百分比
+	//数据传输为双向计算，单方节点成功收到数据就记作一次
 	static void transmitTry()
 	{
 		++transmit;
 	}
+	//数据传输为双向计算，单方节点 / Sink成功收到数据就记作一次
 	static void transmitSucceed()
 	{
 		++transmitSuccessful;

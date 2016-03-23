@@ -206,7 +206,7 @@ void HAR::HotspotSelection(int currentTime)
 
 	if( currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
 	{
-		cout << "########  < " << currentTime << " >  HOTSPOT SELECTTION" << endl ;
+		flash_cout << "########  < " << currentTime << " >  HOTSPOT SELECT            " << endl ;
 
 		CHotspotSelect::BuildCandidateHotspots(currentTime);
 

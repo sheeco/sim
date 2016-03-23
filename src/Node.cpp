@@ -11,6 +11,7 @@
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
 int CNode::encounterAtHotspot = 0;
+int CNode::encounterActiveAtHotspot = 0;
 int CNode::encounterActive = 0;
 int CNode::encounter = 0;
 int CNode::visiterAtHotspot = 0;
@@ -54,7 +55,7 @@ void CNode::init()
 	dataRate = 0;
 	atHotspot = nullptr;
 	SLOT_DISCOVER = DEFAULT_DISCOVER_CYCLE;
-	state = 0;
+	discovering = false;
 	timeData = 0;
 	timeDeath = 0;
 	recyclable = true;
@@ -64,6 +65,10 @@ void CNode::init()
 	dutyCycle = DEFAULT_DUTY_CYCLE;
 	SLOT_LISTEN = dutyCycle * SLOT_TOTAL;
 	SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
+	if( CMacProtocol::RANDOM_STATE_INIT )
+		state = RandomInt(-SLOT_SLEEP, SLOT_LISTEN);
+	else
+		state = 0;
 }
 
 CNode::CNode() 
@@ -180,7 +185,7 @@ bool CNode::hasNodes(int currentTime)
 	}
 	ClearDeadNodes();
 	if(death)
-		cout << "####  [ Node ]  " << CNode::getNodes().size() << endl;
+		cout << "####  [ Node ]  " << CNode::getNodes().size() << endl << endl;
 
 	return ( ! nodes.empty() );
 }
@@ -636,9 +641,10 @@ bool CNode::updateStatus(int currentTime)
 
 	//如果遇到邻居节点发现时槽，在此时槽上暂停
 	if( oldState < SLOT_DISCOVER
-		&& newState > SLOT_DISCOVER )
+		&& newState >= SLOT_DISCOVER )
 	{
 		state = SLOT_DISCOVER;
+		discovering = true;
 		timeIncre = SLOT_DISCOVER - oldState;
 		currentTime = time + timeIncre;
 	}

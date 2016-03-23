@@ -5,6 +5,7 @@
 int CData::COUNT_ID = 0;
 int CData::COUNT_ARRIVAL = 0;
 double CData::SUM_DELAY = 0;
+double CData::SUM_HOP = 0;
 int CData::COUNT_DELIVERY_AT_HOTSPOT = 0;
 int CData::COUNT_DELIVERY_ON_ROUTE = 0;
 

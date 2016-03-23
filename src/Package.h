@@ -15,6 +15,7 @@ private:
 	CGeneralNode* src;
 	CGeneralNode* dst;  //默认 null, 广播
 	int headerMac;
+	//注意：元素可能为空只恨，这意味着任何引用之前需要判断
 	vector<CGeneralData*> content;
 
 	void init();
@@ -28,6 +29,8 @@ public:
 	CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl_a, CCtrl ctrl_b);
 	//datas piggyback with data index ( delivery preds & summary vector ) / ACK
 	CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl, vector<CData> datas);
+	//datas only
+	CPackage(CGeneralNode& node, CGeneralNode& dst , vector<CData> datas);
 	~CPackage();
 
 	inline CGeneralNode* getSrcNode() const

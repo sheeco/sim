@@ -46,7 +46,8 @@ void InitConfiguration()
 	CNode::SLOT_TOTAL = 0;
 	CNode::DEFAULT_DUTY_CYCLE = 0;
 	CNode::HOTSPOT_DUTY_CYCLE = 0; 
-	CNode::DEFAULT_DISCOVER_CYCLE = 0; 
+	CNode::DEFAULT_DISCOVER_CYCLE = 0;
+	CMacProtocol::RANDOM_STATE_INIT = false;
 
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
@@ -223,6 +224,11 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-balanced-ratio" )
 			{
 				HAR::TEST_BALANCED_RATIO = true;
+				++iField;
+			}
+			else if( field == "-random-state" )
+			{
+				CMacProtocol::RANDOM_STATE_INIT = true;
 				++iField;
 			}
 
