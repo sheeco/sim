@@ -397,8 +397,8 @@ bool ParseParameters(int argc, char* argv[])
 #ifdef USE_PRED_TOLERANCE
 				if(iField < argc - 1)
 					CProphet::TOLERANCE_PRED = atof( argv[ iField + 1 ] );
-				iField += 2;
 #endif
+				iField += 2;
 			}
 
 			//带两个或以上数值的参数

@@ -587,6 +587,9 @@
 
 ###### 2016-03-23  ·  *< 3.2.5926.30658 >*
 
-
 - FIX：取消 `USE_TOLERANCE_PRED`；
 - FIX：修复遗漏引用 `CNode::updateDeliveryPredsWithSink()` 的重要错误；
+
+
+###### 2016-03-23  ·  *< 3.2.5926.31165 >*
+
