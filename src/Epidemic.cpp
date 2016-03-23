@@ -5,7 +5,7 @@
 #include "HDC.h"
 #include "SortHelper.h"
 
-int CEpidemic::MAX_QUEUE_SIZE = -1;
+int CEpidemic::MAX_DATA_RELAY = -1;
 
 
 //void CEpidemic::SendData(int currentTime)
@@ -33,10 +33,10 @@ int CEpidemic::MAX_QUEUE_SIZE = -1;
 //		if( ! (*inode)->isListening() )
 //			continue;
 //
-//		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::TRANS_RANGE )
+//		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::RANGE_TRANS )
 //		{
 //			//deliver data to sink
-//			flash_cout << "####  ( Node " << (*inode)->getID() << " deliver " << (*inode)->getBufferSize() << " data to Sink )                    " ;
+//			flash_cout << "####  ( Node " << (*inode)->getID() << " deliver " << (*inode)->getSizeBuffer() << " data to Sink )                    " ;
 //			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
 //			++nEncounterAtSink;
 //		}
@@ -45,11 +45,11 @@ int CEpidemic::MAX_QUEUE_SIZE = -1;
 //		//inode < jnode，即任何节点对只有一次通信机会
 //		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); ++jnode)
 //		{
-//			if( (*jnode)->getX() + CGeneralNode::TRANS_RANGE < (*inode)->getX() )
+//			if( (*jnode)->getX() + CGeneralNode::RANGE_TRANS < (*inode)->getX() )
 //				continue;
-//			if( (*inode)->getX() + CGeneralNode::TRANS_RANGE < (*jnode)->getX() )
+//			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*jnode)->getX() )
 //				break;
-//			if( CBasicEntity::getDistance( **inode, **jnode ) > CGeneralNode::TRANS_RANGE )
+//			if( CBasicEntity::getDistance( **inode, **jnode ) > CGeneralNode::RANGE_TRANS )
 //				continue;
 //
 //			if( (*inode)->isAtHotspot() || (*jnode)->isAtHotspot() )

@@ -20,65 +20,65 @@ void InitConfiguration()
 {
 	/************************************** Default Config **************************************/
 
-	CGeneralNode::TRANS_RANGE = 100;  //transmission range
-	CGeneralNode::PROB_DATA_FORWARD = 1.0;
+	CGeneralNode::RANGE_TRANS = 100;  //transmission range
+	CGeneralNode::PROB_TRANS = 1.0;
 
 	CSink::SINK_ID = 0; //0为sink节点预留，传感器节点ID从1开始
 	CSink::SINK_X = 0;
 	CSink::SINK_Y = 0;
-	CSink::BUFFER_CAPACITY = 999999999;  //无限制
+	CSink::CAPACITY_BUFFER = 999999999;  //无限制
 
-	CNode::NUM_NODE_INIT = 0;
+	CNode::INIT_NUM_NODE = 0;
 
 	CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //数据发送slot
 	CNode::DEFAULT_DATA_RATE = 0;
-	CNode::DATA_SIZE = 0;
-	CGeneralNode::CTRL_SIZE = 0;
-	CMacProtocol::MAC_SIZE = 8;  //Mac Header Size
+	CNode::SIZE_DATA = 0;
+	CGeneralNode::SIZE_CTRL = 0;
+	CMacProtocol::SIZE_HEADER_MAC = 8;  //Mac Header Size
 
-	CNode::BUFFER_CAPACITY = 0;
-	CNode::ENERGY = 0;
-	CNode::SPOKEN_MEMORY = 0;
-	CNode::RECEIVE_MODE = CGeneralNode::_loose;
-	CNode::SEND_MODE = CGeneralNode::_dump;
-	CNode::QUEUE_MODE = CGeneralNode::_fifo;
+	CNode::CAPACITY_BUFFER = 0;
+	CNode::CAPACITY_ENERGY = 0;
+	CNode::LIFETIME_SPOKEN_CACHE = 0;
+	CNode::MODE_RECEIVE = CGeneralNode::_loose;
+	CNode::MODE_SEND = CGeneralNode::_dump;
+	CNode::MODE_QUEUE = CGeneralNode::_fifo;
 
 	CNode::SLOT_TOTAL = 0;
 	CNode::DEFAULT_DUTY_CYCLE = 0;
 	CNode::HOTSPOT_DUTY_CYCLE = 0; 
-	CNode::DEFAULT_SLOT_DISCOVER = 0; 
+	CNode::DEFAULT_DISCOVER_CYCLE = 0; 
 
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
 	CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
-	CNode::NUM_NODE_MIN = 0;
-	CNode::NUM_NODE_MAX = 0;
+	CNode::MIN_NUM_NODE = 0;
+	CNode::MAX_NUM_NODE = 0;
 	/********** ------------------- **********/
 
 	/*********************************  HAR  *******************************/
 
 	CMANode::SPEED = 30;
-	CMANode::BUFFER_CAPACITY = 100;
-	CMANode::RECEIVE_MODE = CGeneralNode::_selfish;
+	CMANode::CAPACITY_BUFFER = 100;
+	CMANode::MODE_RECEIVE = CGeneralNode::_selfish;
 
 	/******************************  Epidemic  *****************************/
 
 	CData::MAX_HOP = 0;
 	CData::MAX_TTL = 0;
 
-	CEpidemic::MAX_QUEUE_SIZE = -1;
+	CEpidemic::MAX_DATA_RELAY = -1;
 
 	/******************************  Prophet  ******************************/
 
 	CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
-	CNode::DECAY_RATIO = 0.90;  //0.98(/s)
-	CNode::TRANS_RATIO = 0.20;  //0.25
+	CNode::RATIO_PRED_DECAY = 0.90;  //0.98(/s)
+	CNode::RATIO_PRED_TRANS = 0.20;  //0.25
 	CProphet::MAX_DATA_TRANS = 0;
 
 #ifdef USE_PRED_TOLERANCE
 
 	CProphet::TOLERANCE_PRED = 0;
-//	DECAY_RATIO_TOLERANCE_PRED = 1;
+//	DECAY_TOLERANCE_PRED = 1;
 
 #endif
 
@@ -97,7 +97,7 @@ void InitConfiguration()
 	/******************************* IHAR **********************************/
 
 	HAR::LAMBDA = 0;
-	HAR::MAX_MEMORY_TIME = 3600;
+	HAR::LIFETIME_POSITION = 3600;
 
 	/***************************** merge-HAR *******************************/
 
@@ -125,33 +125,33 @@ void InitConfiguration()
 
 	/*********** Depend on DATASET ***********/
 	DATASET = "KAIST";
-	CGeneralNode::TRANS_RANGE = 250;
+	CGeneralNode::RANGE_TRANS = 250;
 	CSink::SINK_X = -200;  //for KAIST
 	CSink::SINK_Y = 200;
-	CNode::NUM_NODE_INIT = 29;
-	CNode::NUM_NODE_MIN = CNode::NUM_NODE_INIT - 5;
-	CNode::NUM_NODE_MAX = CNode::NUM_NODE_INIT + 5;
+	CNode::INIT_NUM_NODE = 29;
+	CNode::MIN_NUM_NODE = CNode::INIT_NUM_NODE - 5;
+	CNode::MAX_NUM_NODE = CNode::INIT_NUM_NODE + 5;
 	/*********** ----------------- ***********/
 
-	CGeneralNode::PROB_DATA_FORWARD = 1.0;
+	CGeneralNode::PROB_TRANS = 1.0;
 
 	CNode::DEFAULT_DATA_RATE = 1.0 / 30.0;
-	CNode::BUFFER_CAPACITY = 200;
-	CNode::ENERGY = 0;
-	CNode::SPOKEN_MEMORY = 0;
+	CNode::CAPACITY_BUFFER = 200;
+	CNode::CAPACITY_ENERGY = 0;
+	CNode::LIFETIME_SPOKEN_CACHE = 0;
 
-	CNode::DATA_SIZE = 250;  //Up to 250 Bytes
-	CGeneralNode::CTRL_SIZE = 10;
+	CNode::SIZE_DATA = 250;  //Up to 250 Bytes
+	CGeneralNode::SIZE_CTRL = 10;
 
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
-	CNode::DEFAULT_SLOT_DISCOVER = 10; 
+	CNode::DEFAULT_DISCOVER_CYCLE = 10; 
 
 	/** Opt **/
 #ifdef USE_PRED_TOLERANCE
 
 	CProphet::TOLERANCE_PRED = 0.2;
-//	DECAY_RATIO_TOLERANCE_PRED = 1;
+//	DECAY_TOLERANCE_PRED = 1;
 
 #endif
 
@@ -263,13 +263,13 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-trans-range" )
 			{
 				if(iField < argc - 1)
-					CGeneralNode::TRANS_RANGE = atoi( argv[ iField + 1 ] );
+					CGeneralNode::RANGE_TRANS = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}			
 			else if( field == "-lifetime" )
 			{
 				if(iField < argc - 1)
-					HAR::MAX_MEMORY_TIME = atoi( argv[ iField + 1 ] );
+					HAR::LIFETIME_POSITION = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-cycle" )
@@ -281,7 +281,7 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-discover" )
 			{
 				if(iField < argc - 1)
-					CNode::DEFAULT_SLOT_DISCOVER = atof( argv[ iField + 1 ] );
+					CNode::DEFAULT_DISCOVER_CYCLE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-dc-default" )
@@ -311,7 +311,7 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-buffer" )
 			{
 				if(iField < argc - 1)
-					CNode::BUFFER_CAPACITY = atoi( argv[ iField + 1 ] );
+					CNode::CAPACITY_BUFFER = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-data-rate" )
@@ -323,13 +323,13 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-data-size" )
 			{
 				if(iField < argc - 1)
-					CNode::DATA_SIZE = atoi( argv[ iField + 1 ] );
+					CNode::SIZE_DATA = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-energy" )
 			{
 				if(iField < argc - 1)
-					CNode::ENERGY = 1000 * atoi( argv[ iField + 1 ] );
+					CNode::CAPACITY_ENERGY = 1000 * atoi( argv[ iField + 1 ] );
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -338,13 +338,13 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-queue" )
 			{
 				if(iField < argc - 1)
-					CEpidemic::MAX_QUEUE_SIZE = atoi( argv[ iField + 1 ] );
+					CEpidemic::MAX_DATA_RELAY = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}			
 			else if( field == "-spoken" )
 			{
 				if(iField < argc - 1)
-					CNode::SPOKEN_MEMORY = atoi( argv[ iField + 1 ] );
+					CNode::LIFETIME_SPOKEN_CACHE = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 
@@ -383,7 +383,7 @@ bool ParseParameters(int argc, char* argv[])
 			else if( field == "-trans-prob" )
 			{
 				if(iField < argc - 1)
-					CGeneralNode::PROB_DATA_FORWARD = atof( argv[ iField + 1 ] );
+					CGeneralNode::PROB_TRANS = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-pred-tolerance" )
@@ -500,22 +500,29 @@ void PrintConfiguration()
 	parameters << endl << endl << INFO_LOG << endl << endl;
 
 	parameters << "CYCLE" << TAB << CNode::SLOT_TOTAL << endl;
-	parameters << "DEFAULT DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
+	parameters << "DEFAULT_DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
 	if( MAC_PROTOCOL == _hdc )
-		parameters << "HOTSPOT DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
+		parameters << "HOTSPOT_DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
 
 	if( CData::useHOP() )
 		parameters << "HOP" << TAB << CData::MAX_HOP << endl;
 	else
 		parameters << "TTL" << TAB << CData::MAX_TTL << endl;
-	parameters << "DATA RATE" << TAB << "1 / " << int( 1 / CNode::DEFAULT_DATA_RATE ) << endl;
-	parameters << "DATA SIZE" << TAB << CNode::DATA_SIZE << endl;
-	parameters << "BUFFER CAPACITY" << TAB << CNode::BUFFER_CAPACITY << endl;
-	parameters << "NODE ENERGY" << TAB << CNode::ENERGY << endl;
+	parameters << "DATA_RATE" << TAB << "1 / " << int( 1 / CNode::DEFAULT_DATA_RATE ) << endl;
+	parameters << "DATA_SIZE" << TAB << CNode::SIZE_DATA << endl;
+	parameters << "BUFFER" << TAB << CNode::CAPACITY_BUFFER << endl;
+	parameters << "ENERGY" << TAB << CNode::CAPACITY_ENERGY << endl;
 
-	parameters << "DATA TIME" << TAB << DATATIME << endl;
-	parameters << "RUN TIME" << TAB << RUNTIME << endl;
-	parameters << "PROB DATA FORWARD" << TAB << CGeneralNode::PROB_DATA_FORWARD << endl;
+	parameters << "DATA_TIME" << TAB << DATATIME << endl;
+	parameters << "RUN_TIME" << TAB << RUNTIME << endl;
+	parameters << "PROB_TRANS" << TAB << CGeneralNode::PROB_TRANS << endl;
+	parameters << "DATA_TRANS" << TAB << CProphet::MAX_DATA_TRANS << endl;
+
+	CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
+	CNode::RATIO_PRED_DECAY = 0.90;  //0.98(/s)
+	CNode::RATIO_PRED_TRANS = 0.20;  //0.25
+	CProphet::MAX_DATA_TRANS = 0;
+
 
 	//输出文件为空时，输出文件头
 	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
@@ -523,7 +530,7 @@ void PrintConfiguration()
 	if( ! final.tellp() )
 		final << INFO_FINAL ;
 
-	final << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_DATA_FORWARD << TAB << CNode::BUFFER_CAPACITY << TAB << CNode::ENERGY << TAB ;
+	final << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_TRANS << TAB << CNode::CAPACITY_BUFFER << TAB << CNode::CAPACITY_ENERGY << TAB ;
 	if( CData::useHOP() )
 		final << CData::MAX_HOP << TAB ;
 	else 
@@ -535,18 +542,25 @@ void PrintConfiguration()
 	if( ROUTING_PROTOCOL == _epidemic )
 	{
 		INFO_LOG += "$Epidemic ";
-		parameters << "$Epidemic ";
+		parameters << "$Epidemic " << endl << endl;
 	}
 	else if( ROUTING_PROTOCOL == _prophet )
 	{
 		INFO_LOG += "$Prophet ";
-		parameters << "$Prophet ";
+		parameters << "$Prophet " << endl << endl;
+		parameters << "PRED_INIT" << TAB << CNode::INIT_DELIVERY_PRED << endl;
+		parameters << "PRED_DECAY" << TAB << CNode::RATIO_PRED_DECAY << endl;
+		parameters << "PRED_TRANS" << TAB << CNode::RATIO_PRED_TRANS << endl;
+#ifdef USE_PRED_TOLERANCE
+		parameters << "PRED_TOLERANCE" << TAB << CProphet::TOLERANCE_PRED << endl;
+//		parameters << "PRED_TOLERANCE" << TAB << CProphet::DECAY_TOLERANCE_PRED << endl;
+#endif
 	}
 
 	if( MAC_PROTOCOL == _hdc )
 	{
 		INFO_LOG += "$HDC ";
-		parameters << "$HDC ";
+		parameters << "$HDC " << endl << endl;
 	}
 
 	if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
@@ -555,9 +569,9 @@ void PrintConfiguration()
 		{
 			INFO_LOG += "$IHAR ";
 			parameters << "$IHAR " << endl << endl;
-			parameters << "LIFETIME" << TAB << HAR::MAX_MEMORY_TIME << endl << endl;
+			parameters << "POSITION_LIFETIME" << TAB << HAR::LIFETIME_POSITION << endl << endl;
 
-			final << HAR::MAX_MEMORY_TIME << TAB ;
+			final << HAR::LIFETIME_POSITION << TAB ;
 		}
 
 		else if( HOTSPOT_SELECT == _merge )

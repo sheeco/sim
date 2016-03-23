@@ -27,12 +27,12 @@ private:
 //	static int ID_MASK;
 
 	//用于统计投递率和时延的静态变量
-	static int ID_COUNT;  //数值等于data的总数
-	static int ARRIVAL_COUNT;  //到达的数据计数
-	static double DELAY_SUM;  //时延加和，用于计算平均时延
+	static int COUNT_ID;  //数值等于data的总数
+	static int COUNT_ARRIVAL;  //到达的数据计数
+	static double SUM_DELAY;  //时延加和，用于计算平均时延
 
-	static int DELIVERY_AT_HOTSPOT_COUNT;  //在热点处得到投递的数据计数
-	static int DELIVERY_ON_ROUTE_COUNT;  //在路径上得到投递的数据计数
+	static int COUNT_DELIVERY_AT_HOTSPOT;  //在热点处得到投递的数据计数
+	static int COUNT_DELIVERY_ON_ROUTE;  //在路径上得到投递的数据计数
 
 	CData()
 	{
@@ -43,9 +43,9 @@ private:
 	//ID = node_id * 10 000 000 + data_counter ，用于在SV中识别Data来源
 	inline void generateID()
 	{
-		++ID_COUNT;
-//		this->ID = node * ID_MASK + ID_COUNT;
-		this->ID = ID_COUNT;
+		++COUNT_ID;
+//		this->ID = node * ID_MASK + COUNT_ID;
+		this->ID = COUNT_ID;
 	}
 
 
@@ -81,29 +81,29 @@ public:
 
 	static void deliverAtHotspot(int n)
 	{
-		DELIVERY_AT_HOTSPOT_COUNT += n;
+		COUNT_DELIVERY_AT_HOTSPOT += n;
 	}
 	static void deliverOnRoute(int n)
 	{
-		DELIVERY_ON_ROUTE_COUNT += n;
+		COUNT_DELIVERY_ON_ROUTE += n;
 	}
 	//该函数应当在MA的路径更新时调用输出统计结果
-	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
-	static int getDeliveryAtHotspotCount()
+	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于COUNT_ARRIVAL的，仅作测试用途
+	static int getCountDeliveryAtHotspot()
 	{
-		return DELIVERY_AT_HOTSPOT_COUNT;
+		return COUNT_DELIVERY_AT_HOTSPOT;
 	}
 	//该函数应当在MA的路径更新时调用输出统计结果
-	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于ARRIVAL_COUNT的，仅作测试用途
-	static int getDeliveryTotalCount()
+	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于COUNT_ARRIVAL的，仅作测试用途
+	static int getCountDeliveryTotal()
 	{
-		return DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT;
+		return COUNT_DELIVERY_AT_HOTSPOT + COUNT_DELIVERY_ON_ROUTE;
 	}
-	static double getDeliveryAtHotspotPercent()
+	static double getPercentDeliveryAtHotspot()
 	{
-		if(DELIVERY_AT_HOTSPOT_COUNT == 0)
+		if(COUNT_DELIVERY_AT_HOTSPOT == 0)
 			return 0.0;
-		return double(DELIVERY_AT_HOTSPOT_COUNT) / double( DELIVERY_AT_HOTSPOT_COUNT + DELIVERY_ON_ROUTE_COUNT );
+		return double(COUNT_DELIVERY_AT_HOTSPOT) / double( COUNT_DELIVERY_AT_HOTSPOT + COUNT_DELIVERY_ON_ROUTE );
 	}
 
 	//setters & getters
@@ -142,8 +142,8 @@ public:
 	{
 		this->timeArrival = timeArrival;
 		this->time = timeArrival;
-		++ARRIVAL_COUNT;
-		DELAY_SUM += timeArrival - timeBirth;
+		++COUNT_ARRIVAL;
+		SUM_DELAY += timeArrival - timeBirth;
 	}
 
 	// TODO: call this func when receiving anything
@@ -207,26 +207,26 @@ public:
 //	}
 
 	//统计数据
-	static int getDataCount()
+	static int getCountData()
 	{
-		return ID_COUNT;
+		return COUNT_ID;
 	}
-	static int getDeliveryCount()
+	static int getCountDelivery()
 	{
-		return ARRIVAL_COUNT;
+		return COUNT_ARRIVAL;
 	}
 	static double getDeliveryRatio()
 	{
-		if(ID_COUNT == 0)
+		if(COUNT_ID == 0)
 			return 0;
 		else
-			return double(ARRIVAL_COUNT) / double(ID_COUNT);
+			return double(COUNT_ARRIVAL) / double(COUNT_ID);
 	}
 	static double getAverageDelay()
 	{
-		if(ARRIVAL_COUNT == 0)
+		if(COUNT_ARRIVAL == 0)
 			return 0;
-		return DELAY_SUM / ARRIVAL_COUNT;
+		return SUM_DELAY / COUNT_ARRIVAL;
 	}
 	static double getAverageEnergyConsumption();
 

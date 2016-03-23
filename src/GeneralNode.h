@@ -18,8 +18,7 @@ class CGeneralNode :
 protected:
 
 	vector<CData> buffer;
-	int bufferCapacity;
-	int energy;
+	int capacityBuffer;
 	double energyConsumption;
 
 	static double CONSUMPTION_LISTEN;
@@ -45,14 +44,13 @@ public:
 
 	static double CONSUMPTION_BYTE_SEND;
 	static double CONSUMPTION_BYTE_RECIEVE;
-	static int TRANS_RANGE;  //transmission range
-	static double PROB_DATA_FORWARD;
-	static int CTRL_SIZE;
+	static int RANGE_TRANS;  //transmission range
+	static double PROB_TRANS;
+	static int SIZE_CTRL;
 
 	CGeneralNode()
 	{
-		this->bufferCapacity = 0;
-		this->energy = 0;
+		this->capacityBuffer = 0;
 		this->energyConsumption = 0;
 	}
 
@@ -70,7 +68,7 @@ public:
 	{
 		return ( ! buffer.empty() );
 	}
-	int getBufferSize() const
+	int getSizeBuffer() const
 	{
 		return buffer.size();
 	}

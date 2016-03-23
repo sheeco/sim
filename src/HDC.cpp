@@ -41,11 +41,11 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 
 		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 		{
-			if( (*ihotspot)->getX() + CGeneralNode::TRANS_RANGE < (*inode)->getX() )
+			if( (*ihotspot)->getX() + CGeneralNode::RANGE_TRANS < (*inode)->getX() )
 				continue;
-			if( (*inode)->getX() + CGeneralNode::TRANS_RANGE < (*ihotspot)->getX() )
+			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*ihotspot)->getX() )
 				break;
-			if( CBasicEntity::getDistance( **inode, **ihotspot ) <= CGeneralNode::TRANS_RANGE )		
+			if( CBasicEntity::getDistance( **inode, **ihotspot ) <= CGeneralNode::RANGE_TRANS )		
 			{
 				atHotspot = *ihotspot;
 				break;
@@ -78,7 +78,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	//控制台输出时保留一位小数
 	if( ( currentTime + SLOT ) % SLOT_LOG == 0 )
 	{
-		double encounterRatio = NDigitFloat( CNode::getEncounterAtHotspotPercent() * 100, 1);
+		double encounterRatio = NDigitFloat( CNode::getPercentEncounterAtHotspot() * 100, 1);
 		flash_cout << "####  [ Hotspot Encounter ]  " << encounterRatio << " %                                           " << endl;
 		print = true;
 	}

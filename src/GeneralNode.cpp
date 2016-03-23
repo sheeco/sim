@@ -6,17 +6,17 @@ double CGeneralNode::CONSUMPTION_BYTE_RECIEVE = 0.004;
 double CGeneralNode::CONSUMPTION_LISTEN = 13.5;  // ( mJ / s )
 double CGeneralNode::CONSUMPTION_SLEEP = 0.015;
 
-int CGeneralNode::TRANS_RANGE = 0;  //transmission range
-double CGeneralNode::PROB_DATA_FORWARD = 0;
-int CGeneralNode::CTRL_SIZE = 0;
+int CGeneralNode::RANGE_TRANS = 0;  //transmission range
+double CGeneralNode::PROB_TRANS = 0;
+int CGeneralNode::SIZE_CTRL = 0;
 
 
 //vector<CData> CGeneralNode::sendAllData(_SEND mode)
 //{
 //	double bet = RandomFloat(0, 1);
-//	if( bet > PROB_DATA_FORWARD )
+//	if( bet > PROB_TRANS )
 //	{
-//		energyConsumption += buffer.size() * CNode::DATA_SIZE * CONSUMPTION_BYTE_SEND;
+//		energyConsumption += buffer.size() * CNode::SIZE_DATA * CONSUMPTION_BYTE_SEND;
 //		return vector<CData>();
 //	}
 //
@@ -25,7 +25,7 @@ int CGeneralNode::CTRL_SIZE = 0;
 //	else
 //	{
 //		vector<CData> data = buffer;
-//		energyConsumption += buffer.size() * CNode::DATA_SIZE * CONSUMPTION_BYTE_SEND;
+//		energyConsumption += buffer.size() * CNode::SIZE_DATA * CONSUMPTION_BYTE_SEND;
 //		if(mode == _dump)
 //			buffer.clear();
 //		return data;
@@ -34,7 +34,7 @@ int CGeneralNode::CTRL_SIZE = 0;
 
 CPackage* CGeneralNode::sendRTS(int currentTime) 
 {
-	CCtrl rts(ID, currentTime, CTRL_SIZE, CCtrl::_rts);
+	CCtrl rts(ID, currentTime, SIZE_CTRL, CCtrl::_rts);
 	CPackage* package = new CPackage(*this, CGeneralNode(), rts);
 	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
 	return package;

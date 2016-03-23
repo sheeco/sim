@@ -32,7 +32,7 @@ private:
 	{
 		this->ID = SINK_ID;
 		this->setLocation(SINK_X, SINK_Y);		
-		this->bufferCapacity = BUFFER_CAPACITY;
+		this->capacityBuffer = CAPACITY_BUFFER;
 	}
 
 	~CSink(){};
@@ -44,7 +44,7 @@ public:
 	static int SINK_ID;
 	static double SINK_X;
 	static double SINK_Y;
-	static int BUFFER_CAPACITY;
+	static int CAPACITY_BUFFER;
 
 	//Sink为单例模式
 	static CSink* getSink()
@@ -54,7 +54,7 @@ public:
 		return sink;
 	}
 
-	bool isListening() const override
+	bool isListening() const
 	{
 		return true;
 	}
@@ -77,7 +77,7 @@ public:
 	{
 		return encounterActive;
 	}
-	static double getEncounterActivePercent() 
+	static double getPercentEncounterActive() 
 	{
 		if(encounterActive == 0)
 			return 0.0;
@@ -99,7 +99,7 @@ public:
 //			sink->buffer.push_back(*idata);
 //		}
 //		//实际上无需统计sink的能耗
-//		sink->energyConsumption += CONSUMPTION_BYTE_RECIEVE * CNode::DATA_SIZE * data.size();
+//		sink->energyConsumption += CONSUMPTION_BYTE_RECIEVE * CNode::SIZE_DATA * data.size();
 //		return true;
 //	}
 

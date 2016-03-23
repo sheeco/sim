@@ -29,13 +29,13 @@ private:
 	static vector<CMANode *> MANodes;
 	static vector<CMANode *> freeMANodes;
 
-	static int ID_COUNT;
+	static int COUNT_ID;
 
 	void init()
 	{
 		atHotspot = nullptr;	
 		waitingTime = -1;
-		bufferCapacity = BUFFER_CAPACITY;
+		capacityBuffer = CAPACITY_BUFFER;
 	}
 
 	CMANode()
@@ -46,8 +46,8 @@ private:
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{
-		++ID_COUNT;
-		this->ID = ID_COUNT;
+		++COUNT_ID;
+		this->ID = COUNT_ID;
 	}
 
 	CMANode(CRoute route, int time)
@@ -64,8 +64,8 @@ private:
 public:
 
 	static int SPEED;
-	static int BUFFER_CAPACITY;  // TODO: static getter & ref mod
-	static _RECEIVE RECEIVE_MODE;
+	static int CAPACITY_BUFFER;  // TODO: static getter & ref mod
+	static _RECEIVE MODE_RECEIVE;
 
 	static vector<CMANode *> getMANodes()
 	{
@@ -168,9 +168,9 @@ public:
 		return waitingTime;
 	}
 
-	static int getBufferCapacity()
+	static int getCapacityBuffer()
 	{
-		return BUFFER_CAPACITY;
+		return CAPACITY_BUFFER;
 	}
 
 	static int getSpeed()
@@ -181,7 +181,7 @@ public:
 	//判断Buffer是否已满
 	inline bool isFull() const
 	{
-		if(buffer.size() >= BUFFER_CAPACITY)
+		if(buffer.size() >= CAPACITY_BUFFER)
 			return true;
 		else
 			return false;
@@ -189,19 +189,19 @@ public:
 
 	// TODO: send tolerance / MAX_DATA_TRANS during as index
 	//接收数据时，返回允许接收的最大数据数
-	inline int getDataTolerance() const
+	inline int getToleranceData() const
 	{
-		int tolerance = bufferCapacity - buffer.size();
+		int tolerance = capacityBuffer - buffer.size();
 		if( tolerance < 0 )
 			tolerance = 0;
 
-		if( RECEIVE_MODE == _selfish )
+		if( MODE_RECEIVE == _selfish )
 			return tolerance;
-		else if( RECEIVE_MODE == _loose )
-			return bufferCapacity;
+		else if( MODE_RECEIVE == _loose )
+			return capacityBuffer;
 	}
 
-	bool isListening() const override
+	bool isListening() const
 	{
 		return true;
 	}

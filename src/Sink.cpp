@@ -7,7 +7,7 @@ int CSink::encounter = 0;
 int CSink::SINK_ID = 0; //0为sink节点预留，传感器节点ID从1开始
 double CSink::SINK_X = 0;
 double CSink::SINK_Y = 0;
-int CSink::BUFFER_CAPACITY = 999999;  //无限制
+int CSink::CAPACITY_BUFFER = 999999;  //无限制
 
 // TODO: untested
 //void CSink::receivePackage(CPackage* package, int currentTime)
@@ -15,7 +15,7 @@ int CSink::BUFFER_CAPACITY = 999999;  //无限制
 //	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECIEVE;
 //
 //	vector<CGeneralData*> contents = package->getContent();
-//	CGeneralNode* dst = package->getSourceNode();
+//	CGeneralNode* dst = package->getSrcNode();
 //	CCtrl* ctrlToSend = nullptr;
 //
 //	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
@@ -61,7 +61,7 @@ int CSink::BUFFER_CAPACITY = 999999;  //无限制
 //			ack = bufferData(currentTime, datas);
 //
 //			//ACK
-//			ctrlToSend = new CCtrl(ID, ack, currentTime, CTRL_SIZE, CCtrl::_ack);
+//			ctrlToSend = new CCtrl(ID, ack, currentTime, SIZE_CTRL, CCtrl::_ack);
 //		}
 //	}
 //

@@ -104,7 +104,7 @@ public:
 	}
 
 	//对给定插入计算路径增量
-	double getAddingDistance(int front, CHotspot *hotspot)
+	double getIncreDistance(int front, CHotspot *hotspot)
 	{
 		int back = ( front + 1 ) % waypoints.size();
 		double oldDistance =  CBasicEntity::getDistance( *waypoints[front], *waypoints[back] );

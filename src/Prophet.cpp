@@ -11,7 +11,7 @@ int CProphet::MAX_DATA_TRANS = 0;
 #ifdef USE_PRED_TOLERANCE
 
 double CProphet::TOLERANCE_PRED = 0;
-//double CProphet::DECAY_RATIO_TOLERANCE_PRED = 1;
+//double CProphet::DECAY_TOLERANCE_PRED = 1;
 
 #endif
 
@@ -46,11 +46,11 @@ double CProphet::TOLERANCE_PRED = 0;
 //		//如果处于休眠状态，跳过
 //		if( (*inode)->isListening() )
 //		{
-//			if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::TRANS_RANGE )
+//			if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::RANGE_TRANS )
 //			{
 //				atSink = true;
 //				//deliver data to sink
-//				flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
+//				flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getSizeBuffer() << " data to Sink )                     " ;
 //				CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
 //				(*inode)->updateDeliveryPredsWithSink();
 //				++nEncounterAtSink;
@@ -61,11 +61,11 @@ double CProphet::TOLERANCE_PRED = 0;
 //		//inode < jnode，即任何节点对只有一次通信机会
 //		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); ++jnode)
 //		{
-//			if( (*jnode)->getX() + CGeneralNode::TRANS_RANGE < (*inode)->getX() )
+//			if( (*jnode)->getX() + CGeneralNode::RANGE_TRANS < (*inode)->getX() )
 //				continue;
-//			if( (*inode)->getX() + CGeneralNode::TRANS_RANGE < (*jnode)->getX() )
+//			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*jnode)->getX() )
 //				break;
-//			if( CBasicEntity::getDistance( **inode, **jnode ) > CGeneralNode::TRANS_RANGE )
+//			if( CBasicEntity::getDistance( **inode, **jnode ) > CGeneralNode::RANGE_TRANS )
 //				continue;
 //
 //			if( (*inode)->isAtHotspot() || (*jnode)->isAtHotspot() )
@@ -147,7 +147,7 @@ double CProphet::TOLERANCE_PRED = 0;
 //						//在Sink附近的节点可以在接收到其他节点的数据之后向Sink进行二次投递
 //						if( atSink == true )
 //						{
-//							flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getBufferSize() << " data to Sink )                     " ;
+//							flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getSizeBuffer() << " data to Sink )                     " ;
 //							CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );						
 //						}
 //
@@ -209,7 +209,7 @@ vector<CData> CProphet::selectDataByIndex(CNode* node, CCtrl* ctrl)
 			&& datas.size() > MAX_DATA_TRANS )
 		{
 			datas = CSortHelper::mergeSort(datas, CSortHelper::ascendByTimeBirth);
-			if( CNode::QUEUE_MODE == CGeneralNode::_fifo )
+			if( CNode::MODE_QUEUE == CGeneralNode::_fifo )
 				datas = vector<CData>(datas.begin(), datas.begin() + MAX_DATA_TRANS);
 			else
 				datas = vector<CData>(datas.rbegin(), datas.rbegin() + MAX_DATA_TRANS);

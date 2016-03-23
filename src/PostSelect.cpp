@@ -26,7 +26,7 @@ double CPostSelect::getRatioForHotspot(CHotspot *hotspot) const
 	else
 	{
 		//merge-HAR: ratio
-		double ratioForMerge = pow( hotspot->getCoByCandidateType(), hotspot->getAge() );
+		double ratioForMerge = pow( hotspot->getRatioByTypeHotspotCandidate(), hotspot->getAge() );
 		//FIXME: balanced ratio for post selection
 		return ratioForMerge * ( hotspot->getRatio() ) / double( maxRatio );
 	}

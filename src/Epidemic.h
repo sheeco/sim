@@ -16,7 +16,7 @@ private:
 
 public:
 
-	static int MAX_QUEUE_SIZE;  //同意存储的来自其他节点的data的最大总数，超过该数目将丢弃（是否在Request之前检查？）默认值等于buffer容量
+	static int MAX_DATA_RELAY;  //同意存储的来自其他节点的data的最大总数，超过该数目将丢弃（是否在Request之前检查？）默认值等于buffer容量
 
 	CEpidemic(){};
 

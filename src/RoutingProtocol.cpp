@@ -48,7 +48,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			delivery_ratio << endl << INFO_LOG << endl ;
 			delivery_ratio << INFO_DELIVERY_RATIO_900 ;
 		}
-		delivery_ratio << currentTime << TAB << CData::getDeliveryCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
+		delivery_ratio << currentTime << TAB << CData::getCountDelivery() << TAB << CData::getCountData() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		//数据投递延迟
@@ -75,7 +75,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			if( ! (*inode)->isAlive() )
 				buffer << "-" << TAB ;
 			else
-				buffer << (*inode)->getAverageBufferSize() << TAB;
+				buffer << (*inode)->getAverageSizeBuffer() << TAB;
 		}
 		buffer << endl;
 		buffer.close();
@@ -93,7 +93,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			delivery_ratio << endl << INFO_LOG << endl ;
 			delivery_ratio << INFO_DELIVERY_RATIO_100 ;
 		}
-		delivery_ratio << currentTime << TAB << CData::getDeliveryCount() << TAB << CData::getDataCount() << TAB << CData::getDeliveryRatio() << endl;
+		delivery_ratio << currentTime << TAB << CData::getCountDelivery() << TAB << CData::getCountData() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		//每个节点的当前buffer状态
@@ -110,7 +110,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			if( ! (*inode)->isAlive() )
 				buffer << "-" << TAB ;
 			else
-				buffer << (*inode)->getBufferSize() << "  " ;
+				buffer << (*inode)->getSizeBuffer() << "  " ;
 
 			(*inode)->recordBufferStatus();
 		}
@@ -125,7 +125,7 @@ void CRoutingProtocol::PrintFinal(int currentTime)
 {
 	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
 	if( CNode::finiteEnergy() )
-		final << CData::getDeliveryCount() << TAB ;
+		final << CData::getCountDelivery() << TAB ;
 	else
 		final << CData::getDeliveryRatio() << TAB ;
 	final << CData::getAverageDelay() << TAB ;

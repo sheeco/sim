@@ -8,7 +8,7 @@
 #include "Prophet.h"
 #include "MacProtocol.h"
 
-int CNode::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
+int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
 int CNode::encounterAtHotspot = 0;
 int CNode::encounterActive = 0;
@@ -23,48 +23,47 @@ vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
 vector<CNode *> CNode::deletedNodes;
 
-int CNode::NUM_NODE_MIN = 0;
-int CNode::NUM_NODE_MAX = 0;
-int CNode::NUM_NODE_INIT = 0;
+int CNode::MIN_NUM_NODE = 0;
+int CNode::MAX_NUM_NODE = 0;
+int CNode::INIT_NUM_NODE = 0;
 
 int CNode::SLOT_TOTAL = 0;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
-int CNode:: DEFAULT_SLOT_DISCOVER = 0; 
+int CNode::DEFAULT_DISCOVER_CYCLE = 0; 
 
 double CNode::DEFAULT_DATA_RATE = 0;
-int CNode::DATA_SIZE = 0;
+int CNode::SIZE_DATA = 0;
 
-int CNode::BUFFER_CAPACITY = 0;
-int CNode::ENERGY = 0;
-int CNode::SPOKEN_MEMORY = 0;
-CGeneralNode::_RECEIVE CNode::RECEIVE_MODE = _loose;
-CGeneralNode::_SEND CNode::SEND_MODE = _dump;
-CGeneralNode::_QUEUE CNode::QUEUE_MODE = _fifo;
+int CNode::CAPACITY_BUFFER = 0;
+int CNode::CAPACITY_ENERGY = 0;
+int CNode::LIFETIME_SPOKEN_CACHE = 0;
+CGeneralNode::_RECEIVE CNode::MODE_RECEIVE = _loose;
+CGeneralNode::_SEND CNode::MODE_SEND = _dump;
+CGeneralNode::_QUEUE CNode::MODE_QUEUE = _fifo;
 
 /**************************************  Prophet  *************************************/
 
 double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
-double CNode::DECAY_RATIO = 0.90;  //0.98(/s)
-double CNode::TRANS_RATIO = 0.20;  //0.25
+double CNode::RATIO_PRED_DECAY = 0.90;  //0.98(/s)
+double CNode::RATIO_PRED_TRANS = 0.20;  //0.25
 
 
 void CNode::init() 
 {
-	generationRate = 0;
+	dataRate = 0;
 	atHotspot = nullptr;
-	SLOT_DISCOVER = DEFAULT_SLOT_DISCOVER;
+	SLOT_DISCOVER = DEFAULT_DISCOVER_CYCLE;
 	state = 0;
 	timeData = 0;
 	timeDeath = 0;
 	recyclable = true;
-	bufferCapacity = BUFFER_CAPACITY;
-	bufferSizeSum = 0;
-	bufferChangeCount = 0;
+	capacityBuffer = CAPACITY_BUFFER;
+	sumBufferRecord = 0;
+	countBufferRecord = 0;
 	dutyCycle = DEFAULT_DUTY_CYCLE;
 	SLOT_LISTEN = dutyCycle * SLOT_TOTAL;
 	SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-	energy = ENERGY;
 }
 
 CNode::CNode() 
@@ -72,10 +71,10 @@ CNode::CNode()
 	init();
 }
 
-CNode::CNode(double generationRate) 
+CNode::CNode(double dataRate) 
 {
 	init();
-	this->generationRate = generationRate;
+	this->dataRate = dataRate;
 }
 
 CNode::~CNode()
@@ -85,12 +84,12 @@ CNode::~CNode()
 void CNode::initNodes() {
 	if( nodes.empty() && deadNodes.empty() )
 	{
-		for(int i = 0; i < NUM_NODE_INIT; ++i)
+		for(int i = 0; i < INIT_NUM_NODE; ++i)
 		{
-			double generationRate = DEFAULT_DATA_RATE;
+			double dataRate = DEFAULT_DATA_RATE;
 			if(i % 5 == 0)
-				generationRate *= 5;
-			CNode* node = new CNode(generationRate);
+				dataRate *= 5;
+			CNode* node = new CNode(dataRate);
 			node->generateID();
 			node->initDeliveryPreds();
 			CNode::nodes.push_back(node);
@@ -101,12 +100,12 @@ void CNode::initNodes() {
 
 void CNode::generateData(int currentTime) {
 	int timeDataIncre = currentTime - timeData;
-	int nData = timeDataIncre * generationRate;
+	int nData = timeDataIncre * dataRate;
 	if(nData > 0)
 	{
 		for(int i = 0; i < nData; ++i)
 		{
-			CData data(ID, currentTime, DATA_SIZE);
+			CData data(ID, currentTime, SIZE_DATA);
 			buffer.push_back(data);
 		}
 		timeData = currentTime;
@@ -152,7 +151,7 @@ vector<int>& CNode::getIdNodes()
 
 bool CNode::finiteEnergy() 
 {
-	return ENERGY > 0;
+	return CAPACITY_ENERGY > 0;
 }
 
 bool CNode::hasNodes(int currentTime) 
@@ -260,8 +259,8 @@ void CNode::resetDutyCycle()
 
 //CPackage CNode::sendCTSWithIndex(CNode* dst, int currentTime)
 //{
-//	CCtrl cts(ID, dst->getID(), currentTime, CTRL_SIZE, CCtrl::_cts);
-//	CCtrl index(ID, dst->getID(), deliveryPreds, updateSummaryVector(), currentTime, CTRL_SIZE, CCtrl::_index);
+//	CCtrl cts(ID, dst->getID(), currentTime, SIZE_CTRL, CCtrl::_cts);
+//	CCtrl index(ID, dst->getID(), deliveryPreds, updateSummaryVector(), currentTime, SIZE_CTRL, CCtrl::_index);
 //	CPackage package(this, cts, index);
 //	energyConsumption += package.getSize() * CONSUMPTION_BYTE_SEND;
 //	return package;
@@ -269,7 +268,7 @@ void CNode::resetDutyCycle()
 
 //CPackage CNode::sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime)
 //{
-//	CCtrl index(ID, deliveryPreds, updateSummaryVector(), currentTime, CTRL_SIZE, CCtrl::_index);
+//	CCtrl index(ID, deliveryPreds, updateSummaryVector(), currentTime, SIZE_CTRL, CCtrl::_index);
 //	CPackage package( *this, *dst, index, datas);
 //	energyConsumption += package.getSize() * CONSUMPTION_BYTE_SEND;
 //	return package;
@@ -277,7 +276,7 @@ void CNode::resetDutyCycle()
 
 void CNode::checkDataByAck(vector<CData> ack)
 {
-	if( SEND_MODE == _dump )
+	if( MODE_SEND == _dump )
 		RemoveFromList(buffer, ack);
 }
 
@@ -287,7 +286,7 @@ void CNode::checkDataByAck(vector<CData> ack)
 //	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECIEVE;
 //
 //	vector<CGeneralData*> contents = package->getContent();
-//	CGeneralNode* dst = package->getSourceNode();
+//	CGeneralNode* dst = package->getSrcNode();
 //	CCtrl* ctrlToSend = nullptr;
 //	CCtrl* ctrlPiggback = nullptr;
 //	vector<CData> dataToSend;
@@ -301,7 +300,7 @@ void CNode::checkDataByAck(vector<CData> ack)
 //			{
 //			case CCtrl::_rts:
 //				//CTS
-//				ctrlToSend = new CCtrl(ID, currentTime, CTRL_SIZE, CCtrl::_cts);
+//				ctrlToSend = new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_cts);
 //
 //				//if RTS is from sink, send CTS & datas
 //				if( ctrl->getNode() == CSink::SINK_ID )
@@ -316,7 +315,7 @@ void CNode::checkDataByAck(vector<CData> ack)
 //				else
 //				{
 //					//piggyback with data index otherwise
-//					ctrlPiggback = new CCtrl(ID, deliveryPreds, updateSummaryVector(), currentTime, CTRL_SIZE, CCtrl::_index);
+//					ctrlPiggback = new CCtrl(ID, deliveryPreds, updateSummaryVector(), currentTime, SIZE_CTRL, CCtrl::_index);
 //				}
 //
 //				// TODO: mark skipRTS ?
@@ -325,7 +324,7 @@ void CNode::checkDataByAck(vector<CData> ack)
 //
 //			case CCtrl::_cts:
 //				//data index
-//				ctrlToSend = new CCtrl(ID, deliveryPreds, updateSummaryVector(), currentTime, CTRL_SIZE, CCtrl::_index);
+//				ctrlToSend = new CCtrl(ID, deliveryPreds, updateSummaryVector(), currentTime, SIZE_CTRL, CCtrl::_index);
 //
 //				// TODO: connection established ?
 //				break;
@@ -344,7 +343,7 @@ void CNode::checkDataByAck(vector<CData> ack)
 //			case CCtrl::_ack:
 //				addToSpokenCache( (CNode*)(&dst), currentTime );
 //				//clear data with ack
-//				if( SEND_MODE == _SEND::_dump )
+//				if( MODE_SEND == _SEND::_dump )
 //					checkDataByAck( ctrl->getACK() );
 //				break;
 //
@@ -369,7 +368,7 @@ void CNode::checkDataByAck(vector<CData> ack)
 //			ack = bufferData(currentTime, datas);
 //			//ACK
 //			if( ! ack.empty() )
-//				ctrlToSend = new CCtrl(ID, ack, currentTime, CTRL_SIZE, CCtrl::_ack);
+//				ctrlToSend = new CCtrl(ID, ack, currentTime, SIZE_CTRL, CCtrl::_ack);
 //		}
 //	}
 //
@@ -425,7 +424,7 @@ bool CNode::hasSpokenRecently(CNode* node, int currentTime)
 	if( icache == spokenCache.end() )
 		return false;
 	else if( ( currentTime - icache->second ) == 0
-		|| ( currentTime - icache->second ) < CNode::SPOKEN_MEMORY )
+		|| ( currentTime - icache->second ) < CNode::LIFETIME_SPOKEN_CACHE )
 		return true;
 	else
 		return false;
@@ -466,7 +465,7 @@ vector<CData> CNode::dropDataIfOverflow()
 	vector<CData> myData;
 	vector<CData> overflow;
 
-//	if( CEpidemic::MAX_QUEUE_SIZE > 0 )
+//	if( CEpidemic::MAX_DATA_RELAY > 0 )
 //	{
 //		vector<CData> otherData;
 //		for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); ++idata)
@@ -478,15 +477,15 @@ vector<CData> CNode::dropDataIfOverflow()
 //		}
 //		otherData = CSortHelper::mergeSort(otherData, CSortHelper::ascendByTimeBirth);
 //		myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
-//		//如果超出MAX_QUEUE_SIZE
-//		if(otherData.size() > CEpidemic::MAX_QUEUE_SIZE)
-//			otherData = vector<CData>( otherData.end() - CEpidemic::MAX_QUEUE_SIZE, otherData.end() );
+//		//如果超出MAX_DATA_RELAY
+//		if(otherData.size() > CEpidemic::MAX_DATA_RELAY)
+//			otherData = vector<CData>( otherData.end() - CEpidemic::MAX_DATA_RELAY, otherData.end() );
 //		myData.insert( myData.begin(), otherData.begin(), otherData.end() );
 //		//如果总长度溢出
-//		if( myData.size() > bufferCapacity )
+//		if( myData.size() > capacityBuffer )
 //		{
-//			//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )                    " << endl;
-//			myData = vector<CData>( myData.end() - BUFFER_CAPACITY, myData.end() );
+//			//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                    " << endl;
+//			myData = vector<CData>( myData.end() - CAPACITY_BUFFER, myData.end() );
 //		}		
 //	}
 //	else :
@@ -494,18 +493,18 @@ vector<CData> CNode::dropDataIfOverflow()
 	myData = buffer;
 	myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
 	//如果总长度溢出
-	if( myData.size() > bufferCapacity )
+	if( myData.size() > capacityBuffer )
 	{
-		//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - bufferCapacity << " data )                 " ;
-		if( CNode::QUEUE_MODE == CGeneralNode::_fifo )
+		//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                 " ;
+		if( CNode::MODE_QUEUE == CGeneralNode::_fifo )
 		{
-			overflow = 	vector<CData>( buffer.begin() + BUFFER_CAPACITY,  buffer.end() );
-			myData = vector<CData>( buffer.begin(), buffer.begin() + BUFFER_CAPACITY );
+			overflow = 	vector<CData>( buffer.begin() + CAPACITY_BUFFER,  buffer.end() );
+			myData = vector<CData>( buffer.begin(), buffer.begin() + CAPACITY_BUFFER );
 		}
 		else
 		{
-			overflow = 	vector<CData>( buffer.begin(),  buffer.end() - BUFFER_CAPACITY );
-			myData = vector<CData>( buffer.end() - BUFFER_CAPACITY, buffer.end() );
+			overflow = 	vector<CData>( buffer.begin(),  buffer.end() - CAPACITY_BUFFER );
+			myData = vector<CData>( buffer.end() - CAPACITY_BUFFER, buffer.end() );
 		}
 	}
 
@@ -524,7 +523,7 @@ vector<CData> CNode::updateBufferStatus(int currentTime)
 
 vector<int> CNode::updateSummaryVector() 
 {
-	if( buffer.size() > BUFFER_CAPACITY )
+	if( buffer.size() > CAPACITY_BUFFER )
 	{
 		cout << endl << "Error @ CNode::updateSummaryVector() : Buffer isn't clean !" << endl;
 		_PAUSE_;
@@ -559,10 +558,10 @@ void CNode::newNodes(int n)
 	//如果仍不足数，构造新的节点
 	for(int i = nodes.size(); i < nodes.size() + n; ++i)
 	{
-		double generationRate = DEFAULT_DATA_RATE;
+		double dataRate = DEFAULT_DATA_RATE;
 		if(i % 5 == 0)
-			generationRate *= 5;
-		CNode* node = new CNode(generationRate);
+			dataRate *= 5;
+		CNode* node = new CNode(dataRate);
 		node->generateID();
 		node->initDeliveryPreds();
 		CNode::nodes.push_back(node);
@@ -617,7 +616,7 @@ void CNode::decayDeliveryPreds(int currentTime)
 {
 	// TODO: refine decay ratio ?
 	for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap)
-		deliveryPreds[ imap->first ] = imap->second * pow( DECAY_RATIO, ( currentTime - time ) / SLOT_MOBILITYMODEL );
+		deliveryPreds[ imap->first ] = imap->second * pow( RATIO_PRED_DECAY, ( currentTime - time ) / SLOT_MOBILITYMODEL );
 }
 
 // TODO: check LISTEN cons calculation if *move
@@ -710,8 +709,8 @@ void CNode::recordBufferStatus()
 	if( timeDeath > 0 )
 		return;
 
-	bufferSizeSum += buffer.size();
-	++bufferChangeCount;
+	sumBufferRecord += buffer.size();
+	++countBufferRecord;
 }
 
 //vector<CData> CNode::sendAllData(_SEND mode) 
@@ -725,18 +724,18 @@ void CNode::recordBufferStatus()
 //		return sendAllData(_dump);
 //
 //	double bet = RandomFloat(0, 1);
-//	if(bet > PROB_DATA_FORWARD)
+//	if(bet > PROB_TRANS)
 //	{
-//		energyConsumption += n * DATA_SIZE * CONSUMPTION_BYTE_SEND;
+//		energyConsumption += n * SIZE_DATA * CONSUMPTION_BYTE_SEND;
 //		return vector<CData>();
 //	}
 //
 //	vector<CData> data;
-//	if( QUEUE_MODE == _fifo )
+//	if( MODE_QUEUE == _fifo )
 //	{
 //		data.insert(data.begin(), buffer.begin(), buffer.begin() + n);
 //	}
-//	else if( QUEUE_MODE == _lifo )
+//	else if( MODE_QUEUE == _lifo )
 //	{
 //		data.insert(data.begin(), buffer.end() - n, buffer.end());
 //	}
@@ -747,10 +746,10 @@ void CNode::recordBufferStatus()
 //{
 //	if( datas.empty() )
 //		return false;
-//	if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
+//	if( RandomFloat(0, 1) > PROB_TRANS )
 //		return false;
 //
-//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * DATA_SIZE * datas.size();
+//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * SIZE_DATA * datas.size();
 //	for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); ++idata)
 //		idata->arriveAnotherNode(time);
 //	buffer.insert(buffer.begin(), datas.begin(), datas.end() );
@@ -762,16 +761,16 @@ void CNode::recordBufferStatus()
 //vector<int> CNode::sendSummaryVector() 
 //{
 //	updateSummaryVector();
-//	energyConsumption += CONSUMPTION_BYTE_SEND * CTRL_SIZE;
+//	energyConsumption += CONSUMPTION_BYTE_SEND * SIZE_CTRL;
 //	return summaryVector;
 //}
 
 //vector<int> CNode::receiveSummaryVector(vector<int> sv) 
 //{
-//	if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
+//	if( RandomFloat(0, 1) > PROB_TRANS )
 //		return vector<int>();
 //
-//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * CTRL_SIZE;
+//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * SIZE_CTRL;
 //	return sv;	
 //}
 
@@ -783,10 +782,10 @@ void CNode::recordBufferStatus()
 //	updateSummaryVector();
 //	RemoveFromList(sv, summaryVector);
 //	//待测试
-//	if( CEpidemic::MAX_QUEUE_SIZE > 0  &&  sv.size() > CEpidemic::MAX_QUEUE_SIZE )
+//	if( CEpidemic::MAX_DATA_RELAY > 0  &&  sv.size() > CEpidemic::MAX_DATA_RELAY )
 //	{
 //		vector<int>::iterator id = sv.begin();
-//		for(int count = 0; id != sv.end() &&  count < CEpidemic::MAX_QUEUE_SIZE ; )
+//		for(int count = 0; id != sv.end() &&  count < CEpidemic::MAX_DATA_RELAY ; )
 //		{
 //			if( CData::getNodeByMask( *id ) != this->ID )
 //			{
@@ -797,7 +796,7 @@ void CNode::recordBufferStatus()
 //		sv = vector<int>( sv.begin(), id );
 //	}
 //
-//	energyConsumption += CONSUMPTION_BYTE_SEND * CTRL_SIZE;
+//	energyConsumption += CONSUMPTION_BYTE_SEND * SIZE_CTRL;
 //	return sv;
 //}
 
@@ -805,10 +804,10 @@ void CNode::recordBufferStatus()
 //{
 //	if( req.empty() )
 //		return vector<int>();
-//	if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
+//	if( RandomFloat(0, 1) > PROB_TRANS )
 //		return vector<int>();
 //
-//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * CTRL_SIZE;
+//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * SIZE_CTRL;
 //	return req;
 //}
 
@@ -841,7 +840,7 @@ void CNode::updateDeliveryPredsWith(int node, map<int, double> preds)
 
 		oldPred = this->deliveryPreds[ dst ];
 		dstPred = imap->second;
-		deliveryPreds[ dst ] = oldPred + ( 1 - oldPred ) * transPred * dstPred * TRANS_RATIO;
+		deliveryPreds[ dst ] = oldPred + ( 1 - oldPred ) * transPred * dstPred * RATIO_PRED_TRANS;
 	}
 		
 }
@@ -854,7 +853,7 @@ void CNode::updateDeliveryPredsWithSink()
 
 //map<int, double> CNode::sendDeliveryPreds() 
 //{
-//	energyConsumption += CONSUMPTION_BYTE_SEND * CTRL_SIZE;
+//	energyConsumption += CONSUMPTION_BYTE_SEND * SIZE_CTRL;
 //		
 //	return deliveryPreds;
 //}
@@ -863,10 +862,10 @@ void CNode::updateDeliveryPredsWithSink()
 //{
 //	if( preds.empty() )
 //		return map<int, double>();
-//	if( RandomFloat(0, 1) > PROB_DATA_FORWARD )
+//	if( RandomFloat(0, 1) > PROB_TRANS )
 //		return map<int, double>();
 //
-//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * CTRL_SIZE;
+//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * SIZE_CTRL;
 //	return preds;
 //}
 
@@ -881,17 +880,17 @@ int CNode::ChangeNodeNumber()
 			bet = 0.2 + bet / 2;  //更改比例至少 0.2
 		else
 			bet = -0.2 + bet / 2;
-		delta = ROUND( bet * (NUM_NODE_MAX - NUM_NODE_MIN) );
+		delta = ROUND( bet * (MAX_NUM_NODE - MIN_NUM_NODE) );
 	}while(delta != 0);
 
-	if(delta < NUM_NODE_MIN - nodes.size())
+	if(delta < MIN_NUM_NODE - nodes.size())
 	{
-		delta = nodes.size() - NUM_NODE_MIN;
+		delta = nodes.size() - MIN_NUM_NODE;
 		removeNodes(delta);
 	}
-	else if(delta > NUM_NODE_MAX - nodes.size())
+	else if(delta > MAX_NUM_NODE - nodes.size())
 	{
-		delta = NUM_NODE_MAX - nodes.size();
+		delta = MAX_NUM_NODE - nodes.size();
 		newNodes(delta);
 	}
 

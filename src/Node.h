@@ -19,7 +19,7 @@ class CNode :
 
 private:
 
-	double generationRate;
+	double dataRate;
 	double dutyCycle;
 
 	//  [ ----------SLEEP----------> | ----LISTEN----> ]
@@ -35,8 +35,8 @@ private:
 	CHotspot *atHotspot;
 
 	//用于统计输出节点的buffer状态信息
-	int bufferSizeSum;
-	int bufferChangeCount;
+	int sumBufferRecord;
+	int countBufferRecord;
 	static int encounterAtHotspot;
 	static int encounterActive;  //有效相遇
 	static int encounter;
@@ -45,7 +45,7 @@ private:
 	static int transmitSuccessful;  //成功的数据传输
 	static int transmit;
 
-	static int ID_COUNT;
+	static int COUNT_ID;
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
 	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
@@ -56,7 +56,7 @@ private:
 
 	CNode();
 
-	CNode(double generationRate);
+	CNode(double dataRate);
 
 	~CNode();
 
@@ -98,24 +98,24 @@ private:
 
 public:
 
-	static int NUM_NODE_MIN;
-	static int NUM_NODE_MAX;
-	static int NUM_NODE_INIT;
+	static int MIN_NUM_NODE;
+	static int MAX_NUM_NODE;
+	static int INIT_NUM_NODE;
 
 	static int SLOT_TOTAL;
 	static double DEFAULT_DUTY_CYCLE;  //不使用HDC，或者HDC中不在热点区域内时的占空比
 	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
-	static int DEFAULT_SLOT_DISCOVER;
+	static int DEFAULT_DISCOVER_CYCLE;
 
 	static double DEFAULT_DATA_RATE;  //( package / s )
-	static int DATA_SIZE;  //( Byte )
+	static int SIZE_DATA;  //( Byte )
 
-	static int BUFFER_CAPACITY;
-	static int ENERGY;
-	static int SPOKEN_MEMORY;  //在这个时间内交换过数据的节点暂时不再交换数据
-	static _RECEIVE RECEIVE_MODE;
-	static _SEND SEND_MODE;
-	static _QUEUE QUEUE_MODE;
+	static int CAPACITY_BUFFER;
+	static int CAPACITY_ENERGY;
+	static int LIFETIME_SPOKEN_CACHE;  //在这个时间内交换过数据的节点暂时不再交换数据
+	static _RECEIVE MODE_RECEIVE;
+	static _SEND MODE_SEND;
+	static _QUEUE MODE_QUEUE;
 
 	/****************************************  MAC  ***************************************/
 
@@ -139,7 +139,7 @@ public:
 	//由给出的ID列表提取对应数据
 	vector<CData> getDataByRequestList(vector<int> requestList) const;
 
-	//（仅SEND_MODE == _dump时）删除 ACK 的数据
+	//（仅MODE_SEND == _dump时）删除 ACK 的数据
 	void checkDataByAck(vector<CData> ack);
 
 	// TODO: skip sending RTS if node has received any RTS ? yes if *trans delay countable
@@ -176,9 +176,9 @@ public:
 	//不设置能量值时，始终返回true
 	bool isAlive() const 
 	{
-		if( energy == 0 )
+		if( CAPACITY_ENERGY == 0 )
 			return true;
-		else if( energy - energyConsumption <= 0 )
+		else if( CAPACITY_ENERGY - energyConsumption <= 0 )
 			return false;
 		else
 			return true;
@@ -188,7 +188,7 @@ public:
 	{
 		if( ! isAlive() )
 			return 0;
-		return energy - energyConsumption;
+		return CAPACITY_ENERGY - energyConsumption;
 	}
 
 	bool isRecyclable() const 
@@ -223,7 +223,7 @@ public:
 
 	bool isFull()
 	{
-		return buffer.size() == bufferCapacity;
+		return buffer.size() == capacityBuffer;
 	}
 
 	//手动将数据压入 buffer，不伴随其他任何操作
@@ -237,7 +237,7 @@ public:
 	vector<CData> dropOverdueData(int currentTime);
 
 	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
-	//超出MAX_QUEUE_SIZE时从前端丢弃数据，溢出时将从前端丢弃数据并返回
+	//超出MAX_DATA_RELAY时从前端丢弃数据，溢出时将从前端丢弃数据并返回
 	//注意：必须在dropOverdueData之后调用
 	vector<CData> dropDataIfOverflow();
 
@@ -254,8 +254,8 @@ public:
 	/**************************************  Prophet  *************************************/
 
 	static double INIT_DELIVERY_PRED;
-	static double DECAY_RATIO;
-	static double TRANS_RATIO;
+	static double RATIO_PRED_DECAY;
+	static double RATIO_PRED_TRANS;
 
 	map<int, double> getDeliveryPreds() const
 	{
@@ -309,13 +309,13 @@ public:
 	{
 		return encounterActive;
 	}
-	static double getEncounterAtHotspotPercent() 
+	static double getPercentEncounterAtHotspot() 
 	{
 		if(encounterAtHotspot == 0)
 			return 0.0;
 		return double(encounterAtHotspot) / double(encounter);
 	}
-	static double getEncounterActivePercent() 
+	static double getPercentEncounterActive() 
 	{
 		if(encounterActive == 0)
 			return 0.0;
@@ -332,7 +332,7 @@ public:
 		++visiterOnRoute;
 	}
 
-	static double getVisiterAtHotspotPercent() 
+	static double getPercentVisiterAtHotspot() 
 	{
 		if(visiterAtHotspot == 0)
 			return 0.0;
@@ -365,7 +365,7 @@ public:
 	{
 		return transmitSuccessful;
 	}
-	static double getTransmitSuccessfulPercent()
+	static double getPercentTransmitSuccessful()
 	{
 		if(transmitSuccessful == 0)
 			return 0.0;
@@ -374,9 +374,9 @@ public:
 
 	/*************************** ------- ***************************/
 
-	double getGenerationRate() const 
+	double getDataRate() const 
 	{
-		return generationRate;
+		return dataRate;
 	}
 
 	CHotspot* getAtHotspot() const 
@@ -401,16 +401,16 @@ public:
 
 	void generateID() 
 	{
-		++ID_COUNT;
-		this->ID = ID_COUNT;		
+		++COUNT_ID;
+		this->ID = COUNT_ID;		
 	}
 
-	double getAverageBufferSize() const 
+	double getAverageSizeBuffer() const 
 	{
-		if(bufferSizeSum == 0)
+		if(sumBufferRecord == 0)
 			return 0;
 		else
-			return double(bufferSizeSum) / double(bufferChangeCount);
+			return double(sumBufferRecord) / double(countBufferRecord);
 	}
 
 	//更新buffer状态记录，以便计算buffer status

@@ -283,7 +283,7 @@
 ###### 2015-12-10
 
 - MOD：继续修改 `CData` 和 `CNode` 类，`CNode` 类中原来是针对全部 node 统一统计能耗的，现在改为对于每个节点单独统计能耗，全局的 node 能耗改为调用时统计；
-- ADD：在原来的能耗统计相关宏中添加 `DATA_SIZE`，`CTRL_SIZE`，用于指示单个数据包和控制包的大小；
+- ADD：在原来的能耗统计相关宏中添加 `SIZE_DATA`，`SIZE_CTRL`，用于指示单个数据包和控制包的大小；
 - ADD：增加 `CHDC` 类、`Epidemic` 类和 `CMacProtocol` 基类，原 `HAR` 类中有关热点选择的函数暂时放入 `CHDC` 类，有关路由的类暂时放入 `Epidemic` 类，其成员属性和函数仍待修改；
 
 
@@ -365,9 +365,9 @@
 
 ###### 2016-02-20  ·  *< 2.5.5 >*
 
-- RFCT：原宏定义 `DATA_GENERATE_RATE`、`BYTE_PER_CTRL` 和 `BYTE_PER_DATA` 移入 `CNode` 中的静态成员变量 `CNode::DEFAULT_DATA_RATE`、`CNode::DATA_SIZE` 和 `CGeneralNode::CTRL_SIZE`；
-- NOTE：`CNode::DATA_SIZE` 和 `CGeneralNode::CTRL_SIZE` 的比例太小时，HDC 的平均能耗将比普通 DC 更大；比例越大，改善效果越明显；
-- NOTE：`CNode::BUFFER_CAPACITY` 和 `CNode::DEFAULT_DATA_RATE` 的比例减小，投递率整体下降；比例越大，投递率整体上升；
+- RFCT：原宏定义 `DATA_GENERATE_RATE`、`BYTE_PER_CTRL` 和 `BYTE_PER_DATA` 移入 `CNode` 中的静态成员变量 `CNode::DEFAULT_DATA_RATE`、`CNode::SIZE_DATA` 和 `CGeneralNode::SIZE_CTRL`；
+- NOTE：`CNode::SIZE_DATA` 和 `CGeneralNode::SIZE_CTRL` 的比例太小时，HDC 的平均能耗将比普通 DC 更大；比例越大，改善效果越明显；
+- NOTE：`CNode::CAPACITY_BUFFER` 和 `CNode::DEFAULT_DATA_RATE` 的比例减小，投递率整体下降；比例越大，投递率整体上升；
 
 
 ###### 2016-02-21  ·  *< 2.5.6 >*
@@ -486,7 +486,7 @@
 - FIX：整理路由类和 Mac 类的 `PrintInfo()` 和 `PrintFinal` 输出函数；
 - ADD：将 `x` 和 `y` 两个变量包装成 `CCoordinate` 类；
 - RFCT：暂时将各个类内静态变量的访问权限全设为 `public`，并将初始化操作都移入 `initConfiguration()`；
-- FIX：根据 ref，修改 `DATA_SIZE` 最大值为 250 字节，`CTRL_SIZE` 参考值为 10 字节，将原 `BEACON_SIZE` 改为 `MAC_SIZE`，参考值为 8 字节；
+- FIX：根据 ref，修改 `SIZE_DATA` 最大值为 250 字节，`SIZE_CTRL` 参考值为 10 字节，将原 `BEACON_SIZE` 改为 `SIZE_HEADER_MAC`，参考值为 8 字节；
 
 
 ###### 2016-03-17  ·  *< 2.6.7 >*
@@ -569,3 +569,8 @@
 
 - OPT：运行发生异常退出时，输出错误信息到文件`error.log`；
 - OPT：优化命令行参数的使用帮助信息；
+
+
+###### 2016-03-23  ·  *< 3.1.5926.11722 >*
+
+- RFCT：规范化变量命名和 getter 函数名；

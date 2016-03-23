@@ -3,7 +3,7 @@
 #include "Node.h"
 #include "HAR.h"
 
-int CHotspot::ID_COUNT = 0;  //从1开始，数值等于当前实例总数
+int CHotspot::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 vector<CHotspot *> CHotspot::hotspotCandidates;
 vector<CHotspot *> CHotspot::selectedHotspots;
 vector<CHotspot *> CHotspot::oldSelectedHotspots;
@@ -135,11 +135,11 @@ double CHotspot::calculateRatio()
 double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 {
 	double distance = CBasicEntity::getDistance(*oldHotspot, *newHotspot);
-	double cos = ( distance / 2 ) / CGeneralNode::TRANS_RANGE;
+	double cos = ( distance / 2 ) / CGeneralNode::RANGE_TRANS;
 	double sin = sqrt( 1 - cos * cos );
 	double angle = acos(cos);
-	double sector = ( angle / 2 ) * CGeneralNode::TRANS_RANGE * CGeneralNode::TRANS_RANGE;
-	double triangle = ( CGeneralNode::TRANS_RANGE * ( distance / 2 ) ) * sin / 2;
+	double sector = ( angle / 2 ) * CGeneralNode::RANGE_TRANS * CGeneralNode::RANGE_TRANS;
+	double triangle = ( CGeneralNode::RANGE_TRANS * ( distance / 2 ) ) * sin / 2;
 
 	return ( sector - triangle ) * 4 ;
 }
@@ -158,16 +158,16 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 		{
 			if( (*iOld)->getID() == (*iNew)->getID() )
 			{
-				sumArea += AreaCircle(CGeneralNode::TRANS_RANGE);
+				sumArea += AreaCircle(CGeneralNode::RANGE_TRANS);
 				continue;
 			}
 
-			if( (*iNew)->getX() + 2 * CGeneralNode::TRANS_RANGE <= (*iOld)->getX() )
+			if( (*iNew)->getX() + 2 * CGeneralNode::RANGE_TRANS <= (*iOld)->getX() )
 				continue;
-			if( (*iOld)->getX() + 2 * CGeneralNode::TRANS_RANGE <= (*iNew)->getX() )
+			if( (*iOld)->getX() + 2 * CGeneralNode::RANGE_TRANS <= (*iNew)->getX() )
 				break;
 
-			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * CGeneralNode::TRANS_RANGE)
+			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * CGeneralNode::RANGE_TRANS)
 			{
 				sumArea += getOverlapArea(*iOld, *iNew);
 			}
@@ -179,5 +179,5 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 
 double CHotspot::getOverlapArea(vector<CHotspot *> hotspots)
 {
-	return getOverlapArea(hotspots, hotspots) - AreaCircle(CGeneralNode::TRANS_RANGE) * hotspots.size();
+	return getOverlapArea(hotspots, hotspots) - AreaCircle(CGeneralNode::RANGE_TRANS) * hotspots.size();
 }

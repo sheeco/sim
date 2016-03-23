@@ -20,7 +20,7 @@ public:
 #ifdef USE_PRED_TOLERANCE
 
 	static double TOLERANCE_PRED;
-//	static double DECAY_RATIO_TOLERANCE_PRED;
+//	static double DECAY_TOLERANCE_PRED;
 
 #endif
 

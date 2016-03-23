@@ -3,7 +3,7 @@
 #include "Sink.h"
 #include "Prophet.h"
 
-int CMacProtocol::MAC_SIZE = 0;  //Mac Header Size
+int CMacProtocol::SIZE_HEADER_MAC = 0;  //Mac Header Size
 bool CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
 int CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
 
@@ -23,7 +23,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 	gnode.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECIEVE );
 
 	vector<CGeneralData*> contents = package->getContent();
-	CGeneralNode* dst = package->getSourceNode();
+	CGeneralNode* dst = package->getSrcNode();
 
 
 	/*********************************************** Sensor Node *******************************************************/
@@ -50,7 +50,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 					case CCtrl::_rts:
 						//CTS
-						ctrlToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::CTRL_SIZE, CCtrl::_cts);
+						ctrlToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 
 						//if RTS is from sink, send CTS & datas
 						if( ctrl->getNode() == CSink::SINK_ID )
@@ -69,7 +69,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						else
 						{
 							//piggyback with data index otherwise
-							ctrlPiggback = new CCtrl(node->getID(), node->getDeliveryPreds(), node->updateSummaryVector(), currentTime, CGeneralNode::CTRL_SIZE, CCtrl::_index);
+							ctrlPiggback = new CCtrl(node->getID(), node->getDeliveryPreds(), node->updateSummaryVector(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_index);
 							node->skipRTS();  //（暂未使用）
 						}
 
@@ -81,7 +81,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 					case CCtrl::_cts:
 						//data index
-						ctrlToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), node->updateSummaryVector(), currentTime, CGeneralNode::CTRL_SIZE, CCtrl::_index);
+						ctrlToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), node->updateSummaryVector(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_index);
 
 						// TODO: connection established ?
 						break;
@@ -132,7 +132,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 				ack = CProphet::bufferData(node, datas, currentTime);
 				//ACK
 				if( ! ack.empty() )
-					ctrlToSend = new CCtrl(node->getID(), ack, currentTime, CGeneralNode::CTRL_SIZE, CCtrl::_ack);
+					ctrlToSend = new CCtrl(node->getID(), ack, currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
 			}
 		}
 
@@ -190,7 +190,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 				//ACK
 				if( ! ack.empty() )
-					ctrlToSend = new CCtrl(CSink::SINK_ID, ack, currentTime, CGeneralNode::CTRL_SIZE, CCtrl::_ack);
+					ctrlToSend = new CCtrl(CSink::SINK_ID, ack, currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
 			}
 			else
 				++icontent;
@@ -213,9 +213,9 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 {
 	bool rcv = false;
-	CGeneralNode* gnode = package->getSourceNode();
+	CGeneralNode* gnode = package->getSrcNode();
 	vector<CNode*> nodes = CNode::getNodes();
-	if( package->getDestNode() != nullptr )
+	if( package->getDstNode() != nullptr )
 	{
 		cout << "Error @ CMacProtocol::broadcastPackage() : package is not for broadcast" << endl;
 		_PAUSE_;
@@ -233,7 +233,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 			if( (*inode)->getID() == srcNode->getID() )
 				continue;
 
-			if( CBasicEntity::getDistance( *srcNode, **inode ) <= CGeneralNode::TRANS_RANGE )
+			if( CBasicEntity::getDistance( *srcNode, **inode ) <= CGeneralNode::RANGE_TRANS )
 			{
 				CNode::encount();
 
@@ -245,7 +245,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 					CNode::encountActive();
 
 					CNode::transmitTry();
-					if( Bet(CGeneralNode::PROB_DATA_FORWARD) )
+					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
 						rcv = true;
 						receivePackage(**inode, package, currentTime);
@@ -264,7 +264,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 		CSink* sink = CSink::getSink();	
 		for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 		{
-			if( CBasicEntity::getDistance( *package->getSourceNode(), **inode ) <= CGeneralNode::TRANS_RANGE )
+			if( CBasicEntity::getDistance( *package->getSrcNode(), **inode ) <= CGeneralNode::RANGE_TRANS )
 			{
 				CSink::encount();
 
@@ -273,7 +273,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 					CSink::encountActive();
 
 					CNode::transmitTry();
-					if( Bet(CGeneralNode::PROB_DATA_FORWARD) )
+					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
 						rcv = true;
 						receivePackage(**inode, package, currentTime);
@@ -299,14 +299,14 @@ bool CMacProtocol::transmitPackage(CPackage* package, CGeneralNode* dst, int cur
 	{
 		CNode::transmitTry();
 
-		if( Bet(CGeneralNode::PROB_DATA_FORWARD) )
+		if( Bet(CGeneralNode::PROB_TRANS) )
 		{
 			receivePackage(*dst, package, currentTime);
 			CNode::transmitSucceed();
 			return true;
 		}
 		else
-			flash_cout << "####  ( Node " << NDigitString( package->getSourceNode()->getID(), 2) << "  xxxxx fail xxxxx  Node " << NDigitString( dst->getID(), 2) << " )     " ;
+			flash_cout << "####  ( Node " << NDigitString( package->getSrcNode()->getID(), 2) << "  xxxxx fail xxxxx  Node " << NDigitString( dst->getID(), 2) << " )     " ;
 	}
 	free(package);
 	
@@ -392,8 +392,8 @@ void CMacProtocol::PrintInfo(int currentTime)
 		}
 		encounter << currentTime << TAB;
 		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
-			encounter << CNode::getEncounterAtHotspotPercent() << TAB << CNode::getEncounterAtHotspot() << TAB;
-		encounter << CNode::getEncounterActivePercent() << TAB << CNode::getEncounterActive() << TAB << CNode::getEncounter() << TAB;
+			encounter << CNode::getPercentEncounterAtHotspot() << TAB << CNode::getEncounterAtHotspot() << TAB;
+		encounter << CNode::getPercentEncounterActive() << TAB << CNode::getEncounterActive() << TAB << CNode::getEncounter() << TAB;
 		encounter << endl;
 		encounter.close();
 
@@ -404,7 +404,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 			transmit << endl << INFO_LOG << endl ;
 			transmit << INFO_TRANSMIT ;
 		}
-		transmit << currentTime << TAB << CNode::getTransmitSuccessfulPercent() << TAB << CNode::getTransmitSuccessful() << TAB << CNode::getTransmit() << TAB;
+		transmit << currentTime << TAB << CNode::getPercentTransmitSuccessful() << TAB << CNode::getTransmitSuccessful() << TAB << CNode::getTransmit() << TAB;
 		transmit << endl;
 		transmit.close();
 
@@ -434,10 +434,10 @@ void CMacProtocol::PrintInfo(int currentTime)
 void CMacProtocol::PrintFinal(int currentTime)
 {
 	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
-	final << CData::getAverageEnergyConsumption() << TAB << CNode::getTransmitSuccessfulPercent() << TAB << CNode::getEncounterActivePercent() << TAB ;
+	final << CData::getAverageEnergyConsumption() << TAB << CNode::getPercentTransmitSuccessful() << TAB << CNode::getPercentEncounterActive() << TAB ;
 	if( MAC_PROTOCOL == _hdc )
 	{
-		final << CNode::getEncounterAtHotspotPercent() << TAB ;
+		final << CNode::getPercentEncounterAtHotspot() << TAB ;
 	}
 	if( CNode::finiteEnergy() )
 		final << currentTime << TAB << CNode::getNodes().size() << TAB ;

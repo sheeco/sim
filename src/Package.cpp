@@ -40,7 +40,7 @@ CPackage::~CPackage()
 
 void CPackage::init()
 {
-	this->macHeader = CMacProtocol::MAC_SIZE;
+	this->headerMac = CMacProtocol::SIZE_HEADER_MAC;
 	if( dst != nullptr
 		&& dst->getID() == -1 )
 		dst = nullptr;
@@ -48,7 +48,7 @@ void CPackage::init()
 
 int CPackage::getSize() const
 {
-	int size = macHeader;
+	int size = headerMac;
 	for(auto icontent = content.begin(); icontent != content.end(); ++icontent)
 		size += (*icontent)->getSize();
 	return size;

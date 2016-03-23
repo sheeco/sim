@@ -37,14 +37,14 @@ private:
 	vector<CPosition *> coveredPositions;  //覆盖列表
 	vector<int> coveredNodes;  //覆盖的node列表，hotspot选取结束后手动调用generateCoveredNodes生成
 	double heat;
-	vector<int> deliveryCounts;  //存储该热点上的投递计数，连任的热点应对每一任期内的投递计数进行统计
+	vector<int> countsDelivery;  //存储该热点上的投递计数，连任的热点应对每一任期内的投递计数进行统计
 	vector<int> waitingTimes;  //存储该热点上的等待时间，连任的热点应对每一任期内的投递计数进行统计
 	double ratio;  //用于测试新的ratio计算方法，将在贪婪选取和后续选取过程中用到
 
-	static int ID_COUNT;
+	static int COUNT_ID;
 
 	//merge-HAR
-	_TYPE_HOTSPOT candidateType;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
+	_TYPE_HOTSPOT typeHotspotCandidate;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
 	int age;  //用于标记旧热点或归并热点的年龄，即连任轮数
 
 	//检查某个position是否已在覆盖列表中
@@ -66,9 +66,9 @@ private:
 		this->ratio = 0;		
 		
 		//merge_HAR
-		this->candidateType = _new_hotspot;
+		this->typeHotspotCandidate = _new_hotspot;
 		this->age = 0;
-		this->deliveryCounts.push_back(0);		
+		this->countsDelivery.push_back(0);		
 	}
 
 	void generateHotspot(CCoordinate location, int time)
@@ -92,12 +92,12 @@ private:
 			{
 				if(CPosition::positions[i]->getFlag())
 					continue;
-				if( CPosition::positions[i]->getX() + CGeneralNode::TRANS_RANGE < this->getX() )
+				if( CPosition::positions[i]->getX() + CGeneralNode::RANGE_TRANS < this->getX() )
 					continue;
 				//若水平距离已超出range，则可以直接停止搜索
-				if( this->getX() + CGeneralNode::TRANS_RANGE < CPosition::positions[i]->getX() )
+				if( this->getX() + CGeneralNode::RANGE_TRANS < CPosition::positions[i]->getX() )
 					break;
-				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= CGeneralNode::TRANS_RANGE)
+				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= CGeneralNode::RANGE_TRANS)
 				{
 					this->addPosition(CPosition::positions[i]);
 					CPosition::positions[i]->setFlag(true);
@@ -170,13 +170,13 @@ public:
 	}
 
 	//merge_HAR
-	inline _TYPE_HOTSPOT getCandidateType() const
+	inline _TYPE_HOTSPOT getTypeHotspotCandidate() const
 	{
-		return this->candidateType;
+		return this->typeHotspotCandidate;
 	}
-	inline void setCandidateType(_TYPE_HOTSPOT candidateType)
+	inline void setCandidateType(_TYPE_HOTSPOT typeHotspotCandidate)
 	{
-		this->candidateType = candidateType;
+		this->typeHotspotCandidate = typeHotspotCandidate;
 	}
 	inline int getAge() const
 	{
@@ -186,8 +186,8 @@ public:
 	inline void setAge(int age)
 	{
 		this->age = age;
-		while( deliveryCounts.size() < age + 1 )
-			deliveryCounts.push_back(0);
+		while( countsDelivery.size() < age + 1 )
+			countsDelivery.push_back(0);
 		while( waitingTimes.size() < age + 1 )
 			waitingTimes.push_back(0);
 	}
@@ -217,9 +217,9 @@ public:
 
 	int getNCoveredPositionsForNode(int inode);	
 	
-	double getCoByCandidateType() const
+	double getRatioByTypeHotspotCandidate() const
 	{
-		switch( this->candidateType )
+		switch( this->typeHotspotCandidate )
 		{
 			case _merge_hotspot: 
 				return RATIO_MERGE_HOTSPOT;
@@ -234,27 +234,27 @@ public:
 
 	//从当前这一热点任期内的投递计数，该函数应当在MA的路径更新时调用输出统计结果
 	//FIXEME: 未测试
-	inline int getDeliveryCount()
+	inline int getCountDelivery()
 	{
 		if(age == 0)
-			return deliveryCounts.at(0);
+			return countsDelivery.at(0);
 		else
-			return deliveryCounts.at( age - 1 );
+			return countsDelivery.at( age - 1 );
 	}
 	//返回( untilTime - 900, untilTime )期间的投递计数
-	inline int getDeliveryCount(int untilTime)
+	inline int getCountDelivery(int untilTime)
 	{
 		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
-		if( i < 0 || i > deliveryCounts.size() )
+		if( i < 0 || i > countsDelivery.size() )
 		{
-			cout << endl << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") : " << i << " exceeds (0," << deliveryCounts.size() - 1 << ") !" << endl;
+			cout << endl << "Error @ CHotspot::getCountDelivery(" << untilTime << ") : " << i << " exceeds (0," << countsDelivery.size() - 1 << ") !" << endl;
 			_PAUSE_;
 		}
-		return deliveryCounts.at( i );
+		return countsDelivery.at( i );
 	}
 	inline void addDeliveryCount(int n)
 	{
-		deliveryCounts.at( deliveryCounts.size() - 1 ) += n;
+		countsDelivery.at( countsDelivery.size() - 1 ) += n;
 	}
 	//从当前这一热点任期内的等待时间，该函数应当在MA的路径更新时调用输出统计结果
 	//FIXEME: 未测试
@@ -271,7 +271,7 @@ public:
 		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
 		if( i < 0 || i > waitingTimes.size() )
 		{
-			cout << endl << "Error @ CHotspot::getDeliveryCount(" << untilTime << ") : " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
+			cout << endl << "Error @ CHotspot::getCountDelivery(" << untilTime << ") : " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
 			_PAUSE_;
 		}		return waitingTimes.at( i );
 	}
@@ -283,8 +283,8 @@ public:
 	//自动生成ID，需手动调用，为了确保热点ID的唯一性，制作临时拷贝时不应调用此函数
 	inline void generateID()
 	{
-		++ID_COUNT;
-		this->ID = ID_COUNT;
+		++COUNT_ID;
+		this->ID = COUNT_ID;
 	}
 
 	//从覆盖列表中删除多个position，只有贪婪算法会用到

@@ -14,7 +14,7 @@ private:
 
 	CGeneralNode* src;
 	CGeneralNode* dst;  //Ä¬ÈÏ null, ¹ã²¥
-	int macHeader;
+	int headerMac;
 	vector<CGeneralData*> content;
 
 	void init();
@@ -30,11 +30,11 @@ public:
 	CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl, vector<CData> datas);
 	~CPackage();
 
-	inline CGeneralNode* getSourceNode() const
+	inline CGeneralNode* getSrcNode() const
 	{
 		return src;
 	}
-	inline CGeneralNode* getDestNode() const
+	inline CGeneralNode* getDstNode() const
 	{
 		return dst;
 	}

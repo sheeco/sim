@@ -13,7 +13,7 @@ private:
 	int node;  //所属节点ID
 	//bool isCovered;
 	double weight;
-	static int ID_COUNT;
+	static int COUNT_ID;
 
 
 public:
@@ -62,14 +62,14 @@ public:
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{
-		++ID_COUNT;
-		this->ID = ID_COUNT;
+		++COUNT_ID;
+		this->ID = COUNT_ID;
 	}
 
 
 	//根据position指针得到它在全局变量CPosition::positions中的下标，仅在热点候选集合构建过程中使用
 	//应在CPosition::positions完成排序之后调用，并且此后不能再改变其中的元素顺序
-	static int getIndexOfPosition(CPosition* pos);
+	static int getIndexPosition(CPosition* pos);
 
 };
 

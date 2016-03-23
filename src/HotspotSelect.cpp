@@ -51,7 +51,7 @@ void CHotspotSelect::updateStatus()
 		double ratio = unselectedHotspots[i]->getRatio();
 
 		//merge-HAR: ratio
-		ratio *= pow( unselectedHotspots[i]->getCoByCandidateType(), unselectedHotspots[i]->getAge() );
+		ratio *= pow( unselectedHotspots[i]->getRatioByTypeHotspotCandidate(), unselectedHotspots[i]->getAge() );
 
 		if( ratio / max_ratio < 0.5 )
 			break;
@@ -110,7 +110,7 @@ void CHotspotSelect::CollectNewPositions(int time)
 	//IHAR: 删除过期的position记录
 	if( HOTSPOT_SELECT == _improved )
 	{
-		int threshold = time - HAR::MAX_MEMORY_TIME;
+		int threshold = time - HAR::LIFETIME_POSITION;
 		if(threshold > 0)
 		{
 			for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
@@ -195,9 +195,9 @@ void CHotspotSelect::GreedySelect(int time)
 				{
 					if((*ipos)->getFlag() == true)
 						continue;
-					if(fabs(hotspotsAboveAverage[i]->getX() - (*ipos)->getX()) > CGeneralNode::TRANS_RANGE)
+					if(fabs(hotspotsAboveAverage[i]->getX() - (*ipos)->getX()) > CGeneralNode::RANGE_TRANS)
 						continue;
-					if(CBasicEntity::getDistance(*hotspotsAboveAverage[i], **ipos) <= CGeneralNode::TRANS_RANGE)
+					if(CBasicEntity::getDistance(*hotspotsAboveAverage[i], **ipos) <= CGeneralNode::RANGE_TRANS)
 					{
 						hotspotsAboveAverage[i]->addPosition(*ipos);
 						(*ipos)->setFlag(true);
@@ -211,7 +211,7 @@ void CHotspotSelect::GreedySelect(int time)
 			double ratio = hotspotsAboveAverage[i]->getRatio();
 
 			//merge-HAR: ratio
-			ratio *= pow( hotspotsAboveAverage[i]->getCoByCandidateType(), hotspotsAboveAverage[i]->getAge() );
+			ratio *= pow( hotspotsAboveAverage[i]->getRatioByTypeHotspotCandidate(), hotspotsAboveAverage[i]->getAge() );
 
 			if( ratio > best_ratio)
 			{
@@ -296,12 +296,12 @@ void CHotspotSelect::MergeHotspots(int time)
 		for(vector<CHotspot *>::iterator iNew = CHotspot::hotspotCandidates.begin(); iNew != CHotspot::hotspotCandidates.end(); ++iNew, ++i)
 		{
 			//for (x within range)
-			if( (*iNew)->getX() + 2 * CGeneralNode::TRANS_RANGE <= (*iOld)->getX() )
+			if( (*iNew)->getX() + 2 * CGeneralNode::RANGE_TRANS <= (*iOld)->getX() )
 				continue;
-			if( (*iOld)->getX() + 2 * CGeneralNode::TRANS_RANGE <= (*iNew)->getX() )
+			if( (*iOld)->getX() + 2 * CGeneralNode::RANGE_TRANS <= (*iNew)->getX() )
 				break;
 			//try merge
-			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * CGeneralNode::TRANS_RANGE)
+			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * CGeneralNode::RANGE_TRANS)
 			{
 				//FIXE: time copied from old or new ?
 				CCoordinate location( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 , ( (*iOld)->getY() + (*iNew)->getY() ) / 2);

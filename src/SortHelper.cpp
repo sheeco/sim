@@ -239,8 +239,8 @@ vector<CHotspot> CSortHelper::mergeByDeliveryCount(vector<CHotspot> left, vector
 	while(li < left.size()
 		&& ri < right.size())
 	{
-		int lv = left[li].getDeliveryCount(endTime);
-		int rv = right[ri].getDeliveryCount(endTime);
+		int lv = left[li].getCountDelivery(endTime);
+		int rv = right[ri].getCountDelivery(endTime);
 		if( lv < rv )
 			result.push_back(right[ri++]);
 		else
