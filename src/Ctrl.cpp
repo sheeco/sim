@@ -38,13 +38,25 @@ CCtrl::CCtrl(int node, vector<CData> datas, int timeBirth, int byte, _TYPE_CTRL 
 	this->type = type;
 }
 
-CCtrl::CCtrl(int node, map<int, double> pred, vector<int> sv, int timeBirth, int byte, _TYPE_CTRL type)
+CCtrl::CCtrl(int node, map<int, double> pred, int timeBirth, int byte, _TYPE_CTRL type)
 {
 	CCtrl::init();
 	this->node = node;
 	if( type == _index )
 	{
 		this->pred = pred;
+	}
+	this->time = this->timeBirth = timeBirth;
+	this->size = byte;
+	this->type = type;
+}
+
+CCtrl::CCtrl(int node, vector<int> sv, int timeBirth, int byte, _TYPE_CTRL type)
+{
+	CCtrl::init();
+	this->node = node;
+	if( type == _index )
+	{
 		this->sv = sv;
 	}
 	this->time = this->timeBirth = timeBirth;

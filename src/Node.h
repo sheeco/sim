@@ -134,6 +134,8 @@ public:
 
 //	void receivePackage(CPackage* package, int currentTime) override;
 
+	CPackage* sendRTSWithPred(int currentTime);
+
 	bool hasSpokenRecently(CNode* node, int currentTime);
 
 	void addToSpokenCache(CNode* node, int t);

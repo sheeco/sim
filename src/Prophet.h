@@ -28,9 +28,11 @@ public:
 	CProphet();
 	~CProphet();
 
+	static bool shouldForward(CNode* node, map<int, double> dstPred);
+
 	// TODO: check hop
-	//select data to sent based on preds
-	static vector<CData> selectDataByIndex(CNode* node, CCtrl* ctrl);
+	//select proper data to send
+	static vector<CData> getDataForTrans(CNode* node);
 
 	static vector<CData> bufferData(CNode* node, vector<CData> datas, int time);
 

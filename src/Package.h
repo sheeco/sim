@@ -16,20 +16,24 @@ private:
 	CGeneralNode* dst;  //默认 null, 广播
 	int headerMac;
 	//注意：元素可能为空只恨，这意味着任何引用之前需要判断
-	vector<CGeneralData*> content;
+	vector<CGeneralData*> contents;
 
 	void init();
 	CPackage();
 
 public:
 
-	//RTS / CTS / ACK Package
+	//ACK Package
 	CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl);
-	//CTS piggyback with data index ( delivery preds & summary vector )
+	//RTS + index / CTS + DP / ACK + NODATA
 	CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl_a, CCtrl ctrl_b);
-	//datas piggyback with data index ( delivery preds & summary vector ) / ACK
+	//CTS + DP + NODATA
+	CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl_a, CCtrl ctrl_b, CCtrl ctrl_c);
+	//CTS + DP + DATA
+	CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl_a, CCtrl ctrl_b, vector<CData> datas);
+	//CTS + DATA (only to Sink)
 	CPackage(CGeneralNode& node, CGeneralNode& dst , CCtrl ctrl, vector<CData> datas);
-	//datas only
+	//DATA only
 	CPackage(CGeneralNode& node, CGeneralNode& dst , vector<CData> datas);
 	~CPackage();
 
@@ -43,7 +47,7 @@ public:
 	}
 	inline vector<CGeneralData*> getContent() const
 	{
-		return content;
+		return contents;
 	}
 
 	int getSize() const;

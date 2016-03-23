@@ -25,7 +25,8 @@ public:
 		_rts, 
 		_cts, 
 		_ack, 
-		_index  //data index ( delivery preds & summary vector )
+		_index,   //data index ( delivery preds & summary vector )
+		_no_data  //inform no data to send
 	} _TYPE_CTRL;
 
 
@@ -43,12 +44,14 @@ private:
 
 public:
 
-	//RTS / CTS
+	//RTS / CTS / NO_DATA
 	CCtrl(int node, int timeBirth, int byte, _TYPE_CTRL type);
 	//ACK
 	CCtrl(int node, vector<CData> datas, int timeBirth, int byte, _TYPE_CTRL type);
-	//data index ( delivery preds & summary vector )
-	CCtrl(int node, map<int, double> pred, vector<int> sv, int timeBirth, int byte, _TYPE_CTRL type);
+	//data index ( delivery preds )
+	CCtrl(int node, map<int, double> pred, int timeBirth, int byte, _TYPE_CTRL type);
+	//data index ( summary vector )
+	CCtrl(int node, vector<int> sv, int timeBirth, int byte, _TYPE_CTRL type);
 	~CCtrl();
 
 	_TYPE_CTRL getType() const

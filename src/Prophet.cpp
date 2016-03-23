@@ -182,38 +182,32 @@ CProphet::CProphet() {}
 
 CProphet::~CProphet() {}
 
-vector<CData> CProphet::selectDataByIndex(CNode* node, CCtrl* ctrl)
+bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 {
-	vector<CData> datas;
 	double predNode = node->getDeliveryPreds().find(CSink::getSink()->getID())->second;
-	double predDst = ctrl->getPred().find(CSink::getSink()->getID())->second;
+	double predDst = dstPred.find(CSink::getSink()->getID())->second;
 #ifdef USE_PRED_TOLERANCE
 	predDst += TOLERANCE_PRED;
 #endif
 
-	if( node->isFull()
-		|| predDst >= predNode )
-	{		
-		vector<int> rcvSV = ctrl->getSV();
+//	if( predNode == predDst )
+//		return Bet(0.5);
+//	else
+	return ( predDst > predNode );
+}
 
-		if( ! rcvSV.empty() )
-		{	
-			vector<int> mySV = node->updateSummaryVector();
-			RemoveFromList(mySV, rcvSV);
-			datas = node->getDataByRequestList( mySV );
-		}
+vector<CData> CProphet::getDataForTrans(CNode* node)
+{
+	vector<CData> datas = node->getAllData();
+
+	if( MAX_DATA_TRANS > 0
+		&& datas.size() > MAX_DATA_TRANS )
+	{
+		datas = CSortHelper::mergeSort(datas, CSortHelper::ascendByTimeBirth);
+		if( CNode::MODE_QUEUE == CGeneralNode::_fifo )
+			datas = vector<CData>(datas.begin(), datas.begin() + MAX_DATA_TRANS);
 		else
-			datas = node->getAllData();
-
-		if( MAX_DATA_TRANS > 0
-			&& datas.size() > MAX_DATA_TRANS )
-		{
-			datas = CSortHelper::mergeSort(datas, CSortHelper::ascendByTimeBirth);
-			if( CNode::MODE_QUEUE == CGeneralNode::_fifo )
-				datas = vector<CData>(datas.begin(), datas.begin() + MAX_DATA_TRANS);
-			else
-				datas = vector<CData>(datas.rbegin(), datas.rbegin() + MAX_DATA_TRANS);
-		}
+			datas = vector<CData>(datas.rbegin(), datas.rbegin() + MAX_DATA_TRANS);
 	}
 
 	return datas;

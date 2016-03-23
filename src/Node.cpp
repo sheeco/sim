@@ -423,8 +423,20 @@ void CNode::checkDataByAck(vector<CData> ack)
 //	return ack;
 //}
 
+CPackage* CNode::sendRTSWithPred(int currentTime)
+{
+	CCtrl rts(ID, currentTime, SIZE_CTRL, CCtrl::_rts);
+	CCtrl pred(ID, deliveryPreds, currentTime, SIZE_CTRL, CCtrl::_index);
+	CPackage* package = new CPackage(*this, CGeneralNode(), rts, pred);
+	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
+	return package;	
+}
+
 bool CNode::hasSpokenRecently(CNode* node, int currentTime) 
 {
+	if( CNode::LIFETIME_SPOKEN_CACHE == 0 )
+		return false;
+
 	map<CNode *, int>::iterator icache = spokenCache.find( node );
 	if( icache == spokenCache.end() )
 		return false;
