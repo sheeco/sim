@@ -60,6 +60,8 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						//if RTS is from sink, send CTS & datas
 						if( ctrl->getNode() == CSink::SINK_ID )
 						{
+							node->updateDeliveryPredsWithSink();
+
 							if( gnode.getAllData().empty() )
 								return;
 

@@ -151,7 +151,7 @@ void InitConfiguration()
 	/** Opt **/
 #ifdef USE_PRED_TOLERANCE
 
-	CProphet::TOLERANCE_PRED = 0.2;
+	CProphet::TOLERANCE_PRED = 0;
 //	DECAY_TOLERANCE_PRED = 1;
 
 #endif
@@ -284,7 +284,7 @@ bool ParseParameters(int argc, char* argv[])
 					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
-			else if( field == "-discover" )
+			else if( field == "-cycle-discover" )
 			{
 				if(iField < argc - 1)
 					CNode::DEFAULT_DISCOVER_CYCLE = atof( argv[ iField + 1 ] );

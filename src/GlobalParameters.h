@@ -33,7 +33,7 @@
 #define ESKIP -2  //exit without execution
 
 //Optional Macro to enable #ifdef (for uncertain try)
-#define USE_PRED_TOLERANCE
+//#define USE_PRED_TOLERANCE
 
 
 /********************************** Namespace Lib ***********************************/
