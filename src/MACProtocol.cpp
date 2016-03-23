@@ -482,7 +482,7 @@ void CMacProtocol::PrintFinal(int currentTime)
 	final << CData::getAverageEnergyConsumption() << TAB << CNode::getPercentTransmitSuccessful() << TAB << CNode::getPercentEncounterActive() << TAB ;
 	if( MAC_PROTOCOL == _hdc )
 	{
-		final << CNode::getPercentEncounterAtHotspot() << TAB ;
+		final << CNode::getPercentEncounterActiveAtHotspot() << TAB ;
 	}
 	if( CNode::finiteEnergy() )
 		final << currentTime << TAB << CNode::getNodes().size() << TAB ;

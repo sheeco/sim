@@ -297,7 +297,7 @@ public:
 	{
 		++encounter;
 	}
-	//邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
+	//有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
 	static void encountActive() 
 	{
 		++encounterActive;
@@ -307,7 +307,7 @@ public:
 	{
 		++encounterAtHotspot;
 	}
-	//热点区域内邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
+	//热点区域内的有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
 	static void encountActiveAtHotspot() 
 	{
 		++encounterActiveAtHotspot;
@@ -329,11 +329,12 @@ public:
 	{
 		return encounterActiveAtHotspot;
 	}
+	//所有有效相遇中，发生在热点区域的比例
 	static double getPercentEncounterActiveAtHotspot() 
 	{
 		if(encounterActiveAtHotspot == 0)
 			return 0.0;
-		return double(encounterActiveAtHotspot) / double(encounter);
+		return double(encounterActiveAtHotspot) / double(encounterActive);
 	}
 	static double getPercentEncounterAtHotspot() 
 	{

@@ -580,3 +580,7 @@
 - ADD：添加节点工作状态随机初始化的可选功能，由变量 `CMacProtocol::RANDOM_STATE_INIT` 标记，命令行参数 `-random-state`；
 - **TODO：** ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC　单独绑定的功能；
 - **TODO：** RFCT：将热点选取的相关输出分离移入到 `CHotspotSelect` 类中；
+
+
+###### 2016-03-23  ·  *< 3.2.5926.22866 >*
+
