@@ -90,14 +90,14 @@ private:
 			//对新的hotspot重心，再次遍历position
 			for(int i = 0; i < CPosition::nPositions; ++i)
 			{
-				if(CPosition::positions[i]->getFlag())
+				if( CPosition::positions[i]->getFlag() )
 					continue;
 				if( CPosition::positions[i]->getX() + CGeneralNode::RANGE_TRANS < this->getX() )
 					continue;
 				//若水平距离已超出range，则可以直接停止搜索
 				if( this->getX() + CGeneralNode::RANGE_TRANS < CPosition::positions[i]->getX() )
 					break;
-				if(CBasicEntity::getDistance(*this, *CPosition::positions[i]) <= CGeneralNode::RANGE_TRANS)
+				if( CBasicEntity::withinRange(*this, *CPosition::positions[i], CGeneralNode::RANGE_TRANS ) )
 				{
 					this->addPosition(CPosition::positions[i]);
 					CPosition::positions[i]->setFlag(true);

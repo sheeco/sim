@@ -597,5 +597,16 @@
 ###### 2016-03-24  ·  *< 3.2.5926.41581 >*
 
 - FIX：修改 `CMacProtocol::receivePackage` 中的数据传输过程，发送 RTS 时直接捎带投递概率；
-- FIX：修改 `CMacProtocol::receivePackage` 中的数据传输计数方法，单次数据传输只计入一次；
-- NOTE：尚未成功修复；
+- FIX：修改 `CMacProtocol::receivePackage` 中的数据传输计数方法，对于每个节点对只计入一次数据传输，以收到 ACK 为准则；
+
+
+###### 2016-03-24  ·  *< 3.2.5927.16957 >*
+
+- FIX：修改项目属性，以解决 `Warning LNK4098`；
+- ADD：宏定义 `_WIN32_WINNT`，用于为编译器指示系统版本；
+- FIX：修复 `CMacProtocol::receivePackage` 中的响应逻辑的重要错误；
+- NOTE：只要路由协议允许转发数据，就将发送 DATA 或 NODATA 包，收到二者中的任何一个，都应回复 ACK；
+- ADD：添加成员变量 `CProphet::TRANS_STRICT_BY_PRED`，指示是否严格以投递概率**真**大于本节点为判断准则；
+- --- （默认）值 `true` 时，对于相等投递概率的节点也允许发送（但仍保持单向）；值为 `true` 时，对于相等投递概率的节点，将以 0.5 的概率决定发送；
+- ADD：添加命令行参数 `-node` 用于定义节点个数；
+- RFCT：添加函数 `CBasicEntity::withinRange()` 替换多数 `CBasicEntity::getDistance()` 的引用；

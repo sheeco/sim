@@ -1,5 +1,8 @@
 #pragma once
 
+#define _WIN32_WINNT_WIN10 0x0A00
+#define _WIN32_WINNT _WIN32_WINNT_WIN10  //Compiled under Win 10
+
 #include <afx.h>
 #include <stdlib.h>
 #include <stdio.h>

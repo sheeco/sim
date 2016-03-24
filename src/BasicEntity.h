@@ -124,6 +124,11 @@ public:
 		return sqrt((mx - nx) * (mx - nx) + (my - ny) * (my - ny));
 	}
 
+	inline static bool withinRange(CBasicEntity &m, CBasicEntity &n, double range)
+	{
+		return ( getDistance(m, n) <= range );
+	}
+
 	static vector<CBasicEntity*> GetItemsByID(vector<CBasicEntity*> list, vector<int> ids);
 
 	//由from向to方向移动，给定时间和速度

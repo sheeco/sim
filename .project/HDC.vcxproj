@@ -67,6 +67,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>/NODEFAULTLIB:"MSVCRT" %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <BuildLog>
       <Path>..\build\$(ProjectName).$(Configuration).log</Path>

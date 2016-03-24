@@ -415,7 +415,7 @@ void HAR::MANodeRouteDesign(int currentTime)
 //		{
 //			(*iMANode)->updateLocation(currentTime);
 //			//如果到达sink，投递MA的所有数据
-//			if( CBasicEntity::getDistance( **iMANode, *CSink::getSink()) <= CGeneralNode::RANGE_TRANS )
+//			if( CBasicEntity::withinRange( **iMANode, *CSink::getSink(), CGeneralNode::RANGE_TRANS ) )
 //			{
 //				if((*iMANode)->getSizeBuffer() > 0)
 //				{

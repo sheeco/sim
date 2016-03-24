@@ -34,21 +34,14 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		CNode* node = dynamic_cast<CNode*>(&gnode);
 		CCtrl* ctrlToSend = nullptr;
 		CCtrl* indexToSend = nullptr;
-		CCtrl* nodataToSend = nullptr;
-		vector<CData> dataToSend;  //空vector代表没有适合传输的数据
+		CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
+		vector<CData> dataToSend;  //空vector代表拒绝传输数据
 
 		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
 		{
 			
 			/***************************************** rcv Ctrl Message *****************************************/
 
-			//如果被告知没有需要传输的数据，则不发送ACK，但也认为传输成功
-//			if( *icontent == nullptr )
-//			{
-//				CNode::transmitSucceed();
-//				++icontent;
-//			}
-//			else 
 			if( typeid(**icontent) == typeid(CCtrl) )
 			{
 				CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
@@ -119,10 +112,18 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 						//update preds
 						node->updateDeliveryPredsWith( dst->getID(), ctrl->getPred() );
 						// + DATA / NODATA
+						//路由协议允许向该节点转发数据
 						if( CProphet::shouldForward(node, ctrl->getPred() ) )
+						{
 							dataToSend = CProphet::getDataForTrans(node);
-						else
-							nodataToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
+							//但缓存为空
+							if( dataToSend.empty() )
+								nodataToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
+						}
+						//否则，不允许转发数据时，dataToSend留空
+
+						//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输，因此需要对空相应调用transmitSucceed()；
+						//     否则并不结束传输，还将为对方发来的数据发送ACK；
 
 						break;
 			
@@ -151,12 +152,11 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 					case CCtrl::_no_data:
 						
-						//收到NODATA，也认为数据传输成功
-						CNode::transmitSucceed();
-
+						//收到NODATA，也将回复一个空的ACK，即，也将被认为数据传输成功
 						//空的ACK
 						ctrlToSend = new CCtrl(node->getID(), vector<CData>(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
-						//收到NODATA时，不回复数据
+
+						//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
 						dataToSend.clear();
 
 						break;
@@ -179,6 +179,9 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 					++icontent;
 				} while( icontent != contents.end() );
 			
+				//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
+				dataToSend.clear();
+
 				//accept data into buffer
 				vector<CData> ack;
 				ack = CProphet::bufferData(node, datas, currentTime);
@@ -195,14 +198,20 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		if( ctrlToSend != nullptr )
 		{
 			ctrlsToSend.push_back(*ctrlToSend);
+			free(ctrlToSend);
+			ctrlToSend = nullptr;
 		}
 		if( indexToSend != nullptr )
 		{
 			ctrlsToSend.push_back(*indexToSend);
+			free(indexToSend);
+			indexToSend = nullptr;
 		}
 		if( nodataToSend != nullptr )
 		{
 			ctrlsToSend.push_back(*nodataToSend);
+			free(nodataToSend);
+			nodataToSend = nullptr;
 		}
 
 		if( dataToSend.empty() )
@@ -246,26 +255,17 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 			}
 		}
 
-		node->consumeEnergy( packageToSend->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND );
-		transmitPackage( packageToSend, dst, currentTime );
-
-		if( ctrlToSend != nullptr )
+		if( packageToSend == nullptr)
 		{
-			free(ctrlToSend);
-			ctrlToSend = nullptr;
+			CNode::transmitSucceed();
+			return;
 		}
-		if( indexToSend != nullptr )
+		else
 		{
-			free(indexToSend);
-			indexToSend = nullptr;
-		}
-		if( nodataToSend != nullptr )
-		{
-			free(nodataToSend);
-			nodataToSend = nullptr;
+			node->consumeEnergy( packageToSend->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND );
+			transmitPackage( packageToSend, dst, currentTime );			
 		}
 
-		
 	}
 
 	/*************************************************** Sink **********************************************************/
@@ -312,7 +312,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 }
 
-bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
+void CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 {
 	bool rcv = false;
 	CGeneralNode* gnode = package->getSrcNode();
@@ -335,7 +335,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 			if( (*dstNode)->getID() == srcNode->getID() )
 				continue;
 
-			if( CBasicEntity::getDistance( *srcNode, **dstNode ) <= CGeneralNode::RANGE_TRANS )
+			if( CBasicEntity::withinRange( *srcNode, **dstNode, CGeneralNode::RANGE_TRANS ) )
 			{
 				if( (*dstNode)->isListening() )
 				{
@@ -348,7 +348,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 
 					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
-						rcv = true;
+//						rcv = true;
 						receivePackage(**dstNode, package, currentTime);
 					}
 				}
@@ -364,7 +364,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 		CSink* sink = CSink::getSink();	
 		for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 		{
-			if( CBasicEntity::getDistance( *package->getSrcNode(), **inode ) <= CGeneralNode::RANGE_TRANS )
+			if( CBasicEntity::withinRange( *package->getSrcNode(), **inode, CGeneralNode::RANGE_TRANS ) )
 			{
 				CSink::encount();
 
@@ -374,7 +374,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 
 					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
-						rcv = true;
+//						rcv = true;
 						receivePackage(**inode, package, currentTime);
 					}
 				}
@@ -387,7 +387,7 @@ bool CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 	free(package);
 
 	// TODO: sort by distance with src node ?
-	return rcv;
+//	return rcv;
 }
 
 // TODO: add flash_cout & delivery% print
@@ -458,7 +458,7 @@ void CMacProtocol::TransmitData(int currentTime)
 	{
 		for(vector<CNode*>::iterator dstNode = srcNode; dstNode != nodes.end(); ++dstNode)
 		{
-			if( CBasicEntity::getDistance( **srcNode, **dstNode ) <= CGeneralNode::RANGE_TRANS )
+			if( CBasicEntity::withinRange( **srcNode, **dstNode, CGeneralNode::RANGE_TRANS ) )
 			{
 				CNode::encount();
 				if( (*dstNode)->isAtHotspot() || (*srcNode)->isAtHotspot() )  //避免重复计算

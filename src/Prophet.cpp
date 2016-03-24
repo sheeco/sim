@@ -6,6 +6,7 @@
 #include "Prophet.h"
 #include "SortHelper.h"
 
+bool CProphet::TRANS_STRICT_BY_PRED = true;
 int CProphet::MAX_DATA_TRANS = 0;
 
 #ifdef USE_PRED_TOLERANCE
@@ -190,10 +191,15 @@ bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 	predDst += TOLERANCE_PRED;
 #endif
 
-//	if( predNode == predDst )
-//		return Bet(0.5);
-//	else
-	return ( predDst > predNode );
+	if( predNode == predDst )
+	{
+		if( TRANS_STRICT_BY_PRED )
+			return Bet(0.5);
+		else
+			return true;
+	}
+	else
+		return ( predDst > predNode );
 }
 
 vector<CData> CProphet::getDataForTrans(CNode* node)

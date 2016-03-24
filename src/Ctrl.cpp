@@ -14,6 +14,7 @@ void CCtrl::init()
 {
 	CGeneralData::init();
 	this->HOP = 1;
+	this->type = _rts;
 }
 
 CCtrl::CCtrl(int node, int timeBirth, int byte, _TYPE_CTRL type)

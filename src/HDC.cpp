@@ -45,7 +45,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 				continue;
 			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*ihotspot)->getX() )
 				break;
-			if( CBasicEntity::getDistance( **inode, **ihotspot ) <= CGeneralNode::RANGE_TRANS )		
+			if( CBasicEntity::withinRange( **inode, **ihotspot, CGeneralNode::RANGE_TRANS ) )		
 			{
 				atHotspot = *ihotspot;
 				break;

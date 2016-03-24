@@ -18,7 +18,7 @@ private:
 	static void UpdateNodeStatus(int currentTime);
 
 	static void receivePackage(CGeneralNode& node, CPackage* package, int currentTime);
-	static bool broadcastPackage(CPackage* package, int currentTime);
+	static void broadcastPackage(CPackage* package, int currentTime);
 	static bool transmitPackage(CPackage* package, CGeneralNode* dst, int currentTime);
 
 

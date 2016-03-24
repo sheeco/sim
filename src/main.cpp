@@ -52,6 +52,7 @@ void InitConfiguration()
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
 	CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
+	CNode::INIT_NUM_NODE = 0;
 	CNode::MIN_NUM_NODE = 0;
 	CNode::MAX_NUM_NODE = 0;
 	/********** ------------------- **********/
@@ -71,9 +72,10 @@ void InitConfiguration()
 
 	/******************************  Prophet  ******************************/
 
-	CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
-	CNode::RATIO_PRED_DECAY = 0.90;  //0.98(/s)
-	CNode::RATIO_PRED_TRANS = 0.20;  //0.25
+	CNode::INIT_DELIVERY_PRED = 0.75;  //参考值 0.75
+	CNode::RATIO_PRED_DECAY = 0.98;  //参考值 0.98(/s)
+	CNode::RATIO_PRED_TRANS = 0.25;  //参考值 0.25
+	CProphet::TRANS_STRICT_BY_PRED = false;
 	CProphet::MAX_DATA_TRANS = 0;
 
 #ifdef USE_PRED_TOLERANCE
@@ -130,9 +132,11 @@ void InitConfiguration()
 	CSink::SINK_X = -200;  //for KAIST
 	CSink::SINK_Y = 200;
 	CNode::INIT_NUM_NODE = 29;
-	CNode::MIN_NUM_NODE = CNode::INIT_NUM_NODE - 5;
-	CNode::MAX_NUM_NODE = CNode::INIT_NUM_NODE + 5;
+	CNode::MIN_NUM_NODE = CNode::INIT_NUM_NODE * 1.4;
+	CNode::MAX_NUM_NODE = CNode::INIT_NUM_NODE * 0.6;
 	/*********** ----------------- ***********/
+
+	/***************************  Node & Data  ***************************/
 
 	CGeneralNode::PROB_TRANS = 1.0;
 
@@ -144,9 +148,16 @@ void InitConfiguration()
 	CNode::SIZE_DATA = 250;  //Up to 250 Bytes
 	CGeneralNode::SIZE_CTRL = 10;
 
+	/********************************  DC  ********************************/
+
 	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
 	CNode::DEFAULT_DISCOVER_CYCLE = 10; 
+
+	/******************************  Prophet  ******************************/
+
+	CProphet::TRANS_STRICT_BY_PRED = false;
+	CProphet::MAX_DATA_TRANS = 0;
 
 	/** Opt **/
 #ifdef USE_PRED_TOLERANCE
@@ -260,10 +271,20 @@ bool ParseParameters(int argc, char* argv[])
 					SLOT = SLOT_MOBILITYMODEL;
 				iField += 2;
 			}
+			else if( field == "-node" )
+			{
+				if(iField < argc - 1)
+					CNode::INIT_NUM_NODE = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
 			else if( field == "-log-slot" )
 			{
 				if(iField < argc - 1)
 					SLOT_LOG = atoi( argv[ iField + 1 ] );
+				//观测周期不应小于工作周期
+				if( SLOT_LOG < CNode::SLOT_TOTAL )
+					SLOT_LOG = CNode::SLOT_TOTAL;
+
 				iField += 2;
 			}
 			else if( field == "-trans-range" )
@@ -282,9 +303,12 @@ bool ParseParameters(int argc, char* argv[])
 			{
 				if(iField < argc - 1)
 					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
+				//观测周期不应小于工作周期
+				if( SLOT_LOG < CNode::SLOT_TOTAL )
+					SLOT_LOG = CNode::SLOT_TOTAL;
 				iField += 2;
 			}
-			else if( field == "-cycle-discover" )
+			else if( field == "-slot-discover" )
 			{
 				if(iField < argc - 1)
 					CNode::DEFAULT_DISCOVER_CYCLE = atof( argv[ iField + 1 ] );
@@ -392,6 +416,25 @@ bool ParseParameters(int argc, char* argv[])
 					CGeneralNode::PROB_TRANS = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-pred-init" )
+			{
+				if(iField < argc - 1)
+					CNode::INIT_DELIVERY_PRED = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-pred-decay" )
+			{
+				if(iField < argc - 1)
+					CNode::RATIO_PRED_DECAY = atof( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			//实际上对WSN而言不会使用到
+//			else if( field == "-pred-trans" )
+//			{
+//				if(iField < argc - 1)
+//					CNode::RATIO_PRED_TRANS = atof( argv[ iField + 1 ] );
+//				iField += 2;
+//			}
 			else if( field == "-pred-tolerance" )
 			{
 #ifdef USE_PRED_TOLERANCE
@@ -428,7 +471,7 @@ bool ParseParameters(int argc, char* argv[])
 				{
 					char arg[20] = {'\0'};
 					strcpy(arg, argv[ iField + 1 ]);
-					DATASET = string( _strupr( arg ) );
+					DATASET = string( arg );
 				}
 				iField += 2;
 			}			
@@ -438,7 +481,7 @@ bool ParseParameters(int argc, char* argv[])
 				{
 					char arg[20] = {'\0'};
 					strcpy(arg, argv[ iField + 1 ]);
-					PATH_ROOT = "../" + string( _strupr( arg ) ) + "/";
+					PATH_ROOT = "../" + string( arg ) + "/";
 				}
 				iField += 2;
 			}			
@@ -460,7 +503,7 @@ bool ParseParameters(int argc, char* argv[])
 	{
 		stringstream error;
 		error << "Error @ ParseParameters() : Wrong Parameter Format!";
-		cout << endl << error << endl;
+		cout << endl << error.str() << endl;
 		Help();
 		_PAUSE_;
 		Exit(EINVAL, error.str());

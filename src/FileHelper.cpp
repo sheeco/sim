@@ -23,7 +23,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 		{
 			stringstream error;
 			error << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << filepath << "\" ! ";
-			cout << endl << error << endl;
+			cout << endl << error.str() << endl;
 			_PAUSE_;
 			Exit(ENOENT, error.str());
 		}
@@ -39,7 +39,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 		{
 			stringstream error;
 			error << "Error @ CFileHelper::getLocationFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time;
-//			cout << endl << error << endl;
+//			cout << endl << error.str() << endl;
 			if( time != RUNTIME )
 			{
 				return false;
@@ -48,7 +48,7 @@ bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &locatio
 			}
 //			final.close();
 //			_ALERT_;
-//			Exit(ENOEXEC, error.str);
+//			Exit(ENOEXEC, error.str());
 		}
 		//È¡µÃ×ø±ê
 		location.setX(temp_x);

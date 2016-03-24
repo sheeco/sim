@@ -41,6 +41,7 @@ namespace global
 		" -sink               [][]    Sink 节点的坐标； \n "
 		" -trans-prob           []    节点数据传输的成功率（默认 1.0）； \n "
 		" -trans-range          []    节点数据传输半径（默认 100）； \n "
+		" -node                 []    节点个数（默认 29）； \n "
 		" -buffer               []    节点缓存容量（默认 500）； \n "
 		" -energy               []    节点初始能量值（默认无限制）； \n "
 
@@ -53,7 +54,7 @@ namespace global
 
 		" -hdc                        采用 HDC 的占空比协议； \n "
 		" -cycle                []    工作周期（默认 300）； \n "
-		" -cycle-discover             []    每个工作周期中，开始邻居节点发现之前的监听时间（默认 10）； \n "
+		" -slot-discover        []    每个工作周期中，开始邻居节点发现之前的监听时间（默认 10）； \n "
 		" -dc-default           []    默认占空比，即监听时间占整个工作周期的比例（默认 1.0）； \n "
 		" -dc-hotspot           []    *HDC 中热点区域使用的占空比； \n "
 		" -random-state               采用随机的节点初始工作状态，即异步的占空比； \n "
@@ -70,6 +71,8 @@ namespace global
 
 		" -spoken               []    Prophet 路由中节点对最近邻居节点直接跳过通信的计时（默认不使用）； \n "
 		" -queue                []    Prophet 路由中节点允许存储的其他节点数据包的最大数目（默认无限制）； \n "
+		" -pred-init            []    Prophet 路由中节点投递概率的初始值（默认 0.75）； \n "
+		" -pred-decay           []    Prophet 路由中节点投递概率的衰减系数（默认 0.98）； \n "
 		" -pred-tolerance       []    Prophet 路由中节点决定转发数据时的投递概率容差（默认不使用）； \n "
 
 		"\n <hotspot>                   < 热点选取参数 > \n\n "

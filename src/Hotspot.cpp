@@ -167,7 +167,7 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 			if( (*iOld)->getX() + 2 * CGeneralNode::RANGE_TRANS <= (*iNew)->getX() )
 				break;
 
-			if( CBasicEntity::getDistance(**iOld, **iNew) < 2 * CGeneralNode::RANGE_TRANS)
+			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * CGeneralNode::RANGE_TRANS ) )
 			{
 				sumArea += getOverlapArea(*iOld, *iNew);
 			}

@@ -1,10 +1,21 @@
-#include <iostream>
-#include <io.h>
+#pragma once
+
+#define _WIN32_WINNT_WIN10 0x0A00
+#define _WIN32_WINNT _WIN32_WINNT_WIN10  //Compiled under Win 10
+
 #include <stdlib.h>
 #include <stdio.h>
+#include <io.h>
+#include <iostream>
+#include <string>
 
 using std::ios;
+using std::cout;
+using std::endl;
 using std::string;
+
+#define _PAUSE_ system("pause")
+
 
 // #### n.trace 文件说明
 // - n 从 1 开始；
@@ -45,10 +56,17 @@ int main(int argc, char* argv[])
 		old_name.insert(0, path);
 
 		if( _access(old_name.c_str(), 02) == 0
-			&& _access(new_name.c_str(), 00) != 0 )  //if writeable
+			/*&& _access(new_name.c_str(), 00) != 0*/ )  //if writeable
+		{
 			rename(old_name.c_str(), new_name.c_str());
+			cout << old_name << " ---> " << new_name << endl;
+		}
 		else
+		{
+			cout << "Cannot find " << old_name << " . " << endl;
 			break;
+		}
 	}
+	_PAUSE_;
 
 }

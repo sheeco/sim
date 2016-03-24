@@ -45,9 +45,10 @@ CGeneralNode::_QUEUE CNode::MODE_QUEUE = _fifo;
 
 /**************************************  Prophet  *************************************/
 
-double CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
-double CNode::RATIO_PRED_DECAY = 0.90;  //0.98(/s)
-double CNode::RATIO_PRED_TRANS = 0.20;  //0.25
+double CNode::INIT_DELIVERY_PRED = 0.75;  //参考值 0.75
+double CNode::RATIO_PRED_DECAY = 0.98;  //参考值 0.98(/s)
+double CNode::RATIO_PRED_TRANS = 0.25;  //参考值 0.25
+
 
 
 void CNode::init() 
