@@ -17,7 +17,7 @@ private:
 	//更新所有node的坐标、占空比和工作状态
 	static void UpdateNodeStatus(int currentTime);
 
-	static void receivePackage(CGeneralNode& node, CPackage* package, int currentTime);
+	static void receivePackage(CGeneralNode& src, CPackage* package, int currentTime);
 	static void broadcastPackage(CPackage* package, int currentTime);
 	static bool transmitPackage(CPackage* package, CGeneralNode* dst, int currentTime);
 

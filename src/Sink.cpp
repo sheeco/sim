@@ -14,7 +14,7 @@ int CSink::CAPACITY_BUFFER = 999999;  //ÎÞÏÞÖÆ
 //{
 //	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECIEVE;
 //
-//	vector<CGeneralData*> contents = package->getContent();
+//	vector<CGeneralData*> contents = package->getContents();
 //	CGeneralNode* dst = package->getSrcNode();
 //	CCtrl* ctrlToSend = nullptr;
 //

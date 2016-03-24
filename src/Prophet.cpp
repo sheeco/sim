@@ -237,6 +237,313 @@ vector<CData> CProphet::bufferData(CNode* node, vector<CData> datas, int time)
 	return ack;
 }
 
+vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector<CGeneralData*> contents, int time)
+{
+	vector<CGeneralData*> contentsToSend;
+	CCtrl* ctrlToSend = nullptr;
+	CCtrl* indexToSend = nullptr;
+	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
+	vector<CData> dataToSend;  //空vector代表拒绝传输数据
+
+	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	{
+
+		/***************************************** rcv Ctrl Message *****************************************/
+
+		if( typeid(**icontent) == typeid(CCtrl) )
+		{
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			switch( ctrl->getType() )
+			{
+
+				/*************************************** rcv RTS **************************************/
+
+			case CCtrl::_rts:
+
+				//收到RTS，就认为开始一次数据传输尝试
+				CNode::transmitTry();
+
+				node->updateDeliveryPredsWithSink();
+
+				if( node->getAllData().empty() )
+				{
+					//没有数据需要向Sink传输，也认为数据传输成功
+					CNode::transmitSucceed();
+
+					return contentsToSend;
+				}
+				//CTS
+				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+				// + DATA
+				dataToSend = node->getAllData();
+
+				// TODO: mark skipRTS ?
+				// TODO: connection established ?
+				break;
+
+				/*************************************** rcv CTS **************************************/
+
+			case CCtrl::_cts:
+
+				break;
+
+				/****************************** rcv Data Index ( dp / sv ) ****************************/
+
+			case CCtrl::_index:
+
+				break;
+
+				/*************************************** rcv ACK **************************************/
+
+			case CCtrl::_ack:
+
+				//收到ACK，认为数据传输成功
+				CNode::transmitSucceed();
+
+				//收到空的ACK时，结束本次数据传输
+				if( ctrl->getACK().empty() )
+					return contentsToSend;
+				//clear data with ack
+				else
+					node->checkDataByAck( ctrl->getACK() );
+
+				flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+
+				return contentsToSend;
+
+				break;
+
+			case CCtrl::_no_data:
+
+				break;
+
+			default:
+				break;
+			}
+			++icontent;
+		}
+		else
+		{
+			++icontent;
+		}
+	}
+
+	/********************************** wrap ***********************************/
+
+	if( ctrlToSend != nullptr )
+	{
+		contentsToSend.push_back(ctrlToSend);
+	}
+	if( indexToSend != nullptr )
+	{
+		contentsToSend.push_back(indexToSend);
+	}
+	if( nodataToSend != nullptr )
+	{
+		contentsToSend.push_back(nodataToSend);
+	}
+
+	return contentsToSend;
+	
+}
+
+vector<CGeneralData*> CProphet::receiveContents(CSink* sink, CNode* fromNode, vector<CGeneralData*> contents, int time)
+{
+	vector<CGeneralData*> contentsToSend;
+	CCtrl* ctrlToSend = nullptr;
+
+	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	{
+		if( typeid(**icontent) == typeid(CData) )
+		{
+			//extract data content
+			vector<CData> datas;
+			do
+			{
+				datas.push_back( *dynamic_cast<CData*>(*icontent) );
+				++icontent;
+			} while( icontent != contents.end() );
+
+			//accept data into buffer
+			vector<CData> ack = CSink::bufferData(time, datas);
+
+			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
+			ctrlToSend = new CCtrl(CSink::SINK_ID, ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+		}
+		else
+			++icontent;
+	}
+
+	/********************************** wrap ***********************************/
+
+	CPackage* packageToSend = nullptr;
+	if( ctrlToSend != nullptr )
+		contentsToSend.push_back(ctrlToSend);
+
+	return contentsToSend;
+
+}
+
+vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, vector<CGeneralData*> contents, int time)
+{
+	vector<CGeneralData*> contentsToSend;
+	CCtrl* ctrlToSend = nullptr;
+	CCtrl* indexToSend = nullptr;
+	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
+	vector<CData> dataToSend;  //空vector代表拒绝传输数据
+
+	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	{
+
+		/***************************************** rcv Ctrl Message *****************************************/
+
+		if( typeid(**icontent) == typeid(CCtrl) )
+		{
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			switch( ctrl->getType() )
+			{
+
+				/*************************************** rcv RTS **************************************/
+
+			case CCtrl::_rts:
+
+				//收到RTS，就认为开始一次数据传输尝试
+				CNode::transmitTry();
+
+				//skip if has spoken recently
+				if( node->hasSpokenRecently(dynamic_cast<CNode*>(fromNode), time) )
+				{
+					//跳过传输，也认为数据传输成功
+					CNode::transmitSucceed();
+					flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(fromNode->getID(), 2) << " )                " ;
+					return contentsToSend;
+				}
+				//rcv RTS from node
+				else
+				{
+					//进行数据传输，就加入最近邻居列表
+					node->addToSpokenCache( (CNode*)(&fromNode), time );
+
+					//CTS
+					ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+
+					// + Index
+					indexToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), time, CGeneralNode::SIZE_CTRL, CCtrl::_index);
+					//node->skipRTS();  //（暂未使用）
+				}
+
+				// TODO: mark skipRTS ?
+				// TODO: connection established ?
+				break;
+
+				/*************************************** rcv CTS **************************************/
+
+			case CCtrl::_cts:
+
+				// TODO: connection established ?
+				break;
+
+				/****************************** rcv Data Index ( dp / sv ) ****************************/
+
+			case CCtrl::_index:
+
+				//update preds
+				node->updateDeliveryPredsWith( fromNode->getID(), ctrl->getPred() );
+				// + DATA / NODATA
+				//路由协议允许向该节点转发数据
+				if( CProphet::shouldForward(node, ctrl->getPred() ) )
+				{
+					dataToSend = CProphet::getDataForTrans(node);
+					//但缓存为空
+					if( dataToSend.empty() )
+						nodataToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
+				}
+				//否则，不允许转发数据时，dataToSend留空
+
+				//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输，因此需要对空相应调用transmitSucceed()；
+				//     否则并不结束传输，还将为对方发来的数据发送ACK；
+
+				break;
+
+				/*************************************** rcv ACK **************************************/
+
+			case CCtrl::_ack:
+
+				//收到ACK，认为数据传输成功
+				CNode::transmitSucceed();
+
+				//收到空的ACK时，结束本次数据传输
+				if( ctrl->getACK().empty() )
+					return contentsToSend;
+				//clear data with ack
+				else
+					node->checkDataByAck( ctrl->getACK() );
+
+				flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(fromNode->getID(), 2) << " )                       " ;
+
+				return contentsToSend;
+
+				break;
+
+			case CCtrl::_no_data:
+
+				//收到NODATA，也将回复一个空的ACK，即，也将被认为数据传输成功
+				//空的ACK
+				ctrlToSend = new CCtrl(node->getID(), vector<CData>(), time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+
+				//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
+				dataToSend.clear();
+
+				break;
+
+			default:
+				break;
+			}
+			++icontent;
+		}
+
+		/******************************************* rcv Data *******************************************/
+
+		else if( typeid(**icontent) == typeid(CData) )
+		{
+			//extract data content
+			vector<CData> datas;
+			do
+			{
+				datas.push_back( *dynamic_cast<CData*>(*icontent) );
+				++icontent;
+			} while( icontent != contents.end() );
+
+			//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
+			dataToSend.clear();
+
+			//accept data into buffer
+			vector<CData> ack;
+			ack = CProphet::bufferData(node, datas, time);
+			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
+			ctrlToSend = new CCtrl(node->getID(), ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+		}
+	}
+
+	/********************************** wrap ***********************************/
+
+	if( ctrlToSend != nullptr )
+	{
+		contentsToSend.push_back(ctrlToSend);
+	}
+	if( indexToSend != nullptr )
+	{
+		contentsToSend.push_back(indexToSend);
+	}
+	if( nodataToSend != nullptr )
+	{
+		contentsToSend.push_back(nodataToSend);
+	}
+
+	return contentsToSend;
+
+}
+
 bool CProphet::Operate(int currentTime)
 {
 	if( ! CNode::hasNodes(currentTime) )

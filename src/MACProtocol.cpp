@@ -21,295 +21,344 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 {
 	// Make local copy
 	package = new CPackage(*package);
+	CGeneralNode* gFromNode = package->getSrcNode();
+	CSink* sink = CSink::getSink();
+	vector<CGeneralData*> contents = package->getContents();
+	vector<CGeneralData*> contentsToSend;
+	CPackage* packageToSend = nullptr;
+
 	gnode.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECIEVE );
 
-	vector<CGeneralData*> contents = package->getContent();
-	CGeneralNode* dst = package->getSrcNode();
+	/*********************************************** Node -> Sink *******************************************************/
 
-
-	/*********************************************** Sensor Node *******************************************************/
-
-	if( typeid(gnode) == typeid(CNode) )
+	if( typeid(gnode) == typeid(CSink) )
 	{
-		CNode* node = dynamic_cast<CNode*>(&gnode);
-		CCtrl* ctrlToSend = nullptr;
-		CCtrl* indexToSend = nullptr;
-		CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
-		vector<CData> dataToSend;  //空vector代表拒绝传输数据
-
-		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
-		{
-			
-			/***************************************** rcv Ctrl Message *****************************************/
-
-			if( typeid(**icontent) == typeid(CCtrl) )
-			{
-				CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
-				switch( ctrl->getType() )
-				{
-
-					/*************************************** rcv RTS **************************************/
-
-					case CCtrl::_rts:
-
-						//收到RTS，就认为开始一次数据传输尝试
-						CNode::transmitTry();
-
-						//if RTS is from sink, send CTS & datas
-						if( ctrl->getNode() == CSink::SINK_ID )
-						{
-							node->updateDeliveryPredsWithSink();
-
-							if( gnode.getAllData().empty() )
-							{
-								//没有数据需要向Sink传输，也认为数据传输成功
-								CNode::transmitSucceed();
-
-								return;
-							}
-							//CTS
-							ctrlToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
-							// + DATA
-							dataToSend = node->getAllData();
-						}
-						//skip if has spoken recently
-						else if( node->hasSpokenRecently(dynamic_cast<CNode*>(dst), currentTime) )
-						{
-							//跳过传输，也认为数据传输成功
-							CNode::transmitSucceed();
-							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(dst->getID(), 2) << " )                " ;
-							return;
-						}
-						//rcv RTS from node
-						else
-						{
-							//进行数据传输，就加入最近邻居列表
-							node->addToSpokenCache( (CNode*)(&dst), currentTime );
-
-							//CTS
-							ctrlToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
-
-							// + Index
-							indexToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_index);
-//							node->skipRTS();  //（暂未使用）
-						}
-
-						// TODO: mark skipRTS ?
-						// TODO: connection established ?
-						break;
-
-					/*************************************** rcv CTS **************************************/
-
-					case CCtrl::_cts:
-
-						// TODO: connection established ?
-						break;
-			
-					/****************************** rcv Data Index ( dp / sv ) ****************************/
-
-					case CCtrl::_index:
-
-						//update preds
-						node->updateDeliveryPredsWith( dst->getID(), ctrl->getPred() );
-						// + DATA / NODATA
-						//路由协议允许向该节点转发数据
-						if( CProphet::shouldForward(node, ctrl->getPred() ) )
-						{
-							dataToSend = CProphet::getDataForTrans(node);
-							//但缓存为空
-							if( dataToSend.empty() )
-								nodataToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
-						}
-						//否则，不允许转发数据时，dataToSend留空
-
-						//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输，因此需要对空相应调用transmitSucceed()；
-						//     否则并不结束传输，还将为对方发来的数据发送ACK；
-
-						break;
-			
-					/*************************************** rcv ACK **************************************/
-
-					case CCtrl::_ack:
-						
-						//收到ACK，认为数据传输成功
-						CNode::transmitSucceed();
-
-						//收到空的ACK时，结束本次数据传输
-						if( ctrl->getACK().empty() )
-							return;
-						//clear data with ack
-						else
-							node->checkDataByAck( ctrl->getACK() );
-
-						if( dst->getID() == CSink::SINK_ID )
-							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
-						else
-							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(dst->getID(), 2) << " )                       " ;
-
-						return;
-
-						break;
-
-					case CCtrl::_no_data:
-						
-						//收到NODATA，也将回复一个空的ACK，即，也将被认为数据传输成功
-						//空的ACK
-						ctrlToSend = new CCtrl(node->getID(), vector<CData>(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
-
-						//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
-						dataToSend.clear();
-
-						break;
-
-					default:
-						break;
-				}
-				++icontent;
-			}
-
-			/******************************************* rcv Data *******************************************/
-
-			else if( typeid(**icontent) == typeid(CData) )
-			{
-				//extract data content
-				vector<CData> datas;
-				do
-				{
-					datas.push_back( *dynamic_cast<CData*>(*icontent) );
-					++icontent;
-				} while( icontent != contents.end() );
-			
-				//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
-				dataToSend.clear();
-
-				//accept data into buffer
-				vector<CData> ack;
-				ack = CProphet::bufferData(node, datas, currentTime);
-				//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-				ctrlToSend = new CCtrl(node->getID(), ack, currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
-			}
-		}
-
-		/********************************** snd ***********************************/
-
-		CPackage* packageToSend = nullptr;
-		vector<CCtrl> ctrlsToSend;
-
-		if( ctrlToSend != nullptr )
-		{
-			ctrlsToSend.push_back(*ctrlToSend);
-			free(ctrlToSend);
-			ctrlToSend = nullptr;
-		}
-		if( indexToSend != nullptr )
-		{
-			ctrlsToSend.push_back(*indexToSend);
-			free(indexToSend);
-			indexToSend = nullptr;
-		}
-		if( nodataToSend != nullptr )
-		{
-			ctrlsToSend.push_back(*nodataToSend);
-			free(nodataToSend);
-			nodataToSend = nullptr;
-		}
-
-		if( dataToSend.empty() )
-		{
-			switch( ctrlsToSend.size() )
-			{
-			case 1:
-				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0]);
-				break;
-
-			case 2:
-				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0], ctrlsToSend[1]);
-				break;
-
-			case 3:
-				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0], ctrlsToSend[1], ctrlsToSend[2]);
-				break;
-
-			default:
-				break;
-			}
-		}
-		else
-		{
-			switch( ctrlsToSend.size() )
-			{
-			case 0:
-				packageToSend = new CPackage(*node, *dst, dataToSend);
-				break;
-
-			case 1:
-				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0], dataToSend);
-				break;
-
-			case 2:
-				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0], ctrlsToSend[1], dataToSend);
-				break;
-
-			default:
-				break;
-			}
-		}
-
-		if( packageToSend == nullptr)
-		{
-			CNode::transmitSucceed();
-			return;
-		}
-		else
-		{
-			node->consumeEnergy( packageToSend->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND );
-			transmitPackage( packageToSend, dst, currentTime );			
-		}
-
-	}
-
-	/*************************************************** Sink **********************************************************/
-
-	else if( typeid(gnode) == typeid(CSink) )
-	{
-		CCtrl* ctrlToSend = nullptr;
-
-		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
-		{
-			if( typeid(**icontent) == typeid(CData) )
-			{
-				//extract data content
-				vector<CData> datas;
-				do
-				{
-					datas.push_back( *dynamic_cast<CData*>(*icontent) );
-					++icontent;
-				} while( icontent != contents.end() );
-			
-				//accept data into buffer
-				vector<CData> ack = CSink::bufferData(currentTime, datas);
-
-				//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-				ctrlToSend = new CCtrl(CSink::SINK_ID, ack, currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
-			}
-			else
-				++icontent;
-		}
-
-		/********************************** snd ***********************************/
-
-		CPackage* packageToSend = nullptr;
-		if( ctrlToSend != nullptr )
-		{
-			packageToSend = new CPackage(*CSink::getSink(), *dst, *ctrlToSend);
-			free(ctrlToSend);
-			transmitPackage( packageToSend, dst, currentTime );
-		}
+		CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
+		contentsToSend = CProphet::receiveContents(sink, fromNode, contents, currentTime);
 	}
 	
-	free(package);
-	package = nullptr;
+	else if( typeid(gnode) == typeid(CNode) )
+	{
+		CNode* node = dynamic_cast<CNode*>( &gnode );
 
+		/*********************************************** Sink -> Node *******************************************************/
+
+		if( typeid(gFromNode) == typeid(CSink) )
+		{
+			contentsToSend = CProphet::receiveContents(node, sink, contents, currentTime);
+		}
+
+		/*********************************************** Node -> Node *******************************************************/
+
+		else
+		{
+			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
+			contentsToSend = CProphet::receiveContents(node, fromNode, contents, currentTime);
+		}
+
+	}
+
+	/*********************************************** send reply *******************************************************/
+
+	if( ! contentsToSend.empty() )
+	{
+		packageToSend = new CPackage(gnode, *gFromNode, contentsToSend);
+
+		gnode.consumeEnergy( packageToSend->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND );
+		transmitPackage( packageToSend, gFromNode, currentTime );			
+
+		free(packageToSend);
+		packageToSend = nullptr;
+	}
+	else
+	{
+		// TODO: Y / N ?
+//		CNode::transmitSucceed();
+//		return;
+	}
+
+
+
+//	/*********************************************** Sensor Node *******************************************************/
+//
+//	if( typeid(gnode) == typeid(CNode) )
+//	{
+//		CNode* node = dynamic_cast<CNode*>(&gnode);
+//		CCtrl* ctrlToSend = nullptr;
+//		CCtrl* indexToSend = nullptr;
+//		CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
+//		vector<CData> dataToSend;  //空vector代表拒绝传输数据
+//
+//		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+//		{
+//			
+//			/***************************************** rcv Ctrl Message *****************************************/
+//
+//			if( typeid(**icontent) == typeid(CCtrl) )
+//			{
+//				CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+//				switch( ctrl->getType() )
+//				{
+//
+//					/*************************************** rcv RTS **************************************/
+//
+//					case CCtrl::_rts:
+//
+//						//收到RTS，就认为开始一次数据传输尝试
+//						CNode::transmitTry();
+//
+//						//if RTS is from sink, send CTS & datas
+//						if( ctrl->getNode() == CSink::SINK_ID )
+//						{
+//							node->updateDeliveryPredsWithSink();
+//
+//							if( gnode.getAllData().empty() )
+//							{
+//								//没有数据需要向Sink传输，也认为数据传输成功
+//								CNode::transmitSucceed();
+//
+//								return;
+//							}
+//							//CTS
+//							ctrlToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+//							// + DATA
+//							dataToSend = node->getAllData();
+//						}
+//						//skip if has spoken recently
+//						else if( node->hasSpokenRecently(dynamic_cast<CNode*>(dst), currentTime) )
+//						{
+//							//跳过传输，也认为数据传输成功
+//							CNode::transmitSucceed();
+//							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(dst->getID(), 2) << " )                " ;
+//							return;
+//						}
+//						//rcv RTS from node
+//						else
+//						{
+//							//进行数据传输，就加入最近邻居列表
+//							node->addToSpokenCache( (CNode*)(&dst), currentTime );
+//
+//							//CTS
+//							ctrlToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+//
+//							// + Index
+//							indexToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_index);
+////							node->skipRTS();  //（暂未使用）
+//						}
+//
+//						// TODO: mark skipRTS ?
+//						// TODO: connection established ?
+//						break;
+//
+//					/*************************************** rcv CTS **************************************/
+//
+//					case CCtrl::_cts:
+//
+//						// TODO: connection established ?
+//						break;
+//			
+//					/****************************** rcv Data Index ( dp / sv ) ****************************/
+//
+//					case CCtrl::_index:
+//
+//						//update preds
+//						node->updateDeliveryPredsWith( dst->getID(), ctrl->getPred() );
+//						// + DATA / NODATA
+//						//路由协议允许向该节点转发数据
+//						if( CProphet::shouldForward(node, ctrl->getPred() ) )
+//						{
+//							dataToSend = CProphet::getDataForTrans(node);
+//							//但缓存为空
+//							if( dataToSend.empty() )
+//								nodataToSend = new CCtrl(node->getID(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
+//						}
+//						//否则，不允许转发数据时，dataToSend留空
+//
+//						//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输，因此需要对空相应调用transmitSucceed()；
+//						//     否则并不结束传输，还将为对方发来的数据发送ACK；
+//
+//						break;
+//			
+//					/*************************************** rcv ACK **************************************/
+//
+//					case CCtrl::_ack:
+//						
+//						//收到ACK，认为数据传输成功
+//						CNode::transmitSucceed();
+//
+//						//收到空的ACK时，结束本次数据传输
+//						if( ctrl->getACK().empty() )
+//							return;
+//						//clear data with ack
+//						else
+//							node->checkDataByAck( ctrl->getACK() );
+//
+//						if( dst->getID() == CSink::SINK_ID )
+//							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+//						else
+//							flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(dst->getID(), 2) << " )                       " ;
+//
+//						return;
+//
+//						break;
+//
+//					case CCtrl::_no_data:
+//						
+//						//收到NODATA，也将回复一个空的ACK，即，也将被认为数据传输成功
+//						//空的ACK
+//						ctrlToSend = new CCtrl(node->getID(), vector<CData>(), currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+//
+//						//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
+//						dataToSend.clear();
+//
+//						break;
+//
+//					default:
+//						break;
+//				}
+//				++icontent;
+//			}
+//
+//			/******************************************* rcv Data *******************************************/
+//
+//			else if( typeid(**icontent) == typeid(CData) )
+//			{
+//				//extract data content
+//				vector<CData> datas;
+//				do
+//				{
+//					datas.push_back( *dynamic_cast<CData*>(*icontent) );
+//					++icontent;
+//				} while( icontent != contents.end() );
+//			
+//				//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
+//				dataToSend.clear();
+//
+//				//accept data into buffer
+//				vector<CData> ack;
+//				ack = CProphet::bufferData(node, datas, currentTime);
+//				//ACK（如果收到的数据全部被丢弃，发送空的ACK）
+//				ctrlToSend = new CCtrl(node->getID(), ack, currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+//			}
+//		}
+//
+//		/********************************** snd ***********************************/
+//
+//		CPackage* packageToSend = nullptr;
+//		vector<CCtrl> ctrlsToSend;
+//
+//		if( ctrlToSend != nullptr )
+//		{
+//			ctrlsToSend.push_back(*ctrlToSend);
+//			free(ctrlToSend);
+//			ctrlToSend = nullptr;
+//		}
+//		if( indexToSend != nullptr )
+//		{
+//			ctrlsToSend.push_back(*indexToSend);
+//			free(indexToSend);
+//			indexToSend = nullptr;
+//		}
+//		if( nodataToSend != nullptr )
+//		{
+//			ctrlsToSend.push_back(*nodataToSend);
+//			free(nodataToSend);
+//			nodataToSend = nullptr;
+//		}
+//
+//		if( dataToSend.empty() )
+//		{
+//			switch( ctrlsToSend.size() )
+//			{
+//			case 1:
+//				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0]);
+//				break;
+//
+//			case 2:
+//				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0], ctrlsToSend[1]);
+//				break;
+//
+//			case 3:
+//				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0], ctrlsToSend[1], ctrlsToSend[2]);
+//				break;
+//
+//			default:
+//				break;
+//			}
+//		}
+//		else
+//		{
+//			switch( ctrlsToSend.size() )
+//			{
+//			case 0:
+//				packageToSend = new CPackage(*node, *dst, dataToSend);
+//				break;
+//
+//			case 1:
+//				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0], dataToSend);
+//				break;
+//
+//			case 2:
+//				packageToSend = new CPackage(*node, *dst, ctrlsToSend[0], ctrlsToSend[1], dataToSend);
+//				break;
+//
+//			default:
+//				break;
+//			}
+//		}
+//
+//		if( packageToSend == nullptr)
+//		{
+//			CNode::transmitSucceed();
+//			return;
+//		}
+//		else
+//		{
+//			node->consumeEnergy( packageToSend->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND );
+//			transmitPackage( packageToSend, dst, currentTime );			
+//		}
+//
+//	}
+//
+//	/*************************************************** Sink **********************************************************/
+//
+//	else if( typeid(gnode) == typeid(CSink) )
+//	{
+//		CCtrl* ctrlToSend = nullptr;
+//
+//		for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+//		{
+//			if( typeid(**icontent) == typeid(CData) )
+//			{
+//				//extract data content
+//				vector<CData> datas;
+//				do
+//				{
+//					datas.push_back( *dynamic_cast<CData*>(*icontent) );
+//					++icontent;
+//				} while( icontent != contents.end() );
+//			
+//				//accept data into buffer
+//				vector<CData> ack = CSink::bufferData(currentTime, datas);
+//
+//				//ACK（如果收到的数据全部被丢弃，发送空的ACK）
+//				ctrlToSend = new CCtrl(CSink::SINK_ID, ack, currentTime, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+//			}
+//			else
+//				++icontent;
+//		}
+//
+//		/********************************** snd ***********************************/
+//
+//		CPackage* packageToSend = nullptr;
+//		if( ctrlToSend != nullptr )
+//		{
+//			packageToSend = new CPackage(*CSink::getSink(), *dst, *ctrlToSend);
+//			free(ctrlToSend);
+//			transmitPackage( packageToSend, dst, currentTime );
+//		}
+//	}
+	
 }
 
 void CMacProtocol::broadcastPackage(CPackage* package, int currentTime)

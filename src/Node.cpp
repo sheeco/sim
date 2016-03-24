@@ -291,7 +291,7 @@ void CNode::checkDataByAck(vector<CData> ack)
 //{
 //	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECIEVE;
 //
-//	vector<CGeneralData*> contents = package->getContent();
+//	vector<CGeneralData*> contents = package->getContents();
 //	CGeneralNode* dst = package->getSrcNode();
 //	CCtrl* ctrlToSend = nullptr;
 //	CCtrl* ctrlPiggback = nullptr;
@@ -426,9 +426,11 @@ void CNode::checkDataByAck(vector<CData> ack)
 
 CPackage* CNode::sendRTSWithPred(int currentTime)
 {
-	CCtrl rts(ID, currentTime, SIZE_CTRL, CCtrl::_rts);
-	CCtrl pred(ID, deliveryPreds, currentTime, SIZE_CTRL, CCtrl::_index);
-	CPackage* package = new CPackage(*this, CGeneralNode(), rts, pred);
+	vector<CGeneralData*> contents;
+	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
+	contents.push_back( new CCtrl(ID, deliveryPreds, currentTime, SIZE_CTRL, CCtrl::_index) );
+	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
+
 	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
 	return package;	
 }

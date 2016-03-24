@@ -571,6 +571,9 @@
 - OPT：优化命令行参数的使用帮助信息；
 
 
+## 3.2.* : RTS 捎带 DP
+
+
 ###### 2016-03-23  ·  *< 3.2.5926.22497 >*
 
 - RFCT：规范化变量命名和 getter 函数名；
@@ -610,3 +613,9 @@
 - --- （默认）值 `true` 时，对于相等投递概率的节点也允许发送（但仍保持单向）；值为 `true` 时，对于相等投递概率的节点，将以 0.5 的概率决定发送；
 - ADD：添加命令行参数 `-node` 用于定义节点个数；
 - RFCT：添加函数 `CBasicEntity::withinRange()` 替换多数 `CBasicEntity::getDistance()` 的引用；
+
+
+###### 2016-03-24  ·  *< 3.2.5927.20040 >*
+
+- RFCT：将数据包响应逻辑从 `CMacProtocol::receivePackage()` 中尽量分离到 `CProphet::receiveContents()` 中；
+- **TODO：** RFCT：将 `CProphet::receiveContents()` 中的响应操作按照源-目的节点对的类型，分类整合到三个重载的同名函数中（待测试）；

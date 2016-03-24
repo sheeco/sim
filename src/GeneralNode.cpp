@@ -34,8 +34,10 @@ int CGeneralNode::SIZE_CTRL = 0;
 
 CPackage* CGeneralNode::sendRTS(int currentTime) 
 {
-	CCtrl rts(ID, currentTime, SIZE_CTRL, CCtrl::_rts);
-	CPackage* package = new CPackage(*this, CGeneralNode(), rts);
+	vector<CGeneralData*> contents;
+	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
+	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
+
 	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
 	return package;
 }

@@ -3,6 +3,8 @@
 #include "RoutingProtocol.h"
 
 
+extern class CSink;
+
 class CProphet :
 	public CRoutingProtocol
 {
@@ -36,6 +38,11 @@ public:
 	static vector<CData> getDataForTrans(CNode* node);
 
 	static vector<CData> bufferData(CNode* node, vector<CData> datas, int time);
+
+	//从下层协议传入的控制/数据包
+	static vector<CGeneralData*> receiveContents(CNode* node, CSink* sink, vector<CGeneralData*> contents, int time);
+	static vector<CGeneralData*> receiveContents(CSink* sink, CNode* fromNode, vector<CGeneralData*> contents, int time);
+	static vector<CGeneralData*> receiveContents(CNode* node, CNode* fromNode, vector<CGeneralData*> contents, int time);
 
 	static bool Operate(int currentTime);
 
