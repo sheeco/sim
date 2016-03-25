@@ -289,7 +289,7 @@ void CNode::checkDataByAck(vector<CData> ack)
 
 //void CNode::receivePackage(CPackage* package, int currentTime)
 //{
-//	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECIEVE;
+//	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECEIVE;
 //
 //	vector<CGeneralData*> contents = package->getContents();
 //	CGeneralNode* dst = package->getSrcNode();
@@ -431,7 +431,6 @@ CPackage* CNode::sendRTSWithPred(int currentTime)
 	contents.push_back( new CCtrl(ID, deliveryPreds, currentTime, SIZE_CTRL, CCtrl::_index) );
 	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
 
-	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
 	return package;	
 }
 
@@ -640,6 +639,7 @@ void CNode::decayDeliveryPreds(int currentTime)
 }
 
 // TODO: check LISTEN cons calculation if *move
+// TODO: move state update into mac layer
 bool CNode::updateStatus(int currentTime)
 {
 	if( time == currentTime )
@@ -770,7 +770,7 @@ void CNode::recordBufferStatus()
 //	if( RandomFloat(0, 1) > PROB_TRANS )
 //		return false;
 //
-//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * SIZE_DATA * datas.size();
+//	energyConsumption += CONSUMPTION_BYTE_RECEIVE * SIZE_DATA * datas.size();
 //	for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); ++idata)
 //		idata->arriveAnotherNode(time);
 //	buffer.insert(buffer.begin(), datas.begin(), datas.end() );
@@ -791,7 +791,7 @@ void CNode::recordBufferStatus()
 //	if( RandomFloat(0, 1) > PROB_TRANS )
 //		return vector<int>();
 //
-//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * SIZE_CTRL;
+//	energyConsumption += CONSUMPTION_BYTE_RECEIVE * SIZE_CTRL;
 //	return sv;	
 //}
 
@@ -828,7 +828,7 @@ void CNode::recordBufferStatus()
 //	if( RandomFloat(0, 1) > PROB_TRANS )
 //		return vector<int>();
 //
-//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * SIZE_CTRL;
+//	energyConsumption += CONSUMPTION_BYTE_RECEIVE * SIZE_CTRL;
 //	return req;
 //}
 
@@ -886,7 +886,7 @@ void CNode::updateDeliveryPredsWithSink()
 //	if( RandomFloat(0, 1) > PROB_TRANS )
 //		return map<int, double>();
 //
-//	energyConsumption += CONSUMPTION_BYTE_RECIEVE * SIZE_CTRL;
+//	energyConsumption += CONSUMPTION_BYTE_RECEIVE * SIZE_CTRL;
 //	return preds;
 //}
 

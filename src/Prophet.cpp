@@ -1,4 +1,4 @@
-#include "GlobalParameters.h"
+#include "Global.h"
 #include "Node.h"
 #include "Sink.h"
 #include "SMac.h"
@@ -293,6 +293,10 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 
 				break;
 
+			case CCtrl::_no_data:
+
+				break;
+
 				/*************************************** rcv ACK **************************************/
 
 			case CCtrl::_ack:
@@ -310,10 +314,6 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 				flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
 
 				return contentsToSend;
-
-				break;
-
-			case CCtrl::_no_data:
 
 				break;
 
@@ -342,6 +342,11 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 	{
 		contentsToSend.push_back(nodataToSend);
 	}
+	if( ! dataToSend.empty() )
+	{
+		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
+			contentsToSend.push_back(new CData(*idata));
+	}
 
 	return contentsToSend;
 	
@@ -354,7 +359,39 @@ vector<CGeneralData*> CProphet::receiveContents(CSink* sink, CNode* fromNode, ve
 
 	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
 	{
-		if( typeid(**icontent) == typeid(CData) )
+		if( typeid(**icontent) == typeid(CCtrl) )
+		{
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			switch( ctrl->getType() )
+			{
+			case CCtrl::_rts:
+
+				break;
+
+			case CCtrl::_cts:
+
+				break;
+
+			case CCtrl::_index:
+
+				break;
+
+			case CCtrl::_ack:
+
+				break;
+
+			case CCtrl::_no_data:
+
+				break;
+
+			default:
+
+				break;
+			}
+			++icontent;
+		}
+
+		else if( typeid(**icontent) == typeid(CData) )
 		{
 			//extract data content
 			vector<CData> datas;
@@ -370,8 +407,6 @@ vector<CGeneralData*> CProphet::receiveContents(CSink* sink, CNode* fromNode, ve
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
 			ctrlToSend = new CCtrl(CSink::SINK_ID, ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
 		}
-		else
-			++icontent;
 	}
 
 	/********************************** wrap ***********************************/
@@ -538,6 +573,11 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 	if( nodataToSend != nullptr )
 	{
 		contentsToSend.push_back(nodataToSend);
+	}
+	if( ! dataToSend.empty() )
+	{
+		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
+			contentsToSend.push_back(new CData(*idata));
 	}
 
 	return contentsToSend;

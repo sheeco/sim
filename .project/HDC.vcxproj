@@ -104,7 +104,7 @@
     <ClCompile Include="..\src\FileHelper.cpp" />
     <ClCompile Include="..\src\GeneralData.cpp" />
     <ClCompile Include="..\src\GeneralNode.cpp" />
-    <ClCompile Include="..\src\GlobalParameters.cpp" />
+    <ClCompile Include="..\src\Global.cpp" />
     <ClCompile Include="..\src\HAR.cpp" />
     <ClCompile Include="..\src\HDC.cpp" />
     <ClCompile Include="..\src\Hotspot.cpp" />
@@ -138,7 +138,7 @@
     <ClInclude Include="..\src\GeneralData.h" />
     <ClInclude Include="..\src\GeneralNode.h" />
     <ClInclude Include="..\src\GeoEntity.h" />
-    <ClInclude Include="..\src\GlobalParameters.h" />
+    <ClInclude Include="..\src\Global.h" />
     <ClInclude Include="..\src\HAR.h" />
     <ClInclude Include="..\src\HDC.h" />
     <ClInclude Include="..\src\Helper.h" />

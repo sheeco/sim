@@ -1,9 +1,8 @@
 #pragma once
 
 #include "RoutingProtocol.h"
+#include "Sink.h"
 
-
-extern class CSink;
 
 class CProphet :
 	public CRoutingProtocol

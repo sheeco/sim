@@ -1,4 +1,4 @@
-#include "GlobalParameters.h"
+#include "Global.h"
 #include "HAR.h"
 #include "HotspotSelect.h"
 #include "PostSelect.h"

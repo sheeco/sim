@@ -1,4 +1,4 @@
-#include "GlobalParameters.h"
+#include "Global.h"
 #include "HDC.h"
 #include "HAR.h"
 #include "SortHelper.h"
@@ -119,7 +119,7 @@ bool CHDC::Operate(int currentTime)
 
 	UpdateDutyCycleForNodes(currentTime);
 
-	TransmitData(currentTime);
+	CommunicateWithNeighbor(currentTime);
 
 	return true;
 }

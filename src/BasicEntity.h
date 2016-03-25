@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "GlobalParameters.h"
+#include "Global.h"
 #include "Coordinate.h"
 
 

@@ -4,7 +4,6 @@
 #include "Data.h"
 #include "Route.h"
 #include "GeneralNode.h"
-#include "HAR.h"
 #include "Node.h"
 
 
@@ -59,6 +58,8 @@ public:
 		return true;
 	}
 
+	CPackage* sendRTS(int currentTime);
+
 	//相遇计数：统计节点和 sink 的相遇
 	static void encount() 
 	{
@@ -99,7 +100,7 @@ public:
 //			sink->buffer.push_back(*idata);
 //		}
 //		//实际上无需统计sink的能耗
-//		sink->energyConsumption += CONSUMPTION_BYTE_RECIEVE * CNode::SIZE_DATA * data.size();
+//		sink->energyConsumption += CONSUMPTION_BYTE_RECEIVE * CNode::SIZE_DATA * data.size();
 //		return true;
 //	}
 

@@ -27,8 +27,6 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 	vector<CGeneralData*> contentsToSend;
 	CPackage* packageToSend = nullptr;
 
-	gnode.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECIEVE );
-
 	/*********************************************** Node -> Sink *******************************************************/
 
 	if( typeid(gnode) == typeid(CSink) )
@@ -43,14 +41,14 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 		/*********************************************** Sink -> Node *******************************************************/
 
-		if( typeid(gFromNode) == typeid(CSink) )
+		if( typeid(*gFromNode) == typeid(CSink) )
 		{
 			contentsToSend = CProphet::receiveContents(node, sink, contents, currentTime);
 		}
 
 		/*********************************************** Node -> Node *******************************************************/
 
-		else
+		else if( typeid(*gFromNode) == typeid(CNode) )
 		{
 			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
 			contentsToSend = CProphet::receiveContents(node, fromNode, contents, currentTime);
@@ -64,8 +62,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 	{
 		packageToSend = new CPackage(gnode, *gFromNode, contentsToSend);
 
-		gnode.consumeEnergy( packageToSend->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND );
-		transmitPackage( packageToSend, gFromNode, currentTime );			
+		transmitPackage( gnode, gFromNode, packageToSend, currentTime );			
 
 		free(packageToSend);
 		packageToSend = nullptr;
@@ -314,8 +311,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 //		}
 //		else
 //		{
-//			node->consumeEnergy( packageToSend->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND );
-//			transmitPackage( packageToSend, dst, currentTime );			
+//			transmitPackage( src, dst, packageToSend, currentTime );			
 //		}
 //
 //	}
@@ -355,13 +351,13 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 //		{
 //			packageToSend = new CPackage(*CSink::getSink(), *dst, *ctrlToSend);
 //			free(ctrlToSend);
-//			transmitPackage( packageToSend, dst, currentTime );
+//			transmitPackage( src, dst, packageToSend, currentTime );
 //		}
 //	}
 	
 }
 
-void CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
+void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int currentTime)
 {
 	bool rcv = false;
 	CGeneralNode* gnode = package->getSrcNode();
@@ -371,6 +367,8 @@ void CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 		cout << "Error @ CMacProtocol::broadcastPackage() : package is not for broadcast" << endl;
 		_PAUSE_;
 	}
+
+	src.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
 
 	/************************************************ Sensor Node *******************************************************/
 
@@ -398,6 +396,7 @@ void CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
 //						rcv = true;
+						(*dstNode)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
 						receivePackage(**dstNode, package, currentTime);
 					}
 				}
@@ -411,20 +410,21 @@ void CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 	{
 
 		CSink* sink = CSink::getSink();	
-		for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
+		for(vector<CNode*>::iterator dstNode = nodes.begin(); dstNode != nodes.end(); ++dstNode)
 		{
-			if( CBasicEntity::withinRange( *package->getSrcNode(), **inode, CGeneralNode::RANGE_TRANS ) )
+			if( CBasicEntity::withinRange( *package->getSrcNode(), **dstNode, CGeneralNode::RANGE_TRANS ) )
 			{
 				CSink::encount();
 
-				if( (*inode)->isListening() )
+				if( (*dstNode)->isListening() )
 				{
 					CSink::encountActive();
 
 					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
 //						rcv = true;
-						receivePackage(**inode, package, currentTime);
+						(*dstNode)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
+						receivePackage(**dstNode, package, currentTime);
 					}
 				}
 			}
@@ -440,12 +440,15 @@ void CMacProtocol::broadcastPackage(CPackage* package, int currentTime)
 }
 
 // TODO: add flash_cout & delivery% print
-bool CMacProtocol::transmitPackage(CPackage* package, CGeneralNode* dst, int currentTime)
+bool CMacProtocol::transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackage* package, int currentTime)
 {
+	src.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
+
 	if( dst->isListening() )
 	{
 		if( Bet(CGeneralNode::PROB_TRANS) )
 		{
+			dst->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
 			receivePackage(*dst, package, currentTime);
 			return true;
 		}
@@ -487,7 +490,7 @@ void CMacProtocol::UpdateNodeStatus(int currentTime)
 		CNode::ClearDeadNodes();
 }
 
-void CMacProtocol::TransmitData(int currentTime)
+void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 {
 	static bool print = false;
 	if( currentTime == 0 
@@ -500,7 +503,7 @@ void CMacProtocol::TransmitData(int currentTime)
 	UpdateNodeStatus(currentTime);
 
 	// TODO: sink receive RTS / send by slot ?
-	broadcastPackage( CSink::getSink()->sendRTS(currentTime) , currentTime );
+	broadcastPackage( *CSink::getSink(), CSink::getSink()->sendRTS(currentTime) , currentTime );
 
 	vector<CNode*> nodes = CNode::getNodes();
 	for(vector<CNode*>::iterator srcNode = nodes.begin(); srcNode != nodes.end(); ++srcNode )
@@ -510,14 +513,14 @@ void CMacProtocol::TransmitData(int currentTime)
 			if( CBasicEntity::withinRange( **srcNode, **dstNode, CGeneralNode::RANGE_TRANS ) )
 			{
 				CNode::encount();
-				if( (*dstNode)->isAtHotspot() || (*srcNode)->isAtHotspot() )  //±ÜÃâÖØ¸´¼ÆËã
+				if( (*dstNode)->isAtHotspot() || (*srcNode)->isAtHotspot() )
 					CNode::encountAtHotspot();
 			}
 		}
 
 		if( (*srcNode)->isDiscovering() )
 		{
-			broadcastPackage( (*srcNode)->sendRTS(currentTime), currentTime );
+			broadcastPackage( **srcNode, (*srcNode)->sendRTSWithPred(currentTime), currentTime );
 			(*srcNode)->finishDiscovering();
 		}
 	}

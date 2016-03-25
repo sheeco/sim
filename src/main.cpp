@@ -1,13 +1,14 @@
 #pragma once
 
-#include "GlobalParameters.h"
-#include "SortHelper.h"
-#include "PostSelect.h"
-#include "Prophet.h"
-#include "HDC.h"
+#include "Global.h"
 #include "Sink.h"
 #include "MANode.h"
+#include "HDC.h"
+#include "Prophet.h"
+#include "HAR.h"
 #include "Epidemic.h"
+#include "SortHelper.h"
+#include "PostSelect.h"
 
 
 // TODO: move all func definition into cpp file except for inline func
@@ -177,7 +178,7 @@ void Help()
 	help.close();
 }
 
-bool ParseParameters(int argc, char* argv[])
+bool ParseArguments(int argc, char* argv[])
 {
 	try
 	{
@@ -246,7 +247,7 @@ bool ParseParameters(int argc, char* argv[])
 			//整型参数
 			else if( field == "-time-data" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					DATATIME = atoi( argv[ iField + 1 ] );
 				iField += 2;
 
@@ -255,7 +256,7 @@ bool ParseParameters(int argc, char* argv[])
 			}
 			else if( field == "-time-run" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					RUNTIME = atoi( argv[ iField + 1 ] );
 				iField += 2;
 
@@ -264,7 +265,7 @@ bool ParseParameters(int argc, char* argv[])
 			}
 			else if( field == "-slot" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					SLOT = atoi( argv[ iField + 1 ] );
 
 				if( SLOT > SLOT_MOBILITYMODEL )
@@ -273,13 +274,13 @@ bool ParseParameters(int argc, char* argv[])
 			}
 			else if( field == "-node" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::INIT_NUM_NODE = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-log-slot" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					SLOT_LOG = atoi( argv[ iField + 1 ] );
 				//观测周期不应小于工作周期
 				if( SLOT_LOG < CNode::SLOT_TOTAL )
@@ -289,19 +290,19 @@ bool ParseParameters(int argc, char* argv[])
 			}
 			else if( field == "-trans-range" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CGeneralNode::RANGE_TRANS = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}			
 			else if( field == "-lifetime" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					HAR::LIFETIME_POSITION = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-cycle" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
 				//观测周期不应小于工作周期
 				if( SLOT_LOG < CNode::SLOT_TOTAL )
@@ -310,55 +311,73 @@ bool ParseParameters(int argc, char* argv[])
 			}
 			else if( field == "-slot-discover" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::DEFAULT_DISCOVER_CYCLE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-dc-default" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::DEFAULT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-dc-hotspot" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::HOTSPOT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-hop" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CData::MAX_HOP = atoi( argv[ iField + 1 ] );
+				if( ( CData::MAX_HOP > 0 )
+					&& ( CData::MAX_TTL > 0 ) )
+				{
+					string error = "Error @ ParseArguments() : Argument -hop & -ttl cannot be used both";
+					cout << error << endl;
+					_PAUSE_;
+					Exit(EINVAL, error);
+				}
+
 				iField += 2;
 			}
 			else if( field == "-ttl" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
+				if( ( CData::MAX_HOP > 0 )
+					&& ( CData::MAX_TTL > 0 ) )
+				{
+					string error = "Error @ ParseArguments() : Argument -hop & -ttl cannot be used both";
+					cout << error << endl;
+					_PAUSE_;
+					Exit(EINVAL, error);
+				}
+
 				iField += 2;
 			}
 			else if( field == "-buffer" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::CAPACITY_BUFFER = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-data-rate" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::DEFAULT_DATA_RATE = double(1) / atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-data-size" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::SIZE_DATA = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-energy" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::CAPACITY_ENERGY = 1000 * atoi( argv[ iField + 1 ] );
 				iField += 2;
 
@@ -367,13 +386,13 @@ bool ParseParameters(int argc, char* argv[])
 			}
 			else if( field == "-queue" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CEpidemic::MAX_DATA_RELAY = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}			
 			else if( field == "-spoken" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::LIFETIME_SPOKEN_CACHE = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
@@ -382,63 +401,63 @@ bool ParseParameters(int argc, char* argv[])
 			//double参数
 			else if( field == "-alpha" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CPostSelect::ALPHA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-beta" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					HAR::BETA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}			
 			else if( field == "-lambda" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					HAR::LAMBDA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-merge" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CHotspot::RATIO_MERGE_HOTSPOT = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-old" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CHotspot::RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-trans-prob" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CGeneralNode::PROB_TRANS = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-pred-init" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::INIT_DELIVERY_PRED = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-pred-decay" )
 			{
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CNode::RATIO_PRED_DECAY = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			//实际上对WSN而言不会使用到
 //			else if( field == "-pred-trans" )
 //			{
-//				if(iField < argc - 1)
+//				if( iField < argc - 1 )
 //					CNode::RATIO_PRED_TRANS = atof( argv[ iField + 1 ] );
 //				iField += 2;
 //			}
 			else if( field == "-pred-tolerance" )
 			{
 #ifdef USE_PRED_TOLERANCE
-				if(iField < argc - 1)
+				if( iField < argc - 1 )
 					CProphet::TOLERANCE_PRED = atof( argv[ iField + 1 ] );
 #endif
 				iField += 2;
@@ -502,7 +521,7 @@ bool ParseParameters(int argc, char* argv[])
 	catch(exception e)
 	{
 		stringstream error;
-		error << "Error @ ParseParameters() : Wrong Parameter Format!";
+		error << "Error @ ParseArguments() : Wrong Parameter Format!";
 		cout << endl << error.str() << endl;
 		Help();
 		_PAUSE_;
@@ -724,7 +743,7 @@ int main(int argc, char* argv[])
 
 	/************************************ 命令行参数解析 *************************************/
 
-	ParseParameters(argc, argv);
+	ParseArguments(argc, argv);
 
 	/********************************* 将log信息和参数信息写入文件 ***********************************/
 	

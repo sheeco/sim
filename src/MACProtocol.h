@@ -18,8 +18,8 @@ private:
 	static void UpdateNodeStatus(int currentTime);
 
 	static void receivePackage(CGeneralNode& src, CPackage* package, int currentTime);
-	static void broadcastPackage(CPackage* package, int currentTime);
-	static bool transmitPackage(CPackage* package, CGeneralNode* dst, int currentTime);
+	static void broadcastPackage(CGeneralNode& src, CPackage* package, int currentTime);
+	static bool transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackage* package, int currentTime);
 
 
 protected:
@@ -29,7 +29,7 @@ protected:
 	//在限定范围内随机增删一定数量的node
 	static void ChangeNodeNumber(int currentTime);
 
-	static void TransmitData(int currentTime);
+	static void CommunicateWithNeighbor(int currentTime);
 
 
 public:

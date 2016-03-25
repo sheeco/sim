@@ -34,7 +34,7 @@ CGeneralNode::_RECEIVE CMANode::MODE_RECEIVE = _selfish;
 //			buffer.erase(buffer.begin());  //如果buffer已满，删除最早的一个Data
 //		buffer.push_back(datas[i]);
 //	}
-//	energyConsumption += num * (CONSUMPTION_BYTE_SEND * 4 + CONSUMPTION_BYTE_RECIEVE * 3);
+//	energyConsumption += num * (CONSUMPTION_BYTE_SEND * 4 + CONSUMPTION_BYTE_RECEIVE * 3);
 //	return true;
 //}
 

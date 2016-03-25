@@ -2,7 +2,7 @@
 #include "Node.h"
 
 double CGeneralNode::CONSUMPTION_BYTE_SEND = 0.008;  //( mJ / Byte )
-double CGeneralNode::CONSUMPTION_BYTE_RECIEVE = 0.004;
+double CGeneralNode::CONSUMPTION_BYTE_RECEIVE = 0.004;
 double CGeneralNode::CONSUMPTION_LISTEN = 13.5;  // ( mJ / s )
 double CGeneralNode::CONSUMPTION_SLEEP = 0.015;
 
@@ -31,16 +31,6 @@ int CGeneralNode::SIZE_CTRL = 0;
 //		return data;
 //	}
 //}
-
-CPackage* CGeneralNode::sendRTS(int currentTime) 
-{
-	vector<CGeneralData*> contents;
-	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
-	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
-
-	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
-	return package;
-}
 
 //void CGeneralNode::receivePackage(CPackage* package, int currentTime)
 //{

@@ -135,8 +135,7 @@ public:
 	//实际上只更新TTL
 	inline void updateStatus(int currentTime)
 	{
-		if( useTTL() )
-			this->TTL -= ( currentTime - time );
+		this->TTL -= ( currentTime - time );
 		this->time = currentTime;
 	}
 	inline void arriveSink(int timeArrival)
@@ -145,6 +144,7 @@ public:
 		this->time = timeArrival;
 		++COUNT_ARRIVAL;
 		SUM_DELAY += timeArrival - timeBirth;
+		--HOP;
 		SUM_HOP += -HOP;
 	}
 
@@ -153,10 +153,9 @@ public:
 	//注意：数据发送方应在发送之前检查剩余HOP大于1
 	inline void arriveAnotherNode(int currentTime)
 	{
-		CGeneralData::arriveAnotherNode(currentTime);
+		this->HOP--;
 
-		if( useTTL() )
-			this->TTL -= ( currentTime - time );
+		this->TTL -= ( currentTime - time );
 		this->timeArrival = currentTime;
 		this->time = currentTime;
 	}
@@ -181,32 +180,12 @@ public:
 
 	static bool useHOP()
 	{
-//		if( MAX_HOP > 0 && MAX_TTL > 0 )
-//		{
-//			cout << endl << "Error @ CData::useHOP() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
-//			_PAUSE_;
-//			return false;
-//		}
-//		else
-		
 		return MAX_HOP > 0;
 	}
 	static bool useTTL()
 	{
-//		if( MAX_HOP > 0 && MAX_TTL > 0 )
-//		{
-//			cout << endl << "Error @ CData::useTTL() : INIT_HOP > 0 && INIT_TTL > 0 " << endl;
-//			_PAUSE_;
-//			return false;
-//		}
-//		else
-			
 		return MAX_TTL > 0;	
 	}
-//	static int getNodeByMask(int id)
-//	{
-//		return id / ID_MASK;
-//	}
 
 	//统计数据
 	static int getCountData()

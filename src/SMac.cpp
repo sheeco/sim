@@ -29,7 +29,7 @@ bool CSMac::Operate(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
 
-	TransmitData(currentTime);
+	CommunicateWithNeighbor(currentTime);
 
 	return true;
 }

@@ -12,7 +12,7 @@ int CSink::CAPACITY_BUFFER = 999999;  //无限制
 // TODO: untested
 //void CSink::receivePackage(CPackage* package, int currentTime)
 //{
-//	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECIEVE;
+//	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECEIVE;
 //
 //	vector<CGeneralData*> contents = package->getContents();
 //	CGeneralNode* dst = package->getSrcNode();
@@ -75,6 +75,16 @@ int CSink::CAPACITY_BUFFER = 999999;  //无限制
 //	}
 //
 //}
+
+CPackage* CSink::sendRTS(int currentTime) 
+{
+	vector<CGeneralData*> contents;
+	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
+	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
+
+//	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
+	return package;
+}
 
 vector<CData> CSink::bufferData(int time, vector<CData> datas)
 {

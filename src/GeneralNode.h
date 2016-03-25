@@ -43,7 +43,7 @@ public:
 	} _QUEUE;
 
 	static double CONSUMPTION_BYTE_SEND;
-	static double CONSUMPTION_BYTE_RECIEVE;
+	static double CONSUMPTION_BYTE_RECEIVE;
 	static int RANGE_TRANS;  //transmission range
 	static double PROB_TRANS;
 	static int SIZE_CTRL;
@@ -81,8 +81,6 @@ public:
 	{
 		return true;
 	}
-
-	CPackage* sendRTS(int currentTime);
 
 //	virtual void receivePackage(CPackage* package, int currentTime);
 

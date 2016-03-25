@@ -1,4 +1,4 @@
-#include "GlobalParameters.h"
+#include "Global.h"
 #include "FileHelper.h"
 
 

@@ -31,9 +31,13 @@
 #define _ALERT_ cout << '\a'
 #define flash_cout cout << CR  //控制台输出位置回到行首，在动态显示的输出时使用 flash_cout 代替 cout 即可
 
+//ERRNO
+//#define ENOENT 2  //File Not Found
+//#define ENOEXEC 8  //Wrong File Format
+//#define EINVAL 22  //Wrong Argument Format
 //User Defined ERRNO
-#define EFINISH 0  //finish execution successfully
-#define ESKIP -2  //exit without execution
+#define EFINISH 0  //Finish Execution Successfully
+#define ESKIP -2  //Exit Without Execution
 
 //Optional Macro to enable #ifdef (for uncertain try)
 //#define USE_PRED_TOLERANCE

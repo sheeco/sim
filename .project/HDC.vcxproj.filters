@@ -83,9 +83,6 @@
     <ClCompile Include="..\src\SMac.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\GlobalParameters.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Ctrl.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -99,6 +96,9 @@
       <Filter>资源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\src\BasicEntity.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Global.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,9 +128,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\GeoEntity.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GlobalParameters.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\HAR.h">
@@ -204,6 +201,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>资源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Global.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
