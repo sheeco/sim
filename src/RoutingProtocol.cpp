@@ -4,7 +4,6 @@
 #include "HDC.h"
 
 int CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //Êý¾Ý·¢ËÍslot
-bool CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
 
 
 //CRoutingProtocol::CRoutingProtocol()

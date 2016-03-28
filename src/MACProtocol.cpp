@@ -598,10 +598,6 @@ void CMacProtocol::PrintFinal(int currentTime)
 {
 	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
 	final << CData::getAverageEnergyConsumption() << TAB << CNode::getPercentTransmitSuccessful() << TAB << CNode::getPercentEncounterActive() << TAB ;
-	if( MAC_PROTOCOL == _hdc )
-	{
-		final << CNode::getPercentEncounterActiveAtHotspot() << TAB ;
-	}
 	if( CNode::finiteEnergy() )
 		final << currentTime << TAB << CNode::getNodes().size() << TAB ;
 

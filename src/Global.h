@@ -108,11 +108,13 @@ namespace global
 
 	extern string TIMESTAMP;
 	extern string PATH_TRACE;
+	extern string PATH_RUN;
 	extern string PATH_LOG;
 	extern string PATH_ROOT;
 
 	extern string INFO_LOG;
 	extern string FILE_PARAMETES;
+	extern string FILE_VERION;
 	extern string FILE_HELP;
 	extern string INFO_HELP;
 	extern string FILE_ERROR;

@@ -101,8 +101,9 @@
 	<s:Boolean x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File669AF1F627323744B4F94432C34CAD1F/@KeyIndexDefined">True</s:Boolean>
 	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File669AF1F627323744B4F94432C34CAD1F/RelativePriority/@EntryValue">1</s:Double>
 	
-	<s:Boolean x:Key="/Default/Environment/SearchAndNavigation/EnableGotoEverything/@EntryValue">False</s:Boolean>
-	<s:Boolean x:Key="/Default/Environment/SearchAndNavigation/EnableSmartGotoDeclaration/@EntryValue">False</s:Boolean>
+	
+	
+	
 	
 	
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/Todo/TodoPatterns/=0A4664ADE151C349B62FB87D8470A5D9/@KeyIndexDefined">False</s:Boolean>

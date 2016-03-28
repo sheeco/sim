@@ -8,6 +8,7 @@
 #include "HAR.h"
 #include "Epidemic.h"
 #include "SortHelper.h"
+#include "HotspotSelect.h"
 #include "PostSelect.h"
 
 
@@ -105,7 +106,7 @@ void InitConfiguration()
 
 	/***************************** merge-HAR *******************************/
 
-	CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
+	CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
 	CHotspot::RATIO_MERGE_HOTSPOT = 1.0;
 	CHotspot::RATIO_NEW_HOTSPOT = 1.0;
 	CHotspot::RATIO_OLD_HOTSPOT = 1.0;
@@ -225,7 +226,7 @@ bool ParseArguments(int argc, char* argv[])
 			}
 			else if( field == "-hotspot-similarity" )
 			{
-				CRoutingProtocol::TEST_HOTSPOT_SIMILARITY = true;
+				CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
 				++iField;
 			}
 			else if( field == "-dynamic-node-number" )
@@ -677,6 +678,14 @@ void PrintConfiguration()
 	parameters.close();
 	final.close();
 
+	//输出版本信息
+	ifstream versionInput( PATH_RUN + FILE_VERION, ios::in);
+	ofstream version( PATH_ROOT + PATH_LOG + FILE_VERION, ios::out);
+
+	version << versionInput.rdbuf();
+
+	versionInput.close();
+	version.close();
 }
 
 bool Run()

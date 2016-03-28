@@ -38,80 +38,120 @@
 `HDC -help` / `./bin/help.txt`
 
 > 
->                      !!!!!! ALL CASE SENSITIVE !!!!!! 
+>  　　　　　　**!!!!!! ALL CASE SENSITIVE !!!!!!** 
 >  
->  * 必选参数 
 >  
->  <run>                       < 运行参数 > 
+>  < 运行参数 > 
 > 
->   -time-run             []    网络运行时间（默认 15000）； 
+>   -time-run             []    网络运行时间（默认 15000）；
+>    
 >   -time-data            []    节点数据生成的截止时间（默认 15000）； 
+>   
 >   -slot                 []    网络运行的时槽（默认 5）； 
+>   
 >   -dataset              []    数据集名称（节点轨迹文件路径 ./res/%DATASET%/）； 
+>   
 >   -log-path             []    日志文件路径（默认 ./log/）； 
+>   
 >   -log-slot             []    日志输出时槽（默认 100）； 
 >  
->  <node>                      < 节点参数 > 
-> 
->   -sink               [][]    Sink 节点的坐标； 
->   -trans-prob           []    节点数据传输的成功率（默认 1.0）； 
->   -trans-range          []    节点数据传输半径（默认 100）； 
->   -node                 []    节点个数（默认 29）； 
->   -buffer               []    节点缓存容量（默认 500）； 
->   -energy               []    节点初始能量值（默认无限制）； 
 >  
->  <data>                      < 数据生成参数 > 
+>  < 节点参数 > 
+> 
+>   -sink              [] []    Sink 节点的坐标； 
+>   
+>   -trans-prob           []    节点数据传输的成功率（默认 1.0）； 
+>   
+>   -trans-range          []    节点数据传输半径（默认 100）；
+>    
+>   -node                 []    节点个数（默认 29）； 
+>   
+>   -buffer               []    节点缓存容量（默认 500）； 
+>   
+>   -energy               []    节点初始能量值（默认无限制）； 
+>   
+>  
+>  < 数据生成参数 > 
 > 
 >   -data-rate            []    节点生成一个数据包需要的时间（默认 30）； 
+>   
 >   -data-size            []    单个数据包的字节数（默认 250）； 
 >  
->  <mac>                       < MAC 层参数 > 
+>  
+>  < MAC 层参数 > 
 > 
 >   -hdc                        采用 HDC 的占空比协议； 
+>   
 >   -cycle                []    工作周期（默认 300）； 
+>   
 >   -slot-discover        []    每个工作周期中，开始邻居节点发现之前的监听时间（默认 10）； 
+>   
 >   -dc-default           []    默认占空比，即监听时间占整个工作周期的比例（默认 1.0）； 
+>   
 >   -dc-hotspot           []    *HDC 中热点区域使用的占空比； 
+>   
 >   -random-state               采用随机的节点初始工作状态，即异步的占空比； 
 >  
->  <route>                     < 路由层参数 >  
+>  
+>  < 路由层参数 >  
 > 
 >   -epidemic                   采用 Epidemic 路由协议； 
+>   
 >   -prophet                    采用 Prophet 路由协议（默认采用）； 
+>   
 >   -har                        采用 HAR 路由协议； 
+>   
 >   -hop                  []    数据包转发允许的最大跳数（默认无限制）； 
+>   
 >   -ttl                  []    数据包的最大生存期（默认无限制）； 
 >  
->  <prophet>                   < Prophet 协议参数 > 
+>  
+>  < Prophet 协议参数 > 
 > 
 >   -spoken               []    Prophet 路由中节点对最近邻居节点直接跳过通信的计时（默认不使用）； 
+>   
 >   -queue                []    Prophet 路由中节点允许存储的其他节点数据包的最大数目（默认无限制）； 
+>   
 >   -pred-init            []    Prophet 路由中节点投递概率的初始值（默认 0.75）； 
->   -pred-decay           []    Prophet 路由中节点投递概率的衰减系数（默认 0.98）； 
+>   
+>   -pred-decay           []    Prophet 路由中节点投递概率的衰减系数（默认 0.98）；
+>    
 >   -pred-tolerance       []    Prophet 路由中节点决定转发数据时的投递概率容差（默认不使用）； 
 >  
->  <hotspot>                   < 热点选取参数 > 
+>  
+>  < 热点选取参数 > 
 > 
 >   -ihs                        采用 IHAR 的热点选取算法； 
+>   
 >   -mhs                        采用 mHAR 的热点选取算反； 
+>   
 >   -alpha                []    热点选取中，后续选取过程中的阈值参数（默认 0.03）； 
+>   
 >   -beta                 []    热点选取中，判定真热点的最低热度值（默认 0.0025）； 
->   -heat               [][]    热点选取中，热度值计算的系数（默认 1， 30）； 
+>   
+>   -heat              [] []    热点选取中，热度值计算的系数（默认 1， 30）； 
 >  
->  <ihar>                      < IHAR 参数> 
+>  
+>  < IHAR 参数> 
 > 
 >   -lambda               []    IHAR 中，疏漏热点修复算法的修复阈值（默认不使用）； 
+>   
 >   -lifetime             []    IHAR 中，节点位置点信息的保存期（默认不使用）； 
 >  
->  <mhar>                      < mHAR 参数 > 
+>  
+>  < mHAR 参数 > 
 > 
 >   -merge                []    mHAR 中，归并热点的选取系数（默认 1.0）； 
+>   
 >   -old                  []    mHAR 中，旧热点的选取系数（默认 1.0）； 
+>   
 >   -balanced-ratio             采用综合的热点选取度量函数； 
 >  
->  <test>                      < 测试参数 > 
+>  
+>  < 测试参数 > 
 > 
 >   -dynamic-node-number        节点个数动态变化的测试； 
+>   
 >   -hotspot-similarity         对于热点选取，测试前后热点选取结果的相似度（默认采用）； 
 > 
 
@@ -124,10 +164,12 @@
 
 ### Environment
 
+- Windows 10
 - Visual Studio Ultimate 2012 Update 5 ( 11.0.61219.00 )
 - VS Plugins : 
   - Resharper 10.0.2
   - [Versioning Controlled Build 3.5](http://www.codeproject.com/Articles/5851/Versioning-Controlled-Build)
+- [TinyXML2 3.0.0](http://www.grinninglizard.com/tinyxml/)
 
 
 ### Files
@@ -202,7 +244,7 @@
     
 		|-- SortHelper.h & .cpp
     
-	|-- Configuration.h
+	Configuration.h
         
 
 
@@ -457,8 +499,6 @@
 	* `CProcessor` 改为 `CHelper`；
 	* 将所有辅助函数分类整理到全局（`Global.h`）、`CFileHelper`、`CSortHelper` 三处；
 	* `CRoute` 类继承自 `CGeoEntity`；
-- **TODO：** RFCT：将配置参数相关的定义和操作整理到单独的 `CConfiguration` 类；
-- **TODO：** RFCT：将配置参数的默认值读取改用 XML 实现；
 
 
 ###### 2016-03-02  ·  *< 2.5.11 >*
@@ -474,7 +514,6 @@
 - MNT：在 `README.md` 中的更新日志中加上分类标签，参见 *[Log Mark](#Log Mark)* ；
 - MNT：在 `README.md` 中添加 Environment 说明；
 - MNT：将类图文件 `ClassDiagram.cd` 添加到追踪列表；
-- **TODO：** MNT：重构完成后，将代码合并到 master 分支；
 
 
 ###### 2016-03-04
@@ -503,16 +542,15 @@
 ###### 2016-03-09  ·  *< 2.6.2 >*
 
 - RFCT：将枚举类名格式改为 `_ALL_UPPERCASE`，系统行为宏定义格式改为 `_ALL_UPPERCASE_`；
-- RFCT：调整项目的代码目录结构，将 VS 工程和设置文件等移入 `.project/` 文件夹下（Resharper 的配置导出到文件 `.project/resharper.DotSettings`，VS 的配置导出到文件 `.project/vs.vssettings`）；
+- RFCT：调整项目的代码目录结构，将 VS 工程和设置文件等移入 `/.project/` 文件夹下（Resharper 的配置导出到文件 `/.project/resharper.DotSettings`，VS 的配置导出到文件 `/.project/vs.vssettings`）；
 
 
 ###### 2016-03-09  ·  *< 2.6.3 >*
 
-- RFCT：将轨迹文件从 `.newlocation` 改为 `.trace` 文件，并放入 `res/$DATASET$/` 文件夹中；
+- RFCT：将轨迹文件从 `.newlocation` 改为 `.trace` 文件，并放入 `/res/$DATASET$/` 文件夹中；
 - ADD：数据集名字 `DATASET` 为可定制参数（尚未添加读取代码）；
 - FIX：之前使用 `nodes.size()` 替换 `NUM_NODE` 时造成的错误；
 - MNT：在 git commit message 中使用快速标签来概括更改，参见 *[Log Mark](#Log Mark)* ；
-- **TODO：** ADD：添加数据集名字的自定义；
 
 
 ###### 2016-03-10  ·  *< 2.6.4 >*
@@ -523,7 +561,6 @@
 - FIX：在热点选取之前，丢弃死亡节点的 position 记录（`CHotspotSelect::CollectNewPositions()`）；
 - FIX：热点区域相遇百分比的统计存在的关键性错误（`CProphet::SendData()`）；
 - ADD：`CNode::encounterActive` 用于统计有效的节点相遇计数；
-- **TODO：** MNT：在 `README.md` 中，添加 trace 文件的格式和目录位置要求的说明；
 
 
 ###### 2016-03-11  ·  *< 2.6.5 >*
@@ -532,7 +569,6 @@
 - MOD：将增删节点和更新节点位置、工作状态等操作，整理到 MAC 协议层中（暂时全部放入 `CHDC`）；
 - RFCT：将输出调试信息的操作分别整理到 MAC 层和路由层的父类和子类中，以实现尽可能多的重用；
 - ADD：增加全局函数 `Exit()`，并将输出时间戳的操作统一放入其中；
-- **TODO：** ADD：添加邻居节点发现（Beacon 帧发送和窗口协商）的能耗；
 
 
 ###### 2016-03-16
@@ -572,7 +608,6 @@
 - ADD：完成新定义的函数 `CMacProtocol::broadcastPackage()`、`::transmitPackage()`、`::receivePackage()`、`CProphet::bufferData()`、`::selectDataByIndex`；
 - MOD：删除原有的 `CRoutingProtocol::SendData()` 系列实现；
 - NOTE：暂时只实现了 Prophet 路由，未测试；未重写 Epidemic 路由和 HAR 路由；
-- **TODO：** ADD：重写 Epidemic 路由和 HAR 路由的数据通信流程；
         
 
 ### 3.1.* : 重写 MAC 层
@@ -581,7 +616,7 @@
 ###### [ 2016-03-20  ·  *< 3.1.0 >* ]( https://github.com/sheeco/xHAR/commit/684137e5b575ebf6f1bffb06f44f48e9fa2d1db7 )
 
 - RFCT：添加 `FILE_xxx` 和 `PATH_xxx` 系列全局变量，易于管理和更改；
-- ADD：将输出文件的后缀改为 `.log`，不同运行结果将放入标注时间戳的不同文件夹下（如 `../test/.xxxx-xx-xx xx:xx:xx`），运行完成之后去除 `.` 前缀；
+- ADD：将输出文件的后缀改为 `.log`，不同运行结果将放入标注时间戳的不同文件夹下（如 `/log/.xxxx-xx-xx xx:xx:xx`），运行完成之后去除 `.` 前缀；
 - MOD：最终的输出文件由 `debug.txt` 更名为 `final.log`，并拷贝到父文件夹中（仅当正常运行完成退出时）；
 - ADD：对所有的退出标记不同的代码，代码 0 为正常运行完成退出，小于 0 为未开始运行的直接退出，大于 0 为错误代码；
 - FIX：初步测试新的 MAC 层函数，修复一些小错误；
@@ -596,8 +631,6 @@
 - ADD：使用 `ERRONO` 标记程序的返回值，并自定义扩展错误代码；
 - FIX：`final.txt` 拷贝到父文件夹出错；
 - FIX：输出文件夹重命名失败；
-- **TODO：** ADD：重新添加所有的控制台输出；
-- **TODO：** RFCT：将 `Global.h` 和 `main.cpp` 中的全局辅助函数放入 `CRunHelper` ?
 
 
 ###### [ 2016-03-21  ·  *< 3.1.5924.1169 >* ]( https://github.com/sheeco/xHAR/commit/2ad5fe57cc9d76fddfc53bf1a0894519cf3d6906 )
@@ -605,7 +638,6 @@
 - ADD：重新添加所有的控制台输出；
 - FIX：`CPackage` 类构造函数的错误；
 - FIX：禁用 `CData::ID_MASK`，修复因此产生的错误；
-- **TODO：** TRY：当缓存已满时，即使对投递概率更低的节点，也发送数据；
 
 
 ###### [ 2016-03-21  ·  *< 3.1.5924.21445 >* ]( https://github.com/sheeco/xHAR/commit/cbd00e950480529860836007f447394a1ef32295 )
@@ -613,7 +645,6 @@
 - TRY：为投递概率设置容差 `TOLERANCE_PRED`，使用宏定义 `USE_PRED_TOLERANCE` 启用（待测试）；
 - MNT：调整和统一 `README.md` 的格式；
 - TEST：投递概率容差；
-- **TODO：** RFCT：对于不确定尝试和新增的可选功能，尽量使用条件编译和宏定义包裹变量和成员函数定义；
 
 
 ###### [ 2016-03-22  ·  *< 3.1.5925.19658 >* ]( https://github.com/sheeco/xHAR/commit/7de8dc84a46985d1fd04ec8201f5ca4ef9d143d9 )
@@ -640,8 +671,6 @@
 - FIX：更改数据传输计数的计算方法，单方节点收到一组数据就认为是一次数据传输成功；
 - ADD：添加成员变量 `CNode::encounterActiveAtHotspot`，更改相遇计数的计算方法；
 - ADD：添加节点工作状态随机初始化的可选功能，由变量 `CMacProtocol::RANDOM_STATE_INIT` 标记，命令行参数 `-random-state`；
-- **TODO：** ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC　单独绑定的功能；
-- **TODO：** RFCT：将热点选取的相关输出分离移入到 `CHotspotSelect` 类中；
 
 
 ###### [ 2016-03-23  ·  *< 3.2.5926.22866 >* ]( https://github.com/sheeco/xHAR/commit/bbdcaf90421a36b0b3ff97a9b8cd2c6982d41acb )
@@ -677,12 +706,31 @@
 ###### [ 2016-03-24  ·  *< 3.2.5927.20040 >* ]( https://github.com/sheeco/xHAR/commit/fde3f0dc45bc1ca95317f803663aacc46b9bce92 )
 
 - RFCT：将数据包响应逻辑从 `CMacProtocol::receivePackage()` 中尽量分离到 `CProphet::receiveContents()` 中；
-- **TODO：** RFCT：将 `CProphet::receiveContents()` 中的响应操作按照源-目的节点对的类型，分类整合到三个重载的同名函数中（待测试）；
 
 
-###### 2016-03-25  ·  *< 3.2.5928.23405 >* 
+###### [ 2016-03-25  ·  *< 3.2.5928.23405 >* ]( https://github.com/sheeco/xHAR/commit/7fa4d90b398c905de325e4ab0e20e3515e50ab21 )
 
+- RFCT：将 `CProphet::receiveContents()` 中的响应操作按照源-目的节点对的类型，分类整合到三个重载的同名函数中；
 - FIX：函数 `CMacProtocol::CommunicateWithNeighbor()` 更名为 `CMacProtocol::CommunicateWithNeighbor()`，并修复函数调用错误；
 - FIX：修复 `CProphet::receiveContents()` 中的错误；
 - OPT：将 `CData::MAX_HOP` 和 `CData::MAX_TTL` 的冲突，改为在 `ParseArguments()` 中检查，如有冲突将报错退出；
 - BUG：数据传输计数存在差错，应检查 `CNode::transmitTry()` 和 `CNode::transmitSucceed()` 的调用；
+
+
+###### 2016-03-28  ·  *< 3.2.5931.21338 >*
+
+- FIX：数据传输计数的差错；
+- RFCT：将热点选取的相关输出分离移入到 `CHotspotSelect` 类中；
+- ADD：将版本信息复制到日志文件夹中（`HDC.version`）；
+- ADD：添加 XML 解析库 TinyXML2 的相关文件 `/lib/xml/tinyxml2.h & .cpp` 及 `CXmlHelper` 类；
+
+- **TODO：** ADD：重写 Epidemic 路由和 HAR 路由的数据通信流程；
+- **TODO：** ADD：为 Release 版本添加尽可能多的合法性检查、异常捕获和输出；
+- **TODO：** ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC 绑定的功能；
+- **TODO：** RFCT：对于不确定尝试和新增的可选功能，尽量使用条件编译和宏定义包裹变量和成员函数定义；
+- **TODO：** TRY：当缓存已满时，即使对投递概率更低的节点，也发送数据？
+- **TODO：** RFCT：将 `Global.h` 和 `main.cpp` 中的全局辅助函数放入 `CRunHelper` ?
+- **TODO：** RFCT：将配置参数相关的定义和操作整理到单独的 `CConfiguration` 类；
+- **TODO：** RFCT：将配置参数的默认值读取改用 XML 实现；
+- **TODO：** MNT：在 `README.md` 中，添加 trace 文件的格式和目录位置要求的说明；
+- **TODO：** MNT：重构完成后，将代码合并到 master 分支；

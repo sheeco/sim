@@ -16,12 +16,14 @@ namespace global
 
 	string TIMESTAMP;
 	string PATH_TRACE = "../res/";
+	string PATH_RUN = "./";
 	string PATH_LOG = "";  // " YY-MM-DD-HH-MM-SS/ "
 	string PATH_ROOT = "../log/";
 
 	string INFO_LOG;
 	string FILE_PARAMETES = "parameters.log";
-	string FILE_HELP = "help.txt";
+	string FILE_HELP = "help.info";
+	string FILE_VERION = "HDC.version";
 	string INFO_HELP = 
 		"\n                     !!!!!! ALL CASE SENSITIVE !!!!!! \n "
 		

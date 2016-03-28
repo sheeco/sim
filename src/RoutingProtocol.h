@@ -18,7 +18,6 @@ protected:
 public:
 
 	static int SLOT_DATA_SEND;  //Êý¾Ý·¢ËÍslot
-	static bool TEST_HOTSPOT_SIMILARITY;
 
 	CRoutingProtocol();
 	~CRoutingProtocol();

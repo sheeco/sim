@@ -427,6 +427,9 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
 	vector<CData> dataToSend;  //空vector代表拒绝传输数据
 
+//	int debugNodeID = 0;
+//	int debugFromID = 0;
+
 	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
 	{
 
@@ -456,9 +459,6 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				//rcv RTS from node
 				else
 				{
-					//进行数据传输，就加入最近邻居列表
-					node->addToSpokenCache( (CNode*)(&fromNode), time );
-
 					//CTS
 					ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 
@@ -482,10 +482,10 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 
 			case CCtrl::_index:
 
-				//update preds
-				node->updateDeliveryPredsWith( fromNode->getID(), ctrl->getPred() );
 				// + DATA / NODATA
 				//路由协议允许向该节点转发数据
+//				debugNodeID = node->getID();
+//				debugFromID = fromNode->getID();
 				if( CProphet::shouldForward(node, ctrl->getPred() ) )
 				{
 					dataToSend = CProphet::getDataForTrans(node);
@@ -494,6 +494,9 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 						nodataToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
 				}
 				//否则，不允许转发数据时，dataToSend留空
+
+				//update preds
+				node->updateDeliveryPredsWith( fromNode->getID(), ctrl->getPred() );
 
 				//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输，因此需要对空相应调用transmitSucceed()；
 				//     否则并不结束传输，还将为对方发来的数据发送ACK；
@@ -506,6 +509,8 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 
 				//收到ACK，认为数据传输成功
 				CNode::transmitSucceed();
+				//加入最近邻居列表
+				node->addToSpokenCache( (CNode*)(&fromNode), time );
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
@@ -525,9 +530,16 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				//收到NODATA，也将回复一个空的ACK，即，也将被认为数据传输成功
 				//空的ACK
 				ctrlToSend = new CCtrl(node->getID(), vector<CData>(), time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+				//加入最近邻居列表
+				node->addToSpokenCache( (CNode*)(&fromNode), time );
 
-				//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
+				//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据或NODATA（注意：前提是控制包必须在数据包之前）
 				dataToSend.clear();
+				if( nodataToSend != nullptr )
+				{
+					free(nodataToSend);
+					nodataToSend = nullptr;
+				}
 
 				break;
 
@@ -549,14 +561,22 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				++icontent;
 			} while( icontent != contents.end() );
 
-			//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据（注意：前提是控制包必须在数据包之前）
+			//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据或NODATA（注意：前提是控制包必须在数据包之前）
 			dataToSend.clear();
+			if( nodataToSend != nullptr )
+			{
+				free(nodataToSend);
+				nodataToSend = nullptr;
+			}
 
 			//accept data into buffer
 			vector<CData> ack;
 			ack = CProphet::bufferData(node, datas, time);
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
 			ctrlToSend = new CCtrl(node->getID(), ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+			//加入最近邻居列表
+			node->addToSpokenCache( (CNode*)(&fromNode), time );
+
 		}
 	}
 

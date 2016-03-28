@@ -82,6 +82,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(EngineRoot)external\tinyxml2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -97,6 +98,7 @@
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\lib\xml\tinyxml2.cpp" />
     <ClCompile Include="..\src\BasicEntity.cpp" />
     <ClCompile Include="..\src\Ctrl.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
@@ -123,9 +125,11 @@
     <ClCompile Include="..\src\Sink.cpp" />
     <ClCompile Include="..\src\SMac.cpp" />
     <ClCompile Include="..\src\SortHelper.cpp" />
+    <ClCompile Include="..\src\XmlHelper.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\lib\xml\tinyxml2.h" />
     <ClInclude Include="..\src\Algorithm.h" />
     <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
@@ -159,6 +163,7 @@
     <ClInclude Include="..\src\Sink.h" />
     <ClInclude Include="..\src\SMac.h" />
     <ClInclude Include="..\src\SortHelper.h" />
+    <ClInclude Include="..\src\XmlHelper.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

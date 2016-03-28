@@ -39,8 +39,11 @@ public:
 	static vector<CData> bufferData(CNode* node, vector<CData> datas, int time);
 
 	//从下层协议传入的控制/数据包
+	// Node <- Sink 
 	static vector<CGeneralData*> receiveContents(CNode* node, CSink* sink, vector<CGeneralData*> contents, int time);
+	// Sink <- Node 
 	static vector<CGeneralData*> receiveContents(CSink* sink, CNode* fromNode, vector<CGeneralData*> contents, int time);
+	// Node <- Node 
 	static vector<CGeneralData*> receiveContents(CNode* node, CNode* fromNode, vector<CGeneralData*> contents, int time);
 
 	static bool Operate(int currentTime);

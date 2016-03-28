@@ -2,7 +2,7 @@
 #include "HDC.h"
 #include "HAR.h"
 #include "SortHelper.h"
-
+#include "HotspotSelect.h"
 
 CHDC::CHDC()
 {
@@ -95,17 +95,14 @@ void CHDC::PrintInfo(int currentTime)
 			|| currentTime == RUNTIME  ) )
 		return;
 
-	HAR::PrintHotspotInfo(currentTime);
+	CHotspotSelect::PrintInfo(currentTime);
 }
 
 void CHDC::PrintFinal(int currentTime)
 {
 	CMacProtocol::PrintFinal(currentTime);
 
-	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
-	if( CRoutingProtocol::TEST_HOTSPOT_SIMILARITY )
-		final << HAR::getAverageSimilarityRatio() << TAB ;
-	final.close();
+	CHotspotSelect::PrintFinal(currentTime);
 	
 }
 

@@ -436,9 +436,6 @@ CPackage* CNode::sendRTSWithPred(int currentTime)
 
 bool CNode::hasSpokenRecently(CNode* node, int currentTime) 
 {
-	if( CNode::LIFETIME_SPOKEN_CACHE == 0 )
-		return false;
-
 	map<CNode *, int>::iterator icache = spokenCache.find( node );
 	if( icache == spokenCache.end() )
 		return false;
