@@ -21,11 +21,6 @@ double HAR::BETA = 0.0025;  //ratio for true hotspot
 double HAR::CO_HOTSPOT_HEAT_A1 = 1;
 double HAR::CO_HOTSPOT_HEAT_A2 = 30;
 
-/************************************ IHAR ************************************/
-
-double HAR::LAMBDA = 0;
-int HAR::LIFETIME_POSITION = 3600;
-
 /********************************* merge-HAR ***********************************/
 
 int HAR::MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
@@ -69,7 +64,7 @@ double HAR::getWaitingTime(int currentTime, CHotspot *hotspot)
 		//IHAR: Reduce Memory currentTime
 		if( HOTSPOT_SELECT == _improved )
 		{
-			temp_time = min(currentTime, LIFETIME_POSITION);
+			temp_time = min(currentTime, CHotspotSelect::LIFETIME_POSITION);
 		}
 
 		nCoveredPositionsForNode.push_back( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) );
@@ -183,54 +178,6 @@ void HAR::OptimizeRoute(CRoute &route)
 	}
 	result.updateLength();
 	route = result;
-}
-
-void HAR::HotspotSelection(int currentTime)
-{
-	if( ! ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 
-		&& currentTime >= CHotspot::TIME_HOSPOT_SELECT_START ) )
-		return;
-
-//	if( TEST_LEARN )
-//		DecayPositionsWithoutDeliveryCount(currentTime);
-
-	CHotspotSelect::CollectNewPositions(currentTime);
-
-	if( currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
-	{
-		flash_cout << "########  < " << currentTime << " >  HOTSPOT SELECT            " << endl ;
-
-		CHotspotSelect::BuildCandidateHotspots(currentTime);
-
-		/**************************** 热点归并过程(merge-HAR) *****************************/
-		if( HOTSPOT_SELECT == _merge )
-			CHotspotSelect::MergeHotspots(currentTime);
-
-		/********************************** 贪婪选取 *************************************/
-		CHotspotSelect::GreedySelect(currentTime);
-
-
-		/********************************* 后续选取过程 ***********************************/
-		CPostSelect postSelector(CHotspot::selectedHotspots);
-		CHotspot::selectedHotspots = postSelector.PostSelect(currentTime);
-
-	
-		/***************************** 疏漏节点修复过程(IHAR) ******************************/
-		if( HOTSPOT_SELECT == _improved )
-		{
-			CNodeRepair repair(CHotspot::selectedHotspots, CHotspot::hotspotCandidates, currentTime);
-			CHotspot::selectedHotspots = repair.RepairPoorNodes();
-			CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
-		}
-
-		flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
-
-		//比较相邻两次热点选取的相似度
-		if( CHotspotSelect::TEST_HOTSPOT_SIMILARITY )
-		{
-			CHotspotSelect::CompareWithOldHotspots(currentTime);
-		}
-	}
 }
 
 void HAR::HotspotClassification(int currentTime)
@@ -353,231 +300,204 @@ void HAR::MANodeRouteDesign(int currentTime)
 	}
 
 	for(vector<CRoute>::iterator iroute = m_routes.begin(); iroute != m_routes.end(); ++iroute)
-		cout << "####  [ MA ]  " << routes.size() << endl;
+		flash_cout << "####  [ MA ]  " << routes.size() << endl;
 }
 
+vector<CGeneralData*> HAR::receiveContents(CSink* sink, CMANode* fromMA, vector<CGeneralData*> contents, int time)
+{
+	return vector<CGeneralData*>();
+}
 
-//void HAR::SendData(int currentTime)
-//{
-//	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
-//		return;
-//	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
-//
-//	//记录waiting time信息
-//	ofstream waiting_time("waiting-time.log", ios::app);
-//	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
-//	{
-//		waiting_time << endl << INFO_LOG << endl ;
-//		waiting_time << "#Time" << TAB << "#MANodeID" << TAB << "#HotspotID" << TAB << "#HotspotType/HotspotAge" << TAB 
-//					 << "#Cover" << TAB << "#Heat" << TAB << "#WaitingTime" << endl;
-//	}
-//	waiting_time.close();
-//	ofstream delivery_hotspot( PATH_ROOT + PATH_LOG + FILE_DELIVERY_HOTSPOT, ios::app);
-//	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
-//	{
-//		delivery_hotspot << endl << INFO_LOG << endl ;
-//		delivery_hotspot << INFO_DELIVERY_HOTSPOT ;
-//	}
-//	//用于存储hotspot及其投递计数的静态拷贝
-//	//由于输出相关信息时（900s时的热点将在2700s时被输出）该热点的全局唯一指针已经被释放，所以存储的是该热点的浅拷贝，不能用于其他用途，否则将影响热点记录的唯一性
-//	static vector<CHotspot> countsDelivery;  
-//	ofstream delivery_statistics( PATH_ROOT + PATH_LOG + FILE_DELIVERY_STATISTICS, ios::app);
-//	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
-//	{
-//		delivery_statistics << endl << INFO_LOG << endl ;
-//		delivery_statistics << INFO_DELIVERY_STATISTICS ;
-//	}
-//	//用于测试投递计数为0的热点信息，按照投递计数降序输出所有热点的覆盖的position数、node数、ratio、投递计数
-//	ofstream hotspot_rank( PATH_ROOT + PATH_LOG + FILE_HOTSPOT_RANK, ios::app);
-//	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START )
-//	{
-//		hotspot_rank << endl << INFO_LOG << endl ;
-//		hotspot_rank << INFO_HOTSPOT_RANK ;
-//	}
-//	//用于统计过期热点的投递计数时判断是否应当输出时间
-//	static bool hasMoreNewRoutes = false;
-//
-//	//更新所有MA的位置
-//	for(auto iMANode = CMANode::getMANodes().begin(); iMANode != CMANode::getMANodes().end(); )
-//	{
-//
-//		//重置flag为true
-//		(*iMANode)->setFlag(true);
-//		do
-//		{
-//			(*iMANode)->updateLocation(currentTime);
-//			//如果到达sink，投递MA的所有数据
-//			if( CBasicEntity::withinRange( **iMANode, *CSink::getSink(), CGeneralNode::RANGE_TRANS ) )
-//			{
-//				if((*iMANode)->getSizeBuffer() > 0)
-//				{
-//					flash_cout << "####  ( MA " << (*iMANode)->getID() << " deliver " << (*iMANode)->getSizeBuffer() << " data to Sink )               " ; 
-//					CSink::getSink()->receiveData(currentTime, (*iMANode)->sendAllData(CGeneralNode::_dump));
-//				}
-//				if( (*iMANode)->routeIsOverdue() )
-//				{
-//					//保留过期路径，用于稍后统计旧热点的投递计数信息
-//					vector<CBasicEntity *> overdueHotspots = (*iMANode)->getRoute()->getWayPoints();
-//
-//					//更新路线，取得新的热点集合
-//					if( CSink::getSink()->hasMoreNewRoutes() )
-//					{
-//						//热点集合发生更新，输出已完成统计的热点投递计数集合，和上一轮热点选取的时间
-//						if( ! hasMoreNewRoutes )
-//						{
-//							if( ! countsDelivery.empty() )
-//							{
-//								//按照投递计数降序排列，2700s时输出900s选出的热点在(900, 1800)期间的投递计数，传入的参数应为1800
-//								int endTime =  currentTime - CHotspot::SLOT_HOTSPOT_UPDATE;
-//								countsDelivery = CSortHelper::mergeSortByDeliveryCount(countsDelivery, (endTime) );
-//								for(vector<CHotspot>::iterator ihotspot = countsDelivery.begin(); ihotspot != countsDelivery.end(); ++ihotspot)
-//								{
-//									delivery_hotspot << ihotspot->getCountDelivery( currentTime - CHotspot::SLOT_HOTSPOT_UPDATE ) << TAB ;
-//									hotspot_rank << ihotspot->getTime() << "-" << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB << ihotspot->getID() << TAB << ihotspot->getX() << "," << ihotspot->getY() << TAB << ihotspot->getNCoveredPosition() << "," << ihotspot->getNCoveredNodes() << TAB 
-//										<< ihotspot->getRatio() << TAB << ihotspot->getWaitingTime(endTime) << TAB << ihotspot->getCountDelivery(endTime) << endl;
-//
-//								}
-//								delivery_hotspot << endl;
-//								countsDelivery.clear();
-//							}
-//							delivery_hotspot << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB ;
-//							delivery_statistics << currentTime - CHotspot::SLOT_HOTSPOT_UPDATE << TAB << CData::getCountDeliveryAtHotspot() << TAB 
-//								<< CData::getCountDeliveryTotal() << TAB << CData::getPercentDeliveryAtHotspot() << endl;
-//							delivery_statistics.close();
-//							hasMoreNewRoutes = true;
-//						}
-//
-//						(*iMANode)->updateRoute(CSink::getSink()->popRoute());
-//						flash_cout << "####  ( MA " << (*iMANode)->getID() << " update route )               " ;
-//					}
-//					//FIXME: 若路线数目变少，删除多余的MA
-//					else
-//					{
-//						(*iMANode)->setFlag(false);
-//					}
-//
-//					//统计旧热点的投递计数信息
-//					for(vector<CBasicEntity *>::iterator iHotspot = overdueHotspots.begin(); iHotspot != overdueHotspots.end(); ++iHotspot)
-//					{
-//						if( (*iHotspot)->getID() == CSink::getSink()->getID() )
-//							continue;
-//						CHotspot *hotspot = static_cast<CHotspot *>(*iHotspot);
-//						countsDelivery.push_back( *hotspot );
-//					}
-//					if( ! (*iMANode)->getFlag() )
-//						break;
-//				}
-//				else if( ! CSink::getSink()->hasMoreNewRoutes() )
-//				{
-//					//热点集合更新结束，重置flag
-//					hasMoreNewRoutes = false;
-//				}
-//			}
-//			//如果到达hotspot，waitingTime尚未获取
-//			if(   (*iMANode)->isAtHotspot() 
-//					&& (*iMANode)->getWaitingTime() < 0 )
-//			{
-//				waiting_time.open("waiting-time.log", ios::app);
-//
-//				CHotspot *atHotspot = (*iMANode)->getAtHotspot();
-//				int temp = ROUND( getWaitingTime(currentTime, atHotspot) );
-//				//FIXME: 如果不允许Buffer溢出，Buffer已满时即直接跳过waiting
-//				if( ( CMANode::MODE_RECEIVE == CGeneralNode::_selfish ) && (*iMANode)->isFull() )
-//					(*iMANode)->setWaitingTime( 0 );
-//				else
-//				{
-//					(*iMANode)->setWaitingTime( temp );
-//					atHotspot->addWaitingTime( temp );
-//					flash_cout << "####  ( MA " << (*iMANode)->getID() << " wait for " << temp << " )                               " ;
-//					//if(temp == 0)
-//					//	(*iMANode)->setAtHotspot(nullptr);
-//				}
-//
-//				//记录waiting time信息
-//				if( temp > 0)
-//				{
-//					waiting_time << atHotspot->getTime() << TAB << (*iMANode)->getID() << TAB << atHotspot->getID() << TAB ;
-//					switch( atHotspot->getTypeHotspotCandidate() )
-//					{
-//						case CHotspot::_old_hotspot: 
-//							waiting_time << "O/" ;
-//							break;
-//						case CHotspot::_merge_hotspot: 
-//							waiting_time << "M/" ;
-//							break;
-//						case CHotspot::_new_hotspot: 
-//							waiting_time << "N/" ;
-//							break;
-//						default:
-//							break;
-//					}
-//					waiting_time << atHotspot->getAge() << TAB << atHotspot->getNCoveredPosition() << TAB 
-//								 << atHotspot->getHeat() << TAB << temp << endl;
-//				}
-//				waiting_time.close();	
-//
-//			}
-//		}while((*iMANode)->getTime() < currentTime);
-//		
-//		//删除多余的MA
-//		if( ! (*iMANode)->getFlag() )
-//		{
-//			(*iMANode)->turnFree();
-//			continue;
-//		}
-//		else
-//			++iMANode;	
-//	}
-//
-//	//投递数据
-//	for(auto iMANode = CMANode::getMANodes().begin(); iMANode != CMANode::getMANodes().end(); ++iMANode)
-//	{
-//		for(auto inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-//		{
-//			if( ( CMANode::MODE_RECEIVE == CGeneralNode::_selfish ) && (*iMANode)->isFull() )
-//				break;
-//			if(CBasicEntity::getDistance( **iMANode, **inode ) > CGeneralNode::RANGE_TRANS)
-//				continue;
-//
-//			//对于热点上和路径上分别统计相遇次数
-//			if( (*iMANode)->isAtHotspot() )
-//				CNode::encountAtHotspot();
-//			else
-//				CNode::encountOnRoute();
-//
-//			if( ! (*inode)->hasData() )
-//				continue;
-//
-//			vector<CData> data;
-//			int capacity = (*iMANode)->getToleranceData();
-//			if( capacity > 0 )
-//			{
-//				data = (*inode)->sendData(capacity);
-//				(*iMANode)->receiveData(currentTime, data);			
-//			}
-//			flash_cout << "####  ( Node " << (*inode)->getID() << " send " << data.size() << " data to MA " << (*iMANode)->getID() << " )                    " ;
-//
-//			//对于热点上和路径上分别统计数据投递计数
-//			if( (*iMANode)->isAtHotspot() )
-//			{
-//				CData::deliverAtHotspot( data.size() );
-//				(*iMANode)->getAtHotspot()->addDeliveryCount( data.size() );
-//			}
-//			else
-//				CData::deliverOnRoute( data.size() );
-//
-//		}
-//	}
-//
-//	//更新所有节点的buffer状态记录
-//	for(auto inode = CNode::getNodes().begin(); inode != CNode::getNodes().end(); ++inode)
-//		(*inode)->recordBufferStatus();
-//
-//	//控制台输出时保留一位小数
-//	double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
-//	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
-//	delivery_hotspot.close();
-//}
+vector<CGeneralData*> HAR::receiveContents(CMANode* fromMA, CSink* fromSink, vector<CGeneralData*> contents, int time)
+{
+	return vector<CGeneralData*>();
+}
+
+vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<CGeneralData*> contents, int time)
+{
+	return vector<CGeneralData*>();
+
+	vector<CGeneralData*> contentsToSend;
+	CCtrl* ctrlToSend = nullptr;
+	CCtrl* indexToSend = nullptr;
+	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
+	vector<CData> dataToSend;  //空vector代表拒绝传输数据
+
+	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	{
+
+		/***************************************** rcv Ctrl Message *****************************************/
+
+		if( typeid(**icontent) == typeid(CCtrl) )
+		{
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			switch( ctrl->getType() )
+			{
+
+				/*************************************** rcv RTS **************************************/
+
+			case CCtrl::_rts:
+
+				//收到RTS，就认为开始一次数据传输尝试
+				CNode::transmitTry();
+
+				node->updateDeliveryPredsWithSink();
+
+				if( node->getAllData().empty() )
+				{
+					//没有数据需要向Sink传输，也认为数据传输成功
+					CNode::transmitSucceed();
+
+					return contentsToSend;
+				}
+				//CTS
+				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+				// + DATA
+				dataToSend = node->getAllData();
+
+				// TODO: mark skipRTS ?
+				// TODO: connection established ?
+				break;
+
+				/*************************************** rcv CTS **************************************/
+
+			case CCtrl::_cts:
+
+				break;
+
+				/****************************** rcv Data Index ( dp / sv ) ****************************/
+
+			case CCtrl::_index:
+
+				break;
+
+			case CCtrl::_no_data:
+
+				break;
+
+				/*************************************** rcv ACK **************************************/
+
+			case CCtrl::_ack:
+
+				//收到ACK，认为数据传输成功
+				CNode::transmitSucceed();
+
+				//收到空的ACK时，结束本次数据传输
+				if( ctrl->getACK().empty() )
+					return contentsToSend;
+				//clear data with ack
+				else
+					node->checkDataByAck( ctrl->getACK() );
+
+				flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+
+				return contentsToSend;
+
+				break;
+
+			default:
+				break;
+			}
+			++icontent;
+		}
+		else
+		{
+			++icontent;
+		}
+	}
+
+	/********************************** wrap ***********************************/
+
+	if( ctrlToSend != nullptr )
+	{
+		contentsToSend.push_back(ctrlToSend);
+	}
+	if( indexToSend != nullptr )
+	{
+		contentsToSend.push_back(indexToSend);
+	}
+	if( nodataToSend != nullptr )
+	{
+		contentsToSend.push_back(nodataToSend);
+	}
+	if( ! dataToSend.empty() )
+	{
+		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
+			contentsToSend.push_back(new CData(*idata));
+	}
+
+	return contentsToSend;
+	
+}
+
+vector<CGeneralData*> HAR::receiveContents(CMANode* MA, CNode* fromNode, vector<CGeneralData*> contents, int time)
+{
+	return vector<CGeneralData*>();
+
+	vector<CGeneralData*> contentsToSend;
+	CCtrl* ctrlToSend = nullptr;
+
+	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	{
+		if( typeid(**icontent) == typeid(CCtrl) )
+		{
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			switch( ctrl->getType() )
+			{
+			case CCtrl::_rts:
+
+				break;
+
+			case CCtrl::_cts:
+
+				break;
+
+			case CCtrl::_index:
+
+				break;
+
+			case CCtrl::_ack:
+
+				break;
+
+			case CCtrl::_no_data:
+
+				break;
+
+			default:
+
+				break;
+			}
+			++icontent;
+		}
+
+		else if( typeid(**icontent) == typeid(CData) )
+		{
+			//extract data content
+			vector<CData> datas;
+			do
+			{
+				datas.push_back( *dynamic_cast<CData*>(*icontent) );
+				++icontent;
+			} while( icontent != contents.end() );
+
+			//accept data into buffer
+			vector<CData> ack = CSink::bufferData(time, datas);
+
+			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
+			ctrlToSend = new CCtrl(CSink::SINK_ID, ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+		}
+	}
+
+	/********************************** wrap ***********************************/
+
+	CPackage* packageToSend = nullptr;
+	if( ctrlToSend != nullptr )
+		contentsToSend.push_back(ctrlToSend);
+
+	return contentsToSend;
+
+}
 
 void HAR::PrintInfo(int currentTime)
 {
@@ -706,19 +626,22 @@ void HAR::PrintFinal(int currentTime)
 
 bool HAR::Operate(int currentTime)
 {
-//	if( MAC_PROTOCOL == _hdc )
-//		CHDC::Operate(currentTime);
-//	else
-//		CSMac::Operate(currentTime);
-//
-//	if( ! CNode::hasNodes(currentTime) )
-//		return false;
-//
-//	HotspotSelection(currentTime);
-//
-//	SendData(currentTime);
-//
-//	PrintInfo(currentTime);
+	if( ! CNode::hasNodes(currentTime) )
+		return false;
+
+	CHotspotSelect::HotspotSelect(currentTime);
+
+	HotspotClassification(currentTime);
+	
+	MANodeRouteDesign(currentTime);
+
+	//不允许 xHAR 使用 HDC 作为 MAC 协议
+	//if( MAC_PROTOCOL == _hdc )
+	//	CHDC::Operate(currentTime);
+
+	CSMac::Operate(currentTime);
+
+	PrintInfo(currentTime);
 
 	return true;
 }

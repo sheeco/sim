@@ -17,7 +17,7 @@ private:
 public:
 
 	static bool TRANS_STRICT_BY_PRED;  //指示是否严格按照投递概率真大于，来决定是否转发
-	static int MAX_DATA_TRANS;
+	static int CAPACITY_FORWARD;
 
 #ifdef USE_PRED_TOLERANCE
 

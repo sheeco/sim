@@ -1,6 +1,6 @@
 #include "NodeRepair.h"
+#include "HotspotSelect.h"
 #include "Node.h"
-#include "HAR.h"
 
 
 CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *> hotspotCandidates, int time)
@@ -69,7 +69,7 @@ vector<CHotspot *> CNodeRepair::RepairPoorNodes()
 	while(! poorNodes.empty())
 	{
 		int inode = poorNodes[0];
-		while(countForNode(selectedHotspots, inode) < HAR::LAMBDA * min(time, HAR::LIFETIME_POSITION) )
+		while(countForNode(selectedHotspots, inode) < CHotspotSelect::LAMBDA * min(time, CHotspotSelect::LIFETIME_POSITION) )
 		{
 			CHotspot *hotspot = findMaxCoverHotspotForNode(inode);
 			if(hotspot != nullptr)

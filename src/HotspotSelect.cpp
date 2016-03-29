@@ -1,6 +1,7 @@
 #include "HotspotSelect.h"
+#include "PostSelect.h"
+#include "NodeRepair.h"
 #include "FileHelper.h"
-#include "HAR.h"
 
 vector<CHotspot *> CHotspotSelect::copy_hotspotCandidates;
 vector<CPosition *> CHotspotSelect::uncoveredPositions;
@@ -17,6 +18,11 @@ int CHotspotSelect::COUNT_PERCENT_OLD = 0;
 double CHotspotSelect::SUM_SIMILARITY_RATIO = 0;
 int CHotspotSelect::COUNT_SIMILARITY_RATIO = 0;
 bool CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
+
+/************************************ IHAR ************************************/
+
+double CHotspotSelect::LAMBDA = 0;
+int CHotspotSelect::LIFETIME_POSITION = 3600;
 
 
 void CHotspotSelect::updateHotspotCandidates()
@@ -120,7 +126,7 @@ void CHotspotSelect::CollectNewPositions(int currentTime)
 	//IHAR: 删除过期的position记录
 	if( HOTSPOT_SELECT == _improved )
 	{
-		int threshold = currentTime - HAR::LIFETIME_POSITION;
+		int threshold = currentTime - LIFETIME_POSITION;
 		if(threshold > 0)
 		{
 			for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
@@ -374,6 +380,54 @@ void CHotspotSelect::MergeHotspots(int currentTime)
 	uncoveredPositions = CPosition::positions;
 	unselectedHotspots = CHotspot::hotspotCandidates;
 
+}
+
+void CHotspotSelect::HotspotSelect(int currentTime)
+{
+	if( ! ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 
+		&& currentTime >= CHotspot::TIME_HOSPOT_SELECT_START ) )
+		return;
+
+//	if( TEST_LEARN )
+//		DecayPositionsWithoutDeliveryCount(currentTime);
+
+	CollectNewPositions(currentTime);
+
+	if( currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
+	{
+		flash_cout << "########  < " << currentTime << " >  HOTSPOT SELECT            " << endl ;
+
+		BuildCandidateHotspots(currentTime);
+
+		/**************************** 热点归并过程(merge-HAR) *****************************/
+		if( HOTSPOT_SELECT == _merge )
+			MergeHotspots(currentTime);
+
+		/********************************** 贪婪选取 *************************************/
+		GreedySelect(currentTime);
+
+
+		/********************************* 后续选取过程 ***********************************/
+		CPostSelect postSelector(CHotspot::selectedHotspots);
+		CHotspot::selectedHotspots = postSelector.PostSelect(currentTime);
+
+	
+		/***************************** 疏漏节点修复过程(IHAR) ******************************/
+		if( HOTSPOT_SELECT == _improved )
+		{
+			CNodeRepair repair(CHotspot::selectedHotspots, CHotspot::hotspotCandidates, currentTime);
+			CHotspot::selectedHotspots = repair.RepairPoorNodes();
+			CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
+		}
+
+		flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
+
+		//比较相邻两次热点选取的相似度
+		if( TEST_HOTSPOT_SIMILARITY )
+		{
+			CompareWithOldHotspots(currentTime);
+		}
+	}
 }
 
 void CHotspotSelect::CompareWithOldHotspots(int currentTime)

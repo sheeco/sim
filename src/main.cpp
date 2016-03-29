@@ -74,11 +74,12 @@ void InitConfiguration()
 
 	/******************************  Prophet  ******************************/
 
-	CNode::INIT_DELIVERY_PRED = 0.75;  //参考值 0.75
-	CNode::RATIO_PRED_DECAY = 0.98;  //参考值 0.98(/s)
-	CNode::RATIO_PRED_TRANS = 0.25;  //参考值 0.25
+	CNode::INIT_DELIVERY_PRED = 0.70;  //参考值 0.75
+	CNode::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
+	CNode::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
 	CProphet::TRANS_STRICT_BY_PRED = false;
-	CProphet::MAX_DATA_TRANS = 0;
+	CProphet::CAPACITY_FORWARD = 0;
+
 
 #ifdef USE_PRED_TOLERANCE
 
@@ -101,8 +102,8 @@ void InitConfiguration()
 
 	/******************************* IHAR **********************************/
 
-	HAR::LAMBDA = 0;
-	HAR::LIFETIME_POSITION = 3600;
+	CHotspotSelect::LAMBDA = 0;
+	CHotspotSelect::LIFETIME_POSITION = 3600;
 
 	/***************************** merge-HAR *******************************/
 
@@ -159,7 +160,7 @@ void InitConfiguration()
 	/******************************  Prophet  ******************************/
 
 	CProphet::TRANS_STRICT_BY_PRED = false;
-	CProphet::MAX_DATA_TRANS = 0;
+	CProphet::CAPACITY_FORWARD = 0;
 
 	/** Opt **/
 #ifdef USE_PRED_TOLERANCE
@@ -192,6 +193,7 @@ bool ParseArguments(int argc, char* argv[])
 			if( field == "-hdc" )
 			{
 				MAC_PROTOCOL = _hdc;
+				HOTSPOT_SELECT = _original;
 				++iField;
 			}
 			else if( field == "-prophet" )
@@ -206,7 +208,8 @@ bool ParseArguments(int argc, char* argv[])
 			}
 			else if( field == "-har" )
 			{
-				ROUTING_PROTOCOL = _har;
+				ROUTING_PROTOCOL = _xhar;
+				HOTSPOT_SELECT = _original;
 				++iField;
 			}
 			else if( field == "-hs" )
@@ -298,7 +301,7 @@ bool ParseArguments(int argc, char* argv[])
 			else if( field == "-lifetime" )
 			{
 				if( iField < argc - 1 )
-					HAR::LIFETIME_POSITION = atoi( argv[ iField + 1 ] );
+					CHotspotSelect::LIFETIME_POSITION = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-cycle" )
@@ -397,6 +400,12 @@ bool ParseArguments(int argc, char* argv[])
 					CNode::LIFETIME_SPOKEN_CACHE = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
+			else if( field == "-capacity-forward" )
+			{
+				if( iField < argc - 1 )
+					CProphet::CAPACITY_FORWARD = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
 
 
 			//double参数
@@ -415,7 +424,7 @@ bool ParseArguments(int argc, char* argv[])
 			else if( field == "-lambda" )
 			{
 				if( iField < argc - 1 )
-					HAR::LAMBDA = atof( argv[ iField + 1 ] );
+					CHotspotSelect::LAMBDA = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-merge" )
@@ -515,7 +524,15 @@ bool ParseArguments(int argc, char* argv[])
 				Exit(ESKIP);
 			}
 			else
-				++iField;
+			{
+				stringstream error;
+				error << "Error @ ParseArguments() : Command '" << field << "' doesn't exist. ";
+				cout << endl << error.str() << endl;
+				Help();
+				_PAUSE_;
+				Exit(EINVAL, error.str());
+				return false;
+			}
 
 		}
 	}
@@ -585,12 +602,7 @@ void PrintConfiguration()
 	parameters << "DATA_TIME" << TAB << DATATIME << endl;
 	parameters << "RUN_TIME" << TAB << RUNTIME << endl;
 	parameters << "PROB_TRANS" << TAB << CGeneralNode::PROB_TRANS << endl;
-	parameters << "DATA_TRANS" << TAB << CProphet::MAX_DATA_TRANS << endl;
-
-	CNode::INIT_DELIVERY_PRED = 0.70;  //0.75
-	CNode::RATIO_PRED_DECAY = 0.90;  //0.98(/s)
-	CNode::RATIO_PRED_TRANS = 0.20;  //0.25
-	CProphet::MAX_DATA_TRANS = 0;
+	parameters << "DATA_TRANS" << TAB << CProphet::CAPACITY_FORWARD << endl;
 
 
 	//输出文件为空时，输出文件头
@@ -632,21 +644,21 @@ void PrintConfiguration()
 		parameters << "$HDC " << endl << endl;
 	}
 
-	if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _har )
+	if( HOTSPOT_SELECT != _none )
 	{
 		if( HOTSPOT_SELECT == _improved )
 		{
-			INFO_LOG += "$IHAR ";
-			parameters << "$IHAR " << endl << endl;
-			parameters << "POSITION_LIFETIME" << TAB << HAR::LIFETIME_POSITION << endl << endl;
+			INFO_LOG += "$iHS ";
+			parameters << "$iHS " << endl << endl;
+			parameters << "POSITION_LIFETIME" << TAB << CHotspotSelect::LIFETIME_POSITION << endl << endl;
 
-			final << HAR::LIFETIME_POSITION << TAB ;
+			final << CHotspotSelect::LIFETIME_POSITION << TAB ;
 		}
 
 		else if( HOTSPOT_SELECT == _merge )
 		{
-			INFO_LOG += "$mHAR ";
-			parameters << "$mHAR " << endl << endl;
+			INFO_LOG += "$mHS ";
+			parameters << "$mHS " << endl << endl;
 			parameters << "RATIO_MERGE" << TAB << CHotspot::RATIO_MERGE_HOTSPOT << endl;
 			parameters << "RATIO_NEW" << TAB << CHotspot::RATIO_NEW_HOTSPOT << endl;
 			parameters << "RATIO_OLD" << TAB << CHotspot::RATIO_OLD_HOTSPOT << endl;
@@ -657,6 +669,8 @@ void PrintConfiguration()
 
 		else
 		{
+			INFO_LOG += "$HS ";
+			parameters << "$HS " << endl << endl;
 			final << CNode::HOTSPOT_DUTY_CYCLE << TAB << CPostSelect::ALPHA << TAB << HAR::BETA << TAB ;
 		}
 
@@ -705,7 +719,7 @@ bool Run()
 				dead = ! CEpidemic::Operate(currentTime);
 				break;
 
-			case _har:
+			case _xhar:
 				dead = ! HAR::Operate(currentTime);
 				break;
 
@@ -731,7 +745,7 @@ bool Run()
 			CEpidemic::PrintFinal(currentTime);
 			break;
 
-		case _har:
+		case _xhar:
 			HAR::PrintFinal(currentTime);
 			break;
 

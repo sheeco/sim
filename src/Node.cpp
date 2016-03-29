@@ -340,8 +340,8 @@ void CNode::checkDataByAck(vector<CData> ack)
 //				updateDeliveryPredsWith( dst->getID(), ctrl->getPred() );
 //
 //				//select data to sent based on preds
-//				if( CProphet::MAX_DATA_TRANS > 0 )
-//					dataToSend = getDataByPredsAndSV( ctrl->getPred(), ctrl->getSV(), CProphet::MAX_DATA_TRANS );
+//				if( CProphet::CAPACITY_FORWARD > 0 )
+//					dataToSend = getDataByPredsAndSV( ctrl->getPred(), ctrl->getSV(), CProphet::CAPACITY_FORWARD );
 //				else
 //					dataToSend = getDataByPredsAndSV( ctrl->getPred(), ctrl->getSV() );
 //				break;

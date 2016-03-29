@@ -5,7 +5,7 @@ namespace global
 {
 	_MAC_PROTOCOL MAC_PROTOCOL = _smac;
 	_ROUTING_PROTOCOL ROUTING_PROTOCOL = _prophet;
-	_HOTSPOT_SELECT HOTSPOT_SELECT = _original;
+	_HOTSPOT_SELECT HOTSPOT_SELECT = _none;
 
 	int DATATIME = 0;
 	int RUNTIME = 0;
@@ -76,6 +76,7 @@ namespace global
 		" -pred-init            []    Prophet 路由中节点投递概率的初始值（默认 0.75）； \n "
 		" -pred-decay           []    Prophet 路由中节点投递概率的衰减系数（默认 0.98）； \n "
 		" -pred-tolerance       []    Prophet 路由中节点决定转发数据时的投递概率容差（默认不使用）； \n "
+		" -capacity-forward     []    Prophet 路由中节点单次转发数据的最大数目（默认无限制）； \n "
 
 		"\n <hotspot>                   < 热点选取参数 > \n\n "
 

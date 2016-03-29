@@ -424,7 +424,7 @@ public:
 	{
 		if( MAC_PROTOCOL == _hdc )
 			return EQUAL( dutyCycle, HOTSPOT_DUTY_CYCLE );
-		else if( ROUTING_PROTOCOL == _har )
+		else if( ROUTING_PROTOCOL == _xhar )
 			return atHotspot != nullptr;
 		else
 			return false;

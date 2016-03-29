@@ -42,10 +42,36 @@ private:
 	//更新hotspotsAboveAverage，在每一次迭代后调用
 	static void updateStatus();
 
+	//从文件中读取所有节点的当前位置，加入position列表（append）
+	//由main函数，在每个地理位置信息收集时隙上调用
+	static void CollectNewPositions(int currentTime);
+
+	//根据到目前为止的所有position记录，构建候选hotspot列表
+	//由main函数，在每个hotspot更新时隙上调用
+	static void BuildCandidateHotspots(int currentTime);
+
+	//执行贪婪选取过程，返回选取结果
+	//注意：返回的信息将在CHotspotSelect类析构之后失效，应及时保存
+	static void GreedySelect(int currentTime);
+
+	//merge-HAR: 
+	//执行热点归并过程，归并得到的新热点直接替换旧热点放在copy_hotspotCandidates中，用于执行后续的原贪婪选取算法
+	//注意：对于每一个旧热点，为其遍历寻找最佳归并；已经被归并过的热点不再参与其他归并；
+	static void MergeHotspots(int currentTime);
+
+	//比较此次热点选取的结果与上一次选取结果之间的相似度
+	static void CompareWithOldHotspots(int currentTime);
+
 
 public:
 
 	static bool TEST_HOTSPOT_SIMILARITY;
+
+	/************************************ IHAR ************************************/
+
+	static double LAMBDA;
+	static int LIFETIME_POSITION;
+
 
 	CHotspotSelect(){};
 	~CHotspotSelect(){};
@@ -83,25 +109,8 @@ public:
 			return SUM_SIMILARITY_RATIO / COUNT_SIMILARITY_RATIO;
 	}	
 
-	//从文件中读取所有节点的当前位置，加入position列表（append）
-	//由main函数，在每个地理位置信息收集时隙上调用
-	static void CollectNewPositions(int currentTime);
-
-	//根据到目前为止的所有position记录，构建候选hotspot列表
-	//由main函数，在每个hotspot更新时隙上调用
-	static void BuildCandidateHotspots(int currentTime);
-
-	//执行贪婪选取过程，返回选取结果
-	//注意：返回的信息将在CHotspotSelect类析构之后失效，应及时保存
-	static void GreedySelect(int currentTime);
-
-	//merge-HAR: 
-	//执行热点归并过程，归并得到的新热点直接替换旧热点放在copy_hotspotCandidates中，用于执行后续的原贪婪选取算法
-	//注意：对于每一个旧热点，为其遍历寻找最佳归并；已经被归并过的热点不再参与其他归并；
-	static void MergeHotspots(int currentTime);
-
-	//比较此次热点选取的结果与上一次选取结果之间的相似度
-	static void CompareWithOldHotspots(int currentTime);
+	//执行热点选取
+	static void HotspotSelect(int currentTime);
 
 	// TODO: move print operation here
 	static void PrintInfo(int currentTime);

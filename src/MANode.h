@@ -23,18 +23,23 @@ private:
 	CRoute route;
 	vector<CRoute> oldRoutes;
 	CHotspot *atHotspot;  //MA到达的hotspot
-	int waitingTime;  //在当前位置的剩余waiting时间
+	int waitingWindow;  //当前规定的waiting时间窗大小
+	int waitingState;  //当前处于waiting时间窗的位置（值为0说明还未开始等待，值等于最大值说明等待时间结束）
 
 //	static double energyConsumption;
 	static vector<CMANode *> MANodes;
 	static vector<CMANode *> freeMANodes;
 
+//	static int encounterActive;  //有效相遇
+	static int encounter;
 	static int COUNT_ID;
+
 
 	void init()
 	{
 		atHotspot = nullptr;	
-		waitingTime = -1;
+		waitingWindow = 0;
+		waitingState = 0;
 		capacityBuffer = CAPACITY_BUFFER;
 	}
 
@@ -59,6 +64,7 @@ private:
 		this->time = time;
 		generateID();
 	}
+	~CMANode(){};
 
 
 public:
@@ -67,12 +73,11 @@ public:
 	static int CAPACITY_BUFFER;  // TODO: static getter & ref mod
 	static _RECEIVE MODE_RECEIVE;
 
-	static vector<CMANode *> getMANodes()
+	static vector<CMANode *>& getMANodes()
 	{
 		return MANodes;
 	}
 
-	~CMANode(){};
 
 	//当前活动MA个数不足时调用，将激活闲置的MA或构造新的MA
 	static CMANode* newMANode(CRoute route, int time)
@@ -95,6 +100,52 @@ public:
 		return result;
 	}
 
+	static int getCapacityBuffer()
+	{
+		return CAPACITY_BUFFER;
+	}
+
+	static int getSpeed()
+	{
+		return SPEED;
+	}
+
+	static inline double getSumEnergyConsumption()
+	{
+		double sumEnergyConsumption = 0;
+		for(auto iMANode = MANodes.begin(); iMANode != MANodes.end(); ++iMANode)
+			sumEnergyConsumption += (*iMANode)->getEnergyConsumption();
+		for(auto iMANode = freeMANodes.begin(); iMANode != freeMANodes.end(); ++iMANode)
+			sumEnergyConsumption += (*iMANode)->getEnergyConsumption();
+
+		return sumEnergyConsumption;
+	}
+
+	//相遇计数：统计 MA 和节点的相遇
+	static void encount() 
+	{
+		++encounter;
+	}
+//	static void encountActive() 
+//	{
+//		++encounterActive;
+//	}
+
+	static int getEncounter() 
+	{
+		return encounter;
+	}
+//	static int getEncounterActive()
+//	{
+//		return encounterActive;
+//	}
+//	static double getPercentEncounterActive() 
+//	{
+//		if(encounterActive == 0)
+//			return 0.0;
+//		return double(encounterActive) / double(encounter);
+//	}
+
 	//暂时闲置
 	void turnFree()
 	{
@@ -107,17 +158,6 @@ public:
 			}
 		}
 		freeMANodes.push_back(this);
-	}
-
-	static inline double getSumEnergyConsumption()
-	{
-		double sumEnergyConsumption = 0;
-		for(auto iMANode = MANodes.begin(); iMANode != MANodes.end(); ++iMANode)
-			sumEnergyConsumption += (*iMANode)->getEnergyConsumption();
-		for(auto iMANode = freeMANodes.begin(); iMANode != freeMANodes.end(); ++iMANode)
-			sumEnergyConsumption += (*iMANode)->getEnergyConsumption();
-
-		return sumEnergyConsumption;
 	}
 
 	inline CRoute* getRoute()
@@ -161,21 +201,11 @@ public:
 	}
 	inline void setWaitingTime(int waitingTime)
 	{
-		this->waitingTime = waitingTime;
+		this->waitingWindow = waitingTime;
 	}
 	inline int getWaitingTime() const
 	{
-		return waitingTime;
-	}
-
-	static int getCapacityBuffer()
-	{
-		return CAPACITY_BUFFER;
-	}
-
-	static int getSpeed()
-	{
-		return SPEED;
+		return waitingWindow;
 	}
 
 	//判断Buffer是否已满
@@ -187,7 +217,7 @@ public:
 			return false;
 	}	
 
-	// TODO: send tolerance / MAX_DATA_TRANS during as index
+	// TODO: send tolerance / CAPACITY_FORWARD during as index
 	//接收数据时，返回允许接收的最大数据数
 	inline int getToleranceData() const
 	{
@@ -201,6 +231,7 @@ public:
 			return capacityBuffer;
 	}
 
+	//MA node: all on
 	bool isListening() const
 	{
 		return true;
@@ -217,8 +248,10 @@ public:
 
 //	bool receiveData(int time, vector<CData> datas) override;
 
-	//MA移动，更新time时刻的位置
-	void updateLocation(int time);
+	CPackage* sendRTS(int currentTime);
+
+	//MA移动，更新等待时间、位置、时间戳
+	void updateStatus(int time);
 
 };
 

@@ -112,7 +112,7 @@ bool CHDC::Operate(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
 
-	HAR::HotspotSelection(currentTime);
+	CHotspotSelect::HotspotSelect(currentTime);
 
 	UpdateDutyCycleForNodes(currentTime);
 

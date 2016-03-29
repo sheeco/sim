@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hotspot.h"
+#include "MANode.h"
 #include "Route.h"
 #include "RoutingProtocol.h"
 
@@ -70,11 +71,6 @@ public:
 	static double CO_HOTSPOT_HEAT_A1;
 	static double CO_HOTSPOT_HEAT_A2;
 
-	/************************************ IHAR ************************************/
-
-	static double LAMBDA;
-	static int LIFETIME_POSITION;
-
 	/********************************* merge-HAR ***********************************/
 
 	static int MIN_WAITING_TIME;  //add minimum waiting time to each hotspot
@@ -85,9 +81,16 @@ public:
 	HAR(){};
 	~HAR(){};
 
+	//从下层协议传入的控制/数据包
+	// sink <- MA 
+	static vector<CGeneralData*> receiveContents(CSink* sink, CMANode* fromMA, vector<CGeneralData*> contents, int time);
+	// MA <- sink 
+	static vector<CGeneralData*> receiveContents(CMANode* MA, CSink* fromSink, vector<CGeneralData*> contents, int time);
+	// Node <- MA 
+	static vector<CGeneralData*> receiveContents(CNode* node, CMANode* fromMA, vector<CGeneralData*> contents, int time);
+	// MA <- Node 
+	static vector<CGeneralData*> receiveContents(CMANode* MA, CNode* fromNode, vector<CGeneralData*> contents, int time);
 
-	//执行热点选取
-	static void HotspotSelection(int currentTime);
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);
 	static void PrintFinal(int currentTime);

@@ -1,6 +1,8 @@
 #include "MANode.h"
 
 // TODO: read from xml instead of constant initial value
+int CMANode::encounter = 0;
+//int CMANode::encounterActive = 0;
 int CMANode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
@@ -38,67 +40,61 @@ CGeneralNode::_RECEIVE CMANode::MODE_RECEIVE = _selfish;
 //	return true;
 //}
 
-void CMANode::updateLocation(int time)
+// TODO: need test
+void CMANode::updateStatus(int time)
 {
 	int interval = time - this->time;
-	if(waitingTime == 0)
-		waitingTime = -1;
-	if(waitingTime > 0)
-	{
-		//如果路线过期，立即结束waiting
-		if( route.isOverdue() )
-		{
-			waitingTime = 0;
-			this->setTime(time);
-			return;
-		}
-		//waiting阶段还未结束
-		else if(interval <= waitingTime)
-		{
-			waitingTime -= interval;
-			this->setTime(time);
-			return;
-		}
-		//waiting阶段将结束，继续移动
-		else
-		{
-			interval -= waitingTime;
-			waitingTime = 0;
-		}
-	}
-	if(interval == 0)
-		return;
-	atHotspot = nullptr;
+	//更新时间戳
+	this->setTime(time);
+
 	//路线过期，立即返回sink
 	if( route.isOverdue() )
 	{
+		waitingWindow = waitingState = 0;
 		this->moveTo( *static_cast<CBasicEntity *>(CSink::getSink()) , interval, SPEED);
 		return ;
 	}
-	//在路线上正常移动
+
+	//等待结束
+	if( (waitingState + interval) >= waitingWindow )
+	{
+		interval = waitingState + interval - waitingWindow;
+		waitingWindow = waitingState = 0;
+	}
+
+	//等待还未结束
 	else
 	{
-		CBasicEntity *toPoint = route.getToPoint();
-		bool arrival = this->moveTo(*toPoint , interval, SPEED);
-
-		//如果已到达目的地
-		if(arrival)
-		{
-			//若目的地的类型是hotspot
-			if( toPoint != CSink::getSink() )
-			{
-				this->atHotspot = static_cast<CHotspot *>(toPoint);
-
-				if( atHotspot->getTypeHotspotCandidate() > 3 )
-				{
-					cout << endl << "Error @ CMANode::updateLocation : atHotspot is corrupted !" << endl;
-					_PAUSE_;
-				}
-			}
-			route.updateToPoint();
-			return ;
-		}
+		waitingState += interval;
+		interval = 0;
 	}
-	//更新时间戳
-	this->setTime(time);
+	if( interval == 0 )
+		return;
+
+	//在路线上正常移动
+	atHotspot = nullptr;
+
+	CBasicEntity *toPoint = route.getToPoint();
+	bool arrival = this->moveTo(*toPoint , interval, SPEED);
+
+	//如果已到达目的地
+	if(arrival)
+	{
+		//若目的地的类型是hotspot
+		if( typeid(*toPoint) == typeid(CHotspot) )
+			this->atHotspot = static_cast<CHotspot *>(toPoint);
+		route.updateToPoint();
+	}
+	return ;
+
 }
+
+CPackage* CMANode::sendRTS(int currentTime) 
+{
+	vector<CGeneralData*> contents;
+	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
+	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
+
+	return package;
+}
+

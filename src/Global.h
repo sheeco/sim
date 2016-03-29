@@ -77,11 +77,12 @@ namespace global
 		_hdc 
 	} _MAC_PROTOCOL;
 	typedef enum _ROUTING_PROTOCOL { 
-		_har, 
+		_xhar, 
 		_prophet, 
 		_epidemic 
 	} _ROUTING_PROTOCOL;
 	typedef enum _HOTSPOT_SELECT { 
+		_none, 
 		_original, 
 		_improved, 
 		_merge 

@@ -82,7 +82,6 @@ CPackage* CSink::sendRTS(int currentTime)
 	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
 	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
 
-//	consumeEnergy( package->getSize() * CONSUMPTION_BYTE_SEND );
 	return package;
 }
 

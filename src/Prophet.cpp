@@ -7,7 +7,7 @@
 #include "SortHelper.h"
 
 bool CProphet::TRANS_STRICT_BY_PRED = true;
-int CProphet::MAX_DATA_TRANS = 0;
+int CProphet::CAPACITY_FORWARD = 0;
 
 #ifdef USE_PRED_TOLERANCE
 
@@ -17,171 +17,15 @@ double CProphet::TOLERANCE_PRED = 0;
 #endif
 
 
-//void CProphet::SendData(int currentTime)
-//{
-//	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
-//		return;
-//	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
-//
-//	ofstream sink( PATH_ROOT + PATH_LOG + FILE_SINK, ios::app);
-//	if(currentTime == 0)
-//	{
-//		sink << INFO_LOG << endl ;
-//		sink << INFO_SINK ;
-//	}
-//
-//	int nEncounterAtSink = 0;
-//	//本地将所有node按照x坐标排序
-//	vector<CNode *> nodes = CNode::getNodes();
-//	nodes = CSortHelper::mergeSort(nodes);
-//
-//	//判断工作状态，向sink投递数据，节点间通信
-//	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
-//	{
-//		////如果处于休眠状态，直接跳过
-//		//if( ! (*inode)->isListening() )
-//		//	continue;
-//
-//		bool atSink = false;
-//		
-//		//如果处于休眠状态，跳过
-//		if( (*inode)->isListening() )
-//		{
-//			if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::RANGE_TRANS )
-//			{
-//				atSink = true;
-//				//deliver data to sink
-//				flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getSizeBuffer() << " data to Sink )                     " ;
-//				CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
-//				(*inode)->updateDeliveryPredsWithSink();
-//				++nEncounterAtSink;
-//			}
-//		}
-//
-//		//scan other nodes and forward data
-//		//inode < jnode，即任何节点对只有一次通信机会
-//		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); ++jnode)
-//		{
-//			if( (*jnode)->getX() + CGeneralNode::RANGE_TRANS < (*inode)->getX() )
-//				continue;
-//			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*jnode)->getX() )
-//				break;
-//			if( CBasicEntity::getDistance( **inode, **jnode ) > CGeneralNode::RANGE_TRANS )
-//				continue;
-//
-//			if( (*inode)->isAtHotspot() || (*jnode)->isAtHotspot() )
-//				CNode::encountAtHotspot();
-//			else
-//				CNode::encountOnRoute();
-//
-//			//如果处于休眠状态，跳过
-//			if( ! ( (*inode)->isListening() && (*jnode)->isListening() ) )
-//				continue;
-//
-//			CNode::encountActive();
-//
-//			//init by node with smaller id
-//			CNode *smaller, *greater = nullptr;
-//			smaller = (*inode)->getID() < (*jnode)->getID() ? *inode : *jnode ;
-//			greater = (*inode)->getID() > (*jnode)->getID() ? *inode : *jnode ;
-//
-//			bool fail = false;
-//			bool skip = false;
-//			map<int, double> preds;
-//			vector<int> sv;
-//			vector<CData> data;
-//
-//			//forward data
-//			
-//			preds = smaller->sendDeliveryPreds();
-//			sv = smaller->sendSummaryVector();
-//
-//			if( preds.empty() )
-//				skip = true;
-//			else
-//			{
-//				preds = greater->receiveDeliveryPredsAndSV(preds, sv );
-//				if( preds.empty() )
-//					fail = true;
-//				else
-//				{
-//					greater->updateDeliveryPredsWith(smaller->getID(), preds);
-//					data = greater->sendDataByPredsAndSV(preds, sv );
-//					if( data.empty() )
-//						skip = true;
-//					else
-//						fail = ! smaller->receiveData(currentTime, data) ;
-//				}
-//			}
-//			if( ! fail )
-//			{
-//				preds = greater->sendDeliveryPreds();
-//				sv = greater->sendSummaryVector();
-//				if( preds.empty() && skip )
-//					skip = true;
-//				else
-//				{
-//					skip = false;
-//					preds = smaller->receiveDeliveryPredsAndSV(preds, sv );
-//					if( preds.empty() )
-//						fail = true;
-//					else
-//					{
-//						smaller->updateDeliveryPredsWith(greater->getID(), preds);
-//						data = smaller->sendDataByPredsAndSV(preds, sv );
-//						if( data.empty() )
-//							skip = true;
-//						else
-//							fail = ! greater->receiveData( currentTime, data ) ;
-//					}
-//				}
-//				if( ! fail )
-//				{	
-//					if( skip )
-//					{
-//						flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )          " ;
-//					}
-//					else
-//					{
-//						flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )          " ;
-//						
-//						//在Sink附近的节点可以在接收到其他节点的数据之后向Sink进行二次投递
-//						if( atSink == true )
-//						{
-//							flash_cout << "####  ( Node " << (*inode)->getID() << " delivers " << (*inode)->getSizeBuffer() << " data to Sink )                     " ;
-//							CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );						
-//						}
-//
-//					}
-//				}
-//				else
-//				{
-//					flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )          " ;
-//				}
-//			}
-//			else
-//			{
-//				flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )          " ;
-//			}
-//		}
-//
-//	}
-//
-//	//更新所有节点的buffer状态记录
-//	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
-//		(*inode)->recordBufferStatus();
-//
-//	//控制台输出时保留一位小数
-//	double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
-//	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl<< endl;
-//	sink << currentTime << TAB << nEncounterAtSink << endl;
-//	sink.close();
-//
-//}
+CProphet::CProphet()
+{
+	
+}
 
-CProphet::CProphet() {}
-
-CProphet::~CProphet() {}
+CProphet::~CProphet()
+{
+	
+}
 
 bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 {
@@ -206,14 +50,14 @@ vector<CData> CProphet::getDataForTrans(CNode* node)
 {
 	vector<CData> datas = node->getAllData();
 
-	if( MAX_DATA_TRANS > 0
-		&& datas.size() > MAX_DATA_TRANS )
+	if( CAPACITY_FORWARD > 0
+		&& datas.size() > CAPACITY_FORWARD )
 	{
 		datas = CSortHelper::mergeSort(datas, CSortHelper::ascendByTimeBirth);
 		if( CNode::MODE_QUEUE == CGeneralNode::_fifo )
-			datas = vector<CData>(datas.begin(), datas.begin() + MAX_DATA_TRANS);
+			datas = vector<CData>(datas.begin(), datas.begin() + CAPACITY_FORWARD);
 		else
-			datas = vector<CData>(datas.rbegin(), datas.rbegin() + MAX_DATA_TRANS);
+			datas = vector<CData>(datas.rbegin(), datas.rbegin() + CAPACITY_FORWARD);
 	}
 
 	return datas;

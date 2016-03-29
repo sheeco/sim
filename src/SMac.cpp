@@ -1,4 +1,5 @@
 #include "SMac.h"
+#include "HotspotSelect.h"
 
 //CSMac::CSMac()
 //{
@@ -28,6 +29,13 @@ bool CSMac::Operate(int currentTime)
 	//Node Number Test:
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
+
+//	//独立开启热点选取操作
+//	if( ROUTING_PROTOCOL != _xhar
+//		&& HOTSPOT_SELECT != _none )
+//	{
+//		CHotspotSelect::HotspotSelect(currentTime);
+//	}
 
 	CommunicateWithNeighbor(currentTime);
 

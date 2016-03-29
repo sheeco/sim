@@ -717,20 +717,33 @@
 - BUG：数据传输计数存在差错，应检查 `CNode::transmitTry()` 和 `CNode::transmitSucceed()` 的调用；
 
 
-###### 2016-03-28  ·  *< 3.2.5931.21338 >*
+###### [ 2016-03-28  ·  *< 3.2.5931.21338 >* ]( https://github.com/sheeco/xHAR/commit/dac9dd3379f583fc8ef510c6471ceeccdceaa514 )
 
 - FIX：数据传输计数的差错；
 - RFCT：将热点选取的相关输出分离移入到 `CHotspotSelect` 类中；
 - ADD：将版本信息复制到日志文件夹中（`HDC.version`）；
 - ADD：添加 XML 解析库 TinyXML2 的相关文件 `/lib/xml/tinyxml2.h & .cpp` 及 `CXmlHelper` 类；
 
-- **TODO：** ADD：重写 Epidemic 路由和 HAR 路由的数据通信流程；
+
+###### 2016-03-29  ·  *< 3.2.5932.17811 >*
+
+- ADD：添加 `_HOTSPOT_SELECT::_none` 用于独立开启热点选取操作的功能，但暂时没有添加独立的节点是否位于热点中的检测操作；
+- ADD：在参数解析中添加异常捕获，如果命令行参数存在错误，则禁止运行；
+- ADD：添加命令行参数 `-capacity-forward`，赋值 Prophet 路由中单次数据转发的最大数据包数目；
+- ADD：重写 xHAR 路由的数据通信流程，函数 `HAR::receiveContents()` 待完成；
+- BUG：测试 Prophet 路由中单次数据转发的最大数据包数目；
+
+- **TODO：** ADD：完成函数 `HAR::receiveContents()`；
+
+
+- **TODO：** ADD：重写 Epidemic 路由的数据通信流程；
 - **TODO：** ADD：为 Release 版本添加尽可能多的合法性检查、异常捕获和输出；
 - **TODO：** ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC 绑定的功能；
 - **TODO：** RFCT：对于不确定尝试和新增的可选功能，尽量使用条件编译和宏定义包裹变量和成员函数定义；
-- **TODO：** TRY：当缓存已满时，即使对投递概率更低的节点，也发送数据？
+- **TODO：** TRY：当缓存已满时，即使对投递概率更低的节点，也发送数据 ?
 - **TODO：** RFCT：将 `Global.h` 和 `main.cpp` 中的全局辅助函数放入 `CRunHelper` ?
 - **TODO：** RFCT：将配置参数相关的定义和操作整理到单独的 `CConfiguration` 类；
 - **TODO：** RFCT：将配置参数的默认值读取改用 XML 实现；
 - **TODO：** MNT：在 `README.md` 中，添加 trace 文件的格式和目录位置要求的说明；
 - **TODO：** MNT：重构完成后，将代码合并到 master 分支；
+- **TODO：** RFCT：尝试生成 dll；

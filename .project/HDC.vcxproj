@@ -165,6 +165,7 @@
     <ClInclude Include="..\src\SortHelper.h" />
     <ClInclude Include="..\src\XmlHelper.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HDC.rc" />
