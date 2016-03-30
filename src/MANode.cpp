@@ -1,12 +1,14 @@
 #include "MANode.h"
+#include "HAR.h"
 
 // TODO: read from xml instead of constant initial value
 int CMANode::encounter = 0;
 //int CMANode::encounterActive = 0;
-int CMANode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
+int CMANode::COUNT_ID = 0;  //从START_COUNT_ID开始，差值等于当前实例总数
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
 
+int CMANode::START_COUNT_ID = 0;  //ID的起始值，用于和传感器节点相区分
 int CMANode::SPEED = 0;
 int CMANode::CAPACITY_BUFFER = 0;
 CGeneralNode::_RECEIVE CMANode::MODE_RECEIVE = _selfish;
@@ -45,10 +47,11 @@ void CMANode::updateStatus(int time)
 {
 	int interval = time - this->time;
 	//更新时间戳
-	this->setTime(time);
 
-	//路线过期，立即返回sink
-	if( route.isOverdue() )
+	//路线过期或缓存已满，立即返回sink
+	if( route.isOverdue()
+		|| ( MODE_RECEIVE == _selfish
+		&& buffer.size() >= capacityBuffer ) )
 	{
 		waitingWindow = waitingState = 0;
 		this->moveTo( *static_cast<CBasicEntity *>(CSink::getSink()) , interval, SPEED);
@@ -56,20 +59,28 @@ void CMANode::updateStatus(int time)
 	}
 
 	//等待结束
-	if( (waitingState + interval) >= waitingWindow )
+	if( waitingWindow > 0 )
 	{
-		interval = waitingState + interval - waitingWindow;
-		waitingWindow = waitingState = 0;
-	}
+		if( (waitingState + interval) >= waitingWindow )
+		{
+			interval = waitingState + interval - waitingWindow;
+			waitingWindow = waitingState = 0;
+		}
 
-	//等待还未结束
-	else
-	{
-		waitingState += interval;
-		interval = 0;
+		//等待还未结束
+		else
+		{
+			waitingState += interval;
+			interval = 0;
+		}
 	}
 	if( interval == 0 )
+	{
+		this->setTime(time);
 		return;
+	}
+	else
+		this->setTime( time - interval );
 
 	//在路线上正常移动
 	atHotspot = nullptr;
@@ -82,19 +93,51 @@ void CMANode::updateStatus(int time)
 	{
 		//若目的地的类型是hotspot
 		if( typeid(*toPoint) == typeid(CHotspot) )
+		{
 			this->atHotspot = static_cast<CHotspot *>(toPoint);
+			waitingWindow = HAR::calculateWaitingTime(time, this->atHotspot);
+			waitingState = 0;  //重新开始等待
+		}
+		else if( typeid(*toPoint) == typeid(CSink) )
+		{
+			if( CSink::hasMoreNewRoutes() )
+				this->route = CSink::popRoute();
+			else
+				this->turnFree();
+		}
 		route.updateToPoint();
 	}
 	return ;
 
 }
 
-CPackage* CMANode::sendRTS(int currentTime) 
+CPackage* CMANode::sendRTSWithCapacity(int currentTime) 
 {
 	vector<CGeneralData*> contents;
 	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
+	if( MODE_RECEIVE == _selfish 
+		&& ( ! buffer.empty() ) )
+		contents.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, SIZE_CTRL, CCtrl::_capacity) );
+
 	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
 
 	return package;
 }
 
+vector<CData> CMANode::bufferData(int time, vector<CData> datas)
+{
+	vector<CData> ack = datas;
+	RemoveFromList( datas, this->buffer );
+	for(auto idata = datas.begin(); idata != datas.end(); ++idata)
+	{
+//		idata->arriveSink(time);
+		this->buffer.push_back(*idata);
+	}
+	
+	return ack;
+}
+
+void CMANode::checkDataByAck(vector<CData> ack)
+{
+	RemoveFromList(buffer, ack);
+}

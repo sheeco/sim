@@ -30,14 +30,20 @@ bool CSMac::Operate(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
 
-//	//独立开启热点选取操作
-//	if( ROUTING_PROTOCOL != _xhar
-//		&& HOTSPOT_SELECT != _none )
-//	{
-//		CHotspotSelect::HotspotSelect(currentTime);
-//	}
+	//独立开启热点选取
+	if( ROUTING_PROTOCOL != _xhar
+		&& HOTSPOT_SELECT != _none )
+		CHotspotSelect::HotspotSelect(currentTime);
 
-	CommunicateWithNeighbor(currentTime);
+	if( ! CMacProtocol::UpdateNodeStatus(currentTime) )
+		return false;
+
+	//独立开启热点选取操作时，检测节点所在热点区域
+	if( ROUTING_PROTOCOL != _xhar
+		&& HOTSPOT_SELECT != _none )
+		CHotspot::UpdateAtHotspotForNodes(currentTime);
+
+	CMacProtocol::CommunicateWithNeighbor(currentTime);
 
 	return true;
 }

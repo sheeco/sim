@@ -19,7 +19,6 @@ class CMANode :
 
 private:
 
-	vector<CData> buffer;
 	CRoute route;
 	vector<CRoute> oldRoutes;
 	CHotspot *atHotspot;  //MA到达的hotspot
@@ -37,6 +36,9 @@ private:
 
 	void init()
 	{
+		if( COUNT_ID == 0 )
+			COUNT_ID = START_COUNT_ID;
+
 		atHotspot = nullptr;	
 		waitingWindow = 0;
 		waitingState = 0;
@@ -69,6 +71,7 @@ private:
 
 public:
 
+	static int START_COUNT_ID;
 	static int SPEED;
 	static int CAPACITY_BUFFER;  // TODO: static getter & ref mod
 	static _RECEIVE MODE_RECEIVE;
@@ -199,14 +202,14 @@ public:
 	{
 		return atHotspot;
 	}
-	inline void setWaitingTime(int waitingTime)
-	{
-		this->waitingWindow = waitingTime;
-	}
-	inline int getWaitingTime() const
-	{
-		return waitingWindow;
-	}
+//	inline void setWaitingTime(int waitingTime)
+//	{
+//		this->waitingWindow = waitingTime;
+//	}
+//	inline int getWaitingTime() const
+//	{
+//		return waitingWindow;
+//	}
 
 	//判断Buffer是否已满
 	inline bool isFull() const
@@ -217,16 +220,15 @@ public:
 			return false;
 	}	
 
-	// TODO: send tolerance / CAPACITY_FORWARD during as index
 	//接收数据时，返回允许接收的最大数据数
-	inline int getToleranceData() const
+	inline int getCapacityForward() const
 	{
-		int tolerance = capacityBuffer - buffer.size();
-		if( tolerance < 0 )
-			tolerance = 0;
+		int capacity = capacityBuffer - buffer.size();
+		if( capacity < 0 )
+			capacity = 0;
 
 		if( MODE_RECEIVE == _selfish )
-			return tolerance;
+			return capacity;
 		else if( MODE_RECEIVE == _loose )
 			return capacityBuffer;
 	}
@@ -237,21 +239,15 @@ public:
 		return true;
 	}
 
-//	void receivePackage(CPackage* package, int currentTime) override
-//	{
-//	}
-
-//	vector<CData>  sendAllData(_SEND mode) override
-//	{
-//		return CGeneralNode::sendAllData(mode);
-//	}
-
-//	bool receiveData(int time, vector<CData> datas) override;
-
-	CPackage* sendRTS(int currentTime);
-
-	//MA移动，更新等待时间、位置、时间戳
+	//MA移动，更新等待时间、位置、时间戳、等待时间
+	//如果路线过期或缓存已满，立即返回sink
 	void updateStatus(int time);
+
+	CPackage* sendRTSWithCapacity(int currentTime);
+
+	vector<CData> bufferData(int time, vector<CData> datas);
+
+	void checkDataByAck(vector<CData> ack);
 
 };
 

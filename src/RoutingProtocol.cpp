@@ -2,6 +2,7 @@
 #include "Node.h"
 #include "SMac.h"
 #include "HDC.h"
+#include "HotspotSelect.h"
 
 int CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //数据发送slot
 
@@ -37,7 +38,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		return;
 
 	//投递率、延迟、节点buffer状态统计 ...
-	if( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE  == 0
+	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE  == 0
 		|| currentTime == RUNTIME )
 	{
 		//数据投递率-900（用于debug）

@@ -127,14 +127,14 @@ public:
 	// TODO: trigger operations here ?
 	// *TODO: move even between 2 locations ?
 	// TODO: how to trigger RTS ?
-	//更新坐标和工作状态，返回是否全部节点都仍存活
+	//更新所有node的坐标、占空比和工作状态，生成数据，返回是否仍存活
 	bool updateStatus(int currentTime);
 
 //	void receiveRTS(CPackage package);
 
 //	void receivePackage(CPackage* package, int currentTime) override;
 
-	CPackage* sendRTSWithPred(int currentTime);
+	CPackage* sendRTSWithCapacityAndPred(int currentTime);
 
 	bool hasSpokenRecently(CNode* node, int currentTime);
 
@@ -173,9 +173,16 @@ public:
 		this->discovering = false;
 	}
 
+	inline bool useDefaultDutyCycle()
+	{
+		return EQUAL(dutyCycle, DEFAULT_DUTY_CYCLE);
+	}
+	inline bool useHotspotDutyCycle()
+	{
+		return EQUAL(dutyCycle, HOTSPOT_DUTY_CYCLE);
+	}
 	//在热点处提高 dc
 	void raiseDutyCycle();
-
 	//在非热点处降低 dc
 	void resetDutyCycle();
 
@@ -243,8 +250,10 @@ public:
 		AddToListUniquely( this->buffer, datas );
 	}
 
-	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
-	vector<CData> dropOverdueData(int currentTime);
+	static vector<CData> removeDataByCapacity(vector<CData> datas, int capacity);
+
+//	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
+//	vector<CData> dropOverdueData(int currentTime);
 
 	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
 	//超出MAX_DATA_RELAY时从前端丢弃数据，溢出时将从前端丢弃数据并返回
@@ -273,6 +282,9 @@ public:
 	}
 	void updateDeliveryPredsWith(int node, map<int, double> preds);
 	void updateDeliveryPredsWithSink();
+
+	//返回节点允许接收的最大数据数
+	int getCapacityForward();
 
 
 	static vector<CNode *>& getNodes();
@@ -422,12 +434,7 @@ public:
 
 	bool isAtHotspot() const 
 	{
-		if( MAC_PROTOCOL == _hdc )
-			return EQUAL( dutyCycle, HOTSPOT_DUTY_CYCLE );
-		else if( ROUTING_PROTOCOL == _xhar )
-			return atHotspot != nullptr;
-		else
-			return false;
+		return atHotspot != nullptr;
 	}
 
 	void generateID() 

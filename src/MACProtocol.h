@@ -14,9 +14,6 @@ class CMacProtocol :
 {
 private:
 
-	//更新所有node的坐标、占空比和工作状态
-	static void UpdateNodeStatus(int currentTime);
-
 	static void receivePackage(CGeneralNode& src, CPackage* package, int currentTime);
 	static void broadcastPackage(CGeneralNode& src, CPackage* package, int currentTime);
 	static bool transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackage* package, int currentTime);
@@ -28,6 +25,9 @@ protected:
 
 	//在限定范围内随机增删一定数量的node
 	static void ChangeNodeNumber(int currentTime);
+
+	//更新所有node的坐标、占空比和工作状态，生成数据，返回是否仍有节点
+	static bool UpdateNodeStatus(int currentTime);
 
 	static void CommunicateWithNeighbor(int currentTime);
 

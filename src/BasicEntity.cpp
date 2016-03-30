@@ -18,7 +18,7 @@ vector<CBasicEntity*> CBasicEntity::GetItemsByID(vector<CBasicEntity*> list, vec
 	return result;
 }
 
-int CBasicEntity::moveTo(CBasicEntity to, int time, double speed)
+int CBasicEntity::moveTo(CBasicEntity to, int interval, double speed)
 {
 	double fromX, fromY, toX, toY;
 	fromX = this->getX();
@@ -31,12 +31,12 @@ int CBasicEntity::moveTo(CBasicEntity to, int time, double speed)
 
 	//尚未到达
 	int timeArrival = distance / speed;
-	if( timeArrival > time )
+	if( timeArrival > interval )
 	{
 		cos = (toX - fromX) / distance;
 		sin = (toY - fromY) / distance;
-		this->setLocation(fromX +  time * speed * cos, fromY + time * speed * sin);
-		this->setTime( this->getTime() + time );
+		this->setLocation(fromX +  interval * speed * cos, fromY + interval * speed * sin);
+		this->setTime( this->getTime() + interval );
 	}
 	//将到达
 	else
@@ -44,5 +44,5 @@ int CBasicEntity::moveTo(CBasicEntity to, int time, double speed)
 		this->setLocation(toX, toY);			
 		this->setTime( this->getTime() + timeArrival );
 	}
-	return ( time - timeArrival );
+	return ( interval - timeArrival );
 }

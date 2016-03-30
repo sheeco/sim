@@ -125,13 +125,13 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 				// TODO: connection established ?
 				break;
 
-				/*************************************** rcv CTS **************************************/
-
 			case CCtrl::_cts:
 
 				break;
 
-				/****************************** rcv Data Index ( dp / sv ) ****************************/
+			case CCtrl::_capacity:
+
+				break;
 
 			case CCtrl::_index:
 
@@ -216,6 +216,10 @@ vector<CGeneralData*> CProphet::receiveContents(CSink* sink, CNode* fromNode, ve
 
 				break;
 
+			case CCtrl::_capacity:
+
+				break;
+
 			case CCtrl::_index:
 
 				break;
@@ -267,9 +271,11 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 {
 	vector<CGeneralData*> contentsToSend;
 	CCtrl* ctrlToSend = nullptr;
+	CCtrl* capacityToSend = nullptr;
 	CCtrl* indexToSend = nullptr;
 	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
 	vector<CData> dataToSend;  //空vector代表拒绝传输数据
+	int capacity = -1;
 
 //	int debugNodeID = 0;
 //	int debugFromID = 0;
@@ -306,6 +312,11 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 					//CTS
 					ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 
+					// + Capacity
+					if( CNode::MODE_RECEIVE == CNode::_RECEIVE::_selfish 
+						&& node->hasData() )
+						capacityToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), time, CGeneralNode::SIZE_CTRL, CCtrl::_index);
+
 					// + Index
 					indexToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), time, CGeneralNode::SIZE_CTRL, CCtrl::_index);
 					//node->skipRTS();  //（暂未使用）
@@ -322,6 +333,14 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				// TODO: connection established ?
 				break;
 
+				/************************************* rcv capacity ***********************************/
+
+			case CCtrl::_capacity:
+
+				capacity = ctrl->getCapacity();
+
+				break;
+
 				/****************************** rcv Data Index ( dp / sv ) ****************************/
 
 			case CCtrl::_index:
@@ -330,12 +349,32 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				//路由协议允许向该节点转发数据
 //				debugNodeID = node->getID();
 //				debugFromID = fromNode->getID();
-				if( CProphet::shouldForward(node, ctrl->getPred() ) )
+				if( shouldForward(node, ctrl->getPred() ) )
 				{
-					dataToSend = CProphet::getDataForTrans(node);
+					if( capacity == 0 )
+					{
+						//不允许发送数据，直接结束传输
+						CNode::transmitSucceed();
+
+						return contentsToSend;
+					}
+
+					dataToSend = getDataForTrans(node);
+
 					//但缓存为空
 					if( dataToSend.empty() )
 						nodataToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
+					else if( capacity > 0 )
+					{
+						dataToSend = CNode::removeDataByCapacity(dataToSend, capacity);
+					}
+					
+					//如果路由协议允许向该节点发送数据，对方节点就不允许发送数据，因此无需发送capacity
+					if( capacityToSend != nullptr )
+					{
+						free(capacityToSend);
+						capacityToSend = nullptr;
+					}
 				}
 				//否则，不允许转发数据时，dataToSend留空
 
@@ -354,7 +393,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				//收到ACK，认为数据传输成功
 				CNode::transmitSucceed();
 				//加入最近邻居列表
-				node->addToSpokenCache( (CNode*)(&fromNode), time );
+				node->addToSpokenCache( fromNode, time );
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
@@ -375,7 +414,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				//空的ACK
 				ctrlToSend = new CCtrl(node->getID(), vector<CData>(), time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
 				//加入最近邻居列表
-				node->addToSpokenCache( (CNode*)(&fromNode), time );
+				node->addToSpokenCache( fromNode, time );
 
 				//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据或NODATA（注意：前提是控制包必须在数据包之前）
 				dataToSend.clear();
@@ -419,7 +458,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
 			ctrlToSend = new CCtrl(node->getID(), ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
 			//加入最近邻居列表
-			node->addToSpokenCache( (CNode*)(&fromNode), time );
+			node->addToSpokenCache( fromNode, time );
 
 		}
 	}
@@ -429,6 +468,10 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 	if( ctrlToSend != nullptr )
 	{
 		contentsToSend.push_back(ctrlToSend);
+	}
+	if( capacityToSend != nullptr )
+	{
+		contentsToSend.push_back(capacityToSend);
 	}
 	if( indexToSend != nullptr )
 	{
@@ -453,10 +496,14 @@ bool CProphet::Operate(int currentTime)
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
 
+	bool hasNodes = true;
 	if( MAC_PROTOCOL == _hdc )
-		CHDC::Operate(currentTime);	
+		hasNodes = CHDC::Operate(currentTime);	
 	else
-		CSMac::Operate(currentTime);
+		hasNodes = CSMac::Operate(currentTime);
+
+	if( ! hasNodes )
+		return false;
 
 	PrintInfo(currentTime);
 

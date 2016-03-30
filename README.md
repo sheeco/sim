@@ -95,28 +95,24 @@
 >  
 >  < 路由层参数 >  
 > 
->   -epidemic                   采用 Epidemic 路由协议； 
->   
 >   -prophet                    采用 Prophet 路由协议（默认采用）； 
 >   
 >   -har                        采用 HAR 路由协议； 
 >   
 >   -hop                  []    数据包转发允许的最大跳数（默认无限制）； 
 >   
->   -ttl                  []    数据包的最大生存期（默认无限制）； 
->  
 >  
 >  < Prophet 协议参数 > 
 > 
 >   -spoken               []    Prophet 路由中节点对最近邻居节点直接跳过通信的计时（默认不使用）； 
->   
->   -queue                []    Prophet 路由中节点允许存储的其他节点数据包的最大数目（默认无限制）； 
 >   
 >   -pred-init            []    Prophet 路由中节点投递概率的初始值（默认 0.75）； 
 >   
 >   -pred-decay           []    Prophet 路由中节点投递概率的衰减系数（默认 0.98）；
 >    
 >   -pred-tolerance       []    Prophet 路由中节点决定转发数据时的投递概率容差（默认不使用）； 
+>  
+>   -capacity-forward     []    Prophet 路由中节点单次转发数据的最大数目（默认无限制）； 
 >  
 >  
 >  < 热点选取参数 > 
@@ -266,7 +262,7 @@
 
 *在 Git Commit Comment 中使用快速标签：*
 
-　　 `ADD` 添加新功能、`MOD` 修改现有实现、`OPT` 功能优化、`TRY` 不确定尝试；
+　　 `ADD` 添加新功能、`DEL` 删除现有功能、`MOD` 修改现有实现、`OPT` 功能优化、`TRY` 不确定尝试；
 
 　　 `BUG` 待修复错误、`FIX` 修复错误、`TEST` 功能测试；
 
@@ -733,7 +729,19 @@
 - ADD：重写 xHAR 路由的数据通信流程，函数 `HAR::receiveContents()` 待完成；
 - BUG：测试 Prophet 路由中单次数据转发的最大数据包数目；
 
-- **TODO：** ADD：完成函数 `HAR::receiveContents()`；
+
+### 3.3.* : 重写 xHAR
+
+
+###### 2016-03-30  ·  *< 3.3.5933.21567 >*
+
+- ADD：完成函数 `HAR::receiveContents()`（待测试）；
+- RFCT：将 `CHDC::UpdateDutyCycleForNodes()` 中更新节点所在热点区域的操作提取到 `CHotspot::UpdateAtHotspotForNodes()`；
+- ADD：在 `CSmac::Operate()` 中添加独立开启热点选取的操作，添加独立的节点是否位于热点区域的检测操作；
+- DEL：暂时删除所有 Epidemic 路由的相关定义、操作和引用，包括 `-ttl` 和 `-queue` 的使用；
+- ADD：对于 MA 节点，如果路线过期或缓存已满（_selfish 模式下），立即返回 sink；
+- ADD：添加 Prophet 和 HAR 路由中对 _selfish 模式的支持；
+- ADD：添加命令行参数 `-buffer-ma`，并将 `-buffer` 默认值改为 0，即必选参数；
 
 
 - **TODO：** ADD：重写 Epidemic 路由的数据通信流程；

@@ -4,11 +4,12 @@
 #include "MacProtocol.h"
 #include "Prophet.h"
 #include "HAR.h"
+#include "HotspotSelect.h"
 
 bool CMacProtocol::RANDOM_STATE_INIT = false;
 int CMacProtocol::SIZE_HEADER_MAC = 0;  //Mac Header Size
 bool CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
-int CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
+int CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
 
 
 CMacProtocol::CMacProtocol()
@@ -52,7 +53,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 	
 	else if( typeid(gnode) == typeid(CMANode) )
 	{
-		CMANode* toMA = dynamic_cast<CMANode*>( gFromNode );
+		CMANode* toMA = dynamic_cast<CMANode*>( &gnode );
 		
 		/************************************************ MA <- sink *******************************************************/
 
@@ -287,7 +288,7 @@ void CMacProtocol::ChangeNodeNumber(int currentTime)
 	}
 }
 
-void CMacProtocol::UpdateNodeStatus(int currentTime)
+bool CMacProtocol::UpdateNodeStatus(int currentTime)
 {
 	//cout << endl << "########  < " << currentTime << " >  NODE LOCATION UPDATE" ;
 
@@ -301,6 +302,8 @@ void CMacProtocol::UpdateNodeStatus(int currentTime)
 
 	for(vector<CMANode *>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA)
 		(*iMA)->updateStatus(currentTime);
+
+	return CNode::hasNodes(currentTime);
 }
 
 void CMacProtocol::CommunicateWithNeighbor(int currentTime)
@@ -312,8 +315,6 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 		flash_cout << "########  < " << currentTime << " >  DATA DELIVERY            " << endl ;
 		print = false;
 	}
-
-	UpdateNodeStatus(currentTime);
 
 	// TODO: sink receive RTS / send by slot ?
 	// Prophet: sink => nodes
@@ -341,7 +342,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 
 			if( (*srcNode)->isDiscovering() )
 			{
-				broadcastPackage( **srcNode, (*srcNode)->sendRTSWithPred(currentTime), currentTime );
+				broadcastPackage( **srcNode, (*srcNode)->sendRTSWithCapacityAndPred(currentTime), currentTime );
 				(*srcNode)->finishDiscovering();
 			}
 		}
@@ -352,8 +353,11 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 		
 		// xHAR: MAs => nodes
 		for(vector<CMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
-			broadcastPackage( **srcMA, (*srcMA)->sendRTS(currentTime) , currentTime );
-
+		{
+			// skip discover if buffer is full && _selfish is used
+			if( (*srcMA)->getCapacityForward() > 0 )
+				broadcastPackage( **srcMA, (*srcMA)->sendRTSWithCapacity(currentTime) , currentTime );
+		}
 		// xHAR: no forward between nodes
 
 		break;
@@ -378,7 +382,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		return;
 
 	//节点相遇、数据传输、能耗
-	if( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE  == 0
+	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE  == 0
 		|| currentTime == RUNTIME )
 	{
 		//MA和节点 / 节点间的相遇次数

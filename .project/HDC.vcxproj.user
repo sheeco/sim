@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-slot 5 -trans-prob 1 -buffer 500 -data-rate 30 -cycle 300 -dc-default 0.4 -prophet -pred-tolerance 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-slot 5 -trans-prob 1 -buffer 20 -buffer-ma 100 -data-rate 150 -cycle 300 -dc-default 1.0 -har</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>..\.debug\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>-slot 5 -trans-prob 1 -buffer 500 -data-rate 30 -cycle 300 -dc-default 0.4 -prophet -pred-tolerance 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-slot 5 -trans-prob 1 -buffer 500 -data-rate 30 -cycle 300 -dc-default 0.4 -prophet -capacity-forward 20</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>..\.debug\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

@@ -20,7 +20,9 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		return;
 
 	vector<CHotspot *> hotspots = CHotspot::selectedHotspots;
-	if( hotspots.empty() )
+	vector<CNode *> nodes = CNode::getNodes();
+	if( hotspots.empty()
+		|| nodes.empty() )
 		return;
 
 	static bool print = false;
@@ -31,48 +33,24 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		print = false;
 	}
 
-	int atHotspotCount = 0;
-	vector<CNode *> nodes = CNode::getNodes();
-	nodes = CSortHelper::mergeSort( nodes );
-	hotspots = CSortHelper::mergeSort( hotspots, CSortHelper::ascendByLocationX );
+	CHotspot::UpdateAtHotspotForNodes(currentTime);
+
+//	int atHotspotCount = 0;
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
-		CHotspot *atHotspot = nullptr;
-
-		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
-		{
-			if( (*ihotspot)->getX() + CGeneralNode::RANGE_TRANS < (*inode)->getX() )
-				continue;
-			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*ihotspot)->getX() )
-				break;
-			if( CBasicEntity::withinRange( **inode, **ihotspot, CGeneralNode::RANGE_TRANS ) )		
-			{
-				atHotspot = *ihotspot;
-				break;
-			}
-		}
-
 		//update duty cycle
-		if( (*inode)->isAtHotspot() && atHotspot == nullptr )
+		if( (*inode)->useHotspotDutyCycle()
+			&& ( ! (*inode)->isAtHotspot() ) )
 		{
 			flash_cout << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )              " ;			
-			(*inode)->setAtHotspot(nullptr);
 			(*inode)->resetDutyCycle();
 		}
-		else if(  ( ! (*inode)->isAtHotspot() ) && atHotspot != nullptr )
+		else if( (*inode)->useDefaultDutyCycle()
+				 && (*inode)->isAtHotspot() )
 		{
-			flash_cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << atHotspot->getID() << " )               " ;
-			(*inode)->setAtHotspot(atHotspot);
+			flash_cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << (*inode)->getAtHotspot()->getID() << " )               " ;
 			(*inode)->raiseDutyCycle();
 		}
-		if( (*inode)->isAtHotspot() )
-		{
-			CNode::visitAtHotspot();
-			++atHotspotCount;
-		}
-		else
-			CNode::visitOnRoute();
-
 	}
 
 	//控制台输出时保留一位小数
@@ -90,8 +68,8 @@ void CHDC::PrintInfo(int currentTime)
 {
 	CMacProtocol::PrintInfo(currentTime);
 
-	if( ! ( ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 
-		      && currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
+	if( ! ( ( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 
+		      && currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
 			|| currentTime == RUNTIME  ) )
 		return;
 
@@ -112,11 +90,14 @@ bool CHDC::Operate(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
 
+	if( ! CMacProtocol::UpdateNodeStatus(currentTime) )
+		return false;
+
 	CHotspotSelect::HotspotSelect(currentTime);
 
 	UpdateDutyCycleForNodes(currentTime);
 
-	CommunicateWithNeighbor(currentTime);
+	CMacProtocol::CommunicateWithNeighbor(currentTime);
 
 	return true;
 }

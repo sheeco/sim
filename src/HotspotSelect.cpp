@@ -17,7 +17,14 @@ double CHotspotSelect::SUM_PERCENT_OLD = 0;
 int CHotspotSelect::COUNT_PERCENT_OLD = 0;
 double CHotspotSelect::SUM_SIMILARITY_RATIO = 0;
 int CHotspotSelect::COUNT_SIMILARITY_RATIO = 0;
+
+int CHotspotSelect::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
+int CHotspotSelect::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
+int CHotspotSelect::STARTTIME_HOSPOT_SELECT = SLOT_HOTSPOT_UPDATE;  //no MA node at first
 bool CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
+double CHotspotSelect::RATIO_MERGE_HOTSPOT = 1.0;
+double CHotspotSelect::RATIO_NEW_HOTSPOT = 1.0;
+double CHotspotSelect::RATIO_OLD_HOTSPOT = 1.0;
 
 /************************************ IHAR ************************************/
 
@@ -78,7 +85,7 @@ void CHotspotSelect::updateStatus()
 
 void CHotspotSelect::CollectNewPositions(int currentTime)
 {
-	if( ! ( currentTime % CHotspot::SLOT_POSITION_UPDATE == 0 && currentTime > 0 ) )
+	if( ! ( currentTime % SLOT_POSITION_UPDATE == 0 && currentTime > 0 ) )
 		return ;
 	CPosition* temp_pos = nullptr;
 
@@ -384,8 +391,8 @@ void CHotspotSelect::MergeHotspots(int currentTime)
 
 void CHotspotSelect::HotspotSelect(int currentTime)
 {
-	if( ! ( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE == 0 
-		&& currentTime >= CHotspot::TIME_HOSPOT_SELECT_START ) )
+	if( ! ( currentTime % SLOT_HOTSPOT_UPDATE == 0 
+		&& currentTime >= STARTTIME_HOSPOT_SELECT ) )
 		return;
 
 //	if( TEST_LEARN )
@@ -393,7 +400,7 @@ void CHotspotSelect::HotspotSelect(int currentTime)
 
 	CollectNewPositions(currentTime);
 
-	if( currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
+	if( currentTime >= STARTTIME_HOSPOT_SELECT )
 	{
 		flash_cout << "########  < " << currentTime << " >  HOTSPOT SELECT            " << endl ;
 
@@ -440,7 +447,7 @@ void CHotspotSelect::CompareWithOldHotspots(int currentTime)
 	double newArea = CHotspot::selectedHotspots.size() * AreaCircle(CGeneralNode::RANGE_TRANS) - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
 
 	ofstream similarity( PATH_ROOT + PATH_LOG + FILE_HOTSPOT_SIMILARITY, ios::app);
-	if( currentTime == CHotspot::TIME_HOSPOT_SELECT_START + CHotspot::SLOT_HOTSPOT_UPDATE )
+	if( currentTime == STARTTIME_HOSPOT_SELECT + SLOT_HOTSPOT_UPDATE )
 	{
 		similarity << endl << endl << INFO_LOG << endl ;
 		similarity << INFO_HOTSPOT_SIMILARITY;
@@ -456,12 +463,12 @@ void CHotspotSelect::CompareWithOldHotspots(int currentTime)
 
 void CHotspotSelect::PrintInfo(int currentTime)
 {
-	if( currentTime % CHotspot::SLOT_HOTSPOT_UPDATE  != 0 )
+	if( currentTime % SLOT_HOTSPOT_UPDATE  != 0 )
 		return;
 	
 	//热点个数
 	ofstream hotspot( PATH_ROOT + PATH_LOG + FILE_HOTSPOT, ios::app);
-	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
+	if(currentTime == STARTTIME_HOSPOT_SELECT)
 	{
 		hotspot << endl << INFO_LOG << endl ;
 		hotspot << INFO_HOTSPOT ;
@@ -471,7 +478,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 
 	//节点在热点内的百分比（从热点选取开始时开始统计）
 	ofstream at_hotspot( PATH_ROOT + PATH_LOG + FILE_AT_HOTSPOT, ios::app);
-	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
+	if(currentTime == STARTTIME_HOSPOT_SELECT)
 	{
 		at_hotspot << endl << INFO_LOG << endl ; 
 		at_hotspot << INFO_AT_HOTSPOT ;
@@ -481,7 +488,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 
 	//热点质量统计信息
 	ofstream hotspot_statistics( PATH_ROOT + PATH_LOG + FILE_HOTSPOT_STATISTICS, ios::app);
-	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
+	if(currentTime == STARTTIME_HOSPOT_SELECT)
 	{
 		hotspot_statistics << endl << INFO_LOG << endl ;
 		hotspot_statistics << INFO_HOTSPOT_STATISTICS ;
@@ -508,7 +515,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 			ofstream merge( PATH_ROOT + PATH_LOG + FILE_MERGE, ios::app);
 			ofstream merge_details( PATH_ROOT + PATH_LOG + FILE_MERGE_DETAILS, ios::app);
 
-			if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
+			if(currentTime == STARTTIME_HOSPOT_SELECT)
 			{
 				merge << endl << INFO_LOG << endl ;
 				merge << INFO_MERGE ;

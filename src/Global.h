@@ -79,7 +79,7 @@ namespace global
 	typedef enum _ROUTING_PROTOCOL { 
 		_xhar, 
 		_prophet, 
-		_epidemic 
+//		_epidemic 
 	} _ROUTING_PROTOCOL;
 	typedef enum _HOTSPOT_SELECT { 
 		_none, 

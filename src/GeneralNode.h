@@ -66,15 +66,15 @@ public:
 	}
 	bool hasData() const
 	{
-		return ( ! buffer.empty() );
+		return ( ! this->buffer.empty() );
 	}
 	int getSizeBuffer() const
 	{
-		return buffer.size();
+		return this->buffer.size();
 	}
 	vector<CData> getAllData() const
 	{
-		return buffer;
+		return this->buffer;
 	}
 
 	virtual bool isListening() const

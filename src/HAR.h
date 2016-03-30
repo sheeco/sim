@@ -26,7 +26,6 @@ private:
 
 	//用于hotspot classification
 	static double getHotspotHeat(CHotspot *hotspot);
-	static double getWaitingTime(int currentTime, CHotspot *hotspot);
 	static double getSumDataRate(vector<int> nodes);  //计算ge的sum，同一个node不应重复计算
 	static double getTimeIncreForInsertion(int currentTime, CRoute route, int front, CHotspot *hotspot);
 	static double calculateRatioForInsertion(int currentTime, CRoute route, int front, CHotspot *hotspot);
@@ -81,15 +80,18 @@ public:
 	HAR(){};
 	~HAR(){};
 
+	//根据时间和热点，计算等待时间
+	static double calculateWaitingTime(int currentTime, CHotspot *hotspot);
+
 	//从下层协议传入的控制/数据包
 	// sink <- MA 
 	static vector<CGeneralData*> receiveContents(CSink* sink, CMANode* fromMA, vector<CGeneralData*> contents, int time);
 	// MA <- sink 
-	static vector<CGeneralData*> receiveContents(CMANode* MA, CSink* fromSink, vector<CGeneralData*> contents, int time);
+	static vector<CGeneralData*> receiveContents(CMANode* ma, CSink* fromSink, vector<CGeneralData*> contents, int time);
 	// Node <- MA 
 	static vector<CGeneralData*> receiveContents(CNode* node, CMANode* fromMA, vector<CGeneralData*> contents, int time);
 	// MA <- Node 
-	static vector<CGeneralData*> receiveContents(CMANode* MA, CNode* fromNode, vector<CGeneralData*> contents, int time);
+	static vector<CGeneralData*> receiveContents(CMANode* ma, CNode* fromNode, vector<CGeneralData*> contents, int time);
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);

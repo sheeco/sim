@@ -133,7 +133,7 @@ public:
 
 	//由from向to方向移动，给定时间和速度
 	//如果足够到达to位置，则返回大于等于 0 的剩余时间（精确到整数）；否则返回值小于 0
-	int moveTo(CBasicEntity to, int time, double speed);
+	int moveTo(CBasicEntity to, int interval, double speed);
 
 };
 

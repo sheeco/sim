@@ -6,7 +6,7 @@
 #include "HDC.h"
 #include "Prophet.h"
 #include "HAR.h"
-#include "Epidemic.h"
+//#include "Epidemic.h"
 #include "SortHelper.h"
 #include "HotspotSelect.h"
 #include "PostSelect.h"
@@ -20,6 +20,9 @@
 
 void InitConfiguration()
 {
+	SLOT = 1;
+	SLOT_LOG = 100;
+
 	/************************************** Default Config **************************************/
 
 	CGeneralNode::RANGE_TRANS = 100;  //transmission range
@@ -53,7 +56,7 @@ void InitConfiguration()
 
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
-	CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspot::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
+	CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
 	CNode::INIT_NUM_NODE = 0;
 	CNode::MIN_NUM_NODE = 0;
 	CNode::MAX_NUM_NODE = 0;
@@ -61,16 +64,20 @@ void InitConfiguration()
 
 	/*********************************  HAR  *******************************/
 
+	CMANode::START_COUNT_ID = 100;  //ID的起始值，用于和传感器节点相区分
 	CMANode::SPEED = 30;
 	CMANode::CAPACITY_BUFFER = 100;
 	CMANode::MODE_RECEIVE = CGeneralNode::_selfish;
 
+	HAR::CO_HOTSPOT_HEAT_A1 = 1;
+	HAR::CO_HOTSPOT_HEAT_A2 = 30;
+
 	/******************************  Epidemic  *****************************/
 
 	CData::MAX_HOP = 0;
-	CData::MAX_TTL = 0;
+//	CData::MAX_TTL = 0;
 
-	CEpidemic::MAX_DATA_RELAY = -1;
+//	CEpidemic::MAX_DATA_RELAY = -1;
 
 	/******************************  Prophet  ******************************/
 
@@ -90,27 +97,25 @@ void InitConfiguration()
 
 	/**************************  Hotspot Select  ***************************/
 
-	CHotspot::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
-	CHotspot::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
-	CHotspot::TIME_HOSPOT_SELECT_START = CHotspot::SLOT_HOTSPOT_UPDATE;  //no MA node at first
+	CHotspotSelect::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
+	CHotspotSelect::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
+	CHotspotSelect::STARTTIME_HOSPOT_SELECT = CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //no MA node at first
+	CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
 
 	CPostSelect::ALPHA = 0.03;  //ratio for post selection
 	HAR::BETA = 0.0025;  //ratio for true hotspot
 	//HAR::GAMMA = 0.5;  //ratio for HotspotsAboveAverage
-	HAR::CO_HOTSPOT_HEAT_A1 = 1;
-	HAR::CO_HOTSPOT_HEAT_A2 = 30;
 
-	/******************************* IHAR **********************************/
+	/******************************** IHS **********************************/
 
 	CHotspotSelect::LAMBDA = 0;
 	CHotspotSelect::LIFETIME_POSITION = 3600;
 
-	/***************************** merge-HAR *******************************/
+	/****************************** merge-HS *******************************/
 
-	CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
-	CHotspot::RATIO_MERGE_HOTSPOT = 1.0;
-	CHotspot::RATIO_NEW_HOTSPOT = 1.0;
-	CHotspot::RATIO_OLD_HOTSPOT = 1.0;
+	CHotspotSelect::RATIO_MERGE_HOTSPOT = 1.0;
+	CHotspotSelect::RATIO_NEW_HOTSPOT = 1.0;
+	CHotspotSelect::RATIO_OLD_HOTSPOT = 1.0;
 	HAR::MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
 	HAR::TEST_BALANCED_RATIO = false;
 
@@ -121,11 +126,8 @@ void InitConfiguration()
 
 	/************************************** Necessary Config **************************************/
 
-	SLOT = 1;
 	// TODO: should be read from .trace file
 	SLOT_MOBILITYMODEL = 30;
-	SLOT_LOG = 100;
-
 	DATATIME = 15000;
 	RUNTIME = 15000;
 
@@ -144,7 +146,7 @@ void InitConfiguration()
 	CGeneralNode::PROB_TRANS = 1.0;
 
 	CNode::DEFAULT_DATA_RATE = 1.0 / 30.0;
-	CNode::CAPACITY_BUFFER = 200;
+	CNode::CAPACITY_BUFFER = 0;
 	CNode::CAPACITY_ENERGY = 0;
 	CNode::LIFETIME_SPOKEN_CACHE = 0;
 
@@ -201,11 +203,11 @@ bool ParseArguments(int argc, char* argv[])
 				ROUTING_PROTOCOL = _prophet;
 				++iField;
 			}
-			else if( field == "-epidemic" )
-			{
-				ROUTING_PROTOCOL = _epidemic;
-				++iField;
-			}
+//			else if( field == "-epidemic" )
+//			{
+//				ROUTING_PROTOCOL = _epidemic;
+//				++iField;
+//			}
 			else if( field == "-har" )
 			{
 				ROUTING_PROTOCOL = _xhar;
@@ -286,9 +288,9 @@ bool ParseArguments(int argc, char* argv[])
 			{
 				if( iField < argc - 1 )
 					SLOT_LOG = atoi( argv[ iField + 1 ] );
-				//观测周期不应小于工作周期
-				if( SLOT_LOG < CNode::SLOT_TOTAL )
-					SLOT_LOG = CNode::SLOT_TOTAL;
+//				//观测周期不应小于工作周期
+//				if( SLOT_LOG < CNode::SLOT_TOTAL )
+//					SLOT_LOG = CNode::SLOT_TOTAL;
 
 				iField += 2;
 			}
@@ -335,36 +337,42 @@ bool ParseArguments(int argc, char* argv[])
 			{
 				if( iField < argc - 1 )
 					CData::MAX_HOP = atoi( argv[ iField + 1 ] );
-				if( ( CData::MAX_HOP > 0 )
-					&& ( CData::MAX_TTL > 0 ) )
-				{
-					string error = "Error @ ParseArguments() : Argument -hop & -ttl cannot be used both";
-					cout << error << endl;
-					_PAUSE_;
-					Exit(EINVAL, error);
-				}
+//				if( ( CData::MAX_HOP > 0 )
+//					&& ( CData::MAX_TTL > 0 ) )
+//				{
+//					string error = "Error @ ParseArguments() : Argument -hop & -ttl cannot be used both";
+//					cout << error << endl;
+//					_PAUSE_;
+//					Exit(EINVAL, error);
+//				}
 
 				iField += 2;
 			}
-			else if( field == "-ttl" )
-			{
-				if( iField < argc - 1 )
-					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
-				if( ( CData::MAX_HOP > 0 )
-					&& ( CData::MAX_TTL > 0 ) )
-				{
-					string error = "Error @ ParseArguments() : Argument -hop & -ttl cannot be used both";
-					cout << error << endl;
-					_PAUSE_;
-					Exit(EINVAL, error);
-				}
-
-				iField += 2;
-			}
+//			else if( field == "-ttl" )
+//			{
+//				if( iField < argc - 1 )
+//					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
+//				if( ( CData::MAX_HOP > 0 )
+//					&& ( CData::MAX_TTL > 0 ) )
+//				{
+//					string error = "Error @ ParseArguments() : Argument -hop & -ttl cannot be used both";
+//					cout << error << endl;
+//					_PAUSE_;
+//					Exit(EINVAL, error);
+//				}
+//
+//				iField += 2;
+//			}
 			else if( field == "-buffer" )
 			{
 				if( iField < argc - 1 )
 					CNode::CAPACITY_BUFFER = atoi( argv[ iField + 1 ] );
+				iField += 2;
+			}
+			else if( field == "-buffer-ma" )
+			{
+				if( iField < argc - 1 )
+					CMANode::CAPACITY_BUFFER = atoi( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-data-rate" )
@@ -388,12 +396,12 @@ bool ParseArguments(int argc, char* argv[])
 				if( CNode::finiteEnergy() )
 					RUNTIME = DATATIME = 999999;
 			}
-			else if( field == "-queue" )
-			{
-				if( iField < argc - 1 )
-					CEpidemic::MAX_DATA_RELAY = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}			
+//			else if( field == "-queue" )
+//			{
+//				if( iField < argc - 1 )
+//					CEpidemic::MAX_DATA_RELAY = atoi( argv[ iField + 1 ] );
+//				iField += 2;
+//			}			
 			else if( field == "-spoken" )
 			{
 				if( iField < argc - 1 )
@@ -430,13 +438,13 @@ bool ParseArguments(int argc, char* argv[])
 			else if( field == "-merge" )
 			{
 				if( iField < argc - 1 )
-					CHotspot::RATIO_MERGE_HOTSPOT = atof( argv[ iField + 1 ] );
+					CHotspotSelect::RATIO_MERGE_HOTSPOT = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-old" )
 			{
 				if( iField < argc - 1 )
-					CHotspot::RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
+					CHotspotSelect::RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-trans-prob" )
@@ -592,8 +600,8 @@ void PrintConfiguration()
 
 	if( CData::useHOP() )
 		parameters << "HOP" << TAB << CData::MAX_HOP << endl;
-	else
-		parameters << "TTL" << TAB << CData::MAX_TTL << endl;
+//	else
+//		parameters << "TTL" << TAB << CData::MAX_TTL << endl;
 	parameters << "DATA_RATE" << TAB << "1 / " << int( 1 / CNode::DEFAULT_DATA_RATE ) << endl;
 	parameters << "DATA_SIZE" << TAB << CNode::SIZE_DATA << endl;
 	parameters << "BUFFER" << TAB << CNode::CAPACITY_BUFFER << endl;
@@ -614,18 +622,20 @@ void PrintConfiguration()
 	final << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_TRANS << TAB << CNode::CAPACITY_BUFFER << TAB << CNode::CAPACITY_ENERGY << TAB ;
 	if( CData::useHOP() )
 		final << CData::MAX_HOP << TAB ;
-	else 
-		final << CData::MAX_TTL << TAB ;
+//	else 
+//		final << CData::MAX_TTL << TAB ;
 
 	final << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
 	parameters << endl;
-	if( ROUTING_PROTOCOL == _epidemic )
-	{
-		INFO_LOG += "$Epidemic ";
-		parameters << "$Epidemic " << endl << endl;
-	}
-	else if( ROUTING_PROTOCOL == _prophet )
+//	if( ROUTING_PROTOCOL == _epidemic )
+//	{
+//		INFO_LOG += "$Epidemic ";
+//		parameters << "$Epidemic " << endl << endl;
+//	}
+//	else 
+
+	if( ROUTING_PROTOCOL == _prophet )
 	{
 		INFO_LOG += "$Prophet ";
 		parameters << "$Prophet " << endl << endl;
@@ -659,11 +669,11 @@ void PrintConfiguration()
 		{
 			INFO_LOG += "$mHS ";
 			parameters << "$mHS " << endl << endl;
-			parameters << "RATIO_MERGE" << TAB << CHotspot::RATIO_MERGE_HOTSPOT << endl;
-			parameters << "RATIO_NEW" << TAB << CHotspot::RATIO_NEW_HOTSPOT << endl;
-			parameters << "RATIO_OLD" << TAB << CHotspot::RATIO_OLD_HOTSPOT << endl;
+			parameters << "RATIO_MERGE" << TAB << CHotspotSelect::RATIO_MERGE_HOTSPOT << endl;
+			parameters << "RATIO_NEW" << TAB << CHotspotSelect::RATIO_NEW_HOTSPOT << endl;
+			parameters << "RATIO_OLD" << TAB << CHotspotSelect::RATIO_OLD_HOTSPOT << endl;
 
-			final << CHotspot::RATIO_MERGE_HOTSPOT << TAB << CHotspot::RATIO_OLD_HOTSPOT << TAB ;
+			final << CHotspotSelect::RATIO_MERGE_HOTSPOT << TAB << CHotspotSelect::RATIO_OLD_HOTSPOT << TAB ;
 
 		}
 
@@ -715,9 +725,9 @@ bool Run()
 				dead = ! CProphet::Operate(currentTime);
 				break;
 
-			case _epidemic:
-				dead = ! CEpidemic::Operate(currentTime);
-				break;
+//			case _epidemic:
+//				dead = ! CEpidemic::Operate(currentTime);
+//				break;
 
 			case _xhar:
 				dead = ! HAR::Operate(currentTime);
@@ -741,9 +751,9 @@ bool Run()
 			CProphet::PrintFinal(currentTime);
 			break;
 
-		case _epidemic:
-			CEpidemic::PrintFinal(currentTime);
-			break;
+//		case _epidemic:
+//			CEpidemic::PrintFinal(currentTime);
+//			break;
 
 		case _xhar:
 			HAR::PrintFinal(currentTime);

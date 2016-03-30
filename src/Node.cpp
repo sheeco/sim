@@ -1,7 +1,7 @@
 #include "Node.h"
 #include "Sink.h"
 #include "Ctrl.h"
-#include "Epidemic.h"
+//#include "Epidemic.h"
 #include "SortHelper.h"
 #include "FileHelper.h"
 #include <typeinfo.h>
@@ -263,170 +263,18 @@ void CNode::resetDutyCycle()
 		state = SLOT_LISTEN;
 }
 
-//CPackage CNode::sendCTSWithIndex(CNode* dst, int currentTime)
-//{
-//	CCtrl cts(ID, dst->getID(), currentTime, SIZE_CTRL, CCtrl::_cts);
-//	CCtrl index(ID, dst->getID(), deliveryPreds, updateSummaryVector(), currentTime, SIZE_CTRL, CCtrl::_index);
-//	CPackage package(this, cts, index);
-//	energyConsumption += package.getSize() * CONSUMPTION_BYTE_SEND;
-//	return package;
-//}
-
-//CPackage CNode::sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime)
-//{
-//	CCtrl index(ID, deliveryPreds, updateSummaryVector(), currentTime, SIZE_CTRL, CCtrl::_index);
-//	CPackage package( *this, *dst, index, datas);
-//	energyConsumption += package.getSize() * CONSUMPTION_BYTE_SEND;
-//	return package;
-//}
-
 void CNode::checkDataByAck(vector<CData> ack)
 {
 	if( MODE_SEND == _dump )
 		RemoveFromList(buffer, ack);
 }
 
-
-//void CNode::receivePackage(CPackage* package, int currentTime)
-//{
-//	energyConsumption += package->getSize() * CONSUMPTION_BYTE_RECEIVE;
-//
-//	vector<CGeneralData*> contents = package->getContents();
-//	CGeneralNode* dst = package->getSrcNode();
-//	CCtrl* ctrlToSend = nullptr;
-//	CCtrl* ctrlPiggback = nullptr;
-//	vector<CData> dataToSend;
-//
-//	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
-//	{
-//		if( typeid(**icontent) == typeid(CCtrl) )
-//		{
-//			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
-//			switch( ctrl->getType() )
-//			{
-//			case CCtrl::_rts:
-//				//CTS
-//				ctrlToSend = new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_cts);
-//
-//				//if RTS is from sink, send CTS & datas
-//				if( ctrl->getNode() == CSink::SINK_ID )
-//				{
-//					dataToSend = buffer;
-//				}
-//				//skip if has spoken recently
-//				else if( hasSpokenRecently(dynamic_cast<CNode*>(dst), currentTime) )
-//				{
-//					return;
-//				}
-//				else
-//				{
-//					//piggyback with data index otherwise
-//					ctrlPiggback = new CCtrl(ID, deliveryPreds, updateSummaryVector(), currentTime, SIZE_CTRL, CCtrl::_index);
-//				}
-//
-//				// TODO: mark skipRTS ?
-//				// TODO: connection established ?
-//				break;
-//
-//			case CCtrl::_cts:
-//				//data index
-//				ctrlToSend = new CCtrl(ID, deliveryPreds, updateSummaryVector(), currentTime, SIZE_CTRL, CCtrl::_index);
-//
-//				// TODO: connection established ?
-//				break;
-//			
-//			case CCtrl::_index:
-//				//update preds
-//				updateDeliveryPredsWith( dst->getID(), ctrl->getPred() );
-//
-//				//select data to sent based on preds
-//				if( CProphet::CAPACITY_FORWARD > 0 )
-//					dataToSend = getDataByPredsAndSV( ctrl->getPred(), ctrl->getSV(), CProphet::CAPACITY_FORWARD );
-//				else
-//					dataToSend = getDataByPredsAndSV( ctrl->getPred(), ctrl->getSV() );
-//				break;
-//			
-//			case CCtrl::_ack:
-//				addToSpokenCache( (CNode*)(&dst), currentTime );
-//				//clear data with ack
-//				if( MODE_SEND == _SEND::_dump )
-//					checkDataByAck( ctrl->getACK() );
-//				break;
-//
-//			default:
-//				break;
-//			}
-//
-//			++icontent;
-//		}
-//		else if( typeid(**icontent) == typeid(CData) )
-//		{
-//			//extract data content
-//			vector<CData> datas;
-//			do
-//			{
-//				datas.push_back( *dynamic_cast<CData*>(*icontent) );
-//				++icontent;
-//			} while( icontent != contents.end() );
-//			
-//			//accept data into buffer
-//			vector<CData> ack;
-//			ack = bufferData(currentTime, datas);
-//			//ACK
-//			if( ! ack.empty() )
-//				ctrlToSend = new CCtrl(ID, ack, currentTime, SIZE_CTRL, CCtrl::_ack);
-//		}
-//	}
-//
-//	free(package);
-//	CPackage* packageToSend = nullptr;
-//	if( ctrlToSend != nullptr )
-//	{
-//		if( ctrlPiggback != nullptr )
-//		{
-//			packageToSend = new CPackage(*this, *dst, *ctrlToSend, *ctrlPiggback);		
-//			free(ctrlPiggback);
-//		}
-//		else if( ! dataToSend.empty() )
-//		{
-//			packageToSend = new CPackage(*this, *dst, *ctrlToSend, dataToSend);		
-//		}
-//		else
-//		{
-//			packageToSend = new CPackage(*this, *dst, *ctrlToSend);		
-//		}
-//		
-//		free(ctrlToSend);
-//	}
-//	else
-//	{
-//		// TODO: connection closed ?
-//		return;
-//	}
-//	energyConsumption += packageToSend->getSize() * CONSUMPTION_BYTE_SEND;
-//	CMacProtocol::transmitPackage( packageToSend, dst, currentTime );
-//	
-//}
-
-//vector<CData> CNode::bufferData(int time, vector<CData> datas) 
-//{
-//	if( datas.empty() )
-//		return datas;
-//
-//	for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); ++idata)
-//		idata->arriveAnotherNode(time);
-//	buffer.insert(buffer.begin(), datas.begin(), datas.end() );
-//	
-//	vector<CData> overflow = updateBufferStatus(time);
-//	vector<CData> ack = datas;
-//	RemoveFromList(ack, overflow);
-//
-//	return ack;
-//}
-
-CPackage* CNode::sendRTSWithPred(int currentTime)
+CPackage* CNode::sendRTSWithCapacityAndPred(int currentTime)
 {
 	vector<CGeneralData*> contents;
+	if( MODE_RECEIVE == _selfish 
+		&& ( ! buffer.empty() ) )
+		contents.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, SIZE_CTRL, CCtrl::_capacity) );
 	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
 	contents.push_back( new CCtrl(ID, deliveryPreds, currentTime, SIZE_CTRL, CCtrl::_index) );
 	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
@@ -451,26 +299,39 @@ void CNode::addToSpokenCache(CNode* node, int currentTime)
 	spokenCache.insert( pair<CNode*, int>(node, currentTime) );
 }
 
-vector<CData> CNode::dropOverdueData(int currentTime) {
-	if( buffer.empty() )
-		return vector<CData>();
-	if( ! CData::useTTL() )
-		return vector<CData>();
+//vector<CData> CNode::dropOverdueData(int currentTime) {
+//	if( buffer.empty() )
+//		return vector<CData>();
+////	if( ! CData::useTTL() )
+////		return vector<CData>();
+//
+//	vector<CData> overflow;
+//	for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); )
+//	{
+//		idata->updateStatus(currentTime);
+//		//如果TTL过期，丢弃
+//		if( idata->isOverdue() )
+//		{
+//			overflow.push_back( *idata );
+//			idata = buffer.erase( idata );
+//		}
+//		else
+//			++idata;
+//	}
+//	return overflow;
+//}
 
-	vector<CData> overflow;
-	for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); )
+vector<CData> CNode::removeDataByCapacity(vector<CData> datas, int capacity)
+{
+	if( capacity < datas.size() )
 	{
-		idata->updateStatus(currentTime);
-		//如果TTL过期，丢弃
-		if( idata->isOverdue() )
-		{
-			overflow.push_back( *idata );
-			idata = buffer.erase( idata );
-		}
+		if( MODE_QUEUE == _fifo )
+			datas = vector<CData>(datas.begin(), datas.begin() + capacity);
 		else
-			++idata;
+			datas = vector<CData>(datas.rbegin(), datas.rbegin() + capacity);
 	}
-	return overflow;
+
+	return datas;
 }
 
 vector<CData> CNode::dropDataIfOverflow()
@@ -530,11 +391,11 @@ vector<CData> CNode::dropDataIfOverflow()
 
 vector<CData> CNode::updateBufferStatus(int currentTime) 
 {
-	vector<CData> overflow_1 = dropOverdueData(currentTime);
-	vector<CData> overflow_2 = dropDataIfOverflow();
-	overflow_2.insert( overflow_2.end(), overflow_1.begin(), overflow_1.end() );
+//	vector<CData> overflow_1 = dropOverdueData(currentTime);
+	vector<CData> overflow = dropDataIfOverflow();
+//	overflow_2.insert( overflow.end(), overflow_1.begin(), overflow_1.end() );
 
-	return overflow_2;
+	return overflow;
 }
 
 vector<int> CNode::updateSummaryVector() 
@@ -731,104 +592,6 @@ void CNode::recordBufferStatus()
 	++countBufferRecord;
 }
 
-//vector<CData> CNode::sendAllData(_SEND mode) 
-//{
-//	return CGeneralNode::sendAllData(mode);
-//}
-
-//vector<CData> CNode::sendData(int n) 
-//{
-//	if( n >= buffer.size() )
-//		return sendAllData(_dump);
-//
-//	double bet = RandomFloat(0, 1);
-//	if(bet > PROB_TRANS)
-//	{
-//		energyConsumption += n * SIZE_DATA * CONSUMPTION_BYTE_SEND;
-//		return vector<CData>();
-//	}
-//
-//	vector<CData> data;
-//	if( MODE_QUEUE == _fifo )
-//	{
-//		data.insert(data.begin(), buffer.begin(), buffer.begin() + n);
-//	}
-//	else if( MODE_QUEUE == _lifo )
-//	{
-//		data.insert(data.begin(), buffer.end() - n, buffer.end());
-//	}
-//	return data;
-//}
-
-//bool CNode::receiveData(int time, vector<CData> datas) 
-//{
-//	if( datas.empty() )
-//		return false;
-//	if( RandomFloat(0, 1) > PROB_TRANS )
-//		return false;
-//
-//	energyConsumption += CONSUMPTION_BYTE_RECEIVE * SIZE_DATA * datas.size();
-//	for(vector<CData>::iterator idata = datas.begin(); idata != datas.end(); ++idata)
-//		idata->arriveAnotherNode(time);
-//	buffer.insert(buffer.begin(), datas.begin(), datas.end() );
-//	updateBufferStatus(time);
-//		
-//	return true;
-//}
-
-//vector<int> CNode::sendSummaryVector() 
-//{
-//	updateSummaryVector();
-//	energyConsumption += CONSUMPTION_BYTE_SEND * SIZE_CTRL;
-//	return summaryVector;
-//}
-
-//vector<int> CNode::receiveSummaryVector(vector<int> sv) 
-//{
-//	if( RandomFloat(0, 1) > PROB_TRANS )
-//		return vector<int>();
-//
-//	energyConsumption += CONSUMPTION_BYTE_RECEIVE * SIZE_CTRL;
-//	return sv;	
-//}
-
-//vector<int> CNode::sendRequestList(vector<int> sv) 
-//{
-//	if( sv.empty() )
-//		return vector<int>();
-//
-//	updateSummaryVector();
-//	RemoveFromList(sv, summaryVector);
-//	//待测试
-//	if( CEpidemic::MAX_DATA_RELAY > 0  &&  sv.size() > CEpidemic::MAX_DATA_RELAY )
-//	{
-//		vector<int>::iterator id = sv.begin();
-//		for(int count = 0; id != sv.end() &&  count < CEpidemic::MAX_DATA_RELAY ; )
-//		{
-//			if( CData::getNodeByMask( *id ) != this->ID )
-//			{
-//				++count;
-//				++id;
-//			}
-//		}
-//		sv = vector<int>( sv.begin(), id );
-//	}
-//
-//	energyConsumption += CONSUMPTION_BYTE_SEND * SIZE_CTRL;
-//	return sv;
-//}
-
-//vector<int> CNode::receiveRequestList(vector<int> req) 
-//{
-//	if( req.empty() )
-//		return vector<int>();
-//	if( RandomFloat(0, 1) > PROB_TRANS )
-//		return vector<int>();
-//
-//	energyConsumption += CONSUMPTION_BYTE_RECEIVE * SIZE_CTRL;
-//	return req;
-//}
-
 vector<CData> CNode::getDataByRequestList(vector<int> requestList) const
 {
 	if( requestList.empty() || buffer.empty() )
@@ -869,23 +632,17 @@ void CNode::updateDeliveryPredsWithSink()
 	deliveryPreds[CSink::getSink()->getID()] = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
 }
 
-//map<int, double> CNode::sendDeliveryPreds() 
-//{
-//	energyConsumption += CONSUMPTION_BYTE_SEND * SIZE_CTRL;
-//		
-//	return deliveryPreds;
-//}
-//
-//map<int, double> CNode::receiveDeliveryPredsAndSV(map<int, double> preds, vector<int>& sv) 
-//{
-//	if( preds.empty() )
-//		return map<int, double>();
-//	if( RandomFloat(0, 1) > PROB_TRANS )
-//		return map<int, double>();
-//
-//	energyConsumption += CONSUMPTION_BYTE_RECEIVE * SIZE_CTRL;
-//	return preds;
-//}
+int CNode::getCapacityForward()
+{
+	int capacity = capacityBuffer - buffer.size();
+	if( capacity < 0 )
+		capacity = 0;
+
+	if( MODE_RECEIVE == _selfish )
+		return capacity;
+	else if( MODE_RECEIVE == _loose )
+		return capacityBuffer;
+}
 
 int CNode::ChangeNodeNumber()
 {

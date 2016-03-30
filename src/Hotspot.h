@@ -120,14 +120,6 @@ private:
 
 public:
 
-	static int SLOT_POSITION_UPDATE;  //地理信息收集的slot
-	static int SLOT_HOTSPOT_UPDATE;	 //更新热点和分类的slot
-	static int TIME_HOSPOT_SELECT_START;  //no MA node at first
-
-	static double RATIO_MERGE_HOTSPOT;
-	static double RATIO_NEW_HOTSPOT;
-	static double RATIO_OLD_HOTSPOT;
-
 	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
 	//time应当是当前time，而不是pos的time
 	CHotspot(CPosition* pos, int time)
@@ -163,12 +155,6 @@ public:
 	{
 		this->heat = heat;
 	}
-	//用于在ifExists和RemoveFromList等函数中作为判断参数传入
-	inline static bool identical(CHotspot *x, CHotspot *y)
-	{
-		return x->getID() == y->getID();
-	}
-
 	//merge_HAR
 	inline _TYPE_HOTSPOT getTypeHotspotCandidate() const
 	{
@@ -217,21 +203,6 @@ public:
 
 	int getNCoveredPositionsForNode(int inode);	
 	
-	double getRatioByTypeHotspotCandidate() const
-	{
-		switch( this->typeHotspotCandidate )
-		{
-			case _merge_hotspot: 
-				return RATIO_MERGE_HOTSPOT;
-			case _new_hotspot: 
-				return RATIO_NEW_HOTSPOT;
-			case _old_hotspot: 
-				return RATIO_OLD_HOTSPOT;
-			default:
-				return 1;
-		}
-	}
-
 	//从当前这一热点任期内的投递计数，该函数应当在MA的路径更新时调用输出统计结果
 	//FIXEME: 未测试
 	inline int getCountDelivery()
@@ -241,17 +212,11 @@ public:
 		else
 			return countsDelivery.at( age - 1 );
 	}
+	double getRatioByTypeHotspotCandidate() const;
+
 	//返回( untilTime - 900, untilTime )期间的投递计数
-	inline int getCountDelivery(int untilTime)
-	{
-		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
-		if( i < 0 || i > countsDelivery.size() )
-		{
-			cout << endl << "Error @ CHotspot::getCountDelivery(" << untilTime << ") : " << i << " exceeds (0," << countsDelivery.size() - 1 << ") !" << endl;
-			_PAUSE_;
-		}
-		return countsDelivery.at( i );
-	}
+	int getCountDelivery(int untilTime);
+
 	inline void addDeliveryCount(int n)
 	{
 		countsDelivery.at( countsDelivery.size() - 1 ) += n;
@@ -261,20 +226,15 @@ public:
 	inline int getWaitingTime()
 	{
 		if(age == 0)
-			return waitingTimes.at(0);
+			return waitingTimes[0];
 		else
-			return waitingTimes.at( age - 1 );
+			return waitingTimes[ age - 1 ];
 	}
 	//返回( untilTime - 900, untilTime )期间的等待时间
-	inline int getWaitingTime(int untilTime)
-	{
-		int i = ( untilTime - time ) / SLOT_HOTSPOT_UPDATE - 1;
-		if( i < 0 || i > waitingTimes.size() )
-		{
-			cout << endl << "Error @ CHotspot::getCountDelivery(" << untilTime << ") : " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
-			_PAUSE_;
-		}		return waitingTimes.at( i );
-	}
+	//用于统计等待时间输出时
+	int getWaitingTime(int untilTime);
+
+	//setter / 用于规定最小等待时间时
 	inline void addWaitingTime(int t)
 	{
 		waitingTimes.at( waitingTimes.size() - 1 ) += t;
@@ -285,6 +245,12 @@ public:
 	{
 		++COUNT_ID;
 		this->ID = COUNT_ID;
+	}
+
+	//用于在ifExists和RemoveFromList等函数中作为判断参数传入
+	inline static bool identical(CHotspot *x, CHotspot *y)
+	{
+		return x->getID() == y->getID();
 	}
 
 	//从覆盖列表中删除多个position，只有贪婪算法会用到
@@ -299,6 +265,11 @@ public:
 
 	//确定覆盖的node列表，在hotspot选取结束后手动调用
 	void generateCoveredNodes();
+
+	//为所有节点检查是否位于热点区域内（用于Prophet）
+	static bool UpdateAtHotspotForNodes(int currentTime);
+//	//为所有MA节点检查是否位于热点区域内（用于xHAR）
+//	static bool UpdateAtHotspotForMANodes(int currentTime);
 		
 	/****************************************   merge-HAR   ****************************************/ 
 

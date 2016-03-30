@@ -65,7 +65,16 @@ private:
 
 public:
 
+
+	static int SLOT_POSITION_UPDATE;  //地理信息收集的slot
+	static int SLOT_HOTSPOT_UPDATE;	 //更新热点和分类的slot
+	static int STARTTIME_HOSPOT_SELECT;  //no MA node at first
 	static bool TEST_HOTSPOT_SIMILARITY;
+
+	static double RATIO_MERGE_HOTSPOT;
+	static double RATIO_NEW_HOTSPOT;
+	static double RATIO_OLD_HOTSPOT;
+
 
 	/************************************ IHAR ************************************/
 

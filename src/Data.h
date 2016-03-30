@@ -21,8 +21,8 @@ class CData :
 private:
 
 	int timeArrival;  //到达sink的时间
-	//跳数或TTL倒计数，在Epidemic中选择一种使用
-	int TTL;
+//	//跳数或TTL倒计数，在Epidemic中选择一种使用
+//	int TTL;
 
 //	static int ID_MASK;
 
@@ -56,7 +56,7 @@ protected:
 	{
 		CGeneralData::init();
 		this->timeArrival = -1;
-		this->TTL = 0;
+//		this->TTL = 0;
 	}
 
 
@@ -65,7 +65,7 @@ public:
 	//跳数或 TTL 倒计数的初始值，在 Epidemic 中选择一种使用，默认值都是 0，必须在 main 函数中或通过命令行参数赋值
 	//注意：两者不能同时取非零值，因为该值也用于该选项的所有判断
 	static int MAX_HOP;
-	static int MAX_TTL;
+//	static int MAX_TTL;
 
 	CData(int node, int timeBirth, int byte)
 	{
@@ -75,7 +75,7 @@ public:
 		this->size = byte;
 		this->generateID();
 		this->HOP = MAX_HOP;
-		this->TTL = MAX_TTL;
+//		this->TTL = MAX_TTL;
 	}
 
 	~CData(){};
@@ -135,7 +135,7 @@ public:
 	//实际上只更新TTL
 	inline void updateStatus(int currentTime)
 	{
-		this->TTL -= ( currentTime - time );
+//		this->TTL -= ( currentTime - time );
 		this->time = currentTime;
 	}
 	inline void arriveSink(int timeArrival)
@@ -155,19 +155,19 @@ public:
 	{
 		this->HOP--;
 
-		this->TTL -= ( currentTime - time );
+//		this->TTL -= ( currentTime - time );
 		this->timeArrival = currentTime;
 		this->time = currentTime;
 	}
 
-	//判断是否已经超过生存期(TTL <= 0)，超出应丢弃
-	inline bool isOverdue() const
-	{
-		if( ! useTTL() )
-			return false;
-		else
-			return TTL <= 0;
-	}
+//	//判断是否已经超过生存期(TTL <= 0)，超出应丢弃
+//	inline bool isOverdue() const
+//	{
+//		if( ! useTTL() )
+//			return false;
+//		else
+//			return TTL <= 0;
+//	}
 	
 	//判断是否允许转发（HOP > 0），不允许则不放入SV中
 	inline bool allowForward() const
@@ -182,10 +182,10 @@ public:
 	{
 		return MAX_HOP > 0;
 	}
-	static bool useTTL()
-	{
-		return MAX_TTL > 0;	
-	}
+//	static bool useTTL()
+//	{
+//		return MAX_TTL > 0;	
+//	}
 
 	//统计数据
 	static int getCountData()

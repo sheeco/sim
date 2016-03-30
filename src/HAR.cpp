@@ -49,7 +49,7 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 	return ratio * ( CO_HOTSPOT_HEAT_A1 * nCoveredNodes + CO_HOTSPOT_HEAT_A2 * sum_generationRate ) ;
 }
 
-double HAR::getWaitingTime(int currentTime, CHotspot *hotspot)
+double HAR::calculateWaitingTime(int currentTime, CHotspot *hotspot)
 {
 	double result = 1;
 	int count_trueHotspot = 0;
@@ -68,7 +68,7 @@ double HAR::getWaitingTime(int currentTime, CHotspot *hotspot)
 		}
 
 		nCoveredPositionsForNode.push_back( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) );
-		temp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( temp_time + CHotspot::SLOT_HOTSPOT_UPDATE );
+		temp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( temp_time + CHotspotSelect::SLOT_HOTSPOT_UPDATE );
 
 		//merge-HAR: ratio
 		temp *= pow( hotspot->getRatioByTypeHotspotCandidate(), hotspot->getAge() );
@@ -103,7 +103,7 @@ double HAR::getSumDataRate(vector<int> nodes)
 
 double HAR::getTimeIncreForInsertion(int currentTime, CRoute route, int front, CHotspot *hotspot)
 {
-	double result = getWaitingTime(currentTime, hotspot) + ( route.getIncreDistance(front, hotspot) / CMANode::getSpeed() );
+	double result = calculateWaitingTime(currentTime, hotspot) + ( route.getIncreDistance(front, hotspot) / CMANode::getSpeed() );
 	return result;
 }
 
@@ -137,7 +137,7 @@ double HAR::calculateEDTime(int currentTime)
 	avg_length = sum_length / m_hotspots.size() + 1;
 	for(vector<CHotspot *>::iterator ihotspot = m_hotspots.begin(); ihotspot != m_hotspots.end(); ++ihotspot)
 	{
-		sum_waitingTime += getWaitingTime(currentTime, *ihotspot);
+		sum_waitingTime += calculateWaitingTime(currentTime, *ihotspot);
 		sum_pm += exp( -1 / (*ihotspot)->getHeat() );
 	}
 	avg_waitingTime = sum_waitingTime / m_hotspots.size();
@@ -299,141 +299,11 @@ void HAR::MANodeRouteDesign(int currentTime)
 		}
 	}
 
-	for(vector<CRoute>::iterator iroute = m_routes.begin(); iroute != m_routes.end(); ++iroute)
-		flash_cout << "####  [ MA ]  " << routes.size() << endl;
+	flash_cout << "####  [ MA ]  " << CMANode::getMANodes().size() << endl;
 }
 
 vector<CGeneralData*> HAR::receiveContents(CSink* sink, CMANode* fromMA, vector<CGeneralData*> contents, int time)
 {
-	return vector<CGeneralData*>();
-}
-
-vector<CGeneralData*> HAR::receiveContents(CMANode* fromMA, CSink* fromSink, vector<CGeneralData*> contents, int time)
-{
-	return vector<CGeneralData*>();
-}
-
-vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<CGeneralData*> contents, int time)
-{
-	return vector<CGeneralData*>();
-
-	vector<CGeneralData*> contentsToSend;
-	CCtrl* ctrlToSend = nullptr;
-	CCtrl* indexToSend = nullptr;
-	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
-	vector<CData> dataToSend;  //空vector代表拒绝传输数据
-
-	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
-	{
-
-		/***************************************** rcv Ctrl Message *****************************************/
-
-		if( typeid(**icontent) == typeid(CCtrl) )
-		{
-			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
-			switch( ctrl->getType() )
-			{
-
-				/*************************************** rcv RTS **************************************/
-
-			case CCtrl::_rts:
-
-				//收到RTS，就认为开始一次数据传输尝试
-				CNode::transmitTry();
-
-				node->updateDeliveryPredsWithSink();
-
-				if( node->getAllData().empty() )
-				{
-					//没有数据需要向Sink传输，也认为数据传输成功
-					CNode::transmitSucceed();
-
-					return contentsToSend;
-				}
-				//CTS
-				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
-				// + DATA
-				dataToSend = node->getAllData();
-
-				// TODO: mark skipRTS ?
-				// TODO: connection established ?
-				break;
-
-				/*************************************** rcv CTS **************************************/
-
-			case CCtrl::_cts:
-
-				break;
-
-				/****************************** rcv Data Index ( dp / sv ) ****************************/
-
-			case CCtrl::_index:
-
-				break;
-
-			case CCtrl::_no_data:
-
-				break;
-
-				/*************************************** rcv ACK **************************************/
-
-			case CCtrl::_ack:
-
-				//收到ACK，认为数据传输成功
-				CNode::transmitSucceed();
-
-				//收到空的ACK时，结束本次数据传输
-				if( ctrl->getACK().empty() )
-					return contentsToSend;
-				//clear data with ack
-				else
-					node->checkDataByAck( ctrl->getACK() );
-
-				flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
-
-				return contentsToSend;
-
-				break;
-
-			default:
-				break;
-			}
-			++icontent;
-		}
-		else
-		{
-			++icontent;
-		}
-	}
-
-	/********************************** wrap ***********************************/
-
-	if( ctrlToSend != nullptr )
-	{
-		contentsToSend.push_back(ctrlToSend);
-	}
-	if( indexToSend != nullptr )
-	{
-		contentsToSend.push_back(indexToSend);
-	}
-	if( nodataToSend != nullptr )
-	{
-		contentsToSend.push_back(nodataToSend);
-	}
-	if( ! dataToSend.empty() )
-	{
-		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
-			contentsToSend.push_back(new CData(*idata));
-	}
-
-	return contentsToSend;
-	
-}
-
-vector<CGeneralData*> HAR::receiveContents(CMANode* MA, CNode* fromNode, vector<CGeneralData*> contents, int time)
-{
-	return vector<CGeneralData*>();
-
 	vector<CGeneralData*> contentsToSend;
 	CCtrl* ctrlToSend = nullptr;
 
@@ -449,6 +319,10 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* MA, CNode* fromNode, vector<
 				break;
 
 			case CCtrl::_cts:
+
+				break;
+
+			case CCtrl::_capacity:
 
 				break;
 
@@ -499,10 +373,301 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* MA, CNode* fromNode, vector<
 
 }
 
+vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CSink* fromSink, vector<CGeneralData*> contents, int time)
+{
+	vector<CGeneralData*> contentsToSend;
+	CCtrl* ctrlToSend = nullptr;
+	vector<CData> dataToSend;  //空vector代表代表缓存为空
+
+	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	{
+
+		/***************************************** rcv Ctrl Message *****************************************/
+
+		if( typeid(**icontent) == typeid(CCtrl) )
+		{
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			switch( ctrl->getType() )
+			{
+
+				/*************************************** rcv RTS **************************************/
+
+			case CCtrl::_rts:
+
+				//收到RTS，就认为开始一次数据传输尝试
+				CNode::transmitTry();
+
+				if( ! ma->hasData() )
+				{
+					//没有数据需要向Sink传输，也认为数据传输成功
+					CNode::transmitSucceed();
+
+					return contentsToSend;
+				}
+				//CTS
+				ctrlToSend = new CCtrl(ma->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+				// + DATA
+				dataToSend = ma->getAllData();
+
+				// TODO: mark skipRTS ?
+				// TODO: connection established ?
+				break;
+
+			case CCtrl::_cts:
+
+				break;
+
+			case CCtrl::_capacity:
+
+				break;
+
+			case CCtrl::_index:
+
+				break;
+
+			case CCtrl::_no_data:
+
+				break;
+
+				/*************************************** rcv ACK **************************************/
+
+			case CCtrl::_ack:
+
+				//收到ACK，认为数据传输成功
+				CNode::transmitSucceed();
+
+				//收到空的ACK时，结束本次数据传输
+				if( ctrl->getACK().empty() )
+					return contentsToSend;
+				//clear data with ack
+				else
+					ma->checkDataByAck( ctrl->getACK() );
+
+				flash_cout << "####  (  MA  " << ma->getID() << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+
+				return contentsToSend;
+
+				break;
+
+			default:
+				break;
+			}
+			++icontent;
+		}
+		else
+		{
+			++icontent;
+		}
+	}
+
+	/********************************** wrap ***********************************/
+
+	if( ctrlToSend != nullptr )
+	{
+		contentsToSend.push_back(ctrlToSend);
+	}
+	if( ! dataToSend.empty() )
+	{
+		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
+			contentsToSend.push_back(new CData(*idata));
+	}
+
+	return contentsToSend;
+	
+}
+
+vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<CGeneralData*> contents, int time)
+{
+	vector<CGeneralData*> contentsToSend;
+	CCtrl* ctrlToSend = nullptr;
+	vector<CData> dataToSend;  //空vector代表代表缓存为空
+	int capacity = -1;
+
+	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	{
+
+		/***************************************** rcv Ctrl Message *****************************************/
+
+		if( typeid(**icontent) == typeid(CCtrl) )
+		{
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			switch( ctrl->getType() )
+			{
+
+				/*************************************** rcv RTS **************************************/
+
+			case CCtrl::_rts:
+
+				//收到RTS，就认为开始一次数据传输尝试
+				CNode::transmitTry();
+
+				if( node->getAllData().empty() )
+				{
+					//没有数据需要向MA传输，也认为数据传输成功
+					CNode::transmitSucceed();
+
+					return contentsToSend;
+				}
+				//CTS
+				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+
+				// + DATA
+				dataToSend = node->getAllData();
+
+				if( dataToSend.empty() )
+					return contentsToSend;
+
+				break;
+
+			case CCtrl::_cts:
+
+				break;
+
+				/************************************* rcv capacity **********************************/
+
+			case CCtrl::_capacity:
+
+				capacity = ctrl->getCapacity();
+
+				if( capacity == 0 )
+					return contentsToSend;
+				else if( capacity > 0
+						 && capacity < CNode::CAPACITY_BUFFER 
+						 && capacity < dataToSend.size() )
+					dataToSend = CNode::removeDataByCapacity(dataToSend, capacity);
+
+				break;
+
+			case CCtrl::_index:
+
+				break;
+
+			case CCtrl::_no_data:
+
+				break;
+
+				/*************************************** rcv ACK **************************************/
+
+			case CCtrl::_ack:
+
+				//收到ACK，认为数据传输成功
+				CNode::transmitSucceed();
+
+				//收到空的ACK时，结束本次数据传输
+				if( ctrl->getACK().empty() )
+					return contentsToSend;
+				//clear data with ack
+				else
+					node->checkDataByAck( ctrl->getACK() );
+
+				flash_cout << "####  ( Node  " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->   MA  " << ctrl->getNode() << " )       " ;
+
+				return contentsToSend;
+
+				break;
+
+			default:
+				break;
+			}
+			++icontent;
+		}
+		else
+		{
+			++icontent;
+		}
+	}
+
+	/********************************** wrap ***********************************/
+
+	if( ctrlToSend != nullptr )
+	{
+		contentsToSend.push_back(ctrlToSend);
+	}
+	if( ! dataToSend.empty() )
+	{
+		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
+			contentsToSend.push_back(new CData(*idata));
+	}
+
+	return contentsToSend;
+	
+}
+
+vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CNode* fromNode, vector<CGeneralData*> contents, int time)
+{
+	vector<CGeneralData*> contentsToSend;
+	CCtrl* ctrlToSend = nullptr;
+
+	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	{
+		if( typeid(**icontent) == typeid(CCtrl) )
+		{
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			switch( ctrl->getType() )
+			{
+			case CCtrl::_rts:
+
+				break;
+
+			case CCtrl::_cts:
+
+				break;
+
+			case CCtrl::_capacity:
+
+				break;
+
+			case CCtrl::_index:
+
+				break;
+
+			case CCtrl::_ack:
+
+				break;
+
+			case CCtrl::_no_data:
+
+				break;
+
+			default:
+
+				break;
+			}
+			++icontent;
+		}
+
+		else if( typeid(**icontent) == typeid(CData) )
+		{
+			//extract data content
+			vector<CData> datas;
+			do
+			{
+				datas.push_back( *dynamic_cast<CData*>(*icontent) );
+				++icontent;
+			} while( icontent != contents.end() );
+
+			//accept data into buffer
+			vector<CData> ack = ma->bufferData(time, datas);
+
+			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
+			ctrlToSend = new CCtrl(ma->getID(), ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+		}
+	}
+
+	/********************************** wrap ***********************************/
+
+	CPackage* packageToSend = nullptr;
+	if( ctrlToSend != nullptr )
+		contentsToSend.push_back(ctrlToSend);
+
+	return contentsToSend;
+
+}
+
 void HAR::PrintInfo(int currentTime)
 {
 	if( ! ( ( currentTime % SLOT_LOG == 0 
-		      && currentTime >= CHotspot::TIME_HOSPOT_SELECT_START )
+		      && currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
 			|| currentTime == RUNTIME  ) )
 		return;
 
@@ -521,7 +686,7 @@ void HAR::PrintInfo(int currentTime)
 
 	//MA节点个数
 	ofstream ma( PATH_ROOT + PATH_LOG + FILE_MA, ios::app);
-	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
+	if(currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT)
 	{
 		ma << endl << INFO_LOG << endl ;
 		ma << INFO_MA ;
@@ -538,7 +703,7 @@ void HAR::PrintInfo(int currentTime)
 
 	//ED即平均投递延迟的理论值
 	ofstream ed( PATH_ROOT + PATH_LOG + FILE_ED, ios::app);
-	if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
+	if(currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT)
 	{
 		ed << endl << INFO_LOG << endl ;
 		ed << INFO_ED ;
@@ -552,7 +717,7 @@ void HAR::PrintInfo(int currentTime)
 	{
 		//每个MA的当前buffer状态
 		ofstream buffer_ma( PATH_ROOT + PATH_LOG + FILE_BUFFER_MA, ios::app);
-		if(currentTime == CHotspot::TIME_HOSPOT_SELECT_START)
+		if(currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT)
 		{
 			buffer_ma << endl << INFO_LOG << endl ;
 			buffer_ma << INFO_BUFFER_MA ;
@@ -629,17 +794,21 @@ bool HAR::Operate(int currentTime)
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
 
-	CHotspotSelect::HotspotSelect(currentTime);
+	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 
+		&& currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+	{
+		CHotspotSelect::HotspotSelect(currentTime);
 
-	HotspotClassification(currentTime);
+		HotspotClassification(currentTime);
 	
-	MANodeRouteDesign(currentTime);
-
+		MANodeRouteDesign(currentTime);
+	}
 	//不允许 xHAR 使用 HDC 作为 MAC 协议
 	//if( MAC_PROTOCOL == _hdc )
 	//	CHDC::Operate(currentTime);
 
-	CSMac::Operate(currentTime);
+	if( ! CSMac::Operate(currentTime) )
+		return false;
 
 	PrintInfo(currentTime);
 

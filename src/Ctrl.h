@@ -25,6 +25,7 @@ public:
 		_rts, 
 		_cts, 
 		_ack, 
+		_capacity, 
 		_index,   //data index ( delivery preds & summary vector )
 		_no_data  //inform no data to send
 	} _TYPE_CTRL;
@@ -33,8 +34,9 @@ public:
 private:
 
 	_TYPE_CTRL type;
+	int capacity;
 	map<int, double> pred;
-	vector<int> sv;
+//	vector<int> sv;
 	vector<CData> ack;  //直接传递 CData 类，方便操作，实际应传递 sv
 
 	void init();
@@ -48,10 +50,12 @@ public:
 	CCtrl(int node, int timeBirth, int byte, _TYPE_CTRL type);
 	//ACK
 	CCtrl(int node, vector<CData> datas, int timeBirth, int byte, _TYPE_CTRL type);
+	//capacity
+	CCtrl(int node, int capacity, int timeBirth, int byte, _TYPE_CTRL type);
 	//data index ( delivery preds )
 	CCtrl(int node, map<int, double> pred, int timeBirth, int byte, _TYPE_CTRL type);
-	//data index ( summary vector )
-	CCtrl(int node, vector<int> sv, int timeBirth, int byte, _TYPE_CTRL type);
+//	//data index ( summary vector )
+//	CCtrl(int node, vector<int> sv, int timeBirth, int byte, _TYPE_CTRL type);
 	~CCtrl();
 
 	_TYPE_CTRL getType() const
@@ -59,16 +63,21 @@ public:
 		return type;
 	}
 
+	int getCapacity() const
+	{
+		return capacity;
+	}
+
 	map<int, double> getPred() const
 	{
 		return pred;
 	}
 
-	vector<int> getSV() const
-	{
-		return sv;
-	}
-
+//	vector<int> getSV() const
+//	{
+//		return sv;
+//	}
+//
 	vector<CData> getACK() const
 	{
 		return ack;

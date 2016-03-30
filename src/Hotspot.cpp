@@ -2,19 +2,13 @@
 #include "SortHelper.h"
 #include "Node.h"
 #include "HAR.h"
+#include "HotspotSelect.h"
 
 int CHotspot::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 vector<CHotspot *> CHotspot::hotspotCandidates;
 vector<CHotspot *> CHotspot::selectedHotspots;
 vector<CHotspot *> CHotspot::oldSelectedHotspots;
 vector<CHotspot *> CHotspot::deletedHotspots;
-
-int CHotspot::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
-int CHotspot::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
-int CHotspot::TIME_HOSPOT_SELECT_START = SLOT_HOTSPOT_UPDATE;  //no MA node at first
-double CHotspot::RATIO_MERGE_HOTSPOT = 1.0;
-double CHotspot::RATIO_NEW_HOTSPOT = 1.0;
-double CHotspot::RATIO_OLD_HOTSPOT = 1.0;
 
 
 bool CHotspot::ifPositionExists(CPosition* pos)
@@ -131,6 +125,43 @@ double CHotspot::calculateRatio()
 	}
 }
 
+double CHotspot::getRatioByTypeHotspotCandidate() const
+{
+	switch( this->typeHotspotCandidate )
+	{
+	case _merge_hotspot: 
+		return CHotspotSelect::RATIO_MERGE_HOTSPOT;
+	case _new_hotspot: 
+		return CHotspotSelect::RATIO_NEW_HOTSPOT;
+	case _old_hotspot: 
+		return CHotspotSelect::RATIO_OLD_HOTSPOT;
+	default:
+		return 1;
+	}
+}
+
+//返回( untilTime - 900, untilTime )期间的投递计数
+int CHotspot::getCountDelivery(int untilTime)
+{
+	int i = ( untilTime - time ) / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1;
+	if( i < 0 || i > countsDelivery.size() )
+	{
+		cout << endl << "Error @ CHotspot::getCountDelivery(" << untilTime << ") : " << i << " exceeds (0," << countsDelivery.size() - 1 << ") !" << endl;
+		_PAUSE_;
+	}
+	return countsDelivery.at( i );
+}
+
+int CHotspot::getWaitingTime(int untilTime)
+{
+	int i = ( untilTime - time ) / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1;
+	if( i < 0 || i > waitingTimes.size() )
+	{
+		cout << endl << "Error @ CHotspot::getCountDelivery(" << untilTime << ") : " << i << " exceeds (0," << waitingTimes.size() - 1 << ") !" << endl;
+		_PAUSE_;
+	}		
+	return waitingTimes[ i ];
+}
 
 double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 {
@@ -143,6 +174,93 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 
 	return ( sector - triangle ) * 4 ;
 }
+
+bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
+{
+	if( ! ( currentTime % SLOT_MOBILITYMODEL == 0 ) )
+		return false;
+
+	vector<CHotspot *> hotspots = selectedHotspots;
+	vector<CNode *> nodes = CNode::getNodes();
+	if( hotspots.empty()
+		|| nodes.empty() )
+		return false;
+
+	hotspots = CSortHelper::mergeSort( hotspots, CSortHelper::ascendByLocationX );
+
+	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
+	{
+		CHotspot *atHotspot = nullptr;
+
+		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
+		{
+			if( (*ihotspot)->getX() + CGeneralNode::RANGE_TRANS < (*inode)->getX() )
+				continue;
+			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*ihotspot)->getX() )
+				break;
+			if( CBasicEntity::withinRange( **inode, **ihotspot, CGeneralNode::RANGE_TRANS ) )		
+			{
+				atHotspot = *ihotspot;
+				break;
+			}
+		}
+
+		//update atHotspot
+		(*inode)->setAtHotspot(atHotspot);
+
+		if( (*inode)->isAtHotspot() )
+		{
+			CNode::visitAtHotspot();
+		}
+		else
+			CNode::visitOnRoute();
+
+	}
+
+	return true;
+}
+
+//bool CHotspot::UpdateAtHotspotForMANodes(int currentTime)
+//{
+//	if( ! ( currentTime % SLOT_HOTSPOT_UPDATE == 0 ) )
+//		return false;
+//
+//	vector<CHotspot *> hotspots = selectedHotspots;
+//	vector<CMANode *> mas = CMANode::getMANodes();
+//	if( hotspots.empty() 
+//		|| mas.empty() )
+//		return false;
+//
+//	hotspots = CSortHelper::mergeSort( hotspots, CSortHelper::ascendByLocationX );
+//
+//	for(vector<CMANode *>::iterator iMA = mas.begin(); iMA != mas.end(); ++iMA)
+//	{
+//		CHotspot *atHotspot = nullptr;
+//
+//		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
+//		{
+//			if( (*ihotspot)->getX() + CGeneralNode::RANGE_TRANS < (*iMA)->getX() )
+//				continue;
+//			if( (*iMA)->getX() + CGeneralNode::RANGE_TRANS < (*ihotspot)->getX() )
+//				break;
+//			if( CBasicEntity::withinRange( **iMA, **ihotspot, CGeneralNode::RANGE_TRANS ) )		
+//			{
+//				atHotspot = *ihotspot;
+//				break;
+//			}
+//		}
+//
+//		//update atHotspot
+//		if( ( ! (*iMA)->isAtHotspot() )
+//			&& atHotspot != nullptr )
+//		{
+//			(*iMA)->setAtHotspot(atHotspot);
+//			(*iMA)->setWaitingTime( HAR::calculateWaitingTime(currentTime, atHotspot) );
+//		}
+//	}
+//
+//	return true;
+//}
 
 double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots)
 {
