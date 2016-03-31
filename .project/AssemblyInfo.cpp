@@ -69,7 +69,7 @@ using namespace System::Security::Permissions;
 // 如果设定为 “*”，则每次修改程序后版本号都会自动发生变更。
 // 
 // 主版本号和子版本号应当填写好，因为这部分是不会频繁变动的，而编译版本使用通配符 * 代替。
-[assembly: AssemblyVersionAttribute("3.3.5933.21567")];
+[assembly: AssemblyVersionAttribute("3.3.5934.19858")];
 //
 // 文件版本信息
 // 将文件版本信息注释掉，则文件版本号与程序集版本号相同。

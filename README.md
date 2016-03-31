@@ -256,11 +256,11 @@
 
 #### Log Mark
 
-*在 `README.md` 的更新日志中使用分类标记标签：*
+*在 Git Commit Comment 中使用快速标签：*
 
 　　 `+` 添加、`-` 删除、`~` 修改、`#` 优化、`?` 尝试、`!` 错误、`$` 修复、`%` 测试；
 
-*在 Git Commit Comment 中使用快速标签：*
+*在 `README.md` 的更新日志中使用分类标记标签：*
 
 　　 `ADD` 添加新功能、`DEL` 删除现有功能、`MOD` 修改现有实现、`OPT` 功能优化、`TRY` 不确定尝试；
 
@@ -715,7 +715,7 @@
 
 ###### [ 2016-03-28  ·  *< 3.2.5931.21338 >* ]( https://github.com/sheeco/xHAR/commit/dac9dd3379f583fc8ef510c6471ceeccdceaa514 )
 
-- FIX：数据传输计数的差错；
+- BUG：数据传输计数的差错；
 - RFCT：将热点选取的相关输出分离移入到 `CHotspotSelect` 类中；
 - ADD：将版本信息复制到日志文件夹中（`HDC.version`）；
 - ADD：添加 XML 解析库 TinyXML2 的相关文件 `/lib/xml/tinyxml2.h & .cpp` 及 `CXmlHelper` 类；
@@ -727,7 +727,7 @@
 - ADD：在参数解析中添加异常捕获，如果命令行参数存在错误，则禁止运行；
 - ADD：添加命令行参数 `-capacity-forward`，赋值 Prophet 路由中单次数据转发的最大数据包数目；
 - ADD：重写 xHAR 路由的数据通信流程，函数 `HAR::receiveContents()` 待完成；
-- BUG：测试 Prophet 路由中单次数据转发的最大数据包数目；
+- BUG：待测试 Prophet 路由中单次数据转发的最大数据包数目；
 
 
 ### 3.3.* : 重写 xHAR
@@ -744,6 +744,13 @@
 - ADD：添加命令行参数 `-buffer-ma`，并将 `-buffer` 默认值改为 0，即必选参数；
 
 
+###### 2016-03-31  ·  *< 3.3.5934.19858 >*
+
+- ADD：添加 `sink.log` 的输出；
+- RFCT：将节点相遇计数及热点区域相遇计数的统计移入 `CHotspot::UpdateAtHotspotForNodes()` 中，统计时槽为移动模型粒度决定；
+
+
+- **TODO：** TEST：测试函数 `HAR::receiveContents()`；
 - **TODO：** ADD：重写 Epidemic 路由的数据通信流程；
 - **TODO：** ADD：为 Release 版本添加尽可能多的合法性检查、异常捕获和输出；
 - **TODO：** ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC 绑定的功能；

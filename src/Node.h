@@ -39,11 +39,11 @@ private:
 	int sumBufferRecord;
 	int countBufferRecord;
 	static int encounterAtHotspot;
-	static int encounterActiveAtHotspot;
-	static int encounterActive;  //有效相遇
+//	static int encounterActiveAtHotspot;
+//	static int encounterActive;  //有效相遇
 	static int encounter;
 	static int visiterAtHotspot;
-	static int visiterOnRoute;
+	static int visiter;
 	static int transmitSuccessful;  //成功的数据传输
 	static int transmit;
 
@@ -311,77 +311,77 @@ public:
 	{
 		++encounter;
 	}
-	//有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
-	static void encountActive() 
-	{
-		++encounterActive;
-	}
+//	//有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
+//	static void encountActive() 
+//	{
+//		++encounterActive;
+//	}
 	//热点区域所有可能的相遇（只与数据集和热点选取有关）
 	static void encountAtHotspot() 
 	{
 		++encounterAtHotspot;
 	}
-	//热点区域内的有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
-	static void encountActiveAtHotspot() 
-	{
-		++encounterActiveAtHotspot;
-	}
+//	//热点区域内的有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
+//	static void encountActiveAtHotspot() 
+//	{
+//		++encounterActiveAtHotspot;
+//	}
 
 	static int getEncounter() 
 	{
 		return encounter;
 	}
-	static int getEncounterActive()
-	{
-		return encounterActive;
-	}
+//	static int getEncounterActive()
+//	{
+//		return encounterActive;
+//	}
 	static int getEncounterAtHotspot() 
 	{
 		return encounterAtHotspot;
 	}
-	static int getEncounterActiveAtHotspot() 
-	{
-		return encounterActiveAtHotspot;
-	}
-	//所有有效相遇中，发生在热点区域的比例
-	static double getPercentEncounterActiveAtHotspot() 
-	{
-		if(encounterActiveAtHotspot == 0)
-			return 0.0;
-		return double(encounterActiveAtHotspot) / double(encounterActive);
-	}
+//	static int getEncounterActiveAtHotspot() 
+//	{
+//		return encounterActiveAtHotspot;
+//	}
+//	//所有有效相遇中，发生在热点区域的比例
+//	static double getPercentEncounterActiveAtHotspot() 
+//	{
+//		if(encounterActiveAtHotspot == 0)
+//			return 0.0;
+//		return double(encounterActiveAtHotspot) / double(encounterActive);
+//	}
 	static double getPercentEncounterAtHotspot() 
 	{
 		if(encounterAtHotspot == 0)
 			return 0.0;
 		return double(encounterAtHotspot) / double(encounter);
 	}
-	static double getPercentEncounterActive() 
-	{
-		if(encounterActive == 0)
-			return 0.0;
-		return double(encounterActive) / double(encounter);
-	}
+//	static double getPercentEncounterActive() 
+//	{
+//		if(encounterActive == 0)
+//			return 0.0;
+//		return double(encounterActive) / double(encounter);
+//	}
 
 	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
 	static void visitAtHotspot() 
 	{
 		++visiterAtHotspot;
 	}
-	static void visitOnRoute() 
+	static void visit() 
 	{
-		++visiterOnRoute;
+		++visiter;
 	}
 
 	static double getPercentVisiterAtHotspot() 
 	{
 		if(visiterAtHotspot == 0)
 			return 0.0;
-		return double(visiterAtHotspot) / double(visiterAtHotspot + visiterOnRoute);
+		return double(visiterAtHotspot) / double(visiter);
 	}
 	static int getVisiter() 
 	{
-		return visiterAtHotspot + visiterOnRoute;
+		return visiter;
 	}
 	static int getVisiterAtHotspot() 
 	{

@@ -186,6 +186,7 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 		|| nodes.empty() )
 		return false;
 
+	nodes = CSortHelper::mergeSort( nodes );
 	hotspots = CSortHelper::mergeSort( hotspots, CSortHelper::ascendByLocationX );
 
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
@@ -208,13 +209,23 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 		//update atHotspot
 		(*inode)->setAtHotspot(atHotspot);
 
+		CNode::visit();		
 		if( (*inode)->isAtHotspot() )
-		{
 			CNode::visitAtHotspot();
-		}
-		else
-			CNode::visitOnRoute();
 
+		for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
+		{
+			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*jnode)->getX() )
+				break;
+			if( CBasicEntity::withinRange( **inode, **jnode, CGeneralNode::RANGE_TRANS ) )		
+			{
+				CNode::encount();
+
+				if( atHotspot != nullptr
+					|| (*jnode)->isAtHotspot() )
+					CNode::encountAtHotspot();
+			}
+		}
 	}
 
 	return true;

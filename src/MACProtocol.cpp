@@ -146,20 +146,10 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 
 			if( CBasicEntity::withinRange( *srcNode, **dstNode, CGeneralNode::RANGE_TRANS ) )
 			{
-				if( (*dstNode)->isListening() )
+				if( Bet(CGeneralNode::PROB_TRANS) )
 				{
-					if( ! (*dstNode)->isDiscovering() )  //避免重复计算
-					{
-						CNode::encountActive();
-						if( (*dstNode)->isAtHotspot() || srcNode->isAtHotspot() )
-							CNode::encountActiveAtHotspot();
-					}
-
-					if( Bet(CGeneralNode::PROB_TRANS) )
-					{
-						(*dstNode)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-						receivePackage(**dstNode, package, currentTime);
-					}
+					(*dstNode)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
+					receivePackage(**dstNode, package, currentTime);
 				}
 			}
 		}
@@ -330,16 +320,6 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 
 		for(vector<CNode*>::iterator srcNode = nodes.begin(); srcNode != nodes.end(); ++srcNode )
 		{
-			for(vector<CNode*>::iterator dstNode = srcNode; dstNode != nodes.end(); ++dstNode)
-			{
-				if( CBasicEntity::withinRange( **srcNode, **dstNode, CGeneralNode::RANGE_TRANS ) )
-				{
-					CNode::encount();
-					if( (*dstNode)->isAtHotspot() || (*srcNode)->isAtHotspot() )
-						CNode::encountAtHotspot();
-				}
-			}
-
 			if( (*srcNode)->isDiscovering() )
 			{
 				broadcastPackage( **srcNode, (*srcNode)->sendRTSWithCapacityAndPred(currentTime), currentTime );
@@ -395,12 +375,25 @@ void CMacProtocol::PrintInfo(int currentTime)
 		encounter << currentTime << TAB;
 		if( MAC_PROTOCOL == _hdc || ROUTING_PROTOCOL == _xhar )
 		{
-			encounter << CNode::getPercentEncounterActiveAtHotspot() << TAB << CNode::getEncounterActiveAtHotspot() << TAB;
+			//encounter << CNode::getPercentEncounterActiveAtHotspot() << TAB << CNode::getEncounterActiveAtHotspot() << TAB;
 			encounter << CNode::getPercentEncounterAtHotspot() << TAB << CNode::getEncounterAtHotspot() << TAB;
 		}
-		encounter << CNode::getPercentEncounterActive() << TAB << CNode::getEncounterActive() << TAB << CNode::getEncounter() << TAB;
+		//encounter << CNode::getPercentEncounterActive() << TAB << CNode::getEncounterActive() << TAB;
+		encounter << CNode::getEncounter() << TAB;
 		encounter << endl;
 		encounter.close();
+
+		//sink和节点的相遇次数
+		ofstream sink( PATH_ROOT + PATH_LOG + FILE_SINK, ios::app);
+		if(currentTime == 0)
+		{
+			sink <<  endl << INFO_LOG << endl ;
+			sink << INFO_SINK ;
+		}
+		sink << currentTime << TAB;
+		sink << CSink::getPercentEncounterActive() << TAB << CSink::getEncounterActive() << TAB << CSink::getEncounter() << TAB;
+		sink << endl;
+		sink.close();
 
 		//数据传输
 		ofstream transmit( PATH_ROOT + PATH_LOG + FILE_TRANSMIT, ios::app);
@@ -439,7 +432,8 @@ void CMacProtocol::PrintInfo(int currentTime)
 void CMacProtocol::PrintFinal(int currentTime)
 {
 	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
-	final << CData::getAverageEnergyConsumption() << TAB << CNode::getPercentTransmitSuccessful() << TAB << CNode::getPercentEncounterActive() << TAB ;
+	final << CData::getAverageEnergyConsumption() << TAB << CNode::getPercentTransmitSuccessful() << TAB;
+	//final << CNode::getPercentEncounterActive() << TAB ;
 	if( CNode::finiteEnergy() )
 		final << currentTime << TAB << CNode::getNodes().size() << TAB ;
 

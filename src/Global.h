@@ -148,8 +148,8 @@ namespace global
 	extern string INFO_HOTSPOT;
 	extern string FILE_HOTSPOT_SIMILARITY;
 	extern string INFO_HOTSPOT_SIMILARITY;
-	extern string FILE_AT_HOTSPOT;
-	extern string INFO_AT_HOTSPOT;
+	extern string FILE_VISIT;
+	extern string INFO_VISIT;
 	extern string FILE_HOTSPOT_STATISTICS;
 	extern string INFO_HOTSPOT_STATISTICS;
 	extern string FILE_MERGE;

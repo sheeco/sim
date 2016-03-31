@@ -477,13 +477,13 @@ void CHotspotSelect::PrintInfo(int currentTime)
 	hotspot.close();
 
 	//节点在热点内的百分比（从热点选取开始时开始统计）
-	ofstream at_hotspot( PATH_ROOT + PATH_LOG + FILE_AT_HOTSPOT, ios::app);
+	ofstream at_hotspot( PATH_ROOT + PATH_LOG + FILE_VISIT, ios::app);
 	if(currentTime == STARTTIME_HOSPOT_SELECT)
 	{
 		at_hotspot << endl << INFO_LOG << endl ; 
-		at_hotspot << INFO_AT_HOTSPOT ;
+		at_hotspot << INFO_VISIT ;
 	}
-	at_hotspot << currentTime << TAB << CNode::getVisiterAtHotspot() << TAB << CNode::getVisiter() << TAB << CNode::getPercentVisiterAtHotspot() << endl;
+	at_hotspot << currentTime << TAB << CNode::getPercentVisiterAtHotspot() << TAB << CNode::getVisiterAtHotspot() << TAB << CNode::getVisiter() << endl;
 	at_hotspot.close();
 
 	//热点质量统计信息
@@ -566,7 +566,7 @@ void CHotspotSelect::PrintFinal(int currentTime)
 {
 	//最终final输出（补充）
 	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
-	final << CNode::getPercentEncounterActiveAtHotspot() << TAB ;
+	//final << CNode::getPercentEncounterActiveAtHotspot() << TAB ;
 	//final << CData::getPercentDeliveryAtHotspot() << TAB ;
 	if( HOTSPOT_SELECT == _merge )
 		final << getAveragePercentMerge() << TAB << getAveragePercentOld() << TAB ;

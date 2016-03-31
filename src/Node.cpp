@@ -11,11 +11,11 @@
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
 int CNode::encounterAtHotspot = 0;
-int CNode::encounterActiveAtHotspot = 0;
-int CNode::encounterActive = 0;
+//int CNode::encounterActiveAtHotspot = 0;
+//int CNode::encounterActive = 0;
 int CNode::encounter = 0;
 int CNode::visiterAtHotspot = 0;
-int CNode::visiterOnRoute = 0;
+int CNode::visiter = 0;
 int CNode::transmitSuccessful = 0;
 int CNode::transmit = 0;
 

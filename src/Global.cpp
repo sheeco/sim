@@ -109,7 +109,7 @@ namespace global
 	string INFO_FINAL = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#HOP/TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay/	#HOP/	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime	#Node)	#Log \n" ;
 
 	string FILE_ENCOUNTER = "encounter.log";
-	string INFO_ENCOUNTER = "#Time	(#EncounterActiveAtHotspot%	#EncounterActiveAtHotspot	#EncounterAtHotspot%	#EncounterAtHotspot)	#EncounterActive%	#EncounterActive	#Encounter	 \n" ;
+	string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot%	#EncounterAtHotspot)	#Encounter	 \n" ;
 	string FILE_TRANSMIT = "transmit.log";
 	string INFO_TRANSMIT = "#Time	(#TransmitSuccessful%	#TransmitSuccessful	#Transmit \n" ;
 	string FILE_ENERGY_CONSUMPTION = "energy-consumption.log";
@@ -135,8 +135,8 @@ namespace global
 	string INFO_HOTSPOT = "#Time	#HotspotCount \n" ;
 	string FILE_HOTSPOT_SIMILARITY = "hotspot-similarity.log";
 	string INFO_HOTSPOT_SIMILARITY = "#Time	#Overlap/Old	#Overlap/New	#OverlapArea	#OldArea	#NewArea \n";
-	string FILE_AT_HOTSPOT = "at-hotspot.log";
-	string INFO_AT_HOTSPOT = "#Time	#VisitAtHotspot	#VisitSum	#VisitAtHotspotPercent \n" ;
+	string FILE_VISIT = "visit.log";
+	string INFO_VISIT = "#Time	#VisitAtHotspotPercent	#VisitAtHotspot	#VisitSum \n" ;
 	string FILE_HOTSPOT_STATISTICS = "hotspot-statistics.log";
 	string INFO_HOTSPOT_STATISTICS = "#Time	#CoverSum	#HotspotCount	#AvgCover \n" ;
 	string FILE_HOTSPOT_RANK = "hotspot-rank.log";
