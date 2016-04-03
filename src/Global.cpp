@@ -63,16 +63,13 @@ namespace global
 
 		"\n <route>                     < 路由层参数 >  \n\n "
 
-//		" -epidemic                   采用 Epidemic 路由协议； \n "
 		" -prophet                    采用 Prophet 路由协议（默认采用）； \n "
 		" -har                        采用 HAR 路由协议； \n "
 		" -hop                  []    数据包转发允许的最大跳数（默认无限制）； \n "
-//		" -ttl                  []    数据包的最大生存期（默认无限制）； \n "
 
 		"\n <prophet>                   < Prophet 协议参数 > \n\n "
 
 		" -spoken               []    Prophet 路由中节点对最近邻居节点直接跳过通信的计时（默认不使用）； \n "
-//		" -queue                []    Prophet 路由中节点允许存储的其他节点数据包的最大数目（默认无限制）； \n "
 		" -pred-init            []    Prophet 路由中节点投递概率的初始值（默认 0.75）； \n "
 		" -pred-decay           []    Prophet 路由中节点投递概率的衰减系数（默认 0.98）； \n "
 		" -pred-tolerance       []    Prophet 路由中节点决定转发数据时的投递概率容差（默认不使用）； \n "

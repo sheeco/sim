@@ -105,7 +105,8 @@ void CHotspotSelect::CollectNewPositions(int currentTime)
 		{
 			stringstream error;
 			error << "Error @ CHotspotSelect::CollectNewPositions() : Cannot find location info for Node " << *i << " at Time ";
-			cout << endl << error << currentTime << endl;
+			error << currentTime << endl;
+			cout << endl << error.str();
 			_PAUSE_;
 			Exit(ENOEXEC, error.str());
 		}

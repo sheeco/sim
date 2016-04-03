@@ -46,12 +46,12 @@ int main(int argc, char* argv[])
 		int old_id = new_id - incre;
 
 		char buff_1[5] = {0};
-		itoa(new_id, buff_1, 10);
+		_itoa_s(new_id, buff_1, 10);
 		new_name.insert(0, buff_1);
 		new_name.insert(0, path);
 
 		char buff_0[5] = {0};
-		itoa(old_id, buff_0, 10);
+		_itoa_s(old_id, buff_0, 10);
 		old_name.insert(0, buff_0);
 		old_name.insert(0, path);
 

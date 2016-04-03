@@ -231,6 +231,8 @@ public:
 			return capacity;
 		else if( MODE_RECEIVE == _loose )
 			return capacityBuffer;
+		else
+			return 0;
 	}
 
 	//MA node: all on

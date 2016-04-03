@@ -56,23 +56,23 @@ public:
 
 	virtual ~CGeneralNode(){};
 
-	double getEnergyConsumption() const
+	inline double getEnergyConsumption() const
 	{
 		return energyConsumption;
 	}
-	void consumeEnergy(double cons)
+	inline void consumeEnergy(double cons)
 	{
 		this->energyConsumption += cons;
 	}
-	bool hasData() const
+	inline bool hasData() const
 	{
 		return ( ! this->buffer.empty() );
 	}
-	int getSizeBuffer() const
+	inline int getSizeBuffer() const
 	{
 		return this->buffer.size();
 	}
-	vector<CData> getAllData() const
+	inline vector<CData> getAllData() const
 	{
 		return this->buffer;
 	}

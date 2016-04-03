@@ -155,17 +155,14 @@
 
 ### Dependency
 
-- **TODO：** TinyXML
+- [TinyXML2 3.0.0](http://www.grinninglizard.com/tinyxml/)
 
 
 ### Environment
 
 - Windows 10
-- Visual Studio Ultimate 2012 Update 5 ( 11.0.61219.00 )
-- VS Plugins : 
-  - Resharper 10.0.2
-  - [Versioning Controlled Build 3.5](http://www.codeproject.com/Articles/5851/Versioning-Controlled-Build)
-- [TinyXML2 3.0.0](http://www.grinninglizard.com/tinyxml/)
+- Visual Studio Enterprise 2015 Update 2 ( 14.0.25123.00 )
+- Microsoft Visual C++ 2015 ( 00322-90150-00888-AA891 )
 
 
 ### Files
@@ -747,7 +744,15 @@
 ###### 2016-03-31  ·  *< 3.3.5934.19858 >*
 
 - ADD：添加 `sink.log` 的输出；
-- RFCT：将节点相遇计数及热点区域相遇计数的统计移入 `CHotspot::UpdateAtHotspotForNodes()` 中，统计时槽为移动模型粒度决定；
+- RFCT：将节点相遇计数及热点区域相遇计数的统计移入 `CHotspot::UpdateAtHotspotForNodes()` 中，统计时槽将独立于运行粒度，仅由移动模型粒度决定，；
+
+
+###### 2016-04-04  ·  *< 3.3.3 >*
+
+- MNT：更新到 Visual Studio 2015，项目文件和设置文件相应更新；
+- MNT：停止使用 Resharper，暂时保留设置文件；
+- MNT：停止使用 Versioning Controlled Build，暂时移除 `AssembllyInfo.cpp` 和 `HDC.version`；
+- MNT：改用 `version.h` 和 `HDC.rc` 实现版本号控制，从基于系统时间的子版本号改为递增子版本号，需要每次手动修改版本号变量（`version.h` 中）；
 
 
 - **TODO：** TEST：测试函数 `HAR::receiveContents()`；

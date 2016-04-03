@@ -95,9 +95,6 @@
     <ClCompile Include="..\src\Package.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="AssemblyInfo.cpp">
-      <Filter>资源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\BasicEntity.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -208,9 +205,6 @@
     <ClInclude Include="..\src\Package.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>资源文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Global.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -220,8 +214,8 @@
     <ClInclude Include="..\lib\xml\tinyxml2.h">
       <Filter>库</Filter>
     </ClInclude>
-    <ClInclude Include="resource1.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="version.h">
+      <Filter>资源文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

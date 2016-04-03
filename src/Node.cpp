@@ -642,6 +642,8 @@ int CNode::getCapacityForward()
 		return capacity;
 	else if( MODE_RECEIVE == _loose )
 		return capacityBuffer;
+	else
+		return 0;
 }
 
 int CNode::ChangeNodeNumber()
