@@ -178,6 +178,8 @@ ipch/
 
 *.cachefile
 
+*.db
+
 
 
 # Visual Studio profiler

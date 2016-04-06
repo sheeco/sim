@@ -14,6 +14,7 @@
     <ProjectGuid>{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>HDC</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -45,7 +46,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\debug\</OutDir>
+    <OutDir>..\.debug\</OutDir>
     <IntDir>..\.build\debug\</IntDir>
     <TargetName>$(ProjectName).debug</TargetName>
   </PropertyGroup>

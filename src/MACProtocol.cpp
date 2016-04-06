@@ -105,11 +105,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 	if( ! contentsToSend.empty() )
 	{
 		packageToSend = new CPackage(gnode, *gFromNode, contentsToSend);
-
 		transmitPackage( gnode, gFromNode, packageToSend, currentTime );			
-
-		free(packageToSend);
-		packageToSend = nullptr;
 	}
 	else
 	{

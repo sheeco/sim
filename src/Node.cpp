@@ -186,7 +186,7 @@ bool CNode::hasNodes(int currentTime)
 	}
 	ClearDeadNodes();
 	if(death)
-		cout << "####  [ Node ]  " << CNode::getNodes().size() << endl << endl;
+		flash_cout << "####  [ Node ]  " << CNode::getNodes().size() << "                                     " << endl;
 
 	return ( ! nodes.empty() );
 }

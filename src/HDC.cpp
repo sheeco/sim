@@ -42,13 +42,13 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		if( (*inode)->useHotspotDutyCycle()
 			&& ( ! (*inode)->isAtHotspot() ) )
 		{
-			flash_cout << "####  ( Node " << (*inode)->getID() << " leaves Hotspot " << (*inode)->getAtHotspot()->getID() << " )              " ;			
+			flash_cout << "####  ( Node " << (*inode)->getID() << " leaves Hotspot )              " ;			
 			(*inode)->resetDutyCycle();
 		}
 		else if( (*inode)->useDefaultDutyCycle()
 				 && (*inode)->isAtHotspot() )
 		{
-			flash_cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot " << (*inode)->getAtHotspot()->getID() << " )               " ;
+			flash_cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot )               " ;
 			(*inode)->raiseDutyCycle();
 		}
 	}
