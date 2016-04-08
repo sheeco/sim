@@ -394,14 +394,9 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CSink* fromSink, vector<
 
 			case CCtrl::_rts:
 
-				//收到RTS，就认为开始一次数据传输尝试
-				CNode::transmitTry();
 
 				if( ! ma->hasData() )
 				{
-					//没有数据需要向Sink传输，也认为数据传输成功
-					CNode::transmitSucceed();
-
 					return contentsToSend;
 				}
 				//CTS
@@ -432,9 +427,6 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CSink* fromSink, vector<
 				/*************************************** rcv ACK **************************************/
 
 			case CCtrl::_ack:
-
-				//收到ACK，认为数据传输成功
-				CNode::transmitSucceed();
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
@@ -498,14 +490,8 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 
 			case CCtrl::_rts:
 
-				//收到RTS，就认为开始一次数据传输尝试
-				CNode::transmitTry();
-
 				if( node->getAllData().empty() )
 				{
-					//没有数据需要向MA传输，也认为数据传输成功
-					CNode::transmitSucceed();
-
 					return contentsToSend;
 				}
 				//CTS
@@ -549,9 +535,6 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 				/*************************************** rcv ACK **************************************/
 
 			case CCtrl::_ack:
-
-				//收到ACK，认为数据传输成功
-				CNode::transmitSucceed();
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )

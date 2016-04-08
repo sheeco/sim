@@ -19,13 +19,6 @@ public:
 	static bool TRANS_STRICT_BY_PRED;  //指示是否严格按照投递概率真大于，来决定是否转发
 	static int CAPACITY_FORWARD;
 
-#ifdef USE_PRED_TOLERANCE
-
-	static double TOLERANCE_PRED;
-//	static double DECAY_TOLERANCE_PRED;
-
-#endif
-
 
 	CProphet();
 	~CProphet();

@@ -20,6 +20,15 @@
 
 *.java
 
+/bin
+
+/.build
+
+/.debug
+
+/res
+
+/log
 
 
 # User-specific files
@@ -156,12 +165,18 @@ artifacts/
 
 *.scc
 
+*.db
+
+*.opendb
+
+*.res
+
+*.asm
 
 
 # Chutzpah Test files
 
 _Chutzpah*
-
 
 
 # Visual C++ cache files
@@ -177,9 +192,6 @@ ipch/
 *.sdf
 
 *.cachefile
-
-*.db
-
 
 
 # Visual Studio profiler
@@ -477,7 +489,4 @@ _Pvt_Extensions
 # FAKE - F# Make
 
 .fake/
-/.project/HDC.version
-/.backup.project
-/log
-/.project/temp.dotSettings
+

@@ -6,6 +6,8 @@
 #include "HAR.h"
 #include "HotspotSelect.h"
 
+int CMacProtocol::transmitSuccessful = 0;
+int CMacProtocol::transmit = 0;
 bool CMacProtocol::RANDOM_STATE_INIT = false;
 int CMacProtocol::SIZE_HEADER_MAC = 0;  //Mac Header Size
 bool CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
@@ -109,9 +111,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 	}
 	else
 	{
-		// TODO: Y / N ?
-//		CNode::transmitSucceed();
-//		return;
+		CMacProtocol::transmitSucceed();
 	}
 
 }
@@ -142,6 +142,8 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 
 			if( CBasicEntity::withinRange( *srcNode, **dstNode, CGeneralNode::RANGE_TRANS ) )
 			{
+				CMacProtocol::transmitTry();
+
 				if( Bet(CGeneralNode::PROB_TRANS) )
 				{
 					(*dstNode)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
@@ -164,6 +166,7 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 				if( CBasicEntity::withinRange( *sink, **dstNode, CGeneralNode::RANGE_TRANS ) )
 				{
 					CSink::encount();
+					CMacProtocol::transmitTry();
 
 					if( (*dstNode)->isListening() )
 					{
@@ -188,6 +191,8 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 			{
 				if( CBasicEntity::withinRange( *sink, **iMA, CGeneralNode::RANGE_TRANS ) )
 				{
+					CMacProtocol::transmitTry();
+
 					if( (*iMA)->isListening() )
 					{
 						if( Bet(CGeneralNode::PROB_TRANS) )
@@ -214,6 +219,7 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 			if( CBasicEntity::withinRange( *ma, **dstNode, CGeneralNode::RANGE_TRANS ) )
 			{
 				CMANode::encount();
+				CMacProtocol::transmitTry();
 
 				if( (*dstNode)->isListening() )
 				{
@@ -231,13 +237,12 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 	free(package);
 
 	// TODO: sort by distance with src node ?
-//	return rcv;
 }
 
-// TODO: add flash_cout & delivery% print
 bool CMacProtocol::transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackage* package, int currentTime)
 {
 	src.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
+	CMacProtocol::transmitTry();
 
 	if( dst->isListening() )
 	{
@@ -398,7 +403,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 			transmit << endl << INFO_LOG << endl ;
 			transmit << INFO_TRANSMIT ;
 		}
-		transmit << currentTime << TAB << CNode::getPercentTransmitSuccessful() << TAB << CNode::getTransmitSuccessful() << TAB << CNode::getTransmit() << TAB;
+		transmit << currentTime << TAB << CMacProtocol::getPercentTransmitSuccessful() << TAB << CMacProtocol::getTransmitSuccessful() << TAB << CMacProtocol::getTransmit() << TAB;
 		transmit << endl;
 		transmit.close();
 
@@ -428,7 +433,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 void CMacProtocol::PrintFinal(int currentTime)
 {
 	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
-	final << CData::getAverageEnergyConsumption() << TAB << CNode::getPercentTransmitSuccessful() << TAB;
+	final << CData::getAverageEnergyConsumption() << TAB << CMacProtocol::getPercentTransmitSuccessful() << TAB;
 	//final << CNode::getPercentEncounterActive() << TAB ;
 	if( CNode::finiteEnergy() )
 		final << currentTime << TAB << CNode::getNodes().size() << TAB ;

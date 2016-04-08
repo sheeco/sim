@@ -44,8 +44,6 @@ private:
 	static int encounter;
 	static int visiterAtHotspot;
 	static int visiter;
-	static int transmitSuccessful;  //成功的数据传输
-	static int transmit;
 
 	static int COUNT_ID;
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
@@ -386,33 +384,6 @@ public:
 	static int getVisiterAtHotspot() 
 	{
 		return visiterAtHotspot;
-	}
-
-	//数据传输计数：用于统计数据传输成功的百分比
-	//数据传输为双向计算，单方节点成功收到数据就记作一次
-	static void transmitTry()
-	{
-		++transmit;
-	}
-	//数据传输为双向计算，单方节点 / Sink成功收到数据就记作一次
-	static void transmitSucceed()
-	{
-		++transmitSuccessful;
-	}
-
-	static int getTransmit()
-	{
-		return transmit;
-	}
-	static int getTransmitSuccessful()
-	{
-		return transmitSuccessful;
-	}
-	static double getPercentTransmitSuccessful()
-	{
-		if(transmitSuccessful == 0)
-			return 0.0;
-		return double(transmitSuccessful) / double(transmit);
 	}
 
 	/*************************** ------- ***************************/

@@ -16,8 +16,6 @@ int CNode::encounterAtHotspot = 0;
 int CNode::encounter = 0;
 int CNode::visiterAtHotspot = 0;
 int CNode::visiter = 0;
-int CNode::transmitSuccessful = 0;
-int CNode::transmit = 0;
 
 vector<CNode*> CNode::nodes;
 vector<int> CNode::idNodes;

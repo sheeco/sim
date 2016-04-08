@@ -259,7 +259,7 @@
 
 *在 `README.md` 的更新日志中使用分类标记标签：*
 
-　　 `ADD` 添加新功能、`DEL` 删除现有功能、`MOD` 修改现有实现、`OPT` 功能优化、`TRY` 不确定尝试；
+　　 `ADD` 添加新功能、`REM` 删除现有功能、`MOD` 修改现有实现、`OPT` 功能优化、`TRY` 不确定尝试；
 
 　　 `BUG` 待修复错误、`FIX` 修复错误、`TEST` 功能测试；
 
@@ -635,7 +635,7 @@
 
 ###### [ 2016-03-21  ·  *< 3.1.5924.21445 >* ]( https://github.com/sheeco/xHAR/commit/cbd00e950480529860836007f447394a1ef32295 )
 
-- TRY：为投递概率设置容差 `TOLERANCE_PRED`，使用宏定义 `USE_PRED_TOLERANCE` 启用（待测试）；
+- TRY：为投递概率设置容差 `TOLERANCE_PRED`，使用宏定义 `USE_PRED_TOLERANCE` 启用（测试：会破坏梯度，最终删除）；
 - MNT：调整和统一 `README.md` 的格式；
 - TEST：投递概率容差；
 
@@ -707,7 +707,7 @@
 - FIX：函数 `CMacProtocol::CommunicateWithNeighbor()` 更名为 `CMacProtocol::CommunicateWithNeighbor()`，并修复函数调用错误；
 - FIX：修复 `CProphet::receiveContents()` 中的错误；
 - OPT：将 `CData::MAX_HOP` 和 `CData::MAX_TTL` 的冲突，改为在 `ParseArguments()` 中检查，如有冲突将报错退出；
-- BUG：数据传输计数存在差错，应检查 `CNode::transmitTry()` 和 `CNode::transmitSucceed()` 的调用；
+- BUG：数据传输计数存在差错，应检查 `CMacProtocol::transmitTry()` 和 `CMacProtocol::transmitSucceed()` 的调用；
 
 
 ###### [ 2016-03-28  ·  *< 3.2.5931.21338 >* ]( https://github.com/sheeco/xHAR/commit/dac9dd3379f583fc8ef510c6471ceeccdceaa514 )
@@ -718,36 +718,36 @@
 - ADD：添加 XML 解析库 TinyXML2 的相关文件 `/lib/xml/tinyxml2.h & .cpp` 及 `CXmlHelper` 类；
 
 
-###### 2016-03-29  ·  *< 3.2.5932.17811 >*
+###### [ 2016-03-29  ·  *< 3.2.5932.17811 >* ]( https://github.com/sheeco/xHAR/commit/eecbc4b00b64c8bc1dee0d062a53541dd30826ab )
 
 - ADD：添加 `_HOTSPOT_SELECT::_none` 用于独立开启热点选取操作的功能，但暂时没有添加独立的节点是否位于热点中的检测操作；
 - ADD：在参数解析中添加异常捕获，如果命令行参数存在错误，则禁止运行；
 - ADD：添加命令行参数 `-capacity-forward`，赋值 Prophet 路由中单次数据转发的最大数据包数目；
 - ADD：重写 xHAR 路由的数据通信流程，函数 `HAR::receiveContents()` 待完成；
-- BUG：待测试 Prophet 路由中单次数据转发的最大数据包数目；
+- BUG：Prophet 路由中单次数据转发的最大数据包数目，对运行结果不造成影响；
 
 
 ### 3.3.* : 重写 xHAR
 
 
-###### 2016-03-30  ·  *< 3.3.5933.21567 >*
+###### [ 2016-03-30  ·  *< 3.3.5933.21567 >* ]( https://github.com/sheeco/xHAR/commit/e1d4990c1d264bf4ac82eb1db3b135019e15ba32 )
 
 - ADD：完成函数 `HAR::receiveContents()`（待测试）；
 - RFCT：将 `CHDC::UpdateDutyCycleForNodes()` 中更新节点所在热点区域的操作提取到 `CHotspot::UpdateAtHotspotForNodes()`；
 - ADD：在 `CSmac::Operate()` 中添加独立开启热点选取的操作，添加独立的节点是否位于热点区域的检测操作；
-- DEL：暂时删除所有 Epidemic 路由的相关定义、操作和引用，包括 `-ttl` 和 `-queue` 的使用；
+- REM：暂时删除所有 Epidemic 路由的相关定义、操作和引用，包括 `-ttl` 和 `-queue` 的使用；
 - ADD：对于 MA 节点，如果路线过期或缓存已满（_selfish 模式下），立即返回 sink；
 - ADD：添加 Prophet 和 HAR 路由中对 _selfish 模式的支持；
 - ADD：添加命令行参数 `-buffer-ma`，并将 `-buffer` 默认值改为 0，即必选参数；
 
 
-###### 2016-03-31  ·  *< 3.3.5934.19858 >*
+###### [ 2016-03-31  ·  *< 3.3.5934.19858 >* ]( https://github.com/sheeco/xHAR/commit/7dd414d67b6620cec73fea917d15b7a6a58a62b2 )
 
 - ADD：添加 `sink.log` 的输出；
 - RFCT：将节点相遇计数及热点区域相遇计数的统计移入 `CHotspot::UpdateAtHotspotForNodes()` 中，统计时槽将独立于运行粒度，仅由移动模型粒度决定，；
 
 
-###### 2016-04-04  ·  *< 3.3.3 >*
+###### [ 2016-04-04  ·  *< 3.3.3 >* ]( https://github.com/sheeco/xHAR/commit/c8d9fd949928f8ac63a335f9db8bd8f101e3f174 )
 
 - MNT：更新到 Visual Studio 2015，项目文件和设置文件相应更新；
 - MNT：停止使用 Resharper，暂时保留设置文件；
@@ -755,12 +755,24 @@
 - MNT：改用 `version.h` 和 `HDC.rc` 实现版本号控制，从基于系统时间的子版本号改为递增子版本号，需要每次手动修改版本号变量（`version.h` 中）；
 
 
-###### 2016-04-06  ·  *< 3.3.4 >*
+###### [ 2016-04-06  ·  *< 3.3.4 >* ]( https://github.com/sheeco/xHAR/commit/b88c685d4f91ada83d5f2f677af0d7d6fd0e361b )
 
 - FIX：指针重复释放的错误及输出错误；
 
 
+###### 2016-04-08  ·  *< 3.3.5 >*
+
+- OPT：将传输计数的统计及所有相关定义移入 `CMacProtocol` 类内；
+- OPT：优化 `final.log` 文件中的参数输出；
+- REM：删除投递概率容差的所有定义和引用；
+- MNT：优化项目属性中，生成文件及中间文件目录的设置；
+
+
+- **TODO：** FIX：测试 Prophet 路由中单次数据转发的最大数据包数目；
 - **TODO：** TEST：测试函数 `HAR::receiveContents()`；
+- **TODO：** ADD：添加传输延迟的耗时计算；
+- **TODO：** ADD：将节点间的时间同步改用线程编程实现；
+- **TODO：** ADD：使用网格和指针结合存储，以减少二阶遍历；
 - **TODO：** ADD：重写 Epidemic 路由的数据通信流程；
 - **TODO：** ADD：为 Release 版本添加尽可能多的合法性检查、异常捕获和输出；
 - **TODO：** ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC 绑定的功能；

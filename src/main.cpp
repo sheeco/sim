@@ -88,13 +88,6 @@ void InitConfiguration()
 	CProphet::CAPACITY_FORWARD = 0;
 
 
-#ifdef USE_PRED_TOLERANCE
-
-	CProphet::TOLERANCE_PRED = 0;
-//	DECAY_TOLERANCE_PRED = 1;
-
-#endif
-
 	/**************************  Hotspot Select  ***************************/
 
 	CHotspotSelect::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
@@ -165,12 +158,6 @@ void InitConfiguration()
 	CProphet::CAPACITY_FORWARD = 0;
 
 	/** Opt **/
-#ifdef USE_PRED_TOLERANCE
-
-	CProphet::TOLERANCE_PRED = 0;
-//	DECAY_TOLERANCE_PRED = 1;
-
-#endif
 
 }
 
@@ -472,14 +459,7 @@ bool ParseArguments(int argc, char* argv[])
 //					CNode::RATIO_PRED_TRANS = atof( argv[ iField + 1 ] );
 //				iField += 2;
 //			}
-			else if( field == "-pred-tolerance" )
-			{
-#ifdef USE_PRED_TOLERANCE
-				if( iField < argc - 1 )
-					CProphet::TOLERANCE_PRED = atof( argv[ iField + 1 ] );
-#endif
-				iField += 2;
-			}
+
 
 			//带两个或以上数值的参数
 			else if( field == "-sink" )
@@ -622,8 +602,6 @@ void PrintConfiguration()
 	final << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_TRANS << TAB << CNode::CAPACITY_BUFFER << TAB << CNode::CAPACITY_ENERGY << TAB ;
 	if( CData::useHOP() )
 		final << CData::MAX_HOP << TAB ;
-//	else 
-//		final << CData::MAX_TTL << TAB ;
 
 	final << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
@@ -642,16 +620,13 @@ void PrintConfiguration()
 		parameters << "PRED_INIT" << TAB << CNode::INIT_DELIVERY_PRED << endl;
 		parameters << "PRED_DECAY" << TAB << CNode::RATIO_PRED_DECAY << endl;
 		parameters << "PRED_TRANS" << TAB << CNode::RATIO_PRED_TRANS << endl;
-#ifdef USE_PRED_TOLERANCE
-		parameters << "PRED_TOLERANCE" << TAB << CProphet::TOLERANCE_PRED << endl;
-//		parameters << "PRED_TOLERANCE" << TAB << CProphet::DECAY_TOLERANCE_PRED << endl;
-#endif
 	}
 
 	if( MAC_PROTOCOL == _hdc )
 	{
 		INFO_LOG += "$HDC ";
 		parameters << "$HDC " << endl << endl;
+		final << CNode::HOTSPOT_DUTY_CYCLE << TAB ;
 	}
 
 	if( HOTSPOT_SELECT != _none )
@@ -681,13 +656,20 @@ void PrintConfiguration()
 		{
 			INFO_LOG += "$HS ";
 			parameters << "$HS " << endl << endl;
-			final << CNode::HOTSPOT_DUTY_CYCLE << TAB << CPostSelect::ALPHA << TAB << HAR::BETA << TAB ;
 		}
 
 		parameters << "ALPHA" << TAB << CPostSelect::ALPHA << endl;
+		//final << CPostSelect::ALPHA << TAB ;
+	}
+
+	if( ROUTING_PROTOCOL == _xhar )
+	{
+		INFO_LOG += "$xHAR ";
+		parameters << "$xHAR " << endl << endl;
 		parameters << "BETA" << TAB << HAR::BETA << endl;
 		parameters << "HEAT_CO_1" << TAB << HAR::CO_HOTSPOT_HEAT_A1 << endl;
 		parameters << "HEAT_CO_2" << TAB << HAR::CO_HOTSPOT_HEAT_A2 << endl;
+		//final << HAR::BETA << TAB;
 	}
 
 	if( CMacProtocol::TEST_DYNAMIC_NUM_NODE)

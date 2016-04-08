@@ -9,13 +9,6 @@
 bool CProphet::TRANS_STRICT_BY_PRED = true;
 int CProphet::CAPACITY_FORWARD = 0;
 
-#ifdef USE_PRED_TOLERANCE
-
-double CProphet::TOLERANCE_PRED = 0;
-//double CProphet::DECAY_TOLERANCE_PRED = 1;
-
-#endif
-
 
 CProphet::CProphet()
 {
@@ -31,9 +24,6 @@ bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 {
 	double predNode = node->getDeliveryPreds().find(CSink::getSink()->getID())->second;
 	double predDst = dstPred.find(CSink::getSink()->getID())->second;
-#ifdef USE_PRED_TOLERANCE
-	predDst += TOLERANCE_PRED;
-#endif
 
 	if( predNode == predDst )
 	{
@@ -104,16 +94,10 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 
 			case CCtrl::_rts:
 
-				//收到RTS，就认为开始一次数据传输尝试
-				CNode::transmitTry();
-
 				node->updateDeliveryPredsWithSink();
 
 				if( node->getAllData().empty() )
 				{
-					//没有数据需要向Sink传输，也认为数据传输成功
-					CNode::transmitSucceed();
-
 					return contentsToSend;
 				}
 				//CTS
@@ -144,9 +128,6 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 				/*************************************** rcv ACK **************************************/
 
 			case CCtrl::_ack:
-
-				//收到ACK，认为数据传输成功
-				CNode::transmitSucceed();
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
@@ -295,14 +276,9 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 
 			case CCtrl::_rts:
 
-				//收到RTS，就认为开始一次数据传输尝试
-				CNode::transmitTry();
-
 				//skip if has spoken recently
 				if( node->hasSpokenRecently(dynamic_cast<CNode*>(fromNode), time) )
 				{
-					//跳过传输，也认为数据传输成功
-					CNode::transmitSucceed();
 					flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(fromNode->getID(), 2) << " )                " ;
 					return contentsToSend;
 				}
@@ -353,9 +329,6 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				{
 					if( capacity == 0 )
 					{
-						//不允许发送数据，直接结束传输
-						CNode::transmitSucceed();
-
 						return contentsToSend;
 					}
 
@@ -381,7 +354,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				//update preds
 				node->updateDeliveryPredsWith( fromNode->getID(), ctrl->getPred() );
 
-				//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输，因此需要对空相应调用transmitSucceed()；
+				//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输
 				//     否则并不结束传输，还将为对方发来的数据发送ACK；
 
 				break;
@@ -390,8 +363,6 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 
 			case CCtrl::_ack:
 
-				//收到ACK，认为数据传输成功
-				CNode::transmitSucceed();
 				//加入最近邻居列表
 				node->addToSpokenCache( fromNode, time );
 

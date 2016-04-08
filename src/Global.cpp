@@ -72,7 +72,6 @@ namespace global
 		" -spoken               []    Prophet 路由中节点对最近邻居节点直接跳过通信的计时（默认不使用）； \n "
 		" -pred-init            []    Prophet 路由中节点投递概率的初始值（默认 0.75）； \n "
 		" -pred-decay           []    Prophet 路由中节点投递概率的衰减系数（默认 0.98）； \n "
-		" -pred-tolerance       []    Prophet 路由中节点决定转发数据时的投递概率容差（默认不使用）； \n "
 		" -capacity-forward     []    Prophet 路由中节点单次转发数据的最大数目（默认无限制）； \n "
 
 		"\n <hotspot>                   < 热点选取参数 > \n\n "
