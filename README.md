@@ -169,6 +169,8 @@
 
     README.md
     
+    version.h & HDC.rc
+
     Global.h & .cpp
     
     main.cpp
@@ -176,8 +178,6 @@
     ---
     
     Entity.h
-    
-	|-- Coordinate.h & .cpp
     
 	|-- Package.h & .cpp
 
@@ -198,6 +198,10 @@
 			|-- MANode.h & .cpp
 
     |-- GeoEntity.h & .cpp
+    
+		|-- Coordinate.h & .cpp
+    
+		|-- CTrace.h & .cpp
     
 		|-- Position.h & .cpp
     
@@ -249,7 +253,7 @@
 ---
 
 
-<a href='#info'></a>
+<a href='#log_mark'></a>
 
 #### Log Mark
 
@@ -324,8 +328,8 @@
 - RFCT：将所有的 `g_` 系列全局变量都改为相关类内的静态变量（GA 等未采用的方法相关的变量未改动）；
 - ADD：增加 `CHotspot::ratio` 及相关方法和改动，用于测试新的 ratio 计算方法，将在贪婪选取和后续选取过程中用到，可使用命令行参数 `-balanced-ratio` 选项开启；
 - ADD：增加 `poor-hotspot.txt` 用于测试投递计数为 0 的热点信息；
-- **TODO：** ADD：应该将动态节点个数测试时的增删节点过程改成随机选取节点；
-- **TODO：** MOD：针对热点的排序应该改成从大到小的；
+- [ ] ADD：应该将动态节点个数测试时的增删节点过程改成随机选取节点；
+- [ ] MOD：针对热点的排序应该改成从大到小的；
 
 
 ###### 2015-11-25  ·  *< 2.1.1 >*
@@ -398,7 +402,8 @@
 
 ###### 2015-12-23  ·  *< 2.3.1 >*
 
-- MOD：将 HDC 和普通 DC 的对比改成：普通 DC 始终使用默认 DC 值（`DEFAULT_DUTY_CYCYLE`）；HDC 在非热点处使用更低（甚至为 0 的）默认 DC 值、热点处使用与普通 DC 中的默认 DC 值相等或更高的热点 DC 值（`HOTSPOT_DUTY_CYCYLE`）；
+- MOD：将 HDC 和普通 DC 的对比改成：普通 DC 始终使用默认 DC 值（`DEFAULT_DUTY_CYCYLE`）；
+- ----- HDC 在非热点处使用更低（甚至为 0 的）默认 DC 值、热点处使用与普通 DC 中的默认 DC 值相等或更高的热点 DC 值（`HOTSPOT_DUTY_CYCYLE`）；
 
 
 ###### 2015-12-28  ·  *< 2.3.2 >*
@@ -504,7 +509,7 @@
 
 ###### 2016-03-03
 
-- MNT：在 `README.md` 中的更新日志中加上分类标签，参见 *[Log Mark](#Log Mark)* ；
+- MNT：在 `README.md` 中的更新日志中加上分类标签，参见 *[Log Mark](#log_mark)* ；
 - MNT：在 `README.md` 中添加 Environment 说明；
 - MNT：将类图文件 `ClassDiagram.cd` 添加到追踪列表；
 
@@ -543,7 +548,7 @@
 - RFCT：将轨迹文件从 `.newlocation` 改为 `.trace` 文件，并放入 `/res/$DATASET$/` 文件夹中；
 - ADD：数据集名字 `DATASET` 为可定制参数（尚未添加读取代码）；
 - FIX：之前使用 `nodes.size()` 替换 `NUM_NODE` 时造成的错误；
-- MNT：在 git commit message 中使用快速标签来概括更改，参见 *[Log Mark](#Log Mark)* ；
+- MNT：在 git commit message 中使用快速标签来概括更改，参见 *[Log Mark](#log_mark)* ；
 
 
 ###### 2016-03-10  ·  *< 2.6.4 >*
@@ -760,27 +765,42 @@
 - FIX：指针重复释放的错误及输出错误；
 
 
-###### 2016-04-08  ·  *< 3.3.5 >*
+###### [ 2016-04-08  ·  *< 3.3.5 >* ]( https://github.com/sheeco/xHAR/commit/1d48ec73413cc02785ab79edcca4354b920c028a )
 
 - OPT：将传输计数的统计及所有相关定义移入 `CMacProtocol` 类内；
 - OPT：优化 `final.log` 文件中的参数输出；
 - REM：删除投递概率容差的所有定义和引用；
 - MNT：优化项目属性中，生成文件及中间文件目录的设置；
+- [ ] MOD：数据生成率的定义应从“个数 / 秒”改为“字节 / 秒”，相应地，该定义的引用也需要更改；
 
 
-- **TODO：** FIX：测试 Prophet 路由中单次数据转发的最大数据包数目；
-- **TODO：** TEST：测试函数 `HAR::receiveContents()`；
-- **TODO：** ADD：添加传输延迟的耗时计算；
-- **TODO：** ADD：将节点间的时间同步改用线程编程实现；
-- **TODO：** ADD：使用网格和指针结合存储，以减少二阶遍历；
-- **TODO：** ADD：重写 Epidemic 路由的数据通信流程；
-- **TODO：** ADD：为 Release 版本添加尽可能多的合法性检查、异常捕获和输出；
-- **TODO：** ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC 绑定的功能；
-- **TODO：** RFCT：对于不确定尝试和新增的可选功能，尽量使用条件编译和宏定义包裹变量和成员函数定义；
-- **TODO：** TRY：当缓存已满时，即使对投递概率更低的节点，也发送数据 ?
-- **TODO：** RFCT：将 `Global.h` 和 `main.cpp` 中的全局辅助函数放入 `CRunHelper` ?
-- **TODO：** RFCT：将配置参数相关的定义和操作整理到单独的 `CConfiguration` 类；
-- **TODO：** RFCT：将配置参数的默认值读取改用 XML 实现；
-- **TODO：** MNT：在 `README.md` 中，添加 trace 文件的格式和目录位置要求的说明；
-- **TODO：** MNT：重构完成后，将代码合并到 master 分支；
-- **TODO：** RFCT：尝试生成 dll；
+###### 2016-04-12  ·  *< 3.3.6 >*
+
+- ADD：类 `CCTrace`（`CTrace` 为保留字），以及模拟连续轨迹的功能，由 `CCTrace::CONTINUOUS_TRACE` 指示；
+- RFCT：将原 `CFileHelper` 类中的轨迹文件读取操作，移入 `CCTrace` 类中；
+- ADD：重载类 `CCoordinate` 的算术操作符；
+- FIX：热点选取中，位置点信息收集的调用时槽错误；
+- [ ] TEST：热点选取中，位置点信息收集的调用时槽错误的修复；
+- [ ] TEST：`CCTrace` 类中的轨迹文件读取操作，以及 `CHotspotSelect::CollectNewPositions()` 中的位置点信息收集操作；
+- [ ] ADD：如果轨迹文件中的时槽为动态变化的，需要在 `CCTrace::getLocation()` 中增加相应的读取代码；
+- [ ] OPT：对所有操作符重载进行补全和标准化；
+- [ ] RFCT：使用条件编译包裹不同协议相关的类内成员和函数的定义和引用；
+- [ ] RFCT：将文件夹操作提取到 `CFileHelper` 类；
+
+
+- [ ] FIX：测试 Prophet 路由中单次数据转发的最大数据包数目；
+- [ ] TEST：测试函数 `HAR::receiveContents()`；
+- [ ] ADD：添加传输延迟的耗时计算；
+- [ ] ADD：将节点间的时间同步改用线程编程实现；
+- [ ] ADD：使用网格和指针结合存储，以减少二阶遍历；
+- [ ] ADD：重写 Epidemic 路由的数据通信流程；
+- [ ] ADD：为 Release 版本添加尽可能多的合法性检查、异常捕获和输出；
+- [ ] ADD：添加将热点选取操作独立开启，而不是必须和 HAR 或者 HDC 绑定的功能；
+- [ ] RFCT：对于不确定尝试和新增的可选功能，尽量使用条件编译和宏定义包裹变量和成员函数定义；
+- [ ] TRY：当缓存已满时，即使对投递概率更低的节点，也发送数据 ?
+- [ ] RFCT：将 `Global.h` 和 `main.cpp` 中的全局辅助函数放入 `CRunHelper` ?
+- [ ] RFCT：将配置参数相关的定义和操作整理到单独的 `CConfiguration` 类；
+- [ ] RFCT：将配置参数的默认值读取改用 XML 实现；
+- [ ] MNT：在 `README.md` 中，添加 trace 文件的格式和目录位置要求的说明；
+- [ ] MNT：重构完成后，将代码合并到 master 分支；
+- [ ] RFCT：尝试生成 dll；

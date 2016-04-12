@@ -4,7 +4,7 @@
 #include "GeneralNode.h"
 #include "Hotspot.h"
 #include "Package.h"
-
+#include "CTrace.h"
 
 class CNode :
 	public CGeneralNode
@@ -19,6 +19,7 @@ class CNode :
 
 private:
 
+	CCTrace* trace;
 	double dataRate;
 	double dutyCycle;
 
@@ -412,6 +413,11 @@ public:
 	{
 		++COUNT_ID;
 		this->ID = COUNT_ID;		
+	}
+
+	void loadTrace()
+	{
+		trace = CCTrace::getTraceFromFile(CCTrace::getTraceFilename(this->ID));
 	}
 
 	double getAverageSizeBuffer() const 

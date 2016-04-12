@@ -107,6 +107,12 @@
     <ClCompile Include="..\lib\xml\tinyxml2.cpp">
       <Filter>库</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\CTrace.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Coordinate.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Algorithm.h">
@@ -216,6 +222,9 @@
     </ClInclude>
     <ClInclude Include="version.h">
       <Filter>资源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CTrace.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

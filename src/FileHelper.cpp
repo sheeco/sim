@@ -2,67 +2,40 @@
 #include "FileHelper.h"
 
 
-// TODO: add CTrace to avoid frequent file reading
-bool CFileHelper::getLocationFromFile(int nodeID, int time, CCoordinate &location)
+bool CFileHelper::IfExists(string filename)
 {
-	FILE *file;
-	char buffer[20] = {'\0'};
-	double temp_time = 0;
-	double temp_x = 0;
-	double temp_y = 0;
-
-	try
-	{
-		// TODO: 改为 .trace 文件
-		// TODO: 文件第一行读取 SLOT_MOBILITY
-		sprintf(buffer, "%d.trace", nodeID);  //新的 location 文件，将 time 和坐标信息都包含在内
-		string filepath = PATH_TRACE + DATASET + "/" + buffer;  //.exe 文件必须在 bin/ 文件夹下
-
-		file = fopen(filepath.c_str(),"rb");
-		if( file == nullptr)
-		{
-			stringstream error;
-			error << "Error @ CFileHelper::getLocationFromFile() : Cannot find file \"" << filepath << "\" ! ";
-			cout << endl << error.str() << endl;
-			_PAUSE_;
-			Exit(ENOENT, error.str());
-		}
-		while( ! feof( file ) )
-		{
-			fscanf(file, "%lf %lf %lf", &temp_time, &temp_x, &temp_y);
-
-			if(int(time - temp_time) < SLOT_MOBILITYMODEL)  
-				break;
-		}
-
-		if( ( time - temp_time ) >= SLOT_MOBILITYMODEL )
-		{
-			stringstream error;
-			error << "Error @ CFileHelper::getLocationFromFile() : Cannot find location info for Node " << nodeID << " at Time " << time;
-//			cout << endl << error.str() << endl;
-			if( time != RUNTIME )
-			{
-				return false;
-//				RUNTIME = time;
-//				CRoutingProtocol::PrintFinal(time);
-			}
-//			final.close();
-//			_ALERT_;
-//			Exit(ENOEXEC, error.str());
-		}
-		//取得坐标
-		location.setX(temp_x);
-		location.setY(temp_y);
-
-		fclose(file);
+	ifstream input(filename, ios::in);
+	if( input.is_open()
+	   && ( ! input.eof() ) )
 		return true;
-	}
-	catch(exception e)
-	{
-		cout << endl << "Error @ CFileHelper::getLocationFromFile() : Unknown error without assumption" << endl;
-		_PAUSE_;
-		return false;
-	}
+
+	return false;
+}
+
+bool CFileHelper::IsEmpty(string filename)
+{
+	ofstream input(filename, ios::app);
+	input.seekp(0, ios::end);
+	if( ! input.tellp() )
+		return true;
+
+	return false;
+}
+
+//UNDONE: 
+bool CFileHelper::Rename(string oldname, string newname)
+{
+	return false;
+}
+
+bool CFileHelper::SetHidden(string filename)
+{
+	return false;
+}
+
+bool CFileHelper::UnsetHidden(string filename)
+{
+	return false;
 }
 
 //CPosition* CFileHelper::findPositionByID(vector<CPosition *> positions, int ID)

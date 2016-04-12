@@ -3,8 +3,9 @@
 #include "SMac.h"
 #include "HDC.h"
 #include "HotspotSelect.h"
+#include "CTrace.h"
 
-int CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //数据发送slot
+int CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
 
 
 //CRoutingProtocol::CRoutingProtocol()

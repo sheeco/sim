@@ -85,7 +85,7 @@ void CHotspotSelect::updateStatus()
 
 void CHotspotSelect::CollectNewPositions(int currentTime)
 {
-	if( ! ( currentTime % SLOT_POSITION_UPDATE == 0 && currentTime > 0 ) )
+	if( ! ( currentTime % SLOT_POSITION_UPDATE == 0 && currentTime >= 0 ) )
 		return ;
 	CPosition* temp_pos = nullptr;
 
@@ -95,23 +95,15 @@ void CHotspotSelect::CollectNewPositions(int currentTime)
 	vector<int> deadNodes = idNodes;
 	RemoveFromList(deadNodes, CNode::getIdNodes());
 	idNodes = CNode::getIdNodes();
+	vector<CNode*> nodes = CNode::getNodes();
 
 	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到CPosition::positions中
-	for(vector<int>::iterator i = idNodes.begin(); i != idNodes.end(); ++i)
+	for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
 	{
 		temp_pos = new CPosition();
-		CCoordinate location;
-		if( ! CFileHelper::getLocationFromFile(*i, currentTime, location) )
-		{
-			stringstream error;
-			error << "Error @ CHotspotSelect::CollectNewPositions() : Cannot find location info for Node " << *i << " at Time ";
-			error << currentTime << endl;
-			cout << endl << error.str();
-			_PAUSE_;
-			Exit(ENOEXEC, error.str());
-		}
+		CCoordinate location = (*inode)->getLocation();
 		temp_pos->setLocation(location, currentTime);
-		temp_pos->setNode( *i );
+		temp_pos->setNode( (*inode)->getID() );
 		temp_pos->generateID();
 		CPosition::positions.push_back(temp_pos);
 	}
@@ -399,42 +391,37 @@ void CHotspotSelect::HotspotSelect(int currentTime)
 //	if( TEST_LEARN )
 //		DecayPositionsWithoutDeliveryCount(currentTime);
 
-	CollectNewPositions(currentTime);
+	flash_cout << "########  < " << currentTime << " >  HOTSPOT SELECT            " << endl;
 
-	if( currentTime >= STARTTIME_HOSPOT_SELECT )
+	BuildCandidateHotspots(currentTime);
+
+	/**************************** 热点归并过程(merge-HAR) *****************************/
+	if( HOTSPOT_SELECT == _merge )
+		MergeHotspots(currentTime);
+
+	/********************************** 贪婪选取 *************************************/
+	GreedySelect(currentTime);
+
+
+	/********************************* 后续选取过程 ***********************************/
+	CPostSelect postSelector(CHotspot::selectedHotspots);
+	CHotspot::selectedHotspots = postSelector.PostSelect(currentTime);
+
+
+	/***************************** 疏漏节点修复过程(IHAR) ******************************/
+	if( HOTSPOT_SELECT == _improved )
 	{
-		flash_cout << "########  < " << currentTime << " >  HOTSPOT SELECT            " << endl ;
+		CNodeRepair repair(CHotspot::selectedHotspots, CHotspot::hotspotCandidates, currentTime);
+		CHotspot::selectedHotspots = repair.RepairPoorNodes();
+		CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
+	}
 
-		BuildCandidateHotspots(currentTime);
+	flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
 
-		/**************************** 热点归并过程(merge-HAR) *****************************/
-		if( HOTSPOT_SELECT == _merge )
-			MergeHotspots(currentTime);
-
-		/********************************** 贪婪选取 *************************************/
-		GreedySelect(currentTime);
-
-
-		/********************************* 后续选取过程 ***********************************/
-		CPostSelect postSelector(CHotspot::selectedHotspots);
-		CHotspot::selectedHotspots = postSelector.PostSelect(currentTime);
-
-	
-		/***************************** 疏漏节点修复过程(IHAR) ******************************/
-		if( HOTSPOT_SELECT == _improved )
-		{
-			CNodeRepair repair(CHotspot::selectedHotspots, CHotspot::hotspotCandidates, currentTime);
-			CHotspot::selectedHotspots = repair.RepairPoorNodes();
-			CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
-		}
-
-		flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
-
-		//比较相邻两次热点选取的相似度
-		if( TEST_HOTSPOT_SIMILARITY )
-		{
-			CompareWithOldHotspots(currentTime);
-		}
+	//比较相邻两次热点选取的相似度
+	if( TEST_HOTSPOT_SIMILARITY )
+	{
+		CompareWithOldHotspots(currentTime);
 	}
 }
 

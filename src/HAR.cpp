@@ -182,6 +182,10 @@ void HAR::OptimizeRoute(CRoute &route)
 
 void HAR::HotspotClassification(int currentTime)
 {
+	if( ! ( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 
+		&& currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT ) )
+		return;
+
 	vector<CHotspot *> temp_hotspots = CHotspot::selectedHotspots;
 	m_hotspots = CHotspot::selectedHotspots;
 	for(vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin(); ihotspot != temp_hotspots.end(); ++ihotspot)
@@ -274,6 +278,10 @@ void HAR::HotspotClassification(int currentTime)
 
 void HAR::MANodeRouteDesign(int currentTime)
 {
+	if( !( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0
+		  && currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT ) )
+		return;
+
 	vector<CRoute> routes = CSink::getSink()->getNewRoutes();
 	//对每个分类的路线用最近邻居算法进行优化
 	for(vector<CRoute>::iterator iroute = routes.begin(); iroute != routes.end(); ++iroute)
@@ -777,15 +785,21 @@ bool HAR::Operate(int currentTime)
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
 
-	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 
-		&& currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+	if( currentTime % CHotspotSelect::SLOT_POSITION_UPDATE == 0 )
 	{
-		CHotspotSelect::HotspotSelect(currentTime);
-
-		HotspotClassification(currentTime);
-	
-		MANodeRouteDesign(currentTime);
+		if( ! CMacProtocol::UpdateNodeStatus(currentTime) )  //提前更新节点状态，以获取更新的节点位置点信息
+			return false;
 	}
+
+	CHotspotSelect::CollectNewPositions(currentTime);
+
+	CHotspotSelect::HotspotSelect(currentTime);
+
+	HotspotClassification(currentTime);
+
+	MANodeRouteDesign(currentTime);
+
+
 	//不允许 xHAR 使用 HDC 作为 MAC 协议
 	//if( MAC_PROTOCOL == _hdc )
 	//	CHDC::Operate(currentTime);

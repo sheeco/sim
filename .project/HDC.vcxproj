@@ -104,6 +104,8 @@
   <ItemGroup>
     <ClCompile Include="..\lib\xml\tinyxml2.cpp" />
     <ClCompile Include="..\src\BasicEntity.cpp" />
+    <ClCompile Include="..\src\Coordinate.cpp" />
+    <ClCompile Include="..\src\CTrace.cpp" />
     <ClCompile Include="..\src\Ctrl.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
     <ClCompile Include="..\src\Epidemic.cpp" />
@@ -137,6 +139,7 @@
     <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Coordinate.h" />
+    <ClInclude Include="..\src\CTrace.h" />
     <ClInclude Include="..\src\Ctrl.h" />
     <ClInclude Include="..\src\Data.h" />
     <ClInclude Include="..\src\Entity.h" />

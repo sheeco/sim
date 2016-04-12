@@ -30,9 +30,6 @@ protected:
 	//在限定范围内随机增删一定数量的node
 	static void ChangeNodeNumber(int currentTime);
 
-	//更新所有node的坐标、占空比和工作状态，生成数据，返回是否仍有节点
-	static bool UpdateNodeStatus(int currentTime);
-
 	static void CommunicateWithNeighbor(int currentTime);
 
 
@@ -70,6 +67,9 @@ public:
 			return 0.0;
 		return double(transmitSuccessful) / double(transmit);
 	}
+
+	//更新所有node的坐标、占空比和工作状态，生成数据，返回是否仍有节点
+	static bool UpdateNodeStatus(int currentTime);
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);

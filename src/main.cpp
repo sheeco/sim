@@ -10,6 +10,7 @@
 #include "SortHelper.h"
 #include "HotspotSelect.h"
 #include "PostSelect.h"
+#include "CTrace.h"
 
 
 // TODO: move all func definition into cpp file except for inline func
@@ -35,7 +36,7 @@ void InitConfiguration()
 
 	CNode::INIT_NUM_NODE = 0;
 
-	CRoutingProtocol::SLOT_DATA_SEND = SLOT_MOBILITYMODEL;  //数据发送slot
+	CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
 	CNode::DEFAULT_DATA_RATE = 0;
 	CNode::SIZE_DATA = 0;
 	CGeneralNode::SIZE_CTRL = 0;
@@ -120,7 +121,7 @@ void InitConfiguration()
 	/************************************** Necessary Config **************************************/
 
 	// TODO: should be read from .trace file
-	SLOT_MOBILITYMODEL = 30;
+	CCTrace::SLOT_TRACE = 30;
 	DATATIME = 15000;
 	RUNTIME = 15000;
 
@@ -148,7 +149,7 @@ void InitConfiguration()
 
 	/********************************  DC  ********************************/
 
-	CNode::SLOT_TOTAL = 10 * SLOT_MOBILITYMODEL;
+	CNode::SLOT_TOTAL = 10 * CCTrace::SLOT_TRACE;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
 	CNode::DEFAULT_DISCOVER_CYCLE = 10; 
 
@@ -261,8 +262,8 @@ bool ParseArguments(int argc, char* argv[])
 				if( iField < argc - 1 )
 					SLOT = atoi( argv[ iField + 1 ] );
 
-				if( SLOT > SLOT_MOBILITYMODEL )
-					SLOT = SLOT_MOBILITYMODEL;
+				if( SLOT > CCTrace::SLOT_TRACE )
+					SLOT = CCTrace::SLOT_TRACE;
 				iField += 2;
 			}
 			else if( field == "-node" )

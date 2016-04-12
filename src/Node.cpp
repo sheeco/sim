@@ -7,6 +7,7 @@
 #include <typeinfo.h>
 #include "Prophet.h"
 #include "MacProtocol.h"
+#include "CTrace.h"
 
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
@@ -51,6 +52,7 @@ double CNode::RATIO_PRED_TRANS = 0.25;  //参考值 0.25
 
 void CNode::init() 
 {
+	trace = nullptr;
 	dataRate = 0;
 	atHotspot = nullptr;
 	SLOT_DISCOVER = DEFAULT_DISCOVER_CYCLE;
@@ -83,6 +85,11 @@ CNode::CNode(double dataRate)
 
 CNode::~CNode()
 {
+	if( trace != nullptr )
+	{
+		delete trace;
+		trace = nullptr;
+	}
 }
 
 void CNode::initNodes() {
@@ -95,6 +102,7 @@ void CNode::initNodes() {
 				dataRate *= 5;
 			CNode* node = new CNode(dataRate);
 			node->generateID();
+			node->loadTrace();
 			node->initDeliveryPreds();
 			CNode::nodes.push_back(node);
 			CNode::idNodes.push_back( node->getID() );
@@ -491,7 +499,7 @@ void CNode::decayDeliveryPreds(int currentTime)
 {
 	// TODO: refine decay ratio ?
 	for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap)
-		deliveryPreds[ imap->first ] = imap->second * pow( RATIO_PRED_DECAY, ( currentTime - time ) / SLOT_MOBILITYMODEL );
+		deliveryPreds[ imap->first ] = imap->second * pow( RATIO_PRED_DECAY, ( currentTime - time ) / CCTrace::SLOT_TRACE );
 }
 
 // TODO: check LISTEN cons calculation if *move
@@ -558,17 +566,16 @@ bool CNode::updateStatus(int currentTime)
 
 	/**************************************  Prophet  *************************************/
 	if( ROUTING_PROTOCOL == _prophet 
-		&& (currentTime % SLOT_MOBILITYMODEL) == 0 )
+		&& (currentTime % CCTrace::SLOT_TRACE) == 0 )
 		decayDeliveryPreds(currentTime);
 
 	//更新坐标
-	CCoordinate location;
-	if( ! CFileHelper::getLocationFromFile(ID, currentTime, location) )
+	if( ! trace->isValid(currentTime) )
 	{
 		die(currentTime, false);  //因 trace 信息终止而死亡的节点，无法回收
 		return false;
 	}
-	setLocation(location, currentTime);
+	setLocation( trace->getLocation(currentTime), currentTime);
 
 	return true;
 }

@@ -3,6 +3,7 @@
 #include "Node.h"
 #include "HAR.h"
 #include "HotspotSelect.h"
+#include "CTrace.h"
 
 int CHotspot::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 vector<CHotspot *> CHotspot::hotspotCandidates;
@@ -177,7 +178,7 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 
 bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 {
-	if( ! ( currentTime % SLOT_MOBILITYMODEL == 0 ) )
+	if( ! ( currentTime % CCTrace::SLOT_TRACE == 0 ) )
 		return false;
 
 	vector<CHotspot *> hotspots = selectedHotspots;

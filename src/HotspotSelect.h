@@ -42,10 +42,6 @@ private:
 	//更新hotspotsAboveAverage，在每一次迭代后调用
 	static void updateStatus();
 
-	//从文件中读取所有节点的当前位置，加入position列表（append）
-	//由main函数，在每个地理位置信息收集时隙上调用
-	static void CollectNewPositions(int currentTime);
-
 	//根据到目前为止的所有position记录，构建候选hotspot列表
 	//由main函数，在每个hotspot更新时隙上调用
 	static void BuildCandidateHotspots(int currentTime);
@@ -117,6 +113,10 @@ public:
 		else
 			return SUM_SIMILARITY_RATIO / COUNT_SIMILARITY_RATIO;
 	}	
+
+	//从文件中读取所有节点的当前位置，加入position列表（append）
+	//由main函数，在每个地理位置信息收集时隙上调用
+	static void CollectNewPositions(int currentTime);
 
 	//执行热点选取
 	static void HotspotSelect(int currentTime);

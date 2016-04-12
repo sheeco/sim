@@ -3,6 +3,8 @@
 #include "HAR.h"
 #include "SortHelper.h"
 #include "HotspotSelect.h"
+#include "CTrace.h"
+
 
 CHDC::CHDC()
 {
@@ -16,7 +18,7 @@ CHDC::~CHDC()
 
 void CHDC::UpdateDutyCycleForNodes(int currentTime)
 {
-	if( ! ( currentTime % SLOT_MOBILITYMODEL == 0 ) )
+	if( ! ( currentTime % CCTrace::SLOT_TRACE == 0 ) )
 		return;
 
 	vector<CHotspot *> hotspots = CHotspot::selectedHotspots;
@@ -92,6 +94,8 @@ bool CHDC::Operate(int currentTime)
 
 	if( ! CMacProtocol::UpdateNodeStatus(currentTime) )
 		return false;
+
+	CHotspotSelect::CollectNewPositions(currentTime);
 
 	CHotspotSelect::HotspotSelect(currentTime);
 

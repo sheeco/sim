@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Entity.h"
+#include "GeoEntity.h"
 
 
 class CCoordinate :
-	public CEntity
+	public CGeoEntity
 {
 protected:
 
@@ -41,6 +41,13 @@ public:
 	{
 		this->y = y;
 	}
+
+	// ËãÊõ²Ù×÷·ûÖØÔØ
+	friend CCoordinate operator+ (const CCoordinate& lhs, const CCoordinate& rhs);
+	friend CCoordinate operator- (const CCoordinate& lhs, const CCoordinate& rhs);
+	friend CCoordinate operator* (const CCoordinate& lhs, const double ratio);
+	friend CCoordinate operator* (const double ratio, const CCoordinate& lhs);
+	friend CCoordinate operator/ (const CCoordinate& lhs, const double ratio);
 
 };
 

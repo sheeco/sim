@@ -11,7 +11,6 @@ namespace global
 	int RUNTIME = 0;
 	string DATASET;
 	int SLOT = 0;
-	int SLOT_MOBILITYMODEL = 0;
 	int SLOT_LOG = 0;
 
 	string TIMESTAMP;
