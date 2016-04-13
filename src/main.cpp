@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../.project/version.h"
 #include "Global.h"
 #include "Sink.h"
 #include "MANode.h"
@@ -164,9 +165,13 @@ void InitConfiguration()
 
 void Help()
 {
-	cout << INFO_HELP << endl;
-	ofstream help(FILE_HELP, ios::out);
-	help << INFO_HELP;
+	//cout << INFO_HELP << endl;
+	//ofstream help(FILE_HELP, ios::out);
+	//help << INFO_HELP;
+	//help.close();
+
+	ifstream help(PATH_RUN + FILE_HELP, ios::in);
+	cout << help.rdbuf();
 	help.close();
 }
 
@@ -685,14 +690,20 @@ void PrintConfiguration()
 	parameters.close();
 	final.close();
 
-	//输出版本信息
-	ifstream versionInput( PATH_RUN + FILE_VERION, ios::in);
-	ofstream version( PATH_ROOT + PATH_LOG + FILE_VERION, ios::out);
+	// 输出版本信息
 
-	version << versionInput.rdbuf();
+	//ifstream versionInput( PATH_RUN + FILE_VERION, ios::in);
+	//ofstream version( PATH_ROOT + PATH_LOG + FILE_VERION, ios::out);
+	//version << versionInput.rdbuf();
+	//versionInput.close();
+	//version.close();
 
-	versionInput.close();
+	ofstream version(PATH_ROOT + PATH_LOG + FILE_VERION, ios::out);
+
+	version << _VERSION_MAJOR_ << "." << _VERSION_MINOR_ << "." << _VERSION_BUILD_;
+
 	version.close();
+
 }
 
 bool Run()

@@ -99,6 +99,7 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\bin\help.md" />
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>

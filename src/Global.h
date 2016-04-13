@@ -116,7 +116,7 @@ namespace global
 	extern string FILE_PARAMETES;
 	extern string FILE_VERION;
 	extern string FILE_HELP;
-	extern string INFO_HELP;
+	//extern string INFO_HELP;
 	extern string FILE_ERROR;
 	extern string FILE_FINAL;
 	extern string INFO_FINAL;

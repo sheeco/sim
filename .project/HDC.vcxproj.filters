@@ -21,6 +21,9 @@
     <None Include="ClassDiagram.cd">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="..\bin\help.md">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Data.cpp">

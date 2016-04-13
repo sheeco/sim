@@ -35,120 +35,80 @@
 
 ### Usage
 
-`HDC -help` / `./bin/help.txt`
+`HDC -help` / [./bin/help.md](./bin/help.md)
 
 > 
->  　　　　　　**!!!!!! ALL CASE SENSITIVE !!!!!!** 
+> **!!! ALL CASE SENSITIVE !!!** 
 >  
+>                             |    < 运行参数 > 
+>  -------------------------- | ---------------------------- 
+>   -time-run             []  |  网络运行时间（默认 15000）； 
+>   -time-data            []  |  节点数据生成的截止时间（默认 15000）； 
+>   -slot                 []  |  网络运行的时槽（默认 1）； 
+>   -dataset              []  |  数据集名称（节点轨迹文件路径 ./res/%DATASET%/）； 
+>   -log-path             []  |  日志文件路径（默认 ./log/）； 
+>   -log-slot             []  |  日志输出时槽（默认 100）； 
 >  
->  < 运行参数 > 
+>                             |    < 节点参数 > 
+>  -------------------------- | ---------------------------- 
+>   -sink               [][]  |  Sink 节点的坐标； 
+>   -trans-prob           []  |  节点数据传输的成功率（默认 1.0）； 
+>   -trans-range          []  |  节点数据传输半径（默认 100）； 
+>   -node                 []  |  节点个数（默认 29）； 
+>   -buffer               []  |  *节点缓存容量（默认 500）； 
+>   -energy               []  |  节点初始能量值（默认无限制）； 
+>  
+>                             |    < 数据生成参数 > 
+>  -------------------------- | ---------------------------- 
+>   -data-rate            []  |  节点生成一个数据包需要的时间（默认 30）； 
+>   -data-size            []  |  单个数据包的字节数（默认 250）； 
+>  
+>                             |    < MAC 层参数 > 
+>  -------------------------- | ---------------------------- 
+>   -hdc                      |  采用 HDC 的占空比协议； 
+>   -cycle                []  |  工作周期（默认 300）； 
+>   -slot-discover        []  |  每个工作周期中，开始邻居节点发现之前的监听时间（默认 10）； 
+>   -dc-default           []  |  默认占空比，即监听时间占整个工作周期的比例（默认 1.0）； 
+>   -dc-hotspot           []  |  *HDC 中热点区域使用的占空比； 
+>   -random-state             |  采用随机的节点初始工作状态，即异步的占空比； 
 > 
->   -time-run             []    网络运行时间（默认 15000）；
->    
->   -time-data            []    节点数据生成的截止时间（默认 15000）； 
->   
->   -slot                 []    网络运行的时槽（默认 5）； 
->   
->   -dataset              []    数据集名称（节点轨迹文件路径 ./res/%DATASET%/）； 
->   
->   -log-path             []    日志文件路径（默认 ./log/）； 
->   
->   -log-slot             []    日志输出时槽（默认 100）； 
->  
->  
->  < 节点参数 > 
+>                             |    < 路由层参数 >  
+>  -------------------------- | ---------------------------- 
+>   -prophet                  |  采用 Prophet 路由协议（默认采用）； 
+>   -har                      |  采用 HAR 路由协议； 
+>   -hop                  []  |  数据包转发允许的最大跳数（默认无限制）； 
 > 
->   -sink              [] []    Sink 节点的坐标； 
->   
->   -trans-prob           []    节点数据传输的成功率（默认 1.0）； 
->   
->   -trans-range          []    节点数据传输半径（默认 100）；
->    
->   -node                 []    节点个数（默认 29）； 
->   
->   -buffer               []    节点缓存容量（默认 500）； 
->   
->   -energy               []    节点初始能量值（默认无限制）； 
->   
->  
->  < 数据生成参数 > 
+>                             |    < Prophet 协议参数 > 
+>  -------------------------- | ---------------------------- 
+>   -spoken               []  |  Prophet 路由中节点对最近邻居节点直接跳过通信的计时（默认不使用）； 
+>   -pred-init            []  |  Prophet 路由中节点投递概率的初始值（默认 0.75）； 
+>   -pred-decay           []  |  Prophet 路由中节点投递概率的衰减系数（默认 0.98）； 
+>   -capacity-forward     []  |  Prophet 路由中节点单次转发数据的最大数目（默认无限制）； 
 > 
->   -data-rate            []    节点生成一个数据包需要的时间（默认 30）； 
->   
->   -data-size            []    单个数据包的字节数（默认 250）； 
->  
->  
->  < MAC 层参数 > 
+>                             |    < 热点选取参数 > 
+>  -------------------------- | ---------------------------- 
+>   -ihs                      |  采用 IHAR 的热点选取算法； 
+>   -mhs                      |  采用 mHAR 的热点选取算反； 
+>   -alpha                []  |  热点选取中，后续选取过程中的阈值参数（默认 0.03）； 
+>   -beta                 []  |  热点选取中，判定真热点的最低热度值（默认 0.0025）； 
+>   -heat               [][]  |  热点选取中，热度值计算的系数（默认 1， 30）； 
 > 
->   -hdc                        采用 HDC 的占空比协议； 
->   
->   -cycle                []    工作周期（默认 300）； 
->   
->   -slot-discover        []    每个工作周期中，开始邻居节点发现之前的监听时间（默认 10）； 
->   
->   -dc-default           []    默认占空比，即监听时间占整个工作周期的比例（默认 1.0）； 
->   
->   -dc-hotspot           []    *HDC 中热点区域使用的占空比； 
->   
->   -random-state               采用随机的节点初始工作状态，即异步的占空比； 
->  
->  
->  < 路由层参数 >  
+>                             |    < IHAR 参数 > 
+>  -------------------------- | ---------------------------- 
+>   -buffer-ma            []  |  MA 节点缓存容量（默认 100）； 
+>   -lambda               []  |  IHAR 中，疏漏热点修复算法的修复阈值（默认不使用）； 
+>   -lifetime             []  |  IHAR 中，节点位置点信息的保存期（默认不使用）； 
 > 
->   -prophet                    采用 Prophet 路由协议（默认采用）； 
->   
->   -har                        采用 HAR 路由协议； 
->   
->   -hop                  []    数据包转发允许的最大跳数（默认无限制）； 
->   
->  
->  < Prophet 协议参数 > 
+>                             |    < mHAR 参数 > 
+>  -------------------------- | ---------------------------- 
+>   -merge                []  |  mHAR 中，归并热点的选取系数（默认 1.0）； 
+>   -old                  []  |  mHAR 中，旧热点的选取系数（默认 1.0）； 
+>   -balanced-ratio           |  采用综合的热点选取度量函数； 
 > 
->   -spoken               []    Prophet 路由中节点对最近邻居节点直接跳过通信的计时（默认不使用）； 
->   
->   -pred-init            []    Prophet 路由中节点投递概率的初始值（默认 0.75）； 
->   
->   -pred-decay           []    Prophet 路由中节点投递概率的衰减系数（默认 0.98）；
->    
->   -pred-tolerance       []    Prophet 路由中节点决定转发数据时的投递概率容差（默认不使用）； 
->  
->   -capacity-forward     []    Prophet 路由中节点单次转发数据的最大数目（默认无限制）； 
->  
->  
->  < 热点选取参数 > 
-> 
->   -ihs                        采用 IHAR 的热点选取算法； 
->   
->   -mhs                        采用 mHAR 的热点选取算反； 
->   
->   -alpha                []    热点选取中，后续选取过程中的阈值参数（默认 0.03）； 
->   
->   -beta                 []    热点选取中，判定真热点的最低热度值（默认 0.0025）； 
->   
->   -heat              [] []    热点选取中，热度值计算的系数（默认 1， 30）； 
->  
->  
->  < IHAR 参数> 
-> 
->   -lambda               []    IHAR 中，疏漏热点修复算法的修复阈值（默认不使用）； 
->   
->   -lifetime             []    IHAR 中，节点位置点信息的保存期（默认不使用）； 
->  
->  
->  < mHAR 参数 > 
-> 
->   -merge                []    mHAR 中，归并热点的选取系数（默认 1.0）； 
->   
->   -old                  []    mHAR 中，旧热点的选取系数（默认 1.0）； 
->   
->   -balanced-ratio             采用综合的热点选取度量函数； 
->  
->  
->  < 测试参数 > 
-> 
->   -dynamic-node-number        节点个数动态变化的测试； 
->   
->   -hotspot-similarity         对于热点选取，测试前后热点选取结果的相似度（默认采用）； 
+>                             |    < 测试参数 > 
+>  -------------------------- | ---------------------------- 
+>   -dynamic-node-number      |  节点个数动态变化的测试； 
+>   -hotspot-similarity       |  对于热点选取，测试前后热点选取结果的相似度（默认采用）； 
 > 
 
 
@@ -253,8 +213,6 @@
 ---
 
 
-<a href='#log_mark'></a>
-
 #### Log Mark
 
 *在 Git Commit Comment 中使用快速标签：*
@@ -354,14 +312,12 @@
 ###### 2015-12-04  ·  *< 2.2.0 >*  ·  *类重构*
 
 - RFCT：对整体的类结构做出了调整，类的继承结构规范化；
-　
-　
 
 
 
 > *** 以上为 HDC 分支的初始状态 ***
 
-> *** 创建自 master 分支 2015-12-04 的 [commit { 0dd0e56 }](https://github.com/sheeco/xHAR/commit/0dd0e561bf88035d1cfc557e2083dfa602ab9d43) ***
+> *** 创建自 [ 2015-12-04 的 master 分支 ]( 0dd0e561bf88035d1cfc557e2083dfa602ab9d43 ) ***
 
 > *** 以下为 HDC 分支下的更改 ***
 
@@ -509,7 +465,7 @@
 
 ###### 2016-03-03
 
-- MNT：在 `README.md` 中的更新日志中加上分类标签，参见 *[Log Mark](#log_mark)* ；
+- MNT：在 `README.md` 中的更新日志中加上分类标签，参见 *[Log Mark](#log-mark)* ；
 - MNT：在 `README.md` 中添加 Environment 说明；
 - MNT：将类图文件 `ClassDiagram.cd` 添加到追踪列表；
 
@@ -548,7 +504,7 @@
 - RFCT：将轨迹文件从 `.newlocation` 改为 `.trace` 文件，并放入 `/res/$DATASET$/` 文件夹中；
 - ADD：数据集名字 `DATASET` 为可定制参数（尚未添加读取代码）；
 - FIX：之前使用 `nodes.size()` 替换 `NUM_NODE` 时造成的错误；
-- MNT：在 git commit message 中使用快速标签来概括更改，参见 *[Log Mark](#log_mark)* ；
+- MNT：在 git commit message 中使用快速标签来概括更改，参见 *[Log Mark](#log-mark)* ；
 
 
 ###### 2016-03-10  ·  *< 2.6.4 >*
@@ -601,7 +557,7 @@
 ## 3.* : 重写 MAC 层
 
 
-###### [ 2016-03-18  ·  *< 3.0.0 >*  ·  *重写 MAC 层* ]( https://github.com/sheeco/xHAR/commit/b50107fb04bd0976fc54aa0a81e47b2f6d619e1b )
+###### [ 2016-03-18  ·  *< 3.0.0 >*  ·  *重写 MAC 层* ]( b50107fb04bd0976fc54aa0a81e47b2f6d619e1b )
 
 - ADD：完成新定义的函数 `CMacProtocol::broadcastPackage()`、`::transmitPackage()`、`::receivePackage()`、`CProphet::bufferData()`、`::selectDataByIndex`；
 - MOD：删除原有的 `CRoutingProtocol::SendData()` 系列实现；
@@ -611,7 +567,7 @@
 ### 3.1.* : 重写 MAC 层
 
 
-###### [ 2016-03-20  ·  *< 3.1.0 >* ]( https://github.com/sheeco/xHAR/commit/684137e5b575ebf6f1bffb06f44f48e9fa2d1db7 )
+###### [ 2016-03-20  ·  *< 3.1.0 >* ]( 684137e5b575ebf6f1bffb06f44f48e9fa2d1db7 )
 
 - RFCT：添加 `FILE_xxx` 和 `PATH_xxx` 系列全局变量，易于管理和更改；
 - ADD：将输出文件的后缀改为 `.log`，不同运行结果将放入标注时间戳的不同文件夹下（如 `/log/.xxxx-xx-xx xx:xx:xx`），运行完成之后去除 `.` 前缀；
@@ -621,7 +577,7 @@
 - OPT：替换掉所有不必要的前置递加操作符 `++var`；
 
 
-###### [ 2016-03-21  ·  *< 3.1.5923.38461 >* ]( https://github.com/sheeco/xHAR/commit/04ed66ee1958827e8aa75e74a98444c8224e65fc )
+###### [ 2016-03-21  ·  *< 3.1.5923.38461 >* ]( 04ed66ee1958827e8aa75e74a98444c8224e65fc )
 
 - ADD：添加生成版本号配置文件 `AssemblyInfo.cpp` 和 `HDC.rc`，并修改相关的项目属性为“使用公共语言运行时支持(/clr)”、“多线程 DLL(\MD)”、“在共享 DLL 中使用 MFC”；
 - MNT：使用 VS 插件 Versioning Controlled Build 进行版本号管理；
@@ -631,21 +587,21 @@
 - FIX：输出文件夹重命名失败；
 
 
-###### [ 2016-03-21  ·  *< 3.1.5924.1169 >* ]( https://github.com/sheeco/xHAR/commit/2ad5fe57cc9d76fddfc53bf1a0894519cf3d6906 )
+###### [ 2016-03-21  ·  *< 3.1.5924.1169 >* ]( 2ad5fe57cc9d76fddfc53bf1a0894519cf3d6906 )
 
 - ADD：重新添加所有的控制台输出；
 - FIX：`CPackage` 类构造函数的错误；
 - FIX：禁用 `CData::ID_MASK`，修复因此产生的错误；
 
 
-###### [ 2016-03-21  ·  *< 3.1.5924.21445 >* ]( https://github.com/sheeco/xHAR/commit/cbd00e950480529860836007f447394a1ef32295 )
+###### [ 2016-03-21  ·  *< 3.1.5924.21445 >* ]( cbd00e950480529860836007f447394a1ef32295 )
 
 - TRY：为投递概率设置容差 `TOLERANCE_PRED`，使用宏定义 `USE_PRED_TOLERANCE` 启用（测试：会破坏梯度，最终删除）；
 - MNT：调整和统一 `README.md` 的格式；
 - TEST：投递概率容差；
 
 
-###### [ 2016-03-22  ·  *< 3.1.5925.19658 >* ]( https://github.com/sheeco/xHAR/commit/7de8dc84a46985d1fd04ec8201f5ca4ef9d143d9 )
+###### [ 2016-03-22  ·  *< 3.1.5925.19658 >* ]( 7de8dc84a46985d1fd04ec8201f5ca4ef9d143d9 )
 
 - ADD：添加命令行参数 `-pred-tolerance`、`-log-path`、`-log-slot`；
 - FIX：模板类函数 `GetItemsByID()` 可能不能成功调用？
@@ -653,7 +609,7 @@
 - FIX：`CMacProtocol::receivePackage()` 的迭代错误；
 
 
-###### [ 2016-03-22  ·  *< 3.1.5925.29760 >* ]( https://github.com/sheeco/xHAR/commit/c95ff6cce1eefcd8145a1272ba578d4ad41c4c6e )
+###### [ 2016-03-22  ·  *< 3.1.5925.29760 >* ]( c95ff6cce1eefcd8145a1272ba578d4ad41c4c6e )
 
 - OPT：运行发生异常退出时，输出错误信息到文件 `error.log`；
 - OPT：优化命令行参数的使用帮助信息；
@@ -662,7 +618,7 @@
 ### 3.2.* : RTS 捎带 DP
 
 
-###### [ 2016-03-23  ·  *< 3.2.5926.22497 >* ]( https://github.com/sheeco/xHAR/commit/af30b1aed1c80c2f909c74a2add441cc26089bb6 )
+###### [ 2016-03-23  ·  *< 3.2.5926.22497 >* ]( af30b1aed1c80c2f909c74a2add441cc26089bb6 )
 
 - RFCT：规范化变量命名和 getter 函数名；
 - FIX：更改节点是否将进行邻居节点发现的方法， 添加成员变量 `CNode::discovering`，以修复 `CMacProtocol::broadcastPackage()` 中节点相遇和数据传输计数重复计算的问题；
@@ -671,25 +627,25 @@
 - ADD：添加节点工作状态随机初始化的可选功能，由变量 `CMacProtocol::RANDOM_STATE_INIT` 标记，命令行参数 `-random-state`；
 
 
-###### [ 2016-03-23  ·  *< 3.2.5926.22866 >* ]( https://github.com/sheeco/xHAR/commit/bbdcaf90421a36b0b3ff97a9b8cd2c6982d41acb )
+###### [ 2016-03-23  ·  *< 3.2.5926.22866 >* ]( bbdcaf90421a36b0b3ff97a9b8cd2c6982d41acb )
 
 
-###### [ 2016-03-23  ·  *< 3.2.5926.30658 >* ]( https://github.com/sheeco/xHAR/commit/3ee22ba30ad1cc21b07f785f013339f7368d49f4 )
+###### [ 2016-03-23  ·  *< 3.2.5926.30658 >* ]( 3ee22ba30ad1cc21b07f785f013339f7368d49f4 )
 
 - FIX：取消 `USE_TOLERANCE_PRED`；
 - FIX：修复遗漏引用 `CNode::updateDeliveryPredsWithSink()` 的重要错误；
 
 
-###### [ 2016-03-23  ·  *< 3.2.5926.31165 >* ]( https://github.com/sheeco/xHAR/commit/57912b77acaf0d9ce19d470ba6c106acaf92d294 )
+###### [ 2016-03-23  ·  *< 3.2.5926.31165 >* ]( 57912b77acaf0d9ce19d470ba6c106acaf92d294 )
 
 
-###### [ 2016-03-24  ·  *< 3.2.5926.41581 >* ]( https://github.com/sheeco/xHAR/commit/6dab843a5108b472b1f642e88797d1253aa40ed8 )
+###### [ 2016-03-24  ·  *< 3.2.5926.41581 >* ]( 6dab843a5108b472b1f642e88797d1253aa40ed8 )
 
 - FIX：修改 `CMacProtocol::receivePackage` 中的数据传输过程，发送 RTS 时直接捎带投递概率；
 - FIX：修改 `CMacProtocol::receivePackage` 中的数据传输计数方法，对于每个节点对只计入一次数据传输，以收到 ACK 为准则；
 
 
-###### [ 2016-03-24  ·  *< 3.2.5927.16957 >* ]( https://github.com/sheeco/xHAR/commit/dc6a2d7dcfde527f1c85a7201a5c2ff41e2f3440 )
+###### [ 2016-03-24  ·  *< 3.2.5927.16957 >* ]( dc6a2d7dcfde527f1c85a7201a5c2ff41e2f3440 )
 
 - FIX：修改项目属性，添加链接器命令行参数 `/NODEFAULTLIB:MSVCRT`，以解决 `Warning LNK4098`；
 - ADD：宏定义 `_WIN32_WINNT`，用于为编译器指示系统版本；
@@ -701,12 +657,12 @@
 - RFCT：添加函数 `CBasicEntity::withinRange()` 替换多数 `CBasicEntity::getDistance()` 的引用；
 
 
-###### [ 2016-03-24  ·  *< 3.2.5927.20040 >* ]( https://github.com/sheeco/xHAR/commit/fde3f0dc45bc1ca95317f803663aacc46b9bce92 )
+###### [ 2016-03-24  ·  *< 3.2.5927.20040 >* ]( fde3f0dc45bc1ca95317f803663aacc46b9bce92 )
 
 - RFCT：将数据包响应逻辑从 `CMacProtocol::receivePackage()` 中尽量分离到 `CProphet::receiveContents()` 中；
 
 
-###### [ 2016-03-25  ·  *< 3.2.5928.23405 >* ]( https://github.com/sheeco/xHAR/commit/7fa4d90b398c905de325e4ab0e20e3515e50ab21 )
+###### [ 2016-03-25  ·  *< 3.2.5928.23405 >* ]( 7fa4d90b398c905de325e4ab0e20e3515e50ab21 )
 
 - RFCT：将 `CProphet::receiveContents()` 中的响应操作按照源-目的节点对的类型，分类整合到三个重载的同名函数中；
 - FIX：函数 `CMacProtocol::CommunicateWithNeighbor()` 更名为 `CMacProtocol::CommunicateWithNeighbor()`，并修复函数调用错误；
@@ -715,7 +671,7 @@
 - BUG：数据传输计数存在差错，应检查 `CMacProtocol::transmitTry()` 和 `CMacProtocol::transmitSucceed()` 的调用；
 
 
-###### [ 2016-03-28  ·  *< 3.2.5931.21338 >* ]( https://github.com/sheeco/xHAR/commit/dac9dd3379f583fc8ef510c6471ceeccdceaa514 )
+###### [ 2016-03-28  ·  *< 3.2.5931.21338 >* ]( dac9dd3379f583fc8ef510c6471ceeccdceaa514 )
 
 - BUG：数据传输计数的差错；
 - RFCT：将热点选取的相关输出分离移入到 `CHotspotSelect` 类中；
@@ -723,7 +679,7 @@
 - ADD：添加 XML 解析库 TinyXML2 的相关文件 `/lib/xml/tinyxml2.h & .cpp` 及 `CXmlHelper` 类；
 
 
-###### [ 2016-03-29  ·  *< 3.2.5932.17811 >* ]( https://github.com/sheeco/xHAR/commit/eecbc4b00b64c8bc1dee0d062a53541dd30826ab )
+###### [ 2016-03-29  ·  *< 3.2.5932.17811 >* ]( eecbc4b00b64c8bc1dee0d062a53541dd30826ab )
 
 - ADD：添加 `_HOTSPOT_SELECT::_none` 用于独立开启热点选取操作的功能，但暂时没有添加独立的节点是否位于热点中的检测操作；
 - ADD：在参数解析中添加异常捕获，如果命令行参数存在错误，则禁止运行；
@@ -735,7 +691,7 @@
 ### 3.3.* : 重写 xHAR
 
 
-###### [ 2016-03-30  ·  *< 3.3.5933.21567 >* ]( https://github.com/sheeco/xHAR/commit/e1d4990c1d264bf4ac82eb1db3b135019e15ba32 )
+###### [ 2016-03-30  ·  *< 3.3.5933.21567 >* ]( e1d4990c1d264bf4ac82eb1db3b135019e15ba32 )
 
 - ADD：完成函数 `HAR::receiveContents()`（待测试）；
 - RFCT：将 `CHDC::UpdateDutyCycleForNodes()` 中更新节点所在热点区域的操作提取到 `CHotspot::UpdateAtHotspotForNodes()`；
@@ -746,13 +702,13 @@
 - ADD：添加命令行参数 `-buffer-ma`，并将 `-buffer` 默认值改为 0，即必选参数；
 
 
-###### [ 2016-03-31  ·  *< 3.3.5934.19858 >* ]( https://github.com/sheeco/xHAR/commit/7dd414d67b6620cec73fea917d15b7a6a58a62b2 )
+###### [ 2016-03-31  ·  *< 3.3.5934.19858 >* ]( 7dd414d67b6620cec73fea917d15b7a6a58a62b2 )
 
 - ADD：添加 `sink.log` 的输出；
 - RFCT：将节点相遇计数及热点区域相遇计数的统计移入 `CHotspot::UpdateAtHotspotForNodes()` 中，统计时槽将独立于运行粒度，仅由移动模型粒度决定，；
 
 
-###### [ 2016-04-04  ·  *< 3.3.3 >* ]( https://github.com/sheeco/xHAR/commit/c8d9fd949928f8ac63a335f9db8bd8f101e3f174 )
+###### [ 2016-04-04  ·  *< 3.3.3 >* ]( c8d9fd949928f8ac63a335f9db8bd8f101e3f174 )
 
 - MNT：更新到 Visual Studio 2015，项目文件和设置文件相应更新；
 - MNT：停止使用 Resharper，暂时保留设置文件；
@@ -760,12 +716,12 @@
 - MNT：改用 `version.h` 和 `HDC.rc` 实现版本号控制，从基于系统时间的子版本号改为递增子版本号，需要每次手动修改版本号变量（`version.h` 中）；
 
 
-###### [ 2016-04-06  ·  *< 3.3.4 >* ]( https://github.com/sheeco/xHAR/commit/b88c685d4f91ada83d5f2f677af0d7d6fd0e361b )
+###### [ 2016-04-06  ·  *< 3.3.4 >* ]( b88c685d4f91ada83d5f2f677af0d7d6fd0e361b )
 
 - FIX：指针重复释放的错误及输出错误；
 
 
-###### [ 2016-04-08  ·  *< 3.3.5 >* ]( https://github.com/sheeco/xHAR/commit/1d48ec73413cc02785ab79edcca4354b920c028a )
+###### [ 2016-04-08  ·  *< 3.3.5 >* ]( 1d48ec73413cc02785ab79edcca4354b920c028a )
 
 - OPT：将传输计数的统计及所有相关定义移入 `CMacProtocol` 类内；
 - OPT：优化 `final.log` 文件中的参数输出；
@@ -774,7 +730,7 @@
 - [ ] MOD：数据生成率的定义应从“个数 / 秒”改为“字节 / 秒”，相应地，该定义的引用也需要更改；
 
 
-###### 2016-04-12  ·  *< 3.3.6 >*
+###### [ 2016-04-12  ·  *< 3.4.1 >* ]( 4ba7d15999a41b34c0ef83a429d5f768888e00a8 )
 
 - ADD：类 `CCTrace`（`CTrace` 为保留字），以及模拟连续轨迹的功能，由 `CCTrace::CONTINUOUS_TRACE` 指示；
 - RFCT：将原 `CFileHelper` 类中的轨迹文件读取操作，移入 `CCTrace` 类中；
@@ -786,6 +742,12 @@
 - [ ] OPT：对所有操作符重载进行补全和标准化；
 - [ ] RFCT：使用条件编译包裹不同协议相关的类内成员和函数的定义和引用；
 - [ ] RFCT：将文件夹操作提取到 `CFileHelper` 类；
+
+
+###### 2016-04-13  ·  *< 3.4.2 >*
+
+- MNT：优化 `README.md` 和 `help.md` 的输出格式；
+- MNT：将命令行参数使用说明提取到文件 `help.md`，更新版本信息文件 `HDC.version` 的输出；
 
 
 - [ ] FIX：测试 Prophet 路由中单次数据转发的最大数据包数目；

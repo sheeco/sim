@@ -30,6 +30,8 @@
 
 /log
 
+*.dotSettings
+
 
 # User-specific files
 
