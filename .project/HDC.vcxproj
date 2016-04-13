@@ -73,6 +73,10 @@
     <BuildLog>
       <Path>..\.build\$(ProjectName)\$(ProjectName).$(Configuration).log</Path>
     </BuildLog>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -97,6 +101,9 @@
     <BuildLog>
       <Path>..\.build\$(ProjectName)\$(MSBuildProjectName).$(Configuration).log</Path>
     </BuildLog>
+    <PostBuildEvent>
+      <Command>XCOPY "../bin/HDC.release.exe" /F "../bin/HDC.exe"  /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\bin\help.md" />

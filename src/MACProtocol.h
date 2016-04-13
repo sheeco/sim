@@ -21,15 +21,18 @@ private:
 	static void broadcastPackage(CGeneralNode& src, CPackage* package, int currentTime);
 	static bool transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackage* package, int currentTime);
 
+	//在限定范围内随机增删一定数量的node
+	static void ChangeNodeNumber(int currentTime);
+	//更新所有 node 的坐标、占空比和工作状态，生成数据，返回是否仍有节点
+	static bool UpdateNodeStatus(int currentTime);
+
 
 protected:
 
 	CMacProtocol();
 	~CMacProtocol();
 
-	//在限定范围内随机增删一定数量的node
-	static void ChangeNodeNumber(int currentTime);
-
+	//注意：必须在 Prepare() 之后调用
 	static void CommunicateWithNeighbor(int currentTime);
 
 
@@ -68,8 +71,12 @@ public:
 		return double(transmitSuccessful) / double(transmit);
 	}
 
-	//更新所有node的坐标、占空比和工作状态，生成数据，返回是否仍有节点
-	static bool UpdateNodeStatus(int currentTime);
+	//更新节点数目、节点状态；收集位置点信息、选取热点、更新节点是否位于热点区域；
+	//如果无更多节点，返回 false
+	static bool Prepare(int currentTime);
+	//更新所有 MA 的坐标、等待时间
+	//注意：必须在新一轮热点选取之后调用
+	static void UpdateMANodeStatus(int currentTime);
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);

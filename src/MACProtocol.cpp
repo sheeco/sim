@@ -281,20 +281,45 @@ void CMacProtocol::ChangeNodeNumber(int currentTime)
 
 bool CMacProtocol::UpdateNodeStatus(int currentTime)
 {
-	//cout << endl << "########  < " << currentTime << " >  NODE LOCATION UPDATE" ;
-
 	bool death = false;
 	vector<CNode *> nodes = CNode::getNodes();
-	vector<CMANode *> MAs = CMANode::getMANodes();
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 		death |= (*inode)->updateStatus(currentTime);
 	if( death )
 		CNode::ClearDeadNodes();
 
-	for(vector<CMANode *>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA)
-		(*iMA)->updateStatus(currentTime);
-
 	return CNode::hasNodes(currentTime);
+}
+
+void CMacProtocol::UpdateMANodeStatus(int currentTime)
+{
+	vector<CMANode *> MAs = CMANode::getMANodes();
+
+	for( vector<CMANode *>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA )
+		( *iMA )->updateStatus(currentTime);
+}
+
+bool CMacProtocol::Prepare(int currentTime)
+{
+	//Node Number Test:
+	if( TEST_DYNAMIC_NUM_NODE )
+		CMacProtocol::ChangeNodeNumber(currentTime);
+
+	if( ! CMacProtocol::UpdateNodeStatus(currentTime) )
+		return false;
+
+	//热点选取
+	if( HOTSPOT_SELECT != _none )
+	{
+		CHotspotSelect::CollectNewPositions(currentTime);
+		CHotspotSelect::HotspotSelect(currentTime);
+
+		//检测节点所在热点区域
+		CHotspot::UpdateAtHotspotForNodes(currentTime);
+
+	}
+
+	return true;
 }
 
 void CMacProtocol::CommunicateWithNeighbor(int currentTime)

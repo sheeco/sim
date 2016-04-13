@@ -464,17 +464,19 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 
 bool CProphet::Operate(int currentTime)
 {
-	if( ! CNode::hasNodes(currentTime) )
-		return false;
-
 	bool hasNodes = true;
 	if( MAC_PROTOCOL == _hdc )
-		hasNodes = CHDC::Operate(currentTime);	
-	else
-		hasNodes = CSMac::Operate(currentTime);
+		hasNodes = CHDC::Prepare(currentTime);
+	else if( MAC_PROTOCOL == _smac )
+		hasNodes = CSMac::Prepare(currentTime);
 
 	if( ! hasNodes )
 		return false;
+
+	if( MAC_PROTOCOL == _hdc )
+		CHDC::Operate(currentTime);
+	else if( MAC_PROTOCOL == _smac )
+		CSMac::Operate(currentTime);
 
 	PrintInfo(currentTime);
 

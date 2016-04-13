@@ -222,6 +222,11 @@ bool ParseArguments(int argc, char* argv[])
 				HOTSPOT_SELECT = _merge;
 				++iField;
 			}
+			else if( field == "-continuous-trace" )
+			{
+				CCTrace::CONTINUOUS_TRACE = true;
+				++iField;
+			}
 			else if( field == "-hotspot-similarity" )
 			{
 				CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;

@@ -782,30 +782,29 @@ void HAR::PrintFinal(int currentTime)
 
 bool HAR::Operate(int currentTime)
 {
-	if( ! CNode::hasNodes(currentTime) )
+	bool hasNodes = true;
+	// 不允许 xHAR 使用 HDC 作为 MAC 协议
+	//if( MAC_PROTOCOL == _hdc )
+	//	hasNodes = CHDC::Prepare(currentTime);
+	//else 
+	if( MAC_PROTOCOL == _smac )
+		hasNodes = CSMac::Prepare(currentTime);
+
+	if( ! hasNodes )
 		return false;
-
-	if( currentTime % CHotspotSelect::SLOT_POSITION_UPDATE == 0 )
-	{
-		if( ! CMacProtocol::UpdateNodeStatus(currentTime) )  //提前更新节点状态，以获取更新的节点位置点信息
-			return false;
-	}
-
-	CHotspotSelect::CollectNewPositions(currentTime);
-
-	CHotspotSelect::HotspotSelect(currentTime);
 
 	HotspotClassification(currentTime);
 
 	MANodeRouteDesign(currentTime);
 
+	CMacProtocol::UpdateMANodeStatus(currentTime);
 
-	//不允许 xHAR 使用 HDC 作为 MAC 协议
+	// 不允许 xHAR 使用 HDC 作为 MAC 协议
 	//if( MAC_PROTOCOL == _hdc )
 	//	CHDC::Operate(currentTime);
-
-	if( ! CSMac::Operate(currentTime) )
-		return false;
+	//else 
+	if( MAC_PROTOCOL == _smac )
+		CSMac::Operate(currentTime);
 
 	PrintInfo(currentTime);
 

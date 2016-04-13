@@ -20,7 +20,7 @@ private:
 public:
 
 	static bool CONTINUOUS_TRACE;  //是否将从轨迹文件中得到的散点模拟成为连续的折线
-	static int SLOT_TRACE;  //移动模型中的 slot，由数据文件中得来（eg. NCSU模型中为30）；值为 0 时，表示无固定的时槽；
+	static int SLOT_TRACE;  //移动模型中的 slot，由数据文件中得来（eg. NCSU模型中为30）；值为 0 时，表示未赋值；值为 -1 时，表示无固定的时槽；
 	static string EXTENSION_TRACE;
 
 	CCTrace();
@@ -34,20 +34,19 @@ public:
 
 	inline void addLocation(int time, CCoordinate location)
 	{
-		if( trace.find(time) != trace.end() )
-		{
-			stringstream error;
-			error << "Error @ CCTrace::addTrace() : Duplicate locations at Time " << time << " ! ";
-			cout << endl << error.str() << endl;
-			_PAUSE_;
-			Exit(ENOEXEC, error.str());
-		}
-		else
-		{
-			trace.insert(pair<int, CCoordinate>(time, location));
-			if( time > lengthTrace )
-				lengthTrace = time;
-		}
+		// 部分数据集的轨迹文件中可能存在重复行，因此暂时不做此检查
+		//if( trace.find(time) != trace.end() )
+		//{
+		//	stringstream error;
+		//	error << "Error @ CCTrace::addTrace() : Duplicate locations at Time " << time << " ! ";
+		//	cout << endl << error.str() << endl;
+		//	_PAUSE_;
+		//	Exit(ENOEXEC, error.str());
+		//}
+
+		trace.insert(pair<int, CCoordinate>(time, location));
+		if( time > lengthTrace )
+			lengthTrace = time;
 	}
 
 	//调用之前应先使用 isValid() 进行合法性检查，否则可能报错；
@@ -90,7 +89,7 @@ public:
 
 		if( CONTINUOUS_TRACE )
 		{
-			double ratio = ( time - fromTime ) / ( toTime - fromTime );
+			double ratio = (double)( time - fromTime ) / (double)( toTime - fromTime );
 			return fromLocation + ratio * ( toLocation - fromLocation );
 		}
 		else

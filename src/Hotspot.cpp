@@ -178,7 +178,8 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 
 bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 {
-	if( ! ( currentTime % CCTrace::SLOT_TRACE == 0 ) )
+	if( ! ( CCTrace::CONTINUOUS_TRACE
+		    || currentTime % CCTrace::SLOT_TRACE == 0 ) )
 		return false;
 
 	vector<CHotspot *> hotspots = selectedHotspots;
@@ -210,23 +211,29 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 		//update atHotspot
 		(*inode)->setAtHotspot(atHotspot);
 
-		CNode::visit();		
-		if( (*inode)->isAtHotspot() )
-			CNode::visitAtHotspot();
-
-		for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
+		// visit 和 encounter 计数的统计
+		// 时槽仅由轨迹文件决定
+		if( currentTime % CCTrace::SLOT_TRACE == 0 )
 		{
-			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*jnode)->getX() )
-				break;
-			if( CBasicEntity::withinRange( **inode, **jnode, CGeneralNode::RANGE_TRANS ) )		
-			{
-				CNode::encount();
+			CNode::visit();
+			if( ( *inode )->isAtHotspot() )
+				CNode::visitAtHotspot();
 
-				if( atHotspot != nullptr
-					|| (*jnode)->isAtHotspot() )
-					CNode::encountAtHotspot();
+			for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
+			{
+				if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*jnode)->getX() )
+					break;
+				if( CBasicEntity::withinRange( **inode, **jnode, CGeneralNode::RANGE_TRANS ) )		
+				{
+					CNode::encount();
+
+					if( atHotspot != nullptr
+						|| (*jnode)->isAtHotspot() )
+						CNode::encountAtHotspot();
+				}
 			}
 		}
+
 	}
 
 	return true;

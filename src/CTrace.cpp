@@ -42,6 +42,9 @@ CCTrace* CCTrace::getTraceFromFile(string filename)
 			double temp_y = 0;
 			fscanf(file, "%lf %lf %lf", &temp_time, &temp_x, &temp_y);
 
+			if( temp_time > RUNTIME )
+				break;
+
 			trace->addLocation(temp_time, CCoordinate(temp_x, temp_y) );
 		}
 

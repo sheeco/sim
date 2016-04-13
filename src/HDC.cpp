@@ -35,8 +35,6 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		print = false;
 	}
 
-	CHotspot::UpdateAtHotspotForNodes(currentTime);
-
 //	int atHotspotCount = 0;
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
@@ -86,21 +84,18 @@ void CHDC::PrintFinal(int currentTime)
 	
 }
 
-bool CHDC::Operate(int currentTime)
+bool CHDC::Prepare(int currentTime)
 {
-	//Node Number Test:
-	if( TEST_DYNAMIC_NUM_NODE )
-		CMacProtocol::ChangeNodeNumber(currentTime);
-
-	if( ! CMacProtocol::UpdateNodeStatus(currentTime) )
+	if( !CMacProtocol::Prepare(currentTime) )
 		return false;
-
-	CHotspotSelect::CollectNewPositions(currentTime);
-
-	CHotspotSelect::HotspotSelect(currentTime);
 
 	UpdateDutyCycleForNodes(currentTime);
 
+	return true;
+}
+
+bool CHDC::Operate(int currentTime)
+{
 	CMacProtocol::CommunicateWithNeighbor(currentTime);
 
 	return true;

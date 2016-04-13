@@ -114,8 +114,8 @@ public:
 			return SUM_SIMILARITY_RATIO / COUNT_SIMILARITY_RATIO;
 	}	
 
-	//从文件中读取所有节点的当前位置，加入position列表（append）
-	//由main函数，在每个地理位置信息收集时隙上调用
+	//读取所有节点的当前位置，加入position列表（append），在每个地理位置信息收集时隙上调用
+	//注意：必须在调用 UpdateNodeStatus() 之后调用
 	static void CollectNewPositions(int currentTime);
 
 	//执行热点选取

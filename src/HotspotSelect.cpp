@@ -85,7 +85,7 @@ void CHotspotSelect::updateStatus()
 
 void CHotspotSelect::CollectNewPositions(int currentTime)
 {
-	if( ! ( currentTime % SLOT_POSITION_UPDATE == 0 && currentTime >= 0 ) )
+	if( ! ( currentTime % SLOT_POSITION_UPDATE == 0 ) )
 		return ;
 	CPosition* temp_pos = nullptr;
 

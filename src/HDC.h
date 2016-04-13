@@ -11,6 +11,7 @@ private:
 	CHDC();
 
 	//检查所有Node，如果位于热点区域，更新占空比
+	//注意：必须在调用 UpdateAtHotspotForNodes() 之后调用
 	static void UpdateDutyCycleForNodes(int currentTime);
 
 
@@ -18,6 +19,7 @@ public:
 
 	~CHDC();
 
+	static bool Prepare(int currentTime);
 	static bool Operate(int currentTime);
 
 	//打印相关信息到文件

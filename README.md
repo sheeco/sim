@@ -723,11 +723,14 @@
 
 ###### [ 2016-04-08  ·  *< 3.3.5 >* ]( 1d48ec73413cc02785ab79edcca4354b920c028a )
 
-- OPT：将传输计数的统计及所有相关定义移入 `CMacProtocol` 类内；
+- OPT：将传输计数的统计及所有相关定义移入 `CMacProtocol` 类内，仅当发生有效数据交付时才认为传输成功；
 - OPT：优化 `final.log` 文件中的参数输出；
 - REM：删除投递概率容差的所有定义和引用；
 - MNT：优化项目属性中，生成文件及中间文件目录的设置；
 - [ ] MOD：数据生成率的定义应从“个数 / 秒”改为“字节 / 秒”，相应地，该定义的引用也需要更改；
+
+
+### 3.4.* : 模拟连续轨迹
 
 
 ###### [ 2016-04-12  ·  *< 3.4.1 >* ]( 4ba7d15999a41b34c0ef83a429d5f768888e00a8 )
@@ -736,18 +739,29 @@
 - RFCT：将原 `CFileHelper` 类中的轨迹文件读取操作，移入 `CCTrace` 类中；
 - ADD：重载类 `CCoordinate` 的算术操作符；
 - FIX：热点选取中，位置点信息收集的调用时槽错误；
-- [ ] TEST：热点选取中，位置点信息收集的调用时槽错误的修复；
-- [ ] TEST：`CCTrace` 类中的轨迹文件读取操作，以及 `CHotspotSelect::CollectNewPositions()` 中的位置点信息收集操作；
 - [ ] ADD：如果轨迹文件中的时槽为动态变化的，需要在 `CCTrace::getLocation()` 中增加相应的读取代码；
 - [ ] OPT：对所有操作符重载进行补全和标准化；
 - [ ] RFCT：使用条件编译包裹不同协议相关的类内成员和函数的定义和引用；
 - [ ] RFCT：将文件夹操作提取到 `CFileHelper` 类；
 
 
-###### 2016-04-13  ·  *< 3.4.2 >*
+###### [ 2016-04-13  ·  *< 3.4.2 >* ]( 6bb139e98ddd1aa949b4aa0a550008897153d96e )
 
 - MNT：优化 `README.md` 和 `help.md` 的输出格式；
 - MNT：将命令行参数使用说明提取到文件 `help.md`，更新版本信息文件 `HDC.version` 的输出；
+
+
+###### 2016-04-14  ·  *< 3.4.3 >*
+
+- RFCT：整理路由类和 MAC 类协议的操作函数及调用逻辑，增加 `CMacProtocol::Prepare()` 函数；
+- FIX：`CCTrace::addLocation()` 中的整型除法错误；
+- ADD：`-continuous-trance` 选项；
+- TEST：热点选取中，位置点信息收集的调用时槽错误的修复；
+- TEST：`CCTrace` 类中的轨迹文件读取操作，以及 `CHotspotSelect::CollectNewPositions()` 中的位置点信息收集操作；
+- [ ] OPT：`hotspot-statistics.log` 中的输出，改为针对最终选择的热点集合输出信息，添加覆盖比例；
+- [ ] FIX：`parameters.log` 中的输出；
+- [ ] FIX：STL 容器的调试器可视化；
+
 
 
 - [ ] FIX：测试 Prophet 路由中单次数据转发的最大数据包数目；
