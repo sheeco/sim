@@ -657,8 +657,7 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CNode* fromNode, vector<
 
 void HAR::PrintInfo(int currentTime)
 {
-	if( ! ( ( currentTime % SLOT_LOG == 0 
-		      && currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+	if( ! ( currentTime % SLOT_LOG == 0 
 			|| currentTime == RUNTIME  ) )
 		return;
 
@@ -670,6 +669,9 @@ void HAR::PrintInfo(int currentTime)
 	/***************************************** 热点选取的相关输出 *********************************************/
 
 	CHotspotSelect::PrintInfo(currentTime);
+
+	if( ! ( currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT ) )
+		return;
 
 	/**************************************** HAR 路由的补充输出 *********************************************/
 

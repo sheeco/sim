@@ -1,22 +1,22 @@
 #include "BasicEntity.h"
 
 
-vector<CBasicEntity*> CBasicEntity::GetItemsByID(vector<CBasicEntity*> list, vector<int> ids)
-{
-	vector<CBasicEntity*> result;
-	for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
-	{
-		for(vector<CBasicEntity*>::iterator item = list.begin(); item != list.end(); ++item)
-		{
-			if( (*item)->getID() == *id )
-			{
-				result.push_back(*item);
-				break;
-			}
-		}
-	}
-	return result;
-}
+//vector<CBasicEntity*> CBasicEntity::GetItemsByID(vector<CBasicEntity*> list, vector<int> ids)
+//{
+//	vector<CBasicEntity*> result;
+//	for(vector<int>::iterator id = ids.begin(); id != ids.end(); ++id)
+//	{
+//		for(vector<CBasicEntity*>::iterator item = list.begin(); item != list.end(); ++item)
+//		{
+//			if( (*item)->getID() == *id )
+//			{
+//				result.push_back(*item);
+//				break;
+//			}
+//		}
+//	}
+//	return result;
+//}
 
 int CBasicEntity::moveTo(CBasicEntity to, int interval, double speed)
 {
@@ -46,3 +46,22 @@ int CBasicEntity::moveTo(CBasicEntity to, int interval, double speed)
 	}
 	return ( interval - timeArrival );
 }
+
+//注意：对double 型的坐标执行 == 操作符时存在精度问题
+bool operator == (const CBasicEntity &lt, const CBasicEntity &rt)
+{
+	return ( lt.getLocation().getX() == rt.getLocation().getX() );
+}
+bool operator != (const CBasicEntity &lt, const CBasicEntity &rt)
+{
+	return ( lt.getLocation().getX() != rt.getLocation().getX() );
+}
+bool operator < (const CBasicEntity &lt, const CBasicEntity &rt)
+{
+	return ( lt.getLocation().getX() < rt.getLocation().getX() );
+}
+bool operator > (const CBasicEntity &lt, const CBasicEntity &rt)
+{
+	return ( lt.getLocation().getX() > rt.getLocation().getX() );
+}
+

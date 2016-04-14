@@ -113,25 +113,6 @@ public:
 		return timeArrival;
 	}
 
-	//重载比较操作符，用于mergeSort
-	bool operator < (CData rt) const
-	{
-		return this->timeBirth < rt.getTimeBirth();
-	}
-
-	//重载比较操作符，用于去重
-	bool operator == (CData rt) const
-	{
-		return this->ID == rt.getID();
-	}
-
-	// TODO: need test
-	//重载操作符==用于根据ID判断identical
-	bool operator == (int id) const
-	{
-		return this->ID == id;
-	}
-
 	//实际上只更新TTL
 	inline void updateStatus(int currentTime)
 	{
@@ -218,6 +199,14 @@ public:
 	static double getAverageEnergyConsumption();
 
 	static vector<CData> GetItemsByID(vector<CData> list, vector<int> ids);
+
+	//重载比较操作符，比较生成时间，用于mergeSort
+	friend bool operator < (const CData lt, const CData rt);
+	//重载 == 操作符，比较 ID，用于去重
+	friend bool operator == (const CData lt, const CData rt);
+	//重载操作符 == 用于根据 ID 判断 identical
+	friend bool operator == (int id, const CData data);
+	friend bool operator == (const CData data, int id);
 
 };
 

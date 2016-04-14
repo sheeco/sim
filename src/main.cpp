@@ -175,8 +175,47 @@ void Help()
 	help.close();
 }
 
+void InitLogPath()
+{
+	// Generate timestamp & output path
+
+	// Create root path (../test/) if doesn't exist
+	if( access(PATH_ROOT.c_str(), 00) != 0 )
+		_mkdir(PATH_ROOT.c_str());
+
+	time_t seconds;  //秒时间  
+	char temp[65] = { '\0' };
+	seconds = time(nullptr); //获取目前秒时间  
+	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
+	TIMESTAMP = string(temp);
+	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
+	string timestring;
+	timestring = string(temp);
+	INFO_LOG = "@" + TIMESTAMP + TAB;
+	PATH_LOG = "." + timestring + "/";
+
+	// Create log path
+	if( access(( PATH_ROOT + PATH_LOG ).c_str(), 00) != 0 )
+		_mkdir(( PATH_ROOT + PATH_LOG ).c_str());
+
+	// Hide folder
+	LPWSTR wstr = CString(( PATH_ROOT + PATH_LOG ).c_str()).AllocSysString();
+	int attr = GetFileAttributes(wstr);
+	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
+	{
+		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
+	}
+
+}
+
 bool ParseArguments(int argc, char* argv[])
 {
+	// 将使用的命令行参数输出到文件
+	ofstream command(PATH_ROOT + PATH_LOG + FILE_COMMAND, ios::out);
+	for( int i = 0; i < argc; ++i )
+		command << argv[i] << " ";
+	command.close();
+
 	try
 	{
 		int iField = 0;
@@ -546,35 +585,6 @@ bool ParseArguments(int argc, char* argv[])
 		return false;
 	}
 
-	// Generate timestamp & output path
-
-	// Create root path (../test/) if doesn't exist
-	if( access(PATH_ROOT.c_str(), 00) != 0 )
-		_mkdir(PATH_ROOT.c_str());
-
-	time_t seconds;  //秒时间  
-	char temp[65] = {'\0'};
-	seconds = time(nullptr); //获取目前秒时间  
-	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));  
-	TIMESTAMP = string(temp);
-	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));  
-	string timestring;
-	timestring = string(temp);
-	INFO_LOG = "@" + TIMESTAMP + TAB;
-	PATH_LOG = "." + timestring + "/";
-
-	// Create log path
-	if( access( (PATH_ROOT + PATH_LOG).c_str(), 00 ) != 0 )
-		_mkdir( (PATH_ROOT + PATH_LOG).c_str() );
-
-	// Hide folder
-	LPWSTR wstr = CString( (PATH_ROOT + PATH_LOG).c_str()).AllocSysString();
-	int attr = GetFileAttributes( wstr );
-	if ( (attr & FILE_ATTRIBUTE_HIDDEN) == 0 )
-	{
-		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
-	}
-
 	return true;
 
 }
@@ -586,8 +596,6 @@ void PrintConfiguration()
 
 	parameters << "CYCLE" << TAB << CNode::SLOT_TOTAL << endl;
 	parameters << "DEFAULT_DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
-	if( MAC_PROTOCOL == _hdc )
-		parameters << "HOTSPOT_DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
 
 	if( CData::useHOP() )
 		parameters << "HOP" << TAB << CData::MAX_HOP << endl;
@@ -616,7 +624,6 @@ void PrintConfiguration()
 
 	final << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
 
-	parameters << endl;
 //	if( ROUTING_PROTOCOL == _epidemic )
 //	{
 //		INFO_LOG += "$Epidemic ";
@@ -627,7 +634,7 @@ void PrintConfiguration()
 	if( ROUTING_PROTOCOL == _prophet )
 	{
 		INFO_LOG += "$Prophet ";
-		parameters << "$Prophet " << endl << endl;
+		parameters << endl << "$Prophet " << endl << endl;
 		parameters << "PRED_INIT" << TAB << CNode::INIT_DELIVERY_PRED << endl;
 		parameters << "PRED_DECAY" << TAB << CNode::RATIO_PRED_DECAY << endl;
 		parameters << "PRED_TRANS" << TAB << CNode::RATIO_PRED_TRANS << endl;
@@ -636,7 +643,8 @@ void PrintConfiguration()
 	if( MAC_PROTOCOL == _hdc )
 	{
 		INFO_LOG += "$HDC ";
-		parameters << "$HDC " << endl << endl;
+		parameters << endl << "$HDC " << endl << endl;
+		parameters << "HOTSPOT_DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
 		final << CNode::HOTSPOT_DUTY_CYCLE << TAB ;
 	}
 
@@ -645,7 +653,7 @@ void PrintConfiguration()
 		if( HOTSPOT_SELECT == _improved )
 		{
 			INFO_LOG += "$iHS ";
-			parameters << "$iHS " << endl << endl;
+			parameters << endl << "$iHS " << endl << endl;
 			parameters << "POSITION_LIFETIME" << TAB << CHotspotSelect::LIFETIME_POSITION << endl << endl;
 
 			final << CHotspotSelect::LIFETIME_POSITION << TAB ;
@@ -654,7 +662,7 @@ void PrintConfiguration()
 		else if( HOTSPOT_SELECT == _merge )
 		{
 			INFO_LOG += "$mHS ";
-			parameters << "$mHS " << endl << endl;
+			parameters << endl << "$mHS " << endl << endl;
 			parameters << "RATIO_MERGE" << TAB << CHotspotSelect::RATIO_MERGE_HOTSPOT << endl;
 			parameters << "RATIO_NEW" << TAB << CHotspotSelect::RATIO_NEW_HOTSPOT << endl;
 			parameters << "RATIO_OLD" << TAB << CHotspotSelect::RATIO_OLD_HOTSPOT << endl;
@@ -666,7 +674,7 @@ void PrintConfiguration()
 		else
 		{
 			INFO_LOG += "$HS ";
-			parameters << "$HS " << endl << endl;
+			parameters << endl << "$HS " << endl << endl;
 		}
 
 		parameters << "ALPHA" << TAB << CPostSelect::ALPHA << endl;
@@ -676,7 +684,7 @@ void PrintConfiguration()
 	if( ROUTING_PROTOCOL == _xhar )
 	{
 		INFO_LOG += "$xHAR ";
-		parameters << "$xHAR " << endl << endl;
+		parameters << endl << "$xHAR " << endl << endl;
 		parameters << "BETA" << TAB << HAR::BETA << endl;
 		parameters << "HEAT_CO_1" << TAB << HAR::CO_HOTSPOT_HEAT_A1 << endl;
 		parameters << "HEAT_CO_2" << TAB << HAR::CO_HOTSPOT_HEAT_A2 << endl;
@@ -686,8 +694,7 @@ void PrintConfiguration()
 	if( CMacProtocol::TEST_DYNAMIC_NUM_NODE)
 	{
 		INFO_LOG += "#DYNAMIC_NODE_NUMBER";
-		parameters << endl;
-		parameters << "#DYNAMIC_NODE_NUMBER" << endl;
+		parameters << endl << "#DYNAMIC_NODE_NUMBER" << endl;
 	}
 
 	parameters << endl;
@@ -769,15 +776,19 @@ int main(int argc, char* argv[])
 {
 	// TODO: release 版本中应改为 while(1) 循环
 
+	/***************************** 初始化时间戳和 log 文件夹等******************************/
+
+	InitLogPath();
+
 	/************************************ 参数默认值 *************************************/
 
 	InitConfiguration();
 
-	/************************************ 命令行参数解析 *************************************/
+	/********************************** 命令行参数解析 ************************************/
 
 	ParseArguments(argc, argv);
 
-	/********************************* 将log信息和参数信息写入文件 ***********************************/
+	/*************************** 将 log 信息和参数信息写入文件 ******************************/
 	
 	PrintConfiguration();
 

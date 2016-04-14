@@ -3,7 +3,7 @@
 #include "NodeRepair.h"
 #include "FileHelper.h"
 
-vector<CHotspot *> CHotspotSelect::copy_hotspotCandidates;
+//vector<CHotspot *> CHotspotSelect::copy_hotspotCandidates;
 vector<CPosition *> CHotspotSelect::uncoveredPositions;
 vector<CHotspot *> CHotspotSelect::unselectedHotspots;
 vector<CHotspot *> CHotspotSelect::hotspotsAboveAverage;
@@ -34,15 +34,15 @@ int CHotspotSelect::LIFETIME_POSITION = 3600;
 
 void CHotspotSelect::updateHotspotCandidates()
 {
-	//制作候选hotspot集的副本
-	if( ! CHotspot::hotspotCandidates.empty())
-	{
-		for(vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); ++ihotspot)
-		{
-			CHotspot *temp_hotspot = new CHotspot(**ihotspot);
-			copy_hotspotCandidates.push_back(temp_hotspot);
-		}
-	}
+	////制作候选hotspot集的副本
+	//if( ! CHotspot::hotspotCandidates.empty())
+	//{
+	//	for(vector<CHotspot *>::iterator ihotspot = CHotspot::hotspotCandidates.begin(); ihotspot != CHotspot::hotspotCandidates.end(); ++ihotspot)
+	//	{
+	//		CHotspot *temp_hotspot = new CHotspot(**ihotspot);
+	//		copy_hotspotCandidates.push_back(temp_hotspot);
+	//	}
+	//}
 	unselectedHotspots = CHotspot::hotspotCandidates;	
 	hotspotsAboveAverage.clear();
 	selectedHotspots.clear();
@@ -164,7 +164,7 @@ void CHotspotSelect::BuildCandidateHotspots(int currentTime)
 		FreePointerVector(CHotspot::oldSelectedHotspots);
 	CHotspot::oldSelectedHotspots = CHotspot::selectedHotspots;
 	//仅清空g_selectedHotspot，不释放内存
-	CHotspot::selectedHotspots.erase(CHotspot::selectedHotspots.begin(), CHotspot::selectedHotspots.end());
+	CHotspot::selectedHotspots.clear();
 
 	//将所有position按x坐标排序，以便简化遍历操作
 	CPosition::positions = CSortHelper::mergeSort(CPosition::positions);
@@ -282,11 +282,6 @@ void CHotspotSelect::GreedySelect(int currentTime)
 		}
 	}while(! uncoveredPositions.empty());
 
-	//将选取结果存入全局变量
-	//注意：未被选中的热点必须放入CHotspot::hotspotCandidates便于之后统一释放，或手动释放
-	CHotspot::hotspotCandidates = unselectedHotspots;
-	CHotspot::selectedHotspots = selectedHotspots;
-
 }
 
 void CHotspotSelect::MergeHotspots(int currentTime)
@@ -376,10 +371,34 @@ void CHotspotSelect::MergeHotspots(int currentTime)
 	//FreePointerVector(CHotspot::oldSelectedHotspots);
 	CHotspot::selectedHotspots.clear();
 
-	copy_hotspotCandidates = CHotspot::hotspotCandidates;
+	//copy_hotspotCandidates = CHotspot::hotspotCandidates;
 	uncoveredPositions = CPosition::positions;
 	unselectedHotspots = CHotspot::hotspotCandidates;
 
+}
+
+vector<CHotspot *> CHotspotSelect::assignPositionsToHotspots(vector<CHotspot *> hotspots)
+{
+	vector<CHotspot *> temp_hotspots = hotspots;
+	vector<CHotspot *> result_hotspots;
+	while( !temp_hotspots.empty() )
+	{
+		temp_hotspots = CSortHelper::mergeSort(temp_hotspots, CSortHelper::ascendByRatio);
+		//FIXME:尽量多 / 平均？
+		CHotspot *selected_hotspot = temp_hotspots.at(temp_hotspots.size() - 1);
+		if( selected_hotspot->getNCoveredPosition() == 0 )
+			break;
+		temp_hotspots.pop_back();
+		result_hotspots.push_back(selected_hotspot);
+		vector<CPosition *> positions = selected_hotspot->getCoveredPositions();
+		for( vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin(); ihotspot != temp_hotspots.end(); ++ihotspot )
+		{
+			( *ihotspot )->removePositionList(positions);
+			( *ihotspot )->updateStatus();
+		}
+	}
+
+	return result_hotspots;
 }
 
 void CHotspotSelect::HotspotSelect(int currentTime)
@@ -397,24 +416,39 @@ void CHotspotSelect::HotspotSelect(int currentTime)
 
 	/**************************** 热点归并过程(merge-HAR) *****************************/
 	if( HOTSPOT_SELECT == _merge )
-		MergeHotspots(currentTime);
+		MergeHotspots(currentTime);  //操作 CHotspot 类内变量
+
+	// 以下函数操作类内变量
 
 	/********************************** 贪婪选取 *************************************/
 	GreedySelect(currentTime);
 
-
 	/********************************* 后续选取过程 ***********************************/
-	CPostSelect postSelector(CHotspot::selectedHotspots);
-	CHotspot::selectedHotspots = postSelector.PostSelect(currentTime);
+	CPostSelect postSelector(selectedHotspots, unselectedHotspots);
+	selectedHotspots = postSelector.PostSelect(currentTime);
 
 
 	/***************************** 疏漏节点修复过程(IHAR) ******************************/
 	if( HOTSPOT_SELECT == _improved )
 	{
-		CNodeRepair repair(CHotspot::selectedHotspots, CHotspot::hotspotCandidates, currentTime);
-		CHotspot::selectedHotspots = repair.RepairPoorNodes();
-		CHotspot::selectedHotspots = postSelector.assignPositionsToHotspots(CHotspot::selectedHotspots);
+		CNodeRepair repair(selectedHotspots, unselectedHotspots);  //传入引用
+		selectedHotspots = repair.RepairPoorNodes(currentTime);
 	}
+
+	//分配每个position到唯一一个热点，并计算最终选取出的hotspot的cover的node，以备使用
+	selectedHotspots = CHotspotSelect::assignPositionsToHotspots(selectedHotspots);
+
+	//将选取结果存入CHotspot
+	//注意：未被选中的热点必须放入 CHotspot::hotspotCandidates 便于之后统一释放，或手动释放
+	CHotspot::hotspotCandidates = unselectedHotspots;
+	CHotspot::selectedHotspots = selectedHotspots;
+
+	//清理类内变量
+	selectedHotspots.clear();
+	unselectedHotspots.clear();
+	//FreePointerVector( copy_hotspotCandidates );
+	hotspotsAboveAverage.clear();
+	uncoveredPositions.clear();
 
 	flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
 
@@ -423,6 +457,7 @@ void CHotspotSelect::HotspotSelect(int currentTime)
 	{
 		CompareWithOldHotspots(currentTime);
 	}
+
 }
 
 void CHotspotSelect::CompareWithOldHotspots(int currentTime)
@@ -451,7 +486,8 @@ void CHotspotSelect::CompareWithOldHotspots(int currentTime)
 
 void CHotspotSelect::PrintInfo(int currentTime)
 {
-	if( currentTime % SLOT_HOTSPOT_UPDATE  != 0 )
+	if( ! ( currentTime % SLOT_HOTSPOT_UPDATE  == 0
+		    && currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT ) )
 		return;
 	
 	//热点个数
@@ -482,14 +518,14 @@ void CHotspotSelect::PrintInfo(int currentTime)
 		hotspot_statistics << INFO_HOTSPOT_STATISTICS ;
 	}
 	int sumCover = 0;
-	for(vector<CHotspot *>::iterator it = selectedHotspots.begin(); it != selectedHotspots.end(); ++it)
+	for(vector<CHotspot *>::iterator it = CHotspot::selectedHotspots.begin(); it != CHotspot::selectedHotspots.end(); ++it)
 		sumCover += (*it)->getNCoveredPosition();
-	hotspot_statistics << currentTime << TAB << sumCover << TAB << selectedHotspots.size() << TAB << double( sumCover ) / double( selectedHotspots.size() ) << endl;
+	hotspot_statistics << currentTime << TAB << double( sumCover ) / double( CPosition::nPositions ) << TAB << CHotspot::selectedHotspots.size() << TAB << double( sumCover ) / double( CHotspot::selectedHotspots.size() ) << endl;
 	hotspot_statistics.close();
 
 
 	//用于计算热点个数历史平均值
-	SUM_HOTSPOT_COST += selectedHotspots.size();
+	SUM_HOTSPOT_COST += CHotspot::selectedHotspots.size();
 	++COUNT_HOTSPOT_COST;
 
 	if( HOTSPOT_SELECT == _merge )
@@ -513,7 +549,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 			merge_details << currentTime << TAB;
 
 			//热点类型及年龄统计信息
-			for(vector<CHotspot *>::iterator ihotspot = selectedHotspots.begin(); ihotspot != selectedHotspots.end(); ++ihotspot)
+			for(vector<CHotspot *>::iterator ihotspot = CHotspot::selectedHotspots.begin(); ihotspot != CHotspot::selectedHotspots.end(); ++ihotspot)
 			{
 				if( (*ihotspot)->getTypeHotspotCandidate() == CHotspot::_merge_hotspot )
 				{
@@ -533,7 +569,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 			}
 
 			//三种热点所占的比例
-			int total = selectedHotspots.size();
+			int total = CHotspot::selectedHotspots.size();
 			merge << currentTime << TAB << mergeCount << TAB << double( mergeCount ) / double( total ) << TAB << oldCount << TAB 
 				<< double( oldCount ) / double( total ) << TAB << newCount << TAB << double( newCount ) / double( total ) << endl;
 

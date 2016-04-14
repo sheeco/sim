@@ -118,6 +118,7 @@ namespace global
 	extern string FILE_HELP;
 	//extern string INFO_HELP;
 	extern string FILE_ERROR;
+	extern string FILE_COMMAND;
 	extern string FILE_FINAL;
 	extern string INFO_FINAL;
 
@@ -151,6 +152,12 @@ namespace global
 	extern string INFO_VISIT;
 	extern string FILE_HOTSPOT_STATISTICS;
 	extern string INFO_HOTSPOT_STATISTICS;
+	extern string FILE_HOTSPOT_RANK;
+	extern string INFO_HOTSPOT_RANK;
+	extern string FILE_DELIVERY_HOTSPOT;
+	extern string INFO_DELIVERY_HOTSPOT;
+	extern string FILE_DELIVERY_STATISTICS;
+	extern string INFO_DELIVERY_STATISTICS;
 	extern string FILE_MERGE;
 	extern string INFO_MERGE;
 	extern string FILE_MERGE_DETAILS;
@@ -165,99 +172,10 @@ namespace global
 
 	/****************************** Global Func *******************************/
 
-	inline void Exit(int code)
-	{
-		time_t seconds;  //秒时间  
-		char temp_time[65];
-		seconds = time(nullptr); //获取目前秒时间  
-		strftime(temp_time, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));  
-		string finalTime(temp_time);
-
-//		// Remove entire folder if empty & exit directly
-//
-//		LPWSTR pathContent = CString( (PATH_ROOT + PATH_LOG + "*.*").c_str()).AllocSysString();
-//		LPWSTR pathFolder = CString( (PATH_ROOT + PATH_LOG).c_str()).AllocSysString();
-//		CFileFind tempFind;
-//		bool anyContentFound = (bool) tempFind.FindFile(pathContent);
-//		if( ! anyContentFound )
-//		{
-//			//去掉文件的系统和隐藏属性
-//			SetFileAttributes(pathFolder, FILE_ATTRIBUTE_NORMAL);
-//			remove( (PATH_ROOT + PATH_LOG).c_str() );
-//
-//			exit(code);
-//		}
-
-		// Copy final file to father folder
-
-		if( code == EFINISH )
-		{
-			ifstream finalInput(PATH_ROOT + PATH_LOG + FILE_FINAL, ios::in);
-			if( finalInput.is_open()
-				&& ( ! finalInput.eof() ) )
-			{
-
-				ofstream copy(PATH_ROOT + FILE_FINAL, ios::app);
-				char temp[310] = {'\0'};
-				copy.seekp(0, ios::end);
-				if( ! copy.tellp() )
-				{
-					copy << INFO_FINAL ;
-				}
-				finalInput.getline(temp, 300);  //skip head line
-				finalInput.getline(temp, 300);
-				string finalInfo(temp);
-				copy << finalInfo << INFO_LOG << TAB << "@" << finalTime << endl;
-				copy.close();
-			}			
-		}
-
-		// Print final time
-
-		if( code >= EFINISH )
-		{
-			fstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app | ios::in);
-			final << INFO_LOG << TAB << "@" << finalTime << endl;	
-			final.close();
-		}
-
-		// Remove name prefix '.' in front of log folder
-
-		if( code == EFINISH )
-		{
-
-			if( _access( (PATH_ROOT + PATH_LOG).c_str(), 02 ) == 0 
-				&& ( PATH_LOG.find(".") != PATH_LOG.npos ) )   //if writeable & '.' found in filename
-			{
-				string newPathLog = PATH_LOG.substr( 1, PATH_LOG.npos);
-				if( _access( (PATH_ROOT + newPathLog).c_str(), 00 ) != 0 )  //if no collision
-				{
-					rename((PATH_ROOT + PATH_LOG).c_str(), (PATH_ROOT + newPathLog).c_str());
-					PATH_LOG = newPathLog;
-				}
-			}
-
-			// Unhide folder
-			LPWSTR wstr = CString( (PATH_ROOT + PATH_LOG).c_str()).AllocSysString();
-			int attr = GetFileAttributes( wstr );
-			if ( (attr & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN )
-			{
-				SetFileAttributes(wstr, attr & ~FILE_ATTRIBUTE_HIDDEN);
-			}
-		}
-
-		exit(code);
-	}
+	void Exit(int code);
 
 	// TODO: 
-	inline void Exit(int code, string error)
-	{
-		ofstream errorFile(PATH_ROOT + PATH_LOG + FILE_ERROR, ios::app);
-		errorFile << error << endl << endl;
-		errorFile.close();
-
-		Exit(code);
-	}
+	void Exit(int code, string error);
 
 	// TODO: find all refs & replace with Bet()
 	//Randomly product a float number between min and max
@@ -496,7 +414,7 @@ namespace global
 	}
 
 	template <class E>
-	E getObject(E* ptr)
+	E getObjectForPointer(E* ptr)
 	{
 		return *ptr;
 	}
@@ -505,7 +423,7 @@ namespace global
 	vector<RTN> Iterate(vector<E> list, RTN(* operation)(E))
 	{
 		vector<RTN> rtn;
-		for(auto item = list.begin(); item != list.end(); ++item)
+		for(vector<E>::iterator item = list.begin(); item != list.end(); ++item)
 			rtn.push_back( operation(*item) );
 		return rtn;
 	}
@@ -514,8 +432,8 @@ namespace global
 	double Accumulate(vector<E> list, double(* value)(E))
 	{
 		double rtn = 0;
-		for(auto item = list.begin(); item != list.end(); ++item)
-			rtn += operation(*item);
+		for(vector<E>::iterator item = list.begin(); item != list.end(); ++item)
+			rtn += value(*item);
 		return rtn;
 	}
 

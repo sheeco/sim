@@ -10,7 +10,7 @@ class CHotspotSelect :
 {
 private:
 
-	static vector<CHotspot *> copy_hotspotCandidates;  //来自CHotspot::hotspotCandidates，贪婪选取过程中会修改hotspot的信息
+	//static vector<CHotspot *> copy_hotspotCandidates;  //来自CHotspot::hotspotCandidates，贪婪选取过程中会修改hotspot的信息
 	static vector<CPosition *> uncoveredPositions;  //保存尚未被cover的position
 	static vector<CHotspot *> unselectedHotspots;  //未被选中的hotspot集合
 	static vector<CHotspot *> hotspotsAboveAverage;  //ratio高于1/2的hotspot集合
@@ -117,6 +117,9 @@ public:
 	//读取所有节点的当前位置，加入position列表（append），在每个地理位置信息收集时隙上调用
 	//注意：必须在调用 UpdateNodeStatus() 之后调用
 	static void CollectNewPositions(int currentTime);
+
+	//选取hotspot完成后，将被覆盖的每一个position分配到唯一一个hotspot
+	static vector<CHotspot *> assignPositionsToHotspots(vector<CHotspot *> hotspots);
 
 	//执行热点选取
 	static void HotspotSelect(int currentTime);

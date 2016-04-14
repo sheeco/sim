@@ -1,18 +1,18 @@
 #include "PostSelect.h"
 #include "SortHelper.h"
+#include "HotspotSelect.h"
 
 double CPostSelect::ALPHA = 0.03;  //ratio for post selection
 
 
-CPostSelect::CPostSelect(vector<CHotspot *> hotspotCandidates)
+CPostSelect::CPostSelect(vector<CHotspot *> selectedHotspots, vector<CHotspot *> &unselectedHotspots) : hotspotCandidates(selectedHotspots), unselectedHotspots(unselectedHotspots)
 {
 	this->maxRatio = 0;
-	hotspotCandidates = CSortHelper::mergeSort(hotspotCandidates, CSortHelper::ascendByRatio);
+	this->hotspotCandidates = CSortHelper::mergeSort(this->hotspotCandidates, CSortHelper::ascendByRatio);
 	if(hotspotCandidates.size() > 0)
 	{
 		this->maxRatio = hotspotCandidates.at(hotspotCandidates.size() - 1)->getNCoveredPosition();
 	}
-	this->hotspotCandidates = hotspotCandidates;
 }
 
 double CPostSelect::getRatioForHotspot(CHotspot *hotspot) const
@@ -79,29 +79,6 @@ CHotspot* CPostSelect::findBestHotspotForNode(int inode)
 	return result;
 }
 
-vector<CHotspot *> CPostSelect::assignPositionsToHotspots(vector<CHotspot *> hotspots) const
-{
-	vector<CHotspot *> temp_hotspots = hotspots;
-	vector<CHotspot *> result_hotspots;
-	while(! temp_hotspots.empty())
-	{
-		temp_hotspots = CSortHelper::mergeSort(temp_hotspots, CSortHelper::ascendByRatio);
-		//FIXME:尽量多 / 平均？
-		CHotspot *selected_hotspot = temp_hotspots.at(temp_hotspots.size() - 1);
-		if(selected_hotspot->getNCoveredPosition() == 0)
-			break;
-		temp_hotspots.pop_back();
-		result_hotspots.push_back(selected_hotspot);
-		vector<CPosition *> positions = selected_hotspot->getCoveredPositions();
-		for(vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin(); ihotspot != temp_hotspots.end(); ++ihotspot)
-		{
-			(*ihotspot)->removePositionList(positions);
-			(*ihotspot)->updateStatus();
-		}
-	}
-
-	return result_hotspots;
-}
 
 bool CPostSelect::verifyCompleted()
 {
@@ -161,15 +138,12 @@ vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 		_PAUSE_;
 	}
 
-	//分配每个position到唯一一个热点，并计算最终选取出的hotspot的cover的node，以备使用
-	selectedHotspots = this->assignPositionsToHotspots(selectedHotspots);
-
 	//将未选中的候选热点放回全局候选集
-	CHotspot::hotspotCandidates.insert( CHotspot::hotspotCandidates.end(), hotspotCandidates.begin(), hotspotCandidates.end() );
+	unselectedHotspots.insert(unselectedHotspots.end(), hotspotCandidates.begin(), hotspotCandidates.end() );
 	return selectedHotspots;
 }
 
-int CPostSelect::getNCoveredPositions() const
-{
-	return coveredPositions.size();
-}
+//int CPostSelect::getNCoveredPositions() const
+//{
+//	return coveredPositions.size();
+//}

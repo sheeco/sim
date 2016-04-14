@@ -26,6 +26,7 @@ namespace global
 	//string INFO_HELP;
 
 	string FILE_ERROR = "error.log";
+	string FILE_COMMAND = "command.log";
 	string FILE_FINAL = "final.log";
 	string INFO_FINAL = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#HOP/TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay/	#HOP/	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime	#Node)	#Log \n" ;
 
@@ -59,7 +60,7 @@ namespace global
 	string FILE_VISIT = "visit.log";
 	string INFO_VISIT = "#Time	#VisitAtHotspotPercent	#VisitAtHotspot	#VisitSum \n" ;
 	string FILE_HOTSPOT_STATISTICS = "hotspot-statistics.log";
-	string INFO_HOTSPOT_STATISTICS = "#Time	#CoverSum	#HotspotCount	#AvgCover \n" ;
+	string INFO_HOTSPOT_STATISTICS = "#Time	#CoverPercent	#HotspotCount	#AvgCover \n" ;
 	string FILE_HOTSPOT_RANK = "hotspot-rank.log";
 	string INFO_HOTSPOT_RANK =  "#WorkTime	#ID	#Location	#nPosition, nNode	#Ratio	#Tw	#DeliveryCount \n" ;
 	string FILE_DELIVERY_HOTSPOT = "delivery-hotspot.log";
@@ -77,4 +78,97 @@ namespace global
 	string FILE_ED = "ed.log";
 	string INFO_ED = "#Time	#EstimatedDelay \n" ;
 
+}
+
+void global::Exit(int code)
+{
+	time_t seconds;  //秒时间  
+	char temp_time[65];
+	seconds = time(nullptr); //获取目前秒时间  
+	strftime(temp_time, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
+	string finalTime(temp_time);
+
+	//		// Remove entire folder if empty & exit directly
+	//
+	//		LPWSTR pathContent = CString( (PATH_ROOT + PATH_LOG + "*.*").c_str()).AllocSysString();
+	//		LPWSTR pathFolder = CString( (PATH_ROOT + PATH_LOG).c_str()).AllocSysString();
+	//		CFileFind tempFind;
+	//		bool anyContentFound = (bool) tempFind.FindFile(pathContent);
+	//		if( ! anyContentFound )
+	//		{
+	//			//去掉文件的系统和隐藏属性
+	//			SetFileAttributes(pathFolder, FILE_ATTRIBUTE_NORMAL);
+	//			remove( (PATH_ROOT + PATH_LOG).c_str() );
+	//
+	//			exit(code);
+	//		}
+
+	// Copy final file to father folder
+
+	if( code == EFINISH )
+	{
+		ifstream finalInput(PATH_ROOT + PATH_LOG + FILE_FINAL, ios::in);
+		if( finalInput.is_open()
+		   && ( !finalInput.eof() ) )
+		{
+
+			ofstream copy(PATH_ROOT + FILE_FINAL, ios::app);
+			char temp[310] = { '\0' };
+			copy.seekp(0, ios::end);
+			if( !copy.tellp() )
+			{
+				copy << INFO_FINAL;
+			}
+			finalInput.getline(temp, 300);  //skip head line
+			finalInput.getline(temp, 300);
+			string finalInfo(temp);
+			copy << finalInfo << INFO_LOG << TAB << "@" << finalTime << endl;
+			copy.close();
+		}
+	}
+
+	// Print final time
+
+	if( code >= EFINISH )
+	{
+		fstream final(PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app | ios::in);
+		final << INFO_LOG << TAB << "@" << finalTime << endl;
+		final.close();
+	}
+
+	// Remove name prefix '.' in front of log folder
+
+	if( code == EFINISH )
+	{
+
+		if( _access(( PATH_ROOT + PATH_LOG ).c_str(), 02) == 0
+		   && ( PATH_LOG.find(".") != PATH_LOG.npos ) )   //if writeable & '.' found in filename
+		{
+			string newPathLog = PATH_LOG.substr(1, PATH_LOG.npos);
+			if( _access(( PATH_ROOT + newPathLog ).c_str(), 00) != 0 )  //if no collision
+			{
+				rename(( PATH_ROOT + PATH_LOG ).c_str(), ( PATH_ROOT + newPathLog ).c_str());
+				PATH_LOG = newPathLog;
+			}
+		}
+
+		// Unhide folder
+		LPWSTR wstr = CString(( PATH_ROOT + PATH_LOG ).c_str()).AllocSysString();
+		int attr = GetFileAttributes(wstr);
+		if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == FILE_ATTRIBUTE_HIDDEN )
+		{
+			SetFileAttributes(wstr, attr & ~FILE_ATTRIBUTE_HIDDEN);
+		}
+	}
+
+	exit(code);
+}
+
+void global::Exit(int code, string error)
+{
+	ofstream errorFile(PATH_ROOT + PATH_LOG + FILE_ERROR, ios::app);
+	errorFile << error << endl << endl;
+	errorFile.close();
+
+	Exit(code);
 }

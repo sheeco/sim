@@ -46,6 +46,7 @@
 >   -time-data            []  |  节点数据生成的截止时间（默认 15000）； 
 >   -slot                 []  |  网络运行的时槽（默认 1）； 
 >   -dataset              []  |  数据集名称（节点轨迹文件路径 ./res/%DATASET%/）； 
+>   -continuous-trace         |  将轨迹文件中的离散点模拟成连续的折线轨迹（默认不采用）；
 >   -log-path             []  |  日志文件路径（默认 ./log/）； 
 >   -log-slot             []  |  日志输出时槽（默认 100）； 
 >  
@@ -229,7 +230,7 @@
 
 
 
-# Update LOG    * 2015-11-13 -- *
+# Update LOG
 
 
 ## 2.* : Previous Modifications
@@ -740,27 +741,42 @@
 - ADD：重载类 `CCoordinate` 的算术操作符；
 - FIX：热点选取中，位置点信息收集的调用时槽错误；
 - [ ] ADD：如果轨迹文件中的时槽为动态变化的，需要在 `CCTrace::getLocation()` 中增加相应的读取代码；
-- [ ] OPT：对所有操作符重载进行补全和标准化；
 - [ ] RFCT：使用条件编译包裹不同协议相关的类内成员和函数的定义和引用；
 - [ ] RFCT：将文件夹操作提取到 `CFileHelper` 类；
 
 
 ###### [ 2016-04-13  ·  *< 3.4.2 >* ]( 6bb139e98ddd1aa949b4aa0a550008897153d96e )
 
-- MNT：优化 `README.md` 和 `help.md` 的输出格式；
+- MNT：优化 `README.md` 和 `HELP.md` 的输出格式；
 - MNT：将命令行参数使用说明提取到文件 `help.md`，更新版本信息文件 `HDC.version` 的输出；
 
 
-###### 2016-04-14  ·  *< 3.4.3 >*
+###### [ 2016-04-14  ·  *< 3.4.3 >* ]( 3e63540c509120214faebe500e21ef2dd5ee5743 )
 
 - RFCT：整理路由类和 MAC 类协议的操作函数及调用逻辑，增加 `CMacProtocol::Prepare()` 函数；
 - FIX：`CCTrace::addLocation()` 中的整型除法错误；
 - ADD：`-continuous-trance` 选项；
 - TEST：热点选取中，位置点信息收集的调用时槽错误的修复；
 - TEST：`CCTrace` 类中的轨迹文件读取操作，以及 `CHotspotSelect::CollectNewPositions()` 中的位置点信息收集操作；
-- [ ] OPT：`hotspot-statistics.log` 中的输出，改为针对最终选择的热点集合输出信息，添加覆盖比例；
-- [ ] FIX：`parameters.log` 中的输出；
-- [ ] FIX：STL 容器的调试器可视化；
+
+
+###### [ 2016-04-15  ·  *< 3.4.4 >* ]( 7241339d229cc7643ddb4c3998cb4206c30f6222 )
+
+- FIX：VS 2015 的调试器可视化出错，错误原因不明，暂时改用 VS 2012 的平台工具集进行生成和调试；
+- MNT：将 `HELP.md` 添加到追踪列表；
+
+
+###### 2016-04-15  ·  *< 3.4.5 >*
+
+- OPT：对所有操作符重载进行补全和标准化；
+- RFCT：整理 `global` 命名空间下的定义和实现；
+- FIX：修复`hotspot-statistics.log` 中的输出，并添加覆盖比例的输出；
+- RFCT：热点选取过程中，对 `CHotspot` 类内变量的读写，以及相关函数的整理；
+- FIX：`parameters.log` 中的输出；
+- FIX：使用 HAR 路由协议时，log 文件头的输出遗漏；
+- FIX：`error.log` 文件可能错误输出到 `./log/` 目录下，将 log 路径初始化的操作提取到函数 `InitLogPath()`；
+- ADD：将使用的命令行参数输出到 `command.log`；
+- [ ] ADD：使用 `__FILE__`、`__LINE__` 等预编译宏，为未捕捉的异常输出错误信息；
 
 
 

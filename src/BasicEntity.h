@@ -94,25 +94,6 @@ public:
 		this->ID = -1;
 	}
 
-	//操作符重载，基于x坐标比较大小，用于position或hotspot间的排序
-	inline int CBasicEntity::operator==(CBasicEntity &it) const
-	//FIXME:精度问题
-	{
-		return (location.getX() == it.getX());
-	}
-	inline int CBasicEntity::operator!=(CBasicEntity &it) const
-	{
-		return (location.getX() != it.getX());
-	}
-	inline int CBasicEntity::operator<(CBasicEntity &it) const
-	{
-		return (location.getX() < it.getX());
-	}
-	inline int CBasicEntity::operator>(CBasicEntity &it) const
-	{
-		return (location.getX() > it.getX());
-	}
-
 	//返回两点间距离
 	inline static double getDistance(CBasicEntity &m, CBasicEntity &n)
 	{
@@ -129,11 +110,17 @@ public:
 		return ( getDistance(m, n) <= range );
 	}
 
-	static vector<CBasicEntity*> GetItemsByID(vector<CBasicEntity*> list, vector<int> ids);
+	//static vector<CBasicEntity*> GetItemsByID(vector<CBasicEntity*> list, vector<int> ids);
 
 	//由from向to方向移动，给定时间和速度
 	//如果足够到达to位置，则返回大于等于 0 的剩余时间（精确到整数）；否则返回值小于 0
 	int moveTo(CBasicEntity to, int interval, double speed);
 
+	//操作符重载，基于x坐标比较大小，用于position或hotspot间的排序
+	friend bool operator == (const CBasicEntity &lt, const CBasicEntity &rt);
+	friend bool operator != (const CBasicEntity &lt, const CBasicEntity &rt);
+	friend bool operator < (const CBasicEntity &lt, const CBasicEntity &rt);
+	friend bool operator > (const CBasicEntity &lt, const CBasicEntity &rt);
+	
 };
 

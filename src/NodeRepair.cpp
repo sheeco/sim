@@ -3,19 +3,20 @@
 #include "Node.h"
 
 
-CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *> hotspotCandidates, int time)
+CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *> &unselectedHotspots) : selectedHotspots(selectedHotspots), unselectedHotspots(unselectedHotspots)
 {	
-	this->time = time;
-	this->selectedHotspots = selectedHotspots;
-	if( ! hotspotCandidates.empty())
-	{
-		for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
-		{
-			if( ! IfExists(this->selectedHotspots, *ihotspot, CHotspot::identical))
-				unselectedHotspots.push_back(*ihotspot);
-		}
-	}
-	//初始化为所有node
+	//this->selectedHotspots = selectedHotspots;
+	//this->unselectedHotspots = unselectedHotspots;
+	//if( ! hotspotCandidates.empty())
+	//{
+	//	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
+	//	{
+	//		if( ! IfExists(this->selectedHotspots, *ihotspot, CHotspot::identical))
+	//			unselectedHotspots.push_back(*ihotspot);
+	//	}
+	//}
+
+	// 初始化为所有node
 	poorNodes.insert( poorNodes.begin(), CNode::getIdNodes().begin(), CNode::getIdNodes().end() );
 }
 
@@ -62,10 +63,11 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 	return result;
 }
 
-vector<CHotspot *> CNodeRepair::RepairPoorNodes()
+vector<CHotspot *> CNodeRepair::RepairPoorNodes(int time)
 {
 	flash_cout << "####  ( POOR NODE REPAIR )          " ;
 
+	this->time = time;
 	while(! poorNodes.empty())
 	{
 		int inode = poorNodes[0];
@@ -83,7 +85,6 @@ vector<CHotspot *> CNodeRepair::RepairPoorNodes()
 		poorNodes.erase(poorNodes.begin());
 	}
 
-	CHotspot::hotspotCandidates = unselectedHotspots;
 	return selectedHotspots;
 }
 

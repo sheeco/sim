@@ -37,3 +37,25 @@ vector<CData> CData::GetItemsByID(vector<CData> list, vector<int> ids)
 	}
 	return result;
 }
+
+//重载比较操作符，比较生成时间，用于mergeSort
+bool operator < (const CData lt, const CData rt)
+{
+	return lt.getTimeBirth() < rt.getTimeBirth();
+}
+
+//重载 == 操作符，比较 ID，用于去重
+bool operator == (const CData lt, const CData rt)
+{
+	return lt.getID() == rt.getID();
+}
+
+//重载操作符 == 用于根据 ID 判断 identical
+bool operator == (int id, const CData data)
+{
+	return data.getID() == id;
+}
+bool operator == (const CData data, int id)
+{
+	return data.getID() == id;
+}

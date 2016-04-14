@@ -14,8 +14,9 @@ private:
 	vector<int> coveredNodes;
 	vector<int> lostNodes;
 	vector<int> coveredPositions;
-	vector<CHotspot *> hotspotCandidates;
-	vector<CHotspot *> selectedHotspots;
+	vector<CHotspot*> &unselectedHotspots;  //未被选中的hotspot集合
+	vector<CHotspot*> selectedHotspots;  //选中的hotspot集合，即整个贪婪算法的输出
+	vector<CHotspot*> hotspotCandidates;  //选中的hotspot集合，即整个贪婪算法的输出
 
 	/** 辅助函数 **/
 	double getRatioForHotspot(CHotspot *hotspot) const;
@@ -31,14 +32,12 @@ public:
 
 	static double ALPHA;  //ratio for post selection
 
-	CPostSelect(vector<CHotspot *> hotspotCandidates);
+	CPostSelect(vector<CHotspot *> selectedHotspots, vector<CHotspot *> &unselectedHotspots);
 	~CPostSelect(){};
 
-	//选取hotspot完成后，将被覆盖的每一个position分配到唯一一个hotspot
-	vector<CHotspot *> assignPositionsToHotspots(vector<CHotspot *> hotspots) const;	
 	//执行hotspot选取，返回得到的hotspot集合
 	vector<CHotspot *> PostSelect(int currentTime);
-	int getNCoveredPositions() const;
+	//int getNCoveredPositions() const;
 	
 };
 
