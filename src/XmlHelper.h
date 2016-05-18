@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __XML_HELPER_H__
+#define __XML_HELPER_H__
+
 #include "Helper.h"
 #include "Global.h"
 
@@ -22,3 +25,4 @@ public:
 
 };
 
+#endif // __XML_HELPER_H__

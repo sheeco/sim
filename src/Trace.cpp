@@ -1,4 +1,4 @@
-#include "CTrace.h"
+#include "Trace.h"
 #include "FileHelper.h"
 
 bool CCTrace::CONTINUOUS_TRACE = false;

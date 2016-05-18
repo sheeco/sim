@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __HAR_H__
+#define __HAR_H__
+
 #include "Hotspot.h"
 #include "MANode.h"
 #include "Route.h"
@@ -101,3 +104,4 @@ public:
 
 };
 
+#endif // __HAR_H__

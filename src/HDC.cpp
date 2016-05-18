@@ -3,7 +3,7 @@
 #include "HAR.h"
 #include "SortHelper.h"
 #include "HotspotSelect.h"
-#include "CTrace.h"
+#include "Trace.h"
 
 
 CHDC::CHDC()

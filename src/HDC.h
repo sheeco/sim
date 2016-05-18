@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __HDC_H__
+#define __HDC_H__
+
 #include "MacProtocol.h"
 
 
@@ -28,3 +31,4 @@ public:
 
 };
 
+#endif // __HDC_H__

@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifndef __MAC_PROTOCOL_H__
+#define __MAC_PROTOCOL_H__
+
 #include "Protocol.h"
 #include "GeneralNode.h"
 
@@ -84,3 +87,4 @@ public:
 
 };
 
+#endif // __MAC_PROTOCOL_H__

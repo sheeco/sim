@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "项目文件", "项目文�
 		.gitignore = .gitignore
 		README.md = README.md
 		.project\resharper.dotSettings = .project\resharper.dotSettings
-		.project\vs.vssettings = .project\vs.vssettings
 	EndProjectSection
 EndProject
 Global

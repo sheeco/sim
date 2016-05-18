@@ -3,7 +3,7 @@
 #include "Node.h"
 #include "HAR.h"
 #include "HotspotSelect.h"
-#include "CTrace.h"
+#include "Trace.h"
 
 int CHotspot::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 vector<CHotspot *> CHotspot::hotspotCandidates;

@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __NODE_REPAIR_H__
+#define __NODE_REPAIR_H__
+
 #include "Algorithm.h"
 #include "Hotspot.h"
 
@@ -27,3 +30,4 @@ public:
 
 };
 
+#endif // __NODE_REPAIR_H__

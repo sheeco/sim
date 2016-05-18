@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __TRACE_H__
+#define __TRACE_H__
+
 #include "Coordinate.h"
 #include "Global.h"
 
@@ -110,3 +113,4 @@ public:
 
 };
 
+#endif // __TRACE_H__

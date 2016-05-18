@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __GENERAL_DATA_H__
+#define __GENERAL_DATA_H__
+
 #include "BasicEntity.h"
 
 
@@ -59,3 +62,4 @@ public:
 
 };
 
+#endif // __GENERAL_DATA_H__

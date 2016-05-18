@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifndef __PROTOCOL_H__
+#define __PROTOCOL_H__
+
 #include "Algorithm.h"
 
 
@@ -19,3 +22,4 @@ public:
 
 };
 
+#endif // __PROTOCOL_H__

@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifndef __ROUTING_PROTOCOL_H__
+#define __ROUTING_PROTOCOL_H__
+
 #include "Protocol.h"
 
 
@@ -29,3 +32,4 @@ public:
 
 };
 
+#endif // __ROUTING_PROTOCOL_H__

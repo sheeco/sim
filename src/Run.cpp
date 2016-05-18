@@ -11,7 +11,7 @@
 #include "SortHelper.h"
 #include "HotspotSelect.h"
 #include "PostSelect.h"
-#include "CTrace.h"
+#include "Trace.h"
 
 
 // TODO: move all func definition into cpp file except for inline func
@@ -718,7 +718,7 @@ void PrintConfiguration()
 
 }
 
-bool Run()
+bool RunSimulation()
 {
 	int currentTime = 0;
 	while( currentTime <= RUNTIME )
@@ -772,7 +772,7 @@ bool Run()
 	return true;
 }
 
-int main(int argc, char* argv[])
+bool Run(int argc, char* argv[])
 {
 	// TODO: release 版本中应改为 while(1) 循环
 
@@ -789,14 +789,22 @@ int main(int argc, char* argv[])
 	ParseArguments(argc, argv);
 
 	/*************************** 将 log 信息和参数信息写入文件 ******************************/
-	
+
 	PrintConfiguration();
 
-	srand( static_cast<unsigned>(time(nullptr)) ); 
+	srand(static_cast<unsigned>( time(nullptr) ));
 
-	Run();
+	RunSimulation();
 
 	Exit(EFINISH);
 
 	_ALERT_;
+
+	return true;
+}
+
+
+int main(int argc, char* argv[])
+{
+	return Run(argc, argv);
 }

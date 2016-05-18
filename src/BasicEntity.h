@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifndef __BASIC_ENTITY_H__
+#define __BASIC_ENTITY_H__
+
 #include "Global.h"
 #include "Coordinate.h"
 
@@ -124,3 +127,4 @@ public:
 	
 };
 
+#endif // __BASIC_ENTITY_H__

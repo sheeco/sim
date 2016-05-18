@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __CTRL_H__
+#define __CTRL_H__
+
 #include "GeneralData.h"
 #include "Data.h"
 
@@ -87,3 +90,4 @@ public:
 
 };
 
+#endif // __CTRL_H__

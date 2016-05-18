@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifndef __GEO_ENTITY_H__
+#define __GEO_ENTITY_H__
+
 #include "Entity.h"
 
 
@@ -19,3 +22,4 @@ public:
 
 };
 
+#endif // __GEO_ENTITY_H__

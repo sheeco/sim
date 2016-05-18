@@ -14,8 +14,8 @@
 #endif
 
 #define _VERSION_MAJOR_ 3
-#define _VERSION_MINOR_ 4
-#define _VERSION_BUILD_ 5
+#define _VERSION_MINOR_ 5
+#define _VERSION_BUILD_ 1
 
 #define _VERSION_ {_VERSION_MAJOR_, _VERSION_MINOR_, _VERSION_BUILD_}
 #define _STR_VERSION_ ""##_VERSION_MAJOR_"."##_VERSION_MINOR_"."##_VERSION_BUILD_""

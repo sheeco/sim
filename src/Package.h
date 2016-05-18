@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __PACKAGE_H__
+#define __PACKAGE_H__
+
 #include "Data.h"
 #include "Ctrl.h"
 //#include "GeneralNode.h"
@@ -55,3 +58,4 @@ public:
 
 };
 
+#endif // __PACKAGE_H__

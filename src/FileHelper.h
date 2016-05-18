@@ -1,9 +1,12 @@
 #pragma once
 
+#ifndef __FILE_HELPER_H__
+#define __FILE_HELPER_H__
+
 //#include "Hotspot.h"
 #include "Helper.h"
 #include "Coordinate.h"
-#include "CTrace.h"
+#include "Trace.h"
 
 //包含用于文件解析的函数的类
 class CFileHelper :
@@ -30,3 +33,4 @@ public:
 
 };
 
+#endif // __FILE_HELPER_H__

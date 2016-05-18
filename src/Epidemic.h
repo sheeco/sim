@@ -2,6 +2,9 @@
 //
 //#include "RoutingProtocol.h"
 //
+//#ifndef __EPIDEMIC_H__
+//#define __EPIDEMIC_H__
+//
 //
 //// TODO: rewrite
 //class CEpidemic :
@@ -26,3 +29,4 @@
 //
 //};
 //
+//#endif // __EPIDEMIC_H__

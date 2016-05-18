@@ -50,9 +50,6 @@
     <ClCompile Include="..\src\HotspotSelect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\MANode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -110,10 +107,13 @@
     <ClCompile Include="..\lib\xml\tinyxml2.cpp">
       <Filter>库</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\CTrace.cpp">
+    <ClCompile Include="..\src\Coordinate.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Coordinate.cpp">
+    <ClCompile Include="..\src\Trace.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Run.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -226,7 +226,7 @@
     <ClInclude Include="version.h">
       <Filter>资源文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\CTrace.h">
+    <ClInclude Include="..\src\Trace.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

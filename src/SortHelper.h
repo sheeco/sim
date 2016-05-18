@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __SORT_HELPER_H__
+#define __SORT_HELPER_H__
+
 #include "Hotspot.h"
 #include "Helper.h"
 #include "Node.h"
@@ -56,3 +59,4 @@ public:
 
 };
 
+#endif // __SORT_HELPER_H__

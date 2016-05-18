@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifndef __GENERAL_NODE_H__
+#define __GENERAL_NODE_H__
+
 #include "Data.h"
 //#include "Package.h"
 
@@ -93,3 +96,4 @@ public:
 
 };
 
+#endif // __GENERAL_NODE_H__

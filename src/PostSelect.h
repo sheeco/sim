@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __POST_SELECT_H__
+#define __POST_SELECT_H__
+
 #include "Hotspot.h"
 #include "Position.h"
 #include "Algorithm.h"
@@ -41,3 +44,4 @@ public:
 	
 };
 
+#endif // __POST_SELECT_H__

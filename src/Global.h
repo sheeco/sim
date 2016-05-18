@@ -1,68 +1,85 @@
 #pragma once
 
+#ifndef __GLOBAL_H__
+#define __GLOBAL_H__
+
 #define _WIN32_WINNT_WIN10 0x0A00
 #define _WIN32_WINNT _WIN32_WINNT_WIN10  //Compiled under Win 10
+
+
+/******************************** Common Header Lib **********************************/
 
 #include <afx.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <io.h>
 #include <iostream>
-#include <iomanip>
-#include <fstream>
+using std::ios;
+using std::cin;
+using std::cout;
+using std::endl;
+using std::exception;
+
+
 #include <string>
-#include <sstream>
-#include <cmath>
+using std::string;
 #include <vector>
+using std::vector;
+using std::iterator;
 #include <map>
+using std::map;
+using std::pair;
+#include <sstream>
+using std::stringstream;
+#include <fstream>
+using std::fstream;
+using std::ofstream;
+using std::ifstream;
+
+#include <cmath>
+#include <iomanip>
 #include <direct.h>  //_mkdir()
 
 
-//Simple Macro Def
+/******************************* Common Namespace Lib ********************************/
+
+using std::setw;
+using std::setfill;
+
+
+/*********************************** Simple Macro ***********************************/
+
 #define PI 3.1415926535
 #define ROUND(x) (x - floor(x) >= 0.5) ? (int)ceil(x) : (int)floor(x)
 #define EQUAL(x, y) fabs( x - y ) < 0.000001
 #define ZERO(x) fabs(x) < 0.000001
 
-//Output & Debug
+
+/********************************** Output & Debug **********************************/
+
 #define TAB '\t'
 #define CR '\r'  //用于控制台输出时同行改写的转义字符
 #define _PAUSE_ _ALERT_; system("pause")
 #define _ALERT_ cout << '\a'
 #define flash_cout cout << CR  //控制台输出位置回到行首，在动态显示的输出时使用 flash_cout 代替 cout 即可
 
-//ERRNO
-//#define ENOENT 2  //File Not Found
-//#define ENOEXEC 8  //Wrong File Format
-//#define EINVAL 22  //Wrong Argument Format
-//User Defined ERRNO
+
+/******************************* User Explained ERRNO *******************************/
+
+// #define ENOENT 2  //File Not Found
+// #define ENOEXEC 8  //Wrong File Format
+// #define EINVAL 22  //Wrong Argument Format
+
+
+/******************************** User Defined ERRNO ********************************/
+
 #define EFINISH 0  //Finish Execution Successfully
 #define ESKIP -2  //Exit Without Execution
 
-//Optional Macro to enable #ifdef (for uncertain try)
+
+/********************************** Optional Macro **********************************/
+
 //#define USE_PRED_TOLERANCE
-
-
-/********************************** Namespace Lib ***********************************/
-
-// TODO: 尝试使用用户namespace包裹当前所有用户类型定义
-
-using std::ios;
-using std::cin;
-using std::cout;
-using std::endl;
-using std::setw;
-using std::setfill;
-using std::fstream;
-using std::ofstream;
-using std::ifstream;
-using std::string;
-using std::stringstream;
-using std::vector;
-using std::map;
-using std::pair;
-using std::iterator;
-using std::exception;
 
 
 /********************************** Global Namespace ***********************************/
@@ -440,3 +457,6 @@ namespace global
 }
 
 using namespace global;
+
+
+#endif // __GLOBAL_H__

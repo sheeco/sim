@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __SINK_H__
+#define __SINK_H__
+
 #include "BasicEntity.h"
 #include "Data.h"
 #include "Route.h"
@@ -141,3 +144,4 @@ public:
 
 };
 
+#endif // __SINK_H__

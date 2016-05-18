@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __DATA_H__
+#define __DATA_H__
+
 #include "GeneralData.h"
 
 
@@ -210,3 +213,4 @@ public:
 
 };
 
+#endif // __DATA_H__

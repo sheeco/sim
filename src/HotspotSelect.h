@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __HOTSPOT_SELECT_H__
+#define __HOTSPOT_SELECT_H__
+
 #include "SortHelper.h"
 #include "Algorithm.h"
 
@@ -130,3 +133,4 @@ public:
 
 };
 
+#endif // __HOTSPOT_SELECT_H__

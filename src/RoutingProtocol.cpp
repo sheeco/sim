@@ -3,7 +3,7 @@
 #include "SMac.h"
 #include "HDC.h"
 #include "HotspotSelect.h"
-#include "CTrace.h"
+#include "Trace.h"
 
 int CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //Êý¾Ý·¢ËÍslot
 

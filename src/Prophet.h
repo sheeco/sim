@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __PROPHET_H__
+#define __PROPHET_H__
+
 #include "RoutingProtocol.h"
 #include "Sink.h"
 
@@ -43,3 +46,4 @@ public:
 
 };
 
+#endif // __PROPHET_H__

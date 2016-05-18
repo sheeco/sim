@@ -1,10 +1,13 @@
 #pragma once
 
+#ifndef __NODE_H__
+#define __NODE_H__
+
 #include <map>
 #include "GeneralNode.h"
 #include "Hotspot.h"
 #include "Package.h"
-#include "CTrace.h"
+#include "Trace.h"
 
 class CNode :
 	public CGeneralNode
@@ -459,3 +462,4 @@ public:
 
 };
 
+#endif // __NODE_H__

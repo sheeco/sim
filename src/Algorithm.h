@@ -6,6 +6,9 @@
 
 #pragma once
 
+#ifndef __ALGORITHM_H__
+#define __ALGORITHM_H__
+
 #include "Process.h"
 
 
@@ -19,3 +22,4 @@ public:
 
 };
 
+#endif // __ALGORITHM_H__

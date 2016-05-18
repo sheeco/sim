@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __MA_NODE_H__
+#define __MA_NODE_H__
+
 #include "Data.h"
 #include "Route.h"
 #include "Sink.h"
@@ -253,3 +256,4 @@ public:
 
 };
 
+#endif // __MA_NODE_H__

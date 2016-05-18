@@ -7,7 +7,7 @@
 #include <typeinfo.h>
 #include "Prophet.h"
 #include "MacProtocol.h"
-#include "CTrace.h"
+#include "Trace.h"
 
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 

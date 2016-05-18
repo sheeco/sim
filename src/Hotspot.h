@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __HOTSPOT_H__
+#define __HOTSPOT_H__
+
 #include <iostream>
 #include "Position.h"
 #include "GeoEntity.h"
@@ -281,4 +284,5 @@ public:
 
 };
 
+#endif // __HOTSPOT_H__
 

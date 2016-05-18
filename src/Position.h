@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __POSITION_H__
+#define __POSITION_H__
+
 #include "BasicEntity.h"
 #include "GeoEntity.h"
 
@@ -73,3 +76,4 @@ public:
 
 };
 
+#endif // __POSITION_H__

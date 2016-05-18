@@ -113,7 +113,7 @@
     <ClCompile Include="..\lib\xml\tinyxml2.cpp" />
     <ClCompile Include="..\src\BasicEntity.cpp" />
     <ClCompile Include="..\src\Coordinate.cpp" />
-    <ClCompile Include="..\src\CTrace.cpp" />
+    <ClCompile Include="..\src\Trace.cpp" />
     <ClCompile Include="..\src\Ctrl.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
     <ClCompile Include="..\src\Epidemic.cpp" />
@@ -126,7 +126,7 @@
     <ClCompile Include="..\src\Hotspot.cpp" />
     <ClCompile Include="..\src\HotspotSelect.cpp" />
     <ClCompile Include="..\src\MacProtocol.cpp" />
-    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\Run.cpp" />
     <ClCompile Include="..\src\MANode.cpp" />
     <ClCompile Include="..\src\Node.cpp" />
     <ClCompile Include="..\src\NodeRepair.cpp" />
@@ -147,7 +147,7 @@
     <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Coordinate.h" />
-    <ClInclude Include="..\src\CTrace.h" />
+    <ClInclude Include="..\src\Trace.h" />
     <ClInclude Include="..\src\Ctrl.h" />
     <ClInclude Include="..\src\Data.h" />
     <ClInclude Include="..\src\Entity.h" />

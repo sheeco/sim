@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __ROUTE_H__
+#define __ROUTE_H__
+
 #include "Hotspot.h"
 #include "GeoEntity.h"
 
@@ -117,3 +120,4 @@ public:
 
 };
 
+#endif // __ROUTE_H__
