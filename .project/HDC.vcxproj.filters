@@ -16,6 +16,9 @@
     <Filter Include="库">
       <UniqueIdentifier>{f2be9d6e-f8d3-4a02-a463-e01b210248fa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Demo">
+      <UniqueIdentifier>{335beeef-3688-4582-b96b-546ca8ee830f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd">
@@ -114,6 +117,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Run.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\demo\demoGPS.cpp">
+      <Filter>Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\demo\demoMotionRange.cpp">
+      <Filter>Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GPS.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MotionRange.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -227,6 +242,12 @@
       <Filter>资源文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Trace.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GPS.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MotionRange.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

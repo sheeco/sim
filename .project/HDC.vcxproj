@@ -110,9 +110,13 @@
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\demo\demoGPS.cpp" />
+    <ClCompile Include="..\demo\demoMotionRange.cpp" />
     <ClCompile Include="..\lib\xml\tinyxml2.cpp" />
     <ClCompile Include="..\src\BasicEntity.cpp" />
     <ClCompile Include="..\src\Coordinate.cpp" />
+    <ClCompile Include="..\src\GPS.cpp" />
+    <ClCompile Include="..\src\MotionRange.cpp" />
     <ClCompile Include="..\src\Trace.cpp" />
     <ClCompile Include="..\src\Ctrl.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
@@ -147,6 +151,8 @@
     <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Coordinate.h" />
+    <ClInclude Include="..\src\GPS.h" />
+    <ClInclude Include="..\src\MotionRange.h" />
     <ClInclude Include="..\src\Trace.h" />
     <ClInclude Include="..\src\Ctrl.h" />
     <ClInclude Include="..\src\Data.h" />
