@@ -126,11 +126,13 @@ CPackage* CMANode::sendRTSWithCapacity(int currentTime)
 
 vector<CData> CMANode::bufferData(int time, vector<CData> datas)
 {
+	if( isAtHotspot() )
+		this->getAtHotspot()->addDeliveryCount(datas.size());
+
 	vector<CData> ack = datas;
 	RemoveFromList( datas, this->buffer );
 	for(auto idata = datas.begin(); idata != datas.end(); ++idata)
 	{
-//		idata->arriveSink(time);
 		this->buffer.push_back(*idata);
 	}
 	

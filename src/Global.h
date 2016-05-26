@@ -163,6 +163,8 @@ namespace global
 
 	extern string FILE_HOTSPOT;
 	extern string INFO_HOTSPOT;
+	extern string FILE_HOTSPOT_DETAILS;
+	extern string INFO_HOTSPOT_DETAILS;
 	extern string FILE_HOTSPOT_SIMILARITY;
 	extern string INFO_HOTSPOT_SIMILARITY;
 	extern string FILE_VISIT;

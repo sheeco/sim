@@ -30,7 +30,7 @@ int CNode::INIT_NUM_NODE = 0;
 int CNode::SLOT_TOTAL = 0;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
-int CNode::DEFAULT_DISCOVER_CYCLE = 0; 
+int CNode::DEFAULT_DISCOVER_CYCLE = 0;  //不使用占空比工作时，默认等于 0
 
 double CNode::DEFAULT_DATA_RATE = 0;
 int CNode::SIZE_DATA = 0;
@@ -518,8 +518,14 @@ bool CNode::updateStatus(int currentTime)
 	//更新工作状态
 	int newState = ( state + SLOT_SLEEP + timeIncre ) % SLOT_TOTAL - SLOT_SLEEP;
 
+	//不使用占空比工作时，discovering 总为 true
+	if( SLOT_DISCOVER == 0 )
+	{
+		discovering = true;
+		state = newState;
+	}
 	//如果遇到邻居节点发现时槽，在此时槽上暂停
-	if( oldState < SLOT_DISCOVER
+	else if( oldState < SLOT_DISCOVER
 		&& newState >= SLOT_DISCOVER )
 	{
 		state = SLOT_DISCOVER;

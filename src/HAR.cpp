@@ -677,33 +677,35 @@ void HAR::PrintInfo(int currentTime)
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、MA节点buffer状态 ...
 
-	//MA节点个数
-	ofstream ma( PATH_ROOT + PATH_LOG + FILE_MA, ios::app);
-	if(currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT)
+	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 )
 	{
-		ma << endl << INFO_LOG << endl ;
-		ma << INFO_MA ;
+		//MA节点个数
+		ofstream ma(PATH_ROOT + PATH_LOG + FILE_MA, ios::app);
+		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+		{
+			ma << endl << INFO_LOG << endl;
+			ma << INFO_MA;
+		}
+		ma << currentTime << TAB << m_routes.size() << TAB << ( double(m_hotspots.size()) / double(m_routes.size()) ) << endl;
+		ma.close();
+
+		//用于计算MA节点个数的历史平均值信息
+		SUM_MA_COST += m_routes.size();
+		++COUNT_MA_COST;
+		//用于计算MA路点（热点）平均个数的历史平均值信息
+		SUM_WAYPOINT_PER_MA += double(m_hotspots.size()) / double(m_routes.size());
+		++COUNT_WAYPOINT_PER_MA;
+
+		//ED即平均投递延迟的理论值
+		ofstream ed(PATH_ROOT + PATH_LOG + FILE_ED, ios::app);
+		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+		{
+			ed << endl << INFO_LOG << endl;
+			ed << INFO_ED;
+		}
+		ed << currentTime << TAB << calculateEDTime(currentTime) << endl;
+		ed.close();
 	}
-	ma << currentTime << TAB << m_routes.size() << TAB << ( double( m_hotspots.size() ) / double( m_routes.size() ) ) << endl;
-	ma.close();
-
-	//用于计算MA节点个数的历史平均值信息
-	SUM_MA_COST += m_routes.size();
-	++COUNT_MA_COST;
-	//用于计算MA路点（热点）平均个数的历史平均值信息
-	SUM_WAYPOINT_PER_MA += double( m_hotspots.size() ) / double( m_routes.size() );
-	++COUNT_WAYPOINT_PER_MA;
-
-	//ED即平均投递延迟的理论值
-	ofstream ed( PATH_ROOT + PATH_LOG + FILE_ED, ios::app);
-	if(currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT)
-	{
-		ed << endl << INFO_LOG << endl ;
-		ed << INFO_ED ;
-	}
-	ed << currentTime << TAB << calculateEDTime(currentTime) << endl;
-	ed.close();
-
 
 	//MA Buffer
 	if( currentTime % SLOT_LOG == 0 )

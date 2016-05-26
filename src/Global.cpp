@@ -55,6 +55,8 @@ namespace global
 
 	string FILE_HOTSPOT = "hotspot.log";
 	string INFO_HOTSPOT = "#Time	#HotspotCount \n" ;
+	string FILE_HOTSPOT_DETAILS = "hotspot-details.log";
+	string INFO_HOTSPOT_DETAILS = "#Time 	#X	#Y \n";
 	string FILE_HOTSPOT_SIMILARITY = "hotspot-similarity.log";
 	string INFO_HOTSPOT_SIMILARITY = "#Time	#Overlap/Old	#Overlap/New	#OverlapArea	#OldArea	#NewArea \n";
 	string FILE_VISIT = "visit.log";

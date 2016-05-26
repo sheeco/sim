@@ -500,6 +500,19 @@ void CHotspotSelect::PrintInfo(int currentTime)
 	hotspot << currentTime << TAB << CHotspot::selectedHotspots.size() << endl; 
 	hotspot.close();
 
+	
+	//热点位置
+	ofstream hotspot_details(PATH_ROOT + PATH_LOG + FILE_HOTSPOT_DETAILS, ios::app);
+	if( currentTime == STARTTIME_HOSPOT_SELECT )
+	{
+		hotspot_details << endl << INFO_LOG << endl;
+		hotspot_details << INFO_HOTSPOT_DETAILS;
+	}
+	for(vector<CHotspot *>::iterator ihotspot = CHotspot::selectedHotspots.begin(); ihotspot != CHotspot::selectedHotspots.end(); ++ihotspot)
+		hotspot_details << currentTime << TAB << (*ihotspot)->getX() << TAB << (*ihotspot)->getY() << endl;
+	hotspot_details.close();
+
+
 	//节点在热点内的百分比（从热点选取开始时开始统计）
 	ofstream at_hotspot( PATH_ROOT + PATH_LOG + FILE_VISIT, ios::app);
 	if(currentTime == STARTTIME_HOSPOT_SELECT)

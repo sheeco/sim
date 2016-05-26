@@ -69,7 +69,8 @@ void InitConfiguration()
 	CMANode::START_COUNT_ID = 100;  //ID的起始值，用于和传感器节点相区分
 	CMANode::SPEED = 30;
 	CMANode::CAPACITY_BUFFER = 100;
-	CMANode::MODE_RECEIVE = CGeneralNode::_selfish;
+	//CMANode::MODE_RECEIVE = CGeneralNode::_selfish;
+	CMANode::MODE_RECEIVE = CGeneralNode::_loose;
 
 	HAR::CO_HOTSPOT_HEAT_A1 = 1;
 	HAR::CO_HOTSPOT_HEAT_A2 = 30;
@@ -152,7 +153,7 @@ void InitConfiguration()
 
 	CNode::SLOT_TOTAL = 10 * CCTrace::SLOT_TRACE;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
-	CNode::DEFAULT_DISCOVER_CYCLE = 10; 
+	CNode::DEFAULT_DISCOVER_CYCLE = 0; 
 
 	/******************************  Prophet  ******************************/
 
