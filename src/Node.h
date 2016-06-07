@@ -31,7 +31,7 @@ private:
 	int state;  //取值范围在[ - SLOT_SLEEP, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
 	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
 	int SLOT_LISTEN;  //由SLOT_TOTAL和DC计算得到
-	int SLOT_DISCOVER;  //发送 RTS 之前等待邻居节点发现的时间
+	int SLOT_CARRIER_SENSE;  //开始邻居节点发现之前，进行载波侦听的时间
 	bool discovering;  //用于标记是否正在进行邻居节点发现，本次发现完毕将置false
 
 	int timeData;  //上一次数据生成的时间
@@ -109,7 +109,7 @@ public:
 	static int SLOT_TOTAL;
 	static double DEFAULT_DUTY_CYCLE;  //不使用HDC，或者HDC中不在热点区域内时的占空比
 	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
-	static int DEFAULT_DISCOVER_CYCLE;
+	static int DEFAULT_SLOT_CARRIER_SENSE;  //发送RTS之前，载波侦听的时间
 
 	static double DEFAULT_DATA_RATE;  //( package / s )
 	static int SIZE_DATA;  //( Byte )

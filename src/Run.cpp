@@ -53,8 +53,8 @@ void InitConfiguration()
 	CNode::SLOT_TOTAL = 0;
 	CNode::DEFAULT_DUTY_CYCLE = 0;
 	CNode::HOTSPOT_DUTY_CYCLE = 0; 
-	CNode::DEFAULT_DISCOVER_CYCLE = 0;
-	CMacProtocol::RANDOM_STATE_INIT = false;
+	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;
+	CMacProtocol::RANDOM_STATE_INIT = true;
 
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
@@ -88,7 +88,7 @@ void InitConfiguration()
 	CNode::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
 	CNode::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
 	CProphet::TRANS_STRICT_BY_PRED = false;
-	CProphet::CAPACITY_FORWARD = 0;
+	CProphet::CAPACITY_FORWARD = 20;
 
 
 	/**************************  Hotspot Select  ***************************/
@@ -128,8 +128,9 @@ void InitConfiguration()
 	RUNTIME = 15000;
 
 	/*********** Depend on DATASET ***********/
+	CCTrace::CONTINUOUS_TRACE = false;
 	DATASET = "KAIST";
-	CGeneralNode::RANGE_TRANS = 250;
+	//CGeneralNode::RANGE_TRANS = 250;
 	CSink::SINK_X = -200;  //for KAIST
 	CSink::SINK_Y = 200;
 	CNode::INIT_NUM_NODE = 29;
@@ -151,14 +152,10 @@ void InitConfiguration()
 
 	/********************************  DC  ********************************/
 
-	CNode::SLOT_TOTAL = 10 * CCTrace::SLOT_TRACE;
+	CNode::SLOT_TOTAL = CCTrace::SLOT_TRACE;
 	CNode::DEFAULT_DUTY_CYCLE = 1.0;
-	CNode::DEFAULT_DISCOVER_CYCLE = 0; 
+	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0; 
 
-	/******************************  Prophet  ******************************/
-
-	CProphet::TRANS_STRICT_BY_PRED = false;
-	CProphet::CAPACITY_FORWARD = 0;
 
 	/** Opt **/
 
@@ -307,15 +304,15 @@ bool ParseArguments(int argc, char* argv[])
 				if( CNode::finiteEnergy() )
 					RUNTIME = DATATIME = 999999;
 			}
-			else if( field == "-slot" )
-			{
-				if( iField < argc - 1 )
-					SLOT = atoi( argv[ iField + 1 ] );
+			//else if( field == "-slot" )
+			//{
+			//	if( iField < argc - 1 )
+			//		SLOT = atoi( argv[ iField + 1 ] );
 
-				if( SLOT > CCTrace::SLOT_TRACE )
-					SLOT = CCTrace::SLOT_TRACE;
-				iField += 2;
-			}
+			//	if( SLOT > CCTrace::SLOT_TRACE )
+			//		SLOT = CCTrace::SLOT_TRACE;
+			//	iField += 2;
+			//}
 			else if( field == "-node" )
 			{
 				if( iField < argc - 1 )
@@ -348,15 +345,17 @@ bool ParseArguments(int argc, char* argv[])
 			{
 				if( iField < argc - 1 )
 					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
+
 				//观测周期不应小于工作周期
 				if( SLOT_LOG < CNode::SLOT_TOTAL )
 					SLOT_LOG = CNode::SLOT_TOTAL;
+
 				iField += 2;
 			}
-			else if( field == "-slot-discover" )
+			else if( field == "-slot-carrier-sense" )
 			{
 				if( iField < argc - 1 )
-					CNode::DEFAULT_DISCOVER_CYCLE = atof( argv[ iField + 1 ] );
+					CNode::DEFAULT_SLOT_CARRIER_SENSE = atof( argv[ iField + 1 ] );
 				iField += 2;
 			}
 			else if( field == "-dc-default" )

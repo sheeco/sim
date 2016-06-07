@@ -103,7 +103,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 				//CTS
 				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 				// + DATA
-				dataToSend = node->getAllData();
+				dataToSend = getDataForTrans(node);
 
 				// TODO: mark skipRTS ?
 				// TODO: connection established ?

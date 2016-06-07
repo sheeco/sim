@@ -30,7 +30,7 @@ int CNode::INIT_NUM_NODE = 0;
 int CNode::SLOT_TOTAL = 0;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
 double CNode::HOTSPOT_DUTY_CYCLE = 0; 
-int CNode::DEFAULT_DISCOVER_CYCLE = 0;  //不使用占空比工作时，默认等于 0
+int CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;  //不使用占空比工作时，默认等于 0
 
 double CNode::DEFAULT_DATA_RATE = 0;
 int CNode::SIZE_DATA = 0;
@@ -55,7 +55,7 @@ void CNode::init()
 	trace = nullptr;
 	dataRate = 0;
 	atHotspot = nullptr;
-	SLOT_DISCOVER = DEFAULT_DISCOVER_CYCLE;
+	SLOT_CARRIER_SENSE = DEFAULT_SLOT_CARRIER_SENSE;
 	discovering = false;
 	timeData = 0;
 	timeDeath = 0;
@@ -506,64 +506,37 @@ void CNode::decayDeliveryPreds(int currentTime)
 // TODO: move state update into mac layer
 bool CNode::updateStatus(int currentTime)
 {
-	if( time == currentTime )
+	if( this->time == currentTime )
 		return true;
 
-	int oldState = state;
-	int timeIncre = currentTime - this->time;
-	int nCycle = timeIncre / SLOT_TOTAL;
-	int timeListen = 0;
-	int timeSleep = 0;
+	int newState = this->state;
+	int timeIncre = 0;
+	int newTime = this->time;
+
+	for( newTime = this->time + SLOT; newTime <= currentTime; newTime += SLOT )
+	{
+		timeIncre += SLOT;
+		newState = ( ( newState + SLOT ) + SLOT_SLEEP ) % SLOT_TOTAL - SLOT_SLEEP;
+		
+		//计算能耗
+		if( newState > 0
+		    || newState == -SLOT_SLEEP )
+			consumeEnergy( CONSUMPTION_LISTEN * SLOT );
+		else
+			consumeEnergy( CONSUMPTION_SLEEP * SLOT );
+
+		//如果载波侦听结束，则暂停在此处，开始邻居节点发现
+		if( newState == SLOT_CARRIER_SENSE )
+		{
+			discovering = true;
+			currentTime = newTime;
+			break;
+		}
+	}
 
 	//更新工作状态
-	int newState = ( state + SLOT_SLEEP + timeIncre ) % SLOT_TOTAL - SLOT_SLEEP;
+	this->state = newState;
 
-	//不使用占空比工作时，discovering 总为 true
-	if( SLOT_DISCOVER == 0 )
-	{
-		discovering = true;
-		state = newState;
-	}
-	//如果遇到邻居节点发现时槽，在此时槽上暂停
-	else if( oldState < SLOT_DISCOVER
-		&& newState >= SLOT_DISCOVER )
-	{
-		state = SLOT_DISCOVER;
-		discovering = true;
-		timeIncre = SLOT_DISCOVER - oldState;
-		currentTime = time + timeIncre;
-	}
-	else
-		state = newState;
-
-	//计算监听和休眠能耗
-	timeListen += nCycle * SLOT_LISTEN;
-	if( oldState != state )
-	{
-		//  [			------------|=====>     ]
-
-		if( oldState <= 0 && state > 0 )
-			timeListen += state;
-
-		//  [				        |  =========]
-		//  [---------------->      |           ]
-
-		else if( oldState >= 0 && state <= 0 )
-			timeListen += SLOT_LISTEN - oldState;
-
-		//  [				        |  ===>     ]
-
-		else if( oldState > 0 && state > 0 && oldState < state )
-			timeListen += state - oldState;
-
-		//  [				        |      =====]
-		//  [-----------------------|==>       ]
-
-		else if( state > 0 && oldState > 0 && state < oldState )
-			timeListen += SLOT_LISTEN - ( oldState - state );
-	}
-	timeSleep = timeIncre - timeListen;
-	consumeEnergy( timeListen * CONSUMPTION_LISTEN + timeSleep * CONSUMPTION_SLEEP );
 
 	//生成数据
 	if( currentTime <= DATATIME )
@@ -575,7 +548,7 @@ bool CNode::updateStatus(int currentTime)
 		&& (currentTime % CCTrace::SLOT_TRACE) == 0 )
 		decayDeliveryPreds(currentTime);
 
-	//更新坐标
+	//更新坐标及时间戳
 	if( ! trace->isValid(currentTime) )
 	{
 		die(currentTime, false);  //因 trace 信息终止而死亡的节点，无法回收

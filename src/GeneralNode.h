@@ -31,8 +31,8 @@ protected:
 public:
 
 	typedef enum _SEND {
-		_copy,  //发送数据时，保留自身副本
-		_dump   //发送数据时，删除自身副本
+		_copy,  //发送数据成功后，保留自身副本
+		_dump   //发送数据成功后，删除自身副本
 	} _SEND;
 
 	typedef enum _RECEIVE {
