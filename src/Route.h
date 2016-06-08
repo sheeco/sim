@@ -75,13 +75,10 @@ public:
 	//取得移动目标，即下一个point
 	inline CBasicEntity* getToPoint()
 	{
-		if(toPoint == -1)
-			return nullptr;
-
 		if( toPoint > waypoints.size() - 1 
 			|| toPoint < 0  )
 		{
-			cout << endl << "Error @ CBasicEntity::getToPoint : toPoint exceeds the range " << endl;
+			cout << endl << "Error @ CBasicEntity::getToPoint : toPoint exceeds the index range of waypoints " << endl;
 			_PAUSE_;
 		}
 		return waypoints[toPoint];
@@ -91,19 +88,24 @@ public:
 	{
 		toPoint = (toPoint + 1) % waypoints.size();
 	}
+	//将toPoint置于sink
+	inline void updateToPointWithSink()
+	{
+		toPoint = 0;
+	}
 
 	//将给定的元素放到waypoint列表的最后
 	void AddHotspot(CBasicEntity *hotspot)
 	{
 		waypoints.push_back(hotspot);
-		AddToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
+		AddToListUniquely(coveredNodes, dynamic_cast<CHotspot *>(hotspot)->getCoveredNodes());
 	}
 	//将给定hotspot插入到路径中给定的位置
 	void AddHotspot(int front, CBasicEntity *hotspot)
 	{
 		vector<CBasicEntity *>::iterator ipoint = waypoints.begin() + front + 1;
 		waypoints.insert(ipoint, hotspot);
-		AddToListUniquely(coveredNodes, static_cast<CHotspot *>(hotspot)->getCoveredNodes());
+		AddToListUniquely(coveredNodes, dynamic_cast<CHotspot *>(hotspot)->getCoveredNodes());
 	}
 
 	//对给定插入计算路径增量

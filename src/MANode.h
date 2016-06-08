@@ -10,7 +10,7 @@
 
 
 class CMANode :
-	public CGeneralNode
+	virtual public CGeneralNode
 {
 //protected:
 
@@ -42,6 +42,7 @@ private:
 		if( COUNT_ID == 0 )
 			COUNT_ID = START_COUNT_ID;
 
+		setLocation( CSink::getSink()->getLocation() );  //初始化 MA 位置在 sink 处
 		atHotspot = nullptr;	
 		waitingWindow = 0;
 		waitingState = 0;

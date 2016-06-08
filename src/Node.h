@@ -10,7 +10,7 @@
 #include "Trace.h"
 
 class CNode :
-	public CGeneralNode
+	virtual public CGeneralNode
 {
 //protected:
 
@@ -129,8 +129,8 @@ public:
 	// TODO: trigger operations here ?
 	// *TODO: move even between 2 locations ?
 	// TODO: how to trigger RTS ?
-	//更新所有node的坐标、占空比和工作状态，生成数据，返回是否仍存活
-	bool updateStatus(int currentTime);
+	//更新所有node的坐标、占空比和工作状态，生成数据；调用之后应调用 isAlive() 检验存活
+	void updateStatus(int currentTime);
 
 //	void receiveRTS(CPackage package);
 

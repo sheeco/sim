@@ -11,7 +11,7 @@
 
 
 class CSink :
-	public CGeneralNode
+	virtual public CGeneralNode
 {
 //protected:
 

@@ -7,7 +7,7 @@
 
 
 class CGeneralData :
-	public CBasicEntity
+	virtual public CBasicEntity
 {
 //protected:
 

@@ -45,6 +45,8 @@ CGeneralNode::_RECEIVE CMANode::MODE_RECEIVE = _selfish;
 // TODO: need test
 void CMANode::updateStatus(int time)
 {
+	if( this->time < 0 )
+		this->time = time;
 	int interval = time - this->time;
 	//更新时间戳
 
@@ -54,24 +56,24 @@ void CMANode::updateStatus(int time)
 		&& buffer.size() >= capacityBuffer ) )
 	{
 		waitingWindow = waitingState = 0;
-		this->moveTo( *static_cast<CBasicEntity *>(CSink::getSink()) , interval, SPEED);
-		return ;
+		route.updateToPointWithSink();
 	}
 
-	//等待结束
+	//处于等待中
 	if( waitingWindow > 0 )
 	{
+		//等待即将结束		
 		if( (waitingState + interval) >= waitingWindow )
 		{
-			interval = waitingState + interval - waitingWindow;
-			waitingWindow = waitingState = 0;
+			interval = waitingState + interval - waitingWindow;  //等待结束后，剩余的将用于移动的时间
+			waitingWindow = waitingState = 0;  //等待结束，将时间窗重置
 		}
 
 		//等待还未结束
 		else
 		{
 			waitingState += interval;
-			interval = 0;
+			interval = 0;  //不移动
 		}
 	}
 	if( interval == 0 )
@@ -79,11 +81,10 @@ void CMANode::updateStatus(int time)
 		this->setTime(time);
 		return;
 	}
-	else
-		this->setTime( time - interval );
-
-	//在路线上正常移动
-	atHotspot = nullptr;
+	
+	//开始在路线上移动
+	this->setTime( time - interval );  //将时间置于等待结束，移动即将开始的时间点
+	atHotspot = nullptr;  //离开热点
 
 	CBasicEntity *toPoint = route.getToPoint();
 	bool arrival = this->moveTo(*toPoint , interval, SPEED);
@@ -91,23 +92,31 @@ void CMANode::updateStatus(int time)
 	//如果已到达目的地
 	if(arrival)
 	{
-		//若目的地的类型是hotspot
-		if( typeid(*toPoint) == typeid(CHotspot) )
+
+		//若目的地的类型是 hotspot
+		if( dynamic_cast<CHotspot *>( toPoint ) != nullptr )
 		{
-			this->atHotspot = static_cast<CHotspot *>(toPoint);
+			this->atHotspot = dynamic_cast<CHotspot *>(toPoint);
 			waitingWindow = HAR::calculateWaitingTime(time, this->atHotspot);
 			waitingState = 0;  //重新开始等待
+
+			route.updateToPoint();
 		}
-		else if( typeid(*toPoint) == typeid(CSink) )
+		//若目的地的类型是 sink
+		else if( dynamic_cast<CSink *>( toPoint ) != nullptr )
 		{
-			if( CSink::hasMoreNewRoutes() )
-				this->route = CSink::popRoute();
+			if( route.isOverdue() )
+			{
+			    if( CSink::hasMoreNewRoutes() )
+					this->route = CSink::popRoute();
+				else
+					this->turnFree();
+			}
 			else
-				this->turnFree();
+				route.updateToPoint();
 		}
-		route.updateToPoint();
 	}
-	return ;
+	return;
 
 }
 

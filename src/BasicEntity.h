@@ -28,7 +28,7 @@ protected:
 public:
 
 	CBasicEntity(): 
-		ID(-1), time(0), flag(false) {};
+		ID(-1), time(-1), flag(false) {};
 
 	~CBasicEntity(){};
 
@@ -125,6 +125,8 @@ public:
 	friend bool operator < (const CBasicEntity &lt, const CBasicEntity &rt);
 	friend bool operator > (const CBasicEntity &lt, const CBasicEntity &rt);
 	
+	virtual void updateStatus() {};
+	virtual void updateStatus(int currentTime) {};
 };
 
 #endif // __BASIC_ENTITY_H__

@@ -8,7 +8,7 @@
 
 
 class CCtrl :
-	public CGeneralData
+	virtual public CGeneralData
 {
 //protected:
 

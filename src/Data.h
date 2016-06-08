@@ -7,7 +7,7 @@
 
 
 class CData : 
-	public CGeneralData
+	virtual public CGeneralData
 {
 //protected:
 

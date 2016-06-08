@@ -98,19 +98,21 @@ vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 		(*ihotspot)->setFlag(false);
 		(*ihotspot)->updateStatus();
 	}
-	//选中所有ratio >= ALPHA的hotspot
-	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); )
+	//选中所有ratio >= ALPHA的hotspot，按照 ratio 从大到小的顺序
+	for(vector<CHotspot *>::reverse_iterator rihotspot = hotspotCandidates.rbegin(); rihotspot != hotspotCandidates.rend(); )
 	{
-		if(this->getRatioForHotspot(*ihotspot) >= ALPHA)
+		if(this->getRatioForHotspot(*rihotspot) >= ALPHA)
 		{
-			(*ihotspot)->setFlag(true);
-			this->includeHotspots( (*ihotspot) );
-			//将选中的热点从候选集中删除
-			ihotspot = hotspotCandidates.erase(ihotspot);
+			(*rihotspot)->setFlag(true);
+			this->includeHotspots( (*rihotspot) );
+			
+			//将选中的热点从候选集中删除（注意：删除反向迭代器指向的元素）
+			vector<CHotspot *>::iterator ihotspot = hotspotCandidates.erase( ( ++rihotspot ).base() );
+			rihotspot = vector<CHotspot *>::reverse_iterator(ihotspot);
 		}
 		else
 		{
-			++ihotspot;
+			++rihotspot;
 			continue;
 		}
 	}

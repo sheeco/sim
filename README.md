@@ -728,17 +728,28 @@
 - ADD：添加日志文件 `hotspot-details.log` 保存选中热点的位置信息；
 
 
-######  2016-05-26  ·  *< 3.5.4 >*
+###### [ 2016-06-08  ·  *< 3.5.4 >* ]( d82ef12b88e183e65d02f341aad33ba7e3b1713d )
 
 - OPT：`DEFAULT_SLOT_DISCOVER` 等变量更名为 `DEFAULT_SLOT_CARRIER_SENSE`，指示在开始邻居节点发现之前载波侦听的时间；
 - NOTE：不使用占空比工作时，`-cycle` 参数即指示邻居节点发现的周期；
 - OPT：重写 `CNode::updateStatus()` 中工作状态的更新；
 - MOD：默认使用随机的初始工作状态，节点工作周期的默认值改为 30；
 - FIX：修改 `CProphet::CAPACITY_FORWARD` 默认值为 20， 并修复节点向 sink 投递时不受该值限制的错误；
-- [ ] FIX：对比 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 找出 HAR 路由存在的问题；
+
+
+######  2016-06-08  ·  *< 3.5.5 >*
+
+- FIX：修复 `CNode::updateStatus()` 中，网络初始无法正确获取节点位置的错误；
+- FIX：`CBasicEntity::time` 初始值由 0 改为 -1；
+- FIX：修复 `CPostSelect::PostSelect` 中的热点选择顺序错误；
+- FIX：修复 `CMANode::updateStatus()` 中的错误；
+- FIX：将报错的 `typeid` 和 `static_cast` 使用改为 `dynamic_cast`；并将 `CBasicEntity` 改为虚基类，修正所有直接或间接的派生类的继承声明；
+- [ ] FIX：检查 `CBasicEntity::time` 初始值由 0 改为 -1 可能导致的其他问题；
+- [ ] FIX：检查所有 `typeid` 的使用；
 
 
 
+- [ ] FIX：对比 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 找出 HAR 路由 MA 和节点通信流程中存在的问题；
 - [ ] ADD：在 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 中找回 `CHotspotSelect::PrintInfo()` 中统计热点投递计数的代码；
 - [ ] RFCT：将文件 `GPS.h` 和 `MotionRange.h` 中的定义整理到 Helper 类 ?
 - [ ] RFCT：将文件分离到解决方案下的不同子项目 ?

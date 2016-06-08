@@ -283,8 +283,11 @@ bool CMacProtocol::UpdateNodeStatus(int currentTime)
 {
 	bool death = false;
 	vector<CNode *> nodes = CNode::getNodes();
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
-		death |= (*inode)->updateStatus(currentTime);
+	for( vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
+	{
+		(*inode)->updateStatus(currentTime);
+		death |= ! ( *inode )->isAlive();
+	}
 	if( death )
 		CNode::ClearDeadNodes();
 

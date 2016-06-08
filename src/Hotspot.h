@@ -11,7 +11,7 @@
 
 //存储hostspot信息的类
 class CHotspot : 
-	public CBasicEntity, public CGeoEntity
+	virtual public CBasicEntity, public CGeoEntity
 {
 	friend class CHotspotSelect;
 	friend class CPostSelect;

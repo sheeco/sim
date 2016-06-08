@@ -9,7 +9,7 @@
 
 //存储单个节点移动位置的类
 class CPosition : 
-	public CBasicEntity, public CGeoEntity
+	virtual public CBasicEntity, public CGeoEntity
 {
 private:
 

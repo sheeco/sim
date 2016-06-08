@@ -16,7 +16,7 @@
 class CPackage;
 
 class CGeneralNode :
-	public CBasicEntity
+	virtual public CBasicEntity
 {
 protected:
 

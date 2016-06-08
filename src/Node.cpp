@@ -504,26 +504,37 @@ void CNode::decayDeliveryPreds(int currentTime)
 
 // TODO: check LISTEN cons calculation if *move
 // TODO: move state update into mac layer
-bool CNode::updateStatus(int currentTime)
+void CNode::updateStatus(int currentTime)
 {
 	if( this->time == currentTime )
-		return true;
+		return;
 
 	int newState = this->state;
-	int timeIncre = 0;
 	int newTime = this->time;
+	int timeIncre = 0;
+	// 0 时间时初始化
 
-	for( newTime = this->time + SLOT; newTime <= currentTime; newTime += SLOT )
+
+	while( ( newTime + SLOT ) <= currentTime )
 	{
-		timeIncre += SLOT;
-		newState = ( ( newState + SLOT ) + SLOT_SLEEP ) % SLOT_TOTAL - SLOT_SLEEP;
-		
-		//计算能耗
-		if( newState > 0
-		    || newState == -SLOT_SLEEP )
-			consumeEnergy( CONSUMPTION_LISTEN * SLOT );
+		newTime += SLOT;
+
+		if( newTime <= 0 )
+			;
 		else
-			consumeEnergy( CONSUMPTION_SLEEP * SLOT );
+		{
+			timeIncre += SLOT;
+
+			//更新工作状态
+			newState = ( ( newState + SLOT ) + SLOT_SLEEP ) % SLOT_TOTAL - SLOT_SLEEP;
+
+			//计算能耗
+			if( newState > 0
+			   || newState == -SLOT_SLEEP )
+				consumeEnergy(CONSUMPTION_LISTEN * SLOT);
+			else
+				consumeEnergy(CONSUMPTION_SLEEP * SLOT);
+		}
 
 		//如果载波侦听结束，则暂停在此处，开始邻居节点发现
 		if( newState == SLOT_CARRIER_SENSE )
@@ -532,6 +543,7 @@ bool CNode::updateStatus(int currentTime)
 			currentTime = newTime;
 			break;
 		}
+
 	}
 
 	//更新工作状态
@@ -552,11 +564,10 @@ bool CNode::updateStatus(int currentTime)
 	if( ! trace->isValid(currentTime) )
 	{
 		die(currentTime, false);  //因 trace 信息终止而死亡的节点，无法回收
-		return false;
+		return;
 	}
 	setLocation( trace->getLocation(currentTime), currentTime);
 
-	return true;
 }
 
 bool CNode::isListening() const 
