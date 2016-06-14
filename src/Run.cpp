@@ -20,6 +20,497 @@
 // TODO: 默认配置参数改为从 XML 读取
 // TODO: MulitCast ?
 
+
+void Help()
+{
+	//cout << INFO_HELP << endl;
+	//ofstream help(FILE_HELP, ios::out);
+	//help << INFO_HELP;
+	//help.close();
+
+	ifstream help(PATH_RUN + FILE_HELP, ios::in);
+	cout << help.rdbuf();
+	help.close();
+}
+
+bool ParseConfiguration(int argc, char* argv[])
+{
+	if( argc <= 0 )
+	{
+		stringstream error;
+		error << "Error @ ParseConfiguration() : Parameters are requested ! ";
+		cout << endl << error.str() << endl;
+		Help();
+		_PAUSE_;
+		Exit(EINVAL, error.str());
+		return false;
+	}
+
+	// 将使用的命令行参数输出到文件
+	ofstream config_log(PATH_ROOT + PATH_LOG + FILE_CONFIG, ios::app);
+	config_log << endl << "####  Command Line Args" << endl;
+	for( int i = 0; i < argc; ++i )
+	{
+		if( argv[i][0] == '-' )
+			config_log << endl;
+		config_log << argv[i] << " ";
+	}
+
+	config_log.close();
+
+	try
+	{
+		for( int iField = 0; iField < argc; )
+		{
+			string field = argv[iField];
+
+			//<mode> 不带值域的参数
+			if( field == "-hdc" )
+			{
+				MAC_PROTOCOL = _hdc;
+				HOTSPOT_SELECT = _original;
+				++iField;
+			}
+			else if( field == "-prophet" )
+			{
+				ROUTING_PROTOCOL = _prophet;
+				++iField;
+			}
+			//			else if( field == "-epidemic" )
+			//			{
+			//				ROUTING_PROTOCOL = _epidemic;
+			//				++iField;
+			//			}
+			else if( field == "-har" )
+			{
+				ROUTING_PROTOCOL = _xhar;
+				HOTSPOT_SELECT = _original;
+				++iField;
+			}
+			else if( field == "-hs" )
+			{
+				HOTSPOT_SELECT = _original;
+				++iField;
+			}
+			else if( field == "-ihs" )
+			{
+				HOTSPOT_SELECT = _improved;
+				++iField;
+			}
+			else if( field == "-mhs" )
+			{
+				HOTSPOT_SELECT = _merge;
+				++iField;
+			}
+
+			//bool 参数
+			else if( field == "-continuous-trace" )
+			{
+				string val(argv[iField + 1]);
+				if( val == "on" )
+					CCTrace::CONTINUOUS_TRACE = true;
+				else if( val == "off" )
+					CCTrace::CONTINUOUS_TRACE = false;
+				else
+					throw val;
+				iField += 2;
+			}
+			else if( field == "-hotspot-similarity" )
+			{
+				string val(argv[iField + 1]);
+				if( val == "on" )
+					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
+				else if( val == "off" )
+					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = false;
+				else
+					throw val;
+				iField += 2;
+			}
+			else if( field == "-dynamic-node-number" )
+			{
+				string val(argv[iField + 1]);
+				if( val == "on" )
+					CMacProtocol::TEST_DYNAMIC_NUM_NODE = true;
+				else if( val == "off" )
+					CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
+				else
+					throw val;
+				iField += 2;
+			}
+			else if( field == "-balanced-ratio" )
+			{
+				string val(argv[iField + 1]);
+				if( val == "on" )
+					HAR::TEST_BALANCED_RATIO = true;
+				else if( val == "off" )
+					HAR::TEST_BALANCED_RATIO = false;
+				else
+					throw val;
+				iField += 2;
+			}
+			else if( field == "-random-state" )
+			{
+				string val(argv[iField + 1]);
+				if( val == "on" )
+					CMacProtocol::RANDOM_STATE_INIT = true;
+				else if( val == "off" )
+					CMacProtocol::RANDOM_STATE_INIT = false;
+				else
+					throw val;
+				iField += 2;
+			}
+
+			//int 参数
+			else if( field == "-time-data" )
+			{
+				if( iField < argc - 1 )
+					DATATIME = atoi(argv[iField + 1]);
+				iField += 2;
+
+				if( CNode::finiteEnergy() )
+					RUNTIME = DATATIME = 999999;
+			}
+			else if( field == "-time-run" )
+			{
+				if( iField < argc - 1 )
+					RUNTIME = atoi(argv[iField + 1]);
+				iField += 2;
+
+				if( CNode::finiteEnergy() )
+					RUNTIME = DATATIME = 999999;
+			}
+			//else if( field == "-slot" )
+			//{
+			//	if( iField < argc - 1 )
+			//		SLOT = atoi( argv[ iField + 1 ] );
+
+			//	if( SLOT > CCTrace::SLOT_TRACE )
+			//		SLOT = CCTrace::SLOT_TRACE;
+			//	iField += 2;
+			//}
+			else if( field == "-node" )
+			{
+				if( iField < argc - 1 )
+					CNode::INIT_NUM_NODE = atoi(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-log-slot" )
+			{
+				if( iField < argc - 1 )
+					SLOT_LOG = atoi(argv[iField + 1]);
+				//				//观测周期不应小于工作周期
+				//				if( SLOT_LOG < CNode::SLOT_TOTAL )
+				//					SLOT_LOG = CNode::SLOT_TOTAL;
+
+				iField += 2;
+			}
+			else if( field == "-trans-range" )
+			{
+				if( iField < argc - 1 )
+					CGeneralNode::RANGE_TRANS = atoi(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-lifetime" )
+			{
+				if( iField < argc - 1 )
+					CHotspotSelect::LIFETIME_POSITION = atoi(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-cycle" )
+			{
+				if( iField < argc - 1 )
+					CNode::SLOT_TOTAL = atoi(argv[iField + 1]);
+
+				//观测周期不应小于工作周期
+				if( SLOT_LOG < CNode::SLOT_TOTAL )
+					SLOT_LOG = CNode::SLOT_TOTAL;
+
+				iField += 2;
+			}
+			else if( field == "-slot-carrier-sense" )
+			{
+				if( iField < argc - 1 )
+					CNode::DEFAULT_SLOT_CARRIER_SENSE = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-dc-default" )
+			{
+				if( iField < argc - 1 )
+					CNode::DEFAULT_DUTY_CYCLE = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-dc-hotspot" )
+			{
+				if( iField < argc - 1 )
+					CNode::HOTSPOT_DUTY_CYCLE = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-hop" )
+			{
+				if( iField < argc - 1 )
+					CData::MAX_HOP = atoi(argv[iField + 1]);
+				//				if( ( CData::MAX_HOP > 0 )
+				//					&& ( CData::MAX_TTL > 0 ) )
+				//				{
+				//					string error = "Error @ ParseConfiguration() : Argument -hop & -ttl cannot be used both";
+				//					cout << error << endl;
+				//					_PAUSE_;
+				//					Exit(EINVAL, error);
+				//				}
+
+				iField += 2;
+			}
+			//			else if( field == "-ttl" )
+			//			{
+			//				if( iField < argc - 1 )
+			//					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
+			//				if( ( CData::MAX_HOP > 0 )
+			//					&& ( CData::MAX_TTL > 0 ) )
+			//				{
+			//					string error = "Error @ ParseConfiguration() : Argument -hop & -ttl cannot be used both";
+			//					cout << error << endl;
+			//					_PAUSE_;
+			//					Exit(EINVAL, error);
+			//				}
+			//
+			//				iField += 2;
+			//			}
+			else if( field == "-buffer" )
+			{
+				if( iField < argc - 1 )
+					CNode::CAPACITY_BUFFER = atoi(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-buffer-ma" )
+			{
+				if( iField < argc - 1 )
+					CMANode::CAPACITY_BUFFER = atoi(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-data-rate" )
+			{
+				if( iField < argc - 1 )
+					CNode::DEFAULT_DATA_RATE = double(1) / atoi(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-data-size" )
+			{
+				if( iField < argc - 1 )
+					CNode::SIZE_DATA = atoi(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-energy" )
+			{
+				if( iField < argc - 1 )
+					CNode::CAPACITY_ENERGY = 1000 * atoi(argv[iField + 1]);
+				iField += 2;
+
+				if( CNode::finiteEnergy() )
+					RUNTIME = DATATIME = 999999;
+			}
+			//			else if( field == "-queue" )
+			//			{
+			//				if( iField < argc - 1 )
+			//					CEpidemic::MAX_DATA_RELAY = atoi( argv[ iField + 1 ] );
+			//				iField += 2;
+			//			}			
+			else if( field == "-spoken" )
+			{
+				if( iField < argc - 1 )
+					CNode::LIFETIME_SPOKEN_CACHE = atoi(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-capacity-forward" )
+			{
+				if( iField < argc - 1 )
+					CProphet::CAPACITY_FORWARD = atoi(argv[iField + 1]);
+				iField += 2;
+			}
+
+
+			//double 参数
+			else if( field == "-alpha" )
+			{
+				if( iField < argc - 1 )
+					CPostSelect::ALPHA = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-beta" )
+			{
+				if( iField < argc - 1 )
+					HAR::BETA = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-lambda" )
+			{
+				if( iField < argc - 1 )
+					CHotspotSelect::LAMBDA = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-merge" )
+			{
+				if( iField < argc - 1 )
+					CHotspotSelect::RATIO_MERGE_HOTSPOT = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-old" )
+			{
+				if( iField < argc - 1 )
+					CHotspotSelect::RATIO_OLD_HOTSPOT = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-trans-prob" )
+			{
+				if( iField < argc - 1 )
+					CGeneralNode::PROB_TRANS = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-pred-init" )
+			{
+				if( iField < argc - 1 )
+					CNode::INIT_DELIVERY_PRED = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			else if( field == "-pred-decay" )
+			{
+				if( iField < argc - 1 )
+					CNode::RATIO_PRED_DECAY = atof(argv[iField + 1]);
+				iField += 2;
+			}
+			//实际上对WSN而言不会使用到
+			//			else if( field == "-pred-trans" )
+			//			{
+			//				if( iField < argc - 1 )
+			//					CNode::RATIO_PRED_TRANS = atof( argv[ iField + 1 ] );
+			//				iField += 2;
+			//			}
+
+
+			//带两个或以上数值的参数
+			else if( field == "-sink" )
+			{
+				if( iField < argc - 2 )
+				{
+					CSink::SINK_X = atof(argv[iField + 1]);
+					CSink::SINK_Y = atof(argv[iField + 2]);
+				}
+				iField += 3;
+			}
+			else if( field == "-heat" )
+			{
+				if( iField < argc - 2 )
+				{
+					HAR::CO_HOTSPOT_HEAT_A1 = atof(argv[iField + 1]);
+					HAR::CO_HOTSPOT_HEAT_A2 = atof(argv[iField + 2]);
+				}
+				iField += 3;
+			}
+
+			//字符串参数
+			else if( field == "-dataset" )
+			{
+				if( iField < argc - 2 )
+				{
+					char arg[20] = { '\0' };
+					strcpy(arg, argv[iField + 1]);
+					DATASET = string(arg);
+				}
+				iField += 2;
+			}
+			else if( field == "-log-path" )
+			{
+				if( iField < argc - 2 )
+				{
+					char arg[20] = { '\0' };
+					strcpy(arg, argv[iField + 1]);
+					PATH_ROOT = "../" + string(arg) + "/";
+				}
+				iField += 2;
+			}
+
+
+			//输出help信息
+			else if( field == "-help" )
+			{
+				Help();
+				_PAUSE_;
+				Exit(ESKIP);
+			}
+			else
+				throw field;
+
+		}
+	}
+	catch( string field )
+	{
+		stringstream error;
+		error << "Error @ ParseConfiguration() : Cannot find command '" << field << "' ! ";
+		cout << endl << error.str() << endl;
+		Help();
+		_PAUSE_;
+		Exit(EINVAL, error.str());
+		return false;
+	}
+
+	catch( exception e )
+	{
+		stringstream error;
+		error << "Error @ ParseConfiguration() : Unknown parse error ! ";
+		cout << endl << error.str() << endl;
+		Help();
+		_PAUSE_;
+		Exit(EINVAL, error.str());
+		return false;
+	}
+	return true;
+
+}
+
+bool ParseConfiguration(string filename)
+{
+	//read string from file
+	ifstream file(filename, ios::in);
+	string config(( std::istreambuf_iterator<char>(file) ), std::istreambuf_iterator<char>());
+
+	// 将默认参数输出到文件
+	ofstream config_log(PATH_ROOT + PATH_LOG + FILE_CONFIG, ios::app);
+	config_log << "####  " << filename << endl;
+	config_log << config << endl;
+	config_log.close();
+
+	//parse string into tokens
+	char* delim = " \t\n";
+	vector<char*> args; 
+	char* pToken = strtok( const_cast<char*>( config.c_str() ), delim);
+	
+	while( pToken != nullptr )
+	{
+		args.push_back(pToken);
+		pToken = strtok(nullptr, delim);
+	}
+
+	if( ! args.empty() )
+	{
+		int argc = args.size();
+		char** argv = (char**)(new char*[argc]);
+		for(int i = 0; i < argc; ++i)
+			argv[i] = args[i];
+		
+		bool rtn = ParseConfiguration(argc, argv);
+		delete argv;
+		return rtn;
+	}
+	else
+	{
+		stringstream error;
+		error << "Error @ ParseConfiguration() : Wrong format in " << filename << "!";
+		cout << endl << error.str() << endl;
+		_PAUSE_;
+		Exit(ENOEXEC, error.str());
+		return false;
+	}
+}
+
 void InitConfiguration()
 {
 	SLOT = 1;
@@ -37,7 +528,7 @@ void InitConfiguration()
 
 	CNode::INIT_NUM_NODE = 0;
 
-	CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
+	//CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
 	CNode::DEFAULT_DATA_RATE = 0;
 	CNode::SIZE_DATA = 0;
 	CGeneralNode::SIZE_CTRL = 0;
@@ -157,20 +648,8 @@ void InitConfiguration()
 	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0; 
 
 
-	/** Opt **/
+	ParseConfiguration(PATH_RUN + FILE_DEFAULT_CONFIG);
 
-}
-
-void Help()
-{
-	//cout << INFO_HELP << endl;
-	//ofstream help(FILE_HELP, ios::out);
-	//help << INFO_HELP;
-	//help.close();
-
-	ifstream help(PATH_RUN + FILE_HELP, ios::in);
-	cout << help.rdbuf();
-	help.close();
 }
 
 void InitLogPath()
@@ -203,389 +682,6 @@ void InitLogPath()
 	{
 		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
 	}
-
-}
-
-bool ParseArguments(int argc, char* argv[])
-{
-	// 将使用的命令行参数输出到文件
-	ofstream command(PATH_ROOT + PATH_LOG + FILE_COMMAND, ios::out);
-	for( int i = 0; i < argc; ++i )
-		command << argv[i] << " ";
-	command.close();
-
-	try
-	{
-		int iField = 0;
-		for(iField = 1; iField < argc; )
-		{
-			string field = argv[iField];
-
-			//<mode> 不带数值的布尔型参数
-			if( field == "-hdc" )
-			{
-				MAC_PROTOCOL = _hdc;
-				HOTSPOT_SELECT = _original;
-				++iField;
-			}
-			else if( field == "-prophet" )
-			{
-				ROUTING_PROTOCOL = _prophet;
-				++iField;
-			}
-//			else if( field == "-epidemic" )
-//			{
-//				ROUTING_PROTOCOL = _epidemic;
-//				++iField;
-//			}
-			else if( field == "-har" )
-			{
-				ROUTING_PROTOCOL = _xhar;
-				HOTSPOT_SELECT = _original;
-				++iField;
-			}
-			else if( field == "-hs" )
-			{
-				HOTSPOT_SELECT = _original;
-				++iField;
-			}
-			else if( field == "-ihs" )
-			{
-				HOTSPOT_SELECT = _improved;
-				++iField;
-			}
-			else if( field == "-mhs" )
-			{
-				HOTSPOT_SELECT = _merge;
-				++iField;
-			}
-			else if( field == "-continuous-trace" )
-			{
-				CCTrace::CONTINUOUS_TRACE = true;
-				++iField;
-			}
-			else if( field == "-hotspot-similarity" )
-			{
-				CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
-				++iField;
-			}
-			else if( field == "-dynamic-node-number" )
-			{
-				CMacProtocol::TEST_DYNAMIC_NUM_NODE = true;
-				++iField;
-			}
-			else if( field == "-balanced-ratio" )
-			{
-				HAR::TEST_BALANCED_RATIO = true;
-				++iField;
-			}
-			else if( field == "-random-state" )
-			{
-				CMacProtocol::RANDOM_STATE_INIT = true;
-				++iField;
-			}
-
-			//整型参数
-			else if( field == "-time-data" )
-			{
-				if( iField < argc - 1 )
-					DATATIME = atoi( argv[ iField + 1 ] );
-				iField += 2;
-
-				if( CNode::finiteEnergy() )
-					RUNTIME = DATATIME = 999999;
-			}
-			else if( field == "-time-run" )
-			{
-				if( iField < argc - 1 )
-					RUNTIME = atoi( argv[ iField + 1 ] );
-				iField += 2;
-
-				if( CNode::finiteEnergy() )
-					RUNTIME = DATATIME = 999999;
-			}
-			//else if( field == "-slot" )
-			//{
-			//	if( iField < argc - 1 )
-			//		SLOT = atoi( argv[ iField + 1 ] );
-
-			//	if( SLOT > CCTrace::SLOT_TRACE )
-			//		SLOT = CCTrace::SLOT_TRACE;
-			//	iField += 2;
-			//}
-			else if( field == "-node" )
-			{
-				if( iField < argc - 1 )
-					CNode::INIT_NUM_NODE = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-log-slot" )
-			{
-				if( iField < argc - 1 )
-					SLOT_LOG = atoi( argv[ iField + 1 ] );
-//				//观测周期不应小于工作周期
-//				if( SLOT_LOG < CNode::SLOT_TOTAL )
-//					SLOT_LOG = CNode::SLOT_TOTAL;
-
-				iField += 2;
-			}
-			else if( field == "-trans-range" )
-			{
-				if( iField < argc - 1 )
-					CGeneralNode::RANGE_TRANS = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}			
-			else if( field == "-lifetime" )
-			{
-				if( iField < argc - 1 )
-					CHotspotSelect::LIFETIME_POSITION = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-cycle" )
-			{
-				if( iField < argc - 1 )
-					CNode::SLOT_TOTAL = atoi( argv[ iField + 1 ] );
-
-				//观测周期不应小于工作周期
-				if( SLOT_LOG < CNode::SLOT_TOTAL )
-					SLOT_LOG = CNode::SLOT_TOTAL;
-
-				iField += 2;
-			}
-			else if( field == "-slot-carrier-sense" )
-			{
-				if( iField < argc - 1 )
-					CNode::DEFAULT_SLOT_CARRIER_SENSE = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-dc-default" )
-			{
-				if( iField < argc - 1 )
-					CNode::DEFAULT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-dc-hotspot" )
-			{
-				if( iField < argc - 1 )
-					CNode::HOTSPOT_DUTY_CYCLE = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-hop" )
-			{
-				if( iField < argc - 1 )
-					CData::MAX_HOP = atoi( argv[ iField + 1 ] );
-//				if( ( CData::MAX_HOP > 0 )
-//					&& ( CData::MAX_TTL > 0 ) )
-//				{
-//					string error = "Error @ ParseArguments() : Argument -hop & -ttl cannot be used both";
-//					cout << error << endl;
-//					_PAUSE_;
-//					Exit(EINVAL, error);
-//				}
-
-				iField += 2;
-			}
-//			else if( field == "-ttl" )
-//			{
-//				if( iField < argc - 1 )
-//					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
-//				if( ( CData::MAX_HOP > 0 )
-//					&& ( CData::MAX_TTL > 0 ) )
-//				{
-//					string error = "Error @ ParseArguments() : Argument -hop & -ttl cannot be used both";
-//					cout << error << endl;
-//					_PAUSE_;
-//					Exit(EINVAL, error);
-//				}
-//
-//				iField += 2;
-//			}
-			else if( field == "-buffer" )
-			{
-				if( iField < argc - 1 )
-					CNode::CAPACITY_BUFFER = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-buffer-ma" )
-			{
-				if( iField < argc - 1 )
-					CMANode::CAPACITY_BUFFER = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-data-rate" )
-			{
-				if( iField < argc - 1 )
-					CNode::DEFAULT_DATA_RATE = double(1) / atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-data-size" )
-			{
-				if( iField < argc - 1 )
-					CNode::SIZE_DATA = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-energy" )
-			{
-				if( iField < argc - 1 )
-					CNode::CAPACITY_ENERGY = 1000 * atoi( argv[ iField + 1 ] );
-				iField += 2;
-
-				if( CNode::finiteEnergy() )
-					RUNTIME = DATATIME = 999999;
-			}
-//			else if( field == "-queue" )
-//			{
-//				if( iField < argc - 1 )
-//					CEpidemic::MAX_DATA_RELAY = atoi( argv[ iField + 1 ] );
-//				iField += 2;
-//			}			
-			else if( field == "-spoken" )
-			{
-				if( iField < argc - 1 )
-					CNode::LIFETIME_SPOKEN_CACHE = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-capacity-forward" )
-			{
-				if( iField < argc - 1 )
-					CProphet::CAPACITY_FORWARD = atoi( argv[ iField + 1 ] );
-				iField += 2;
-			}
-
-
-			//double参数
-			else if( field == "-alpha" )
-			{
-				if( iField < argc - 1 )
-					CPostSelect::ALPHA = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-beta" )
-			{
-				if( iField < argc - 1 )
-					HAR::BETA = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}			
-			else if( field == "-lambda" )
-			{
-				if( iField < argc - 1 )
-					CHotspotSelect::LAMBDA = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-merge" )
-			{
-				if( iField < argc - 1 )
-					CHotspotSelect::RATIO_MERGE_HOTSPOT = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-old" )
-			{
-				if( iField < argc - 1 )
-					CHotspotSelect::RATIO_OLD_HOTSPOT = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-trans-prob" )
-			{
-				if( iField < argc - 1 )
-					CGeneralNode::PROB_TRANS = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-pred-init" )
-			{
-				if( iField < argc - 1 )
-					CNode::INIT_DELIVERY_PRED = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			else if( field == "-pred-decay" )
-			{
-				if( iField < argc - 1 )
-					CNode::RATIO_PRED_DECAY = atof( argv[ iField + 1 ] );
-				iField += 2;
-			}
-			//实际上对WSN而言不会使用到
-//			else if( field == "-pred-trans" )
-//			{
-//				if( iField < argc - 1 )
-//					CNode::RATIO_PRED_TRANS = atof( argv[ iField + 1 ] );
-//				iField += 2;
-//			}
-
-
-			//带两个或以上数值的参数
-			else if( field == "-sink" )
-			{
-				if(iField < argc - 2)
-				{
-					CSink::SINK_X = atof( argv[ iField + 1 ] );
-					CSink::SINK_Y = atof( argv[ iField + 2 ] );
-				}
-				iField += 3;
-			}			
-			else if( field == "-heat" )
-			{
-				if(iField < argc - 2)
-				{
-					HAR::CO_HOTSPOT_HEAT_A1 = atof( argv[ iField + 1 ] );
-					HAR::CO_HOTSPOT_HEAT_A2 = atof( argv[ iField + 2 ] );
-				}
-				iField += 3;
-			}
-
-			//字符串参数
-			else if( field == "-dataset" )
-			{
-				if(iField < argc - 2)
-				{
-					char arg[20] = {'\0'};
-					strcpy(arg, argv[ iField + 1 ]);
-					DATASET = string( arg );
-				}
-				iField += 2;
-			}			
-			else if( field == "-log-path" )
-			{
-				if(iField < argc - 2)
-				{
-					char arg[20] = {'\0'};
-					strcpy(arg, argv[ iField + 1 ]);
-					PATH_ROOT = "../" + string( arg ) + "/";
-				}
-				iField += 2;
-			}			
-
-
-			//输出help信息
-			else if( field == "-help" )
-			{
-				Help();
-				_PAUSE_;
-				Exit(ESKIP);
-			}
-			else
-			{
-				stringstream error;
-				error << "Error @ ParseArguments() : Command '" << field << "' doesn't exist. ";
-				cout << endl << error.str() << endl;
-				Help();
-				_PAUSE_;
-				Exit(EINVAL, error.str());
-				return false;
-			}
-
-		}
-	}
-	catch(exception e)
-	{
-		stringstream error;
-		error << "Error @ ParseArguments() : Wrong Parameter Format!";
-		cout << endl << error.str() << endl;
-		Help();
-		_PAUSE_;
-		Exit(EINVAL, error.str());
-		return false;
-	}
-
-	return true;
 
 }
 
@@ -786,7 +882,7 @@ bool Run(int argc, char* argv[])
 
 	/********************************** 命令行参数解析 ************************************/
 
-	ParseArguments(argc, argv);
+	ParseConfiguration( argc - 1 , ++argv );
 
 	/*************************** 将 log 信息和参数信息写入文件 ******************************/
 

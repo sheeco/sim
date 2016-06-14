@@ -5,7 +5,7 @@
 #include "HotspotSelect.h"
 #include "Trace.h"
 
-int CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
+//int CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
 
 
 //CRoutingProtocol::CRoutingProtocol()

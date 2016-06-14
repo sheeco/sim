@@ -13,15 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="库">
-      <UniqueIdentifier>{f2be9d6e-f8d3-4a02-a463-e01b210248fa}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd">
       <Filter>资源文件</Filter>
     </None>
     <None Include="..\bin\HELP.md">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="..\bin\default.config">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>
@@ -100,12 +100,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Global.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\XmlHelper.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\lib\xml\tinyxml2.cpp">
-      <Filter>库</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Coordinate.cpp">
       <Filter>源文件</Filter>
@@ -216,12 +210,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Global.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\XmlHelper.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\xml\tinyxml2.h">
-      <Filter>库</Filter>
     </ClInclude>
     <ClInclude Include="version.h">
       <Filter>资源文件</Filter>

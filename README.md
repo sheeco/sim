@@ -41,8 +41,6 @@
 
 ### Dependency
 
-- [TinyXML2 3.0.0](http://www.grinninglizard.com/tinyxml/)
-
 
 ### Environment
 
@@ -55,11 +53,13 @@
 
     README.md
     
+    HELP.md
+    
     version.h & HDC.rc
 
     Global.h & .cpp
     
-    main.cpp
+    Run.cpp
     
     ---
     
@@ -593,7 +593,7 @@
 - RFCT：将 `CProphet::receiveContents()` 中的响应操作按照源-目的节点对的类型，分类整合到三个重载的同名函数中；
 - FIX：函数 `CMacProtocol::CommunicateWithNeighbor()` 更名为 `CMacProtocol::CommunicateWithNeighbor()`，并修复函数调用错误；
 - FIX：修复 `CProphet::receiveContents()` 中的错误；
-- OPT：将 `CData::MAX_HOP` 和 `CData::MAX_TTL` 的冲突，改为在 `ParseArguments()` 中检查，如有冲突将报错退出；
+- OPT：将 `CData::MAX_HOP` 和 `CData::MAX_TTL` 的冲突，改为在 `ParseConfiguration()` 中检查，如有冲突将报错退出；
 - BUG：数据传输计数存在差错，应检查 `CMacProtocol::transmitTry()` 和 `CMacProtocol::transmitSucceed()` 的调用；
 
 
@@ -737,18 +737,25 @@
 - FIX：修改 `CProphet::CAPACITY_FORWARD` 默认值为 20， 并修复节点向 sink 投递时不受该值限制的错误；
 
 
-######  2016-06-08  ·  *< 3.5.5 >*
+###### [ 2016-06-08  ·  *< 3.5.5 >* ]( 93e7633d595d1d3f4f196a18922729398e84f524 )
 
 - FIX：修复 `CNode::updateStatus()` 中，网络初始无法正确获取节点位置的错误；
 - FIX：`CBasicEntity::time` 初始值由 0 改为 -1；
 - FIX：修复 `CPostSelect::PostSelect` 中的热点选择顺序错误；
 - FIX：修复 `CMANode::updateStatus()` 中的错误；
 - FIX：将报错的 `typeid` 和 `static_cast` 使用改为 `dynamic_cast`；并将 `CBasicEntity` 改为虚基类，修正所有直接或间接的派生类的继承声明；
+
+
+###### 2016-06-15  ·  *< 3.5.6 >*
+
+- ADD：添加从 `./default.config` 读入默认参数的功能，并和命令行参数一起保存到 `config.log`；
+- ADD：为 `bool` 型参数的配置添加开启和关闭的功能，使用 on / off 指示；
+- MNT：移除 TinyXML2 库及相关的 Helper 类；
+
+
+
 - [ ] FIX：检查 `CBasicEntity::time` 初始值由 0 改为 -1 可能导致的其他问题；
 - [ ] FIX：检查所有 `typeid` 的使用；
-
-
-
 - [ ] FIX：对比 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 找出 HAR 路由 MA 和节点通信流程中存在的问题；
 - [ ] ADD：在 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 中找回 `CHotspotSelect::PrintInfo()` 中统计热点投递计数的代码；
 - [ ] RFCT：将文件 `GPS.h` 和 `MotionRange.h` 中的定义整理到 Helper 类 ?

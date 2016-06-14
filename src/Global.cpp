@@ -20,13 +20,14 @@ namespace global
 	string PATH_ROOT = "../log/";
 
 	string INFO_LOG;
+	string FILE_DEFAULT_CONFIG = "default.config";
 	string FILE_PARAMETES = "parameters.log";
 	string FILE_HELP = "help.md";
 	string FILE_VERION = "HDC.version";
 	//string INFO_HELP;
 
 	string FILE_ERROR = "error.log";
-	string FILE_COMMAND = "command.log";
+	string FILE_CONFIG = "config.log";
 	string FILE_FINAL = "final.log";
 	string INFO_FINAL = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#HOP/TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay/	#HOP/	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime	#Node)	#Log \n" ;
 

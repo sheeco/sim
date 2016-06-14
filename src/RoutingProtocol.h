@@ -20,7 +20,7 @@ protected:
 
 public:
 
-	static int SLOT_DATA_SEND;  //数据发送slot
+	//static int SLOT_DATA_SEND;  //数据发送slot
 
 	CRoutingProtocol();
 	~CRoutingProtocol();
