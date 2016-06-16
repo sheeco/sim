@@ -65,7 +65,7 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 
 vector<CHotspot *> CNodeRepair::RepairPoorNodes(int time)
 {
-	flash_cout << "####  ( POOR NODE REPAIR )          " ;
+	flash_cout << "######  ( POOR NODE REPAIR )          " ;
 
 	this->time = time;
 	while(! poorNodes.empty())

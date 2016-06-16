@@ -274,10 +274,6 @@ public:
 
 	/**************************************  Prophet  *************************************/
 
-	static double INIT_DELIVERY_PRED;
-	static double RATIO_PRED_DECAY;
-	static double RATIO_PRED_TRANS;
-
 	map<int, double> getDeliveryPreds() const
 	{
 		return deliveryPreds;

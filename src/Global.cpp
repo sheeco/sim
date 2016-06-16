@@ -15,7 +15,7 @@ namespace global
 
 	string TIMESTAMP;
 	string PATH_TRACE = "../res/";
-	string PATH_RUN = "./";
+	string PATH_RUN = "";
 	string PATH_LOG = "";  // " YY-MM-DD-HH-MM-SS/ "
 	string PATH_ROOT = "../log/";
 

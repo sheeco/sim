@@ -148,7 +148,7 @@ void CHotspotSelect::CollectNewPositions(int currentTime)
 
 void CHotspotSelect::BuildCandidateHotspots(int currentTime)
 {
-	flash_cout << "####  ( CANDIDATE BUILDING )     " ;
+	flash_cout << "######  ( CANDIDATE BUILDING )     " ;
 
 	//释放上一轮选取中未被选中的废弃热点
 	if( ! CHotspot::hotspotCandidates.empty())
@@ -184,7 +184,7 @@ void CHotspotSelect::BuildCandidateHotspots(int currentTime)
 
 void CHotspotSelect::GreedySelect(int currentTime)
 {
-	flash_cout << "####  ( GREEDY SELECT )          " ;
+	flash_cout << "######  ( GREEDY SELECT )          " ;
 
 	do
 	{
@@ -286,7 +286,7 @@ void CHotspotSelect::GreedySelect(int currentTime)
 
 void CHotspotSelect::MergeHotspots(int currentTime)
 {
-	flash_cout << "####  ( HOTSPOT MERGE )          " ;
+	flash_cout << "######  ( HOTSPOT MERGE )          " ;
 
 	vector<CHotspot *> mergeResult;
 	int mergeCount = 0;
@@ -410,7 +410,7 @@ void CHotspotSelect::HotspotSelect(int currentTime)
 //	if( TEST_LEARN )
 //		DecayPositionsWithoutDeliveryCount(currentTime);
 
-	flash_cout << "########  < " << currentTime << " >  HOTSPOT SELECT            " << endl;
+	flash_cout << "####  < " << currentTime << " >  HOTSPOT SELECT            " << endl;
 
 	BuildCandidateHotspots(currentTime);
 
@@ -450,7 +450,7 @@ void CHotspotSelect::HotspotSelect(int currentTime)
 	hotspotsAboveAverage.clear();
 	uncoveredPositions.clear();
 
-	flash_cout << "####  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
+	flash_cout << "######  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
 
 	//比较相邻两次热点选取的相似度
 	if( TEST_HOTSPOT_SIMILARITY )

@@ -307,7 +307,7 @@ void HAR::MANodeRouteDesign(int currentTime)
 		}
 	}
 
-	flash_cout << "####  [ MA ]  " << CMANode::getMANodes().size() << endl;
+	flash_cout << "######  [ MA ]  " << CMANode::getMANodes().size() << endl;
 }
 
 vector<CGeneralData*> HAR::receiveContents(CSink* sink, CMANode* fromMA, vector<CGeneralData*> contents, int time)
@@ -443,7 +443,7 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CSink* fromSink, vector<
 				else
 					ma->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "####  (  MA  " << ma->getID() << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+				flash_cout << "######  (  MA  " << ma->getID() << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
 
 				return contentsToSend;
 
@@ -551,7 +551,7 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "####  ( Node  " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->   MA  " << ctrl->getNode() << " )       " ;
+				flash_cout << "######  ( Node  " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->   MA  " << ctrl->getNode() << " )       " ;
 
 				return contentsToSend;
 

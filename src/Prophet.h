@@ -22,6 +22,10 @@ public:
 	static bool TRANS_STRICT_BY_PRED;  //指示是否严格按照投递概率真大于，来决定是否转发
 	static int CAPACITY_FORWARD;
 
+	static double INIT_PRED;
+	static double RATIO_PRED_DECAY;
+	static double RATIO_PRED_TRANS;
+
 
 	CProphet();
 	~CProphet();

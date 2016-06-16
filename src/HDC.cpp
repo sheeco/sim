@@ -31,7 +31,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	if( currentTime == 0 
 		|| print )
 	{
-		flash_cout << "########  < " << currentTime << " >  DUTY CYCLE UPDATE            " << endl ;
+		flash_cout << "####  < " << currentTime << " >  DUTY CYCLE UPDATE            " << endl ;
 		print = false;
 	}
 
@@ -42,13 +42,13 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		if( (*inode)->useHotspotDutyCycle()
 			&& ( ! (*inode)->isAtHotspot() ) )
 		{
-			flash_cout << "####  ( Node " << (*inode)->getID() << " leaves Hotspot )              " ;			
+			flash_cout << "######  ( Node " << (*inode)->getID() << " leaves Hotspot )              " ;			
 			(*inode)->resetDutyCycle();
 		}
 		else if( (*inode)->useDefaultDutyCycle()
 				 && (*inode)->isAtHotspot() )
 		{
-			flash_cout << "####  ( Node " << (*inode)->getID() << " enters Hotspot )               " ;
+			flash_cout << "######  ( Node " << (*inode)->getID() << " enters Hotspot )               " ;
 			(*inode)->raiseDutyCycle();
 		}
 	}
@@ -57,10 +57,10 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	if( ( currentTime + SLOT ) % SLOT_LOG == 0 )
 	{
 		double encounterRatio = NDigitFloat( CNode::getPercentEncounterAtHotspot() * 100, 1);
-		flash_cout << "####  [ Hotspot Encounter ]  " << encounterRatio << " %                                           " << endl << endl;
+		flash_cout << "######  [ Hotspot Encounter ]  " << encounterRatio << " %                                           " << endl << endl;
 		print = true;
 	}
-	//flash_cout << "####  [ At Hotspot ]  " << atHotspotCount << " / " << CNode::getNodes().size() << "                              " ;
+	//flash_cout << "######  [ At Hotspot ]  " << atHotspotCount << " / " << CNode::getNodes().size() << "                              " ;
 
 }
 

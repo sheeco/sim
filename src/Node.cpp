@@ -42,13 +42,6 @@ CGeneralNode::_RECEIVE CNode::MODE_RECEIVE = _loose;
 CGeneralNode::_SEND CNode::MODE_SEND = _dump;
 CGeneralNode::_QUEUE CNode::MODE_QUEUE = _fifo;
 
-/**************************************  Prophet  *************************************/
-
-double CNode::INIT_DELIVERY_PRED = 0.75;  //参考值 0.75
-double CNode::RATIO_PRED_DECAY = 0.98;  //参考值 0.98(/s)
-double CNode::RATIO_PRED_TRANS = 0.25;  //参考值 0.25
-
-
 
 void CNode::init() 
 {
@@ -192,7 +185,7 @@ bool CNode::hasNodes(int currentTime)
 	}
 	ClearDeadNodes();
 	if(death)
-		flash_cout << "####  [ Node ]  " << CNode::getNodes().size() << "                                     " << endl;
+		flash_cout << "######  [ Node ]  " << CNode::getNodes().size() << "                                     " << endl;
 
 	return ( ! nodes.empty() );
 }
@@ -367,7 +360,7 @@ vector<CData> CNode::dropDataIfOverflow()
 //		//如果总长度溢出
 //		if( myData.size() > capacityBuffer )
 //		{
-//			//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                    " << endl;
+//			//flash_cout << "######  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                    " << endl;
 //			myData = vector<CData>( myData.end() - CAPACITY_BUFFER, myData.end() );
 //		}		
 //	}
@@ -378,7 +371,7 @@ vector<CData> CNode::dropDataIfOverflow()
 	//如果总长度溢出
 	if( myData.size() > capacityBuffer )
 	{
-		//flash_cout << "####  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                 " ;
+		//flash_cout << "######  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                 " ;
 		if( CNode::MODE_QUEUE == CGeneralNode::_fifo )
 		{
 			overflow = 	vector<CData>( buffer.begin() + CAPACITY_BUFFER,  buffer.end() );
@@ -491,7 +484,7 @@ void CNode::initDeliveryPreds()
 	for(int id = 0; id <= nodes.size(); ++id)
 	{
 		if( id != ID )
-			deliveryPreds[id] = INIT_DELIVERY_PRED;
+			deliveryPreds[id] = CProphet::INIT_PRED;
 	}
 }
 
@@ -499,7 +492,7 @@ void CNode::decayDeliveryPreds(int currentTime)
 {
 	// TODO: refine decay ratio ?
 	for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap)
-		deliveryPreds[ imap->first ] = imap->second * pow( RATIO_PRED_DECAY, ( currentTime - time ) / CCTrace::SLOT_TRACE );
+		deliveryPreds[ imap->first ] = imap->second * pow(CProphet::RATIO_PRED_DECAY, ( currentTime - time ) / CCTrace::SLOT_TRACE );
 }
 
 // TODO: check LISTEN cons calculation if *move
@@ -601,10 +594,10 @@ void CNode::updateDeliveryPredsWith(int node, map<int, double> preds)
 {
 	double oldPred = 0, transPred = 0, dstPred = 0;
 	if( deliveryPreds.find(node) == deliveryPreds.end() )
-		deliveryPreds[ node ] = INIT_DELIVERY_PRED;
+		deliveryPreds[ node ] = CProphet::INIT_PRED;
 
 	oldPred = this->deliveryPreds[ node ];
-	deliveryPreds[ node ] = transPred = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
+	deliveryPreds[ node ] = transPred = oldPred + ( 1 - oldPred ) * CProphet::INIT_PRED;
 
 	for(map<int, double>::iterator imap = preds.begin(); imap != preds.end(); ++imap)
 	{
@@ -612,11 +605,11 @@ void CNode::updateDeliveryPredsWith(int node, map<int, double> preds)
 		if( dst == this->ID )
 			continue;
 		if( deliveryPreds.find(node) == deliveryPreds.end() )
-			deliveryPreds[ node ] = INIT_DELIVERY_PRED;
+			deliveryPreds[ node ] = CProphet::INIT_PRED;
 
 		oldPred = this->deliveryPreds[ dst ];
 		dstPred = imap->second;
-		deliveryPreds[ dst ] = oldPred + ( 1 - oldPred ) * transPred * dstPred * RATIO_PRED_TRANS;
+		deliveryPreds[ dst ] = oldPred + ( 1 - oldPred ) * transPred * dstPred * CProphet::RATIO_PRED_TRANS;
 	}
 		
 }
@@ -624,7 +617,7 @@ void CNode::updateDeliveryPredsWith(int node, map<int, double> preds)
 void CNode::updateDeliveryPredsWithSink()
 {
 	double oldPred = deliveryPreds[CSink::getSink()->getID()];
-	deliveryPreds[CSink::getSink()->getID()] = oldPred + ( 1 - oldPred ) * INIT_DELIVERY_PRED;
+	deliveryPreds[CSink::getSink()->getID()] = oldPred + ( 1 - oldPred ) * CProphet::INIT_PRED;
 }
 
 int CNode::getCapacityForward()

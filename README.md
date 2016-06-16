@@ -746,11 +746,17 @@
 - FIX：将报错的 `typeid` 和 `static_cast` 使用改为 `dynamic_cast`；并将 `CBasicEntity` 改为虚基类，修正所有直接或间接的派生类的继承声明；
 
 
-###### 2016-06-15  ·  *< 3.5.6 >*
+###### [ 2016-06-15  ·  *< 3.5.6 >* ]( dc6407c76a5b3fe7c8ce9e9b5613c7ddb390e322 )
 
 - ADD：添加从 `./default.config` 读入默认参数的功能，并和命令行参数一起保存到 `config.log`；
 - ADD：为 `bool` 型参数的配置添加开启和关闭的功能，使用 on / off 指示；
 - MNT：移除 TinyXML2 库及相关的 Helper 类；
+
+
+###### 2016-06-16  ·  *< 3.5.7 >*
+
+- FIX：修复 `config.log` 和控制台输出中的错误和格式问题；
+- OPT：完善 `ParseConfiguration()` 中的异常捕获；
 
 
 

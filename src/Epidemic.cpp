@@ -12,7 +12,7 @@
 ////{
 ////	if( ! ( currentTime % SLOT_DATA_SEND == 0 ) )
 ////		return;
-////	cout << "########  < " << currentTime << " >  DATA DELIVERY" << endl ;
+////	cout << "####  < " << currentTime << " >  DATA DELIVERY" << endl ;
 ////
 ////	ofstream sink( PATH_ROOT + PATH_LOG + FILE_SINK, ios::app);
 ////	if(currentTime == 0)
@@ -36,7 +36,7 @@
 ////		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::RANGE_TRANS )
 ////		{
 ////			//deliver data to sink
-////			flash_cout << "####  ( Node " << (*inode)->getID() << " deliver " << (*inode)->getSizeBuffer() << " data to Sink )                    " ;
+////			flash_cout << "######  ( Node " << (*inode)->getID() << " deliver " << (*inode)->getSizeBuffer() << " data to Sink )                    " ;
 ////			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
 ////			++nEncounterAtSink;
 ////		}
@@ -60,7 +60,7 @@
 ////			//if spoken recently, skip
 ////			if( (*inode)->hasSpokenRecently( (*jnode), currentTime) )
 ////			{
-////				flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )            " ;
+////				flash_cout << "######  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )            " ;
 ////				continue;
 ////			}
 ////			//init by node with smaller id
@@ -122,15 +122,15 @@
 ////					smaller->addToSpokenCache(greater, currentTime);
 ////					greater->addToSpokenCache(smaller, currentTime);			
 ////					if( skip )
-////						flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )            " ;
+////						flash_cout << "######  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " skip communication )            " ;
 ////					else
-////						flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )            " ;
+////						flash_cout << "######  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " finish communication )            " ;
 ////				}
 ////				else
-////					flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )            " ;
+////					flash_cout << "######  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )            " ;
 ////			}
 ////			else
-////				flash_cout << "####  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )            " ;
+////				flash_cout << "######  ( Node " << (*inode)->getID() << " & " << (*jnode)->getID() << " fail communication )            " ;
 ////
 ////		}
 ////
@@ -144,7 +144,7 @@
 ////
 ////	//控制台输出时保留一位小数
 ////	double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
-////	flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
+////	flash_cout << "######  [ Delivery Ratio ]  " << deliveryRatio << " %                                       " << endl << endl;
 ////	sink << currentTime << TAB << nEncounterAtSink << endl;
 ////	sink.close();
 ////

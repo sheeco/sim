@@ -91,7 +91,7 @@ bool CPostSelect::verifyCompleted()
 
 vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 {
-	flash_cout << "####  ( POST SELECT )          " ;
+	flash_cout << "######  ( POST SELECT )          " ;
 
 	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
 	{

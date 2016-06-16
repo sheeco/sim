@@ -12,6 +12,7 @@
 #include "HotspotSelect.h"
 #include "PostSelect.h"
 #include "Trace.h"
+#include "FileHelper.h"
 
 
 // TODO: move all func definition into cpp file except for inline func
@@ -33,7 +34,7 @@ void Help()
 	help.close();
 }
 
-bool ParseConfiguration(int argc, char* argv[])
+bool ParseConfiguration(int argc, char* argv[], string description)
 {
 	if( argc <= 0 )
 	{
@@ -48,7 +49,7 @@ bool ParseConfiguration(int argc, char* argv[])
 
 	// 将使用的命令行参数输出到文件
 	ofstream config_log(PATH_ROOT + PATH_LOG + FILE_CONFIG, ios::app);
-	config_log << endl << "####  Command Line Args" << endl;
+	config_log << "######  " << description << endl;
 	for( int i = 0; i < argc; ++i )
 	{
 		if( argv[i][0] == '-' )
@@ -65,13 +66,13 @@ bool ParseConfiguration(int argc, char* argv[])
 			string field = argv[iField];
 
 			//<mode> 不带值域的参数
-			if( field == "-hdc" )
+			if( field == "--hdc" )
 			{
 				MAC_PROTOCOL = _hdc;
 				HOTSPOT_SELECT = _original;
 				++iField;
 			}
-			else if( field == "-prophet" )
+			else if( field == "--prophet" )
 			{
 				ROUTING_PROTOCOL = _prophet;
 				++iField;
@@ -81,23 +82,23 @@ bool ParseConfiguration(int argc, char* argv[])
 			//				ROUTING_PROTOCOL = _epidemic;
 			//				++iField;
 			//			}
-			else if( field == "-har" )
+			else if( field == "--har" )
 			{
 				ROUTING_PROTOCOL = _xhar;
 				HOTSPOT_SELECT = _original;
 				++iField;
 			}
-			else if( field == "-hs" )
+			else if( field == "--hs" )
 			{
 				HOTSPOT_SELECT = _original;
 				++iField;
 			}
-			else if( field == "-ihs" )
+			else if( field == "--ihs" )
 			{
 				HOTSPOT_SELECT = _improved;
 				++iField;
 			}
-			else if( field == "-mhs" )
+			else if( field == "--mhs" )
 			{
 				HOTSPOT_SELECT = _merge;
 				++iField;
@@ -106,65 +107,76 @@ bool ParseConfiguration(int argc, char* argv[])
 			//bool 参数
 			else if( field == "-continuous-trace" )
 			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
 				string val(argv[iField + 1]);
 				if( val == "on" )
 					CCTrace::CONTINUOUS_TRACE = true;
 				else if( val == "off" )
 					CCTrace::CONTINUOUS_TRACE = false;
 				else
-					throw val;
+					throw field;
 				iField += 2;
 			}
 			else if( field == "-hotspot-similarity" )
 			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
 				string val(argv[iField + 1]);
 				if( val == "on" )
 					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
 				else if( val == "off" )
 					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = false;
 				else
-					throw val;
+					throw field;
 				iField += 2;
 			}
 			else if( field == "-dynamic-node-number" )
 			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
 				string val(argv[iField + 1]);
 				if( val == "on" )
 					CMacProtocol::TEST_DYNAMIC_NUM_NODE = true;
 				else if( val == "off" )
 					CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
 				else
-					throw val;
+					throw field;
 				iField += 2;
 			}
 			else if( field == "-balanced-ratio" )
 			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
 				string val(argv[iField + 1]);
 				if( val == "on" )
 					HAR::TEST_BALANCED_RATIO = true;
 				else if( val == "off" )
 					HAR::TEST_BALANCED_RATIO = false;
 				else
-					throw val;
+					throw field;
 				iField += 2;
 			}
 			else if( field == "-random-state" )
 			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
 				string val(argv[iField + 1]);
 				if( val == "on" )
 					CMacProtocol::RANDOM_STATE_INIT = true;
 				else if( val == "off" )
 					CMacProtocol::RANDOM_STATE_INIT = false;
 				else
-					throw val;
+					throw field;
 				iField += 2;
 			}
 
 			//int 参数
 			else if( field == "-time-data" )
 			{
-				if( iField < argc - 1 )
-					DATATIME = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				DATATIME = atoi(argv[iField + 1]);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -172,8 +184,9 @@ bool ParseConfiguration(int argc, char* argv[])
 			}
 			else if( field == "-time-run" )
 			{
-				if( iField < argc - 1 )
-					RUNTIME = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				RUNTIME = atoi(argv[iField + 1]);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -190,14 +203,16 @@ bool ParseConfiguration(int argc, char* argv[])
 			//}
 			else if( field == "-node" )
 			{
-				if( iField < argc - 1 )
-					CNode::INIT_NUM_NODE = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::INIT_NUM_NODE = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-log-slot" )
 			{
-				if( iField < argc - 1 )
-					SLOT_LOG = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				SLOT_LOG = atoi(argv[iField + 1]);
 				//				//观测周期不应小于工作周期
 				//				if( SLOT_LOG < CNode::SLOT_TOTAL )
 				//					SLOT_LOG = CNode::SLOT_TOTAL;
@@ -206,20 +221,23 @@ bool ParseConfiguration(int argc, char* argv[])
 			}
 			else if( field == "-trans-range" )
 			{
-				if( iField < argc - 1 )
-					CGeneralNode::RANGE_TRANS = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CGeneralNode::RANGE_TRANS = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-lifetime" )
 			{
-				if( iField < argc - 1 )
-					CHotspotSelect::LIFETIME_POSITION = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CHotspotSelect::LIFETIME_POSITION = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-cycle" )
 			{
-				if( iField < argc - 1 )
-					CNode::SLOT_TOTAL = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::SLOT_TOTAL = atoi(argv[iField + 1]);
 
 				//观测周期不应小于工作周期
 				if( SLOT_LOG < CNode::SLOT_TOTAL )
@@ -229,26 +247,30 @@ bool ParseConfiguration(int argc, char* argv[])
 			}
 			else if( field == "-slot-carrier-sense" )
 			{
-				if( iField < argc - 1 )
-					CNode::DEFAULT_SLOT_CARRIER_SENSE = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::DEFAULT_SLOT_CARRIER_SENSE = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-dc-default" )
 			{
-				if( iField < argc - 1 )
-					CNode::DEFAULT_DUTY_CYCLE = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::DEFAULT_DUTY_CYCLE = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-dc-hotspot" )
 			{
-				if( iField < argc - 1 )
-					CNode::HOTSPOT_DUTY_CYCLE = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::HOTSPOT_DUTY_CYCLE = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-hop" )
 			{
-				if( iField < argc - 1 )
-					CData::MAX_HOP = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CData::MAX_HOP = atoi(argv[iField + 1]);
 				//				if( ( CData::MAX_HOP > 0 )
 				//					&& ( CData::MAX_TTL > 0 ) )
 				//				{
@@ -277,32 +299,37 @@ bool ParseConfiguration(int argc, char* argv[])
 			//			}
 			else if( field == "-buffer" )
 			{
-				if( iField < argc - 1 )
-					CNode::CAPACITY_BUFFER = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::CAPACITY_BUFFER = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-buffer-ma" )
 			{
-				if( iField < argc - 1 )
-					CMANode::CAPACITY_BUFFER = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CMANode::CAPACITY_BUFFER = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-data-rate" )
 			{
-				if( iField < argc - 1 )
-					CNode::DEFAULT_DATA_RATE = double(1) / atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::DEFAULT_DATA_RATE = double(1) / atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-data-size" )
 			{
-				if( iField < argc - 1 )
-					CNode::SIZE_DATA = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::SIZE_DATA = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-energy" )
 			{
-				if( iField < argc - 1 )
-					CNode::CAPACITY_ENERGY = 1000 * atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::CAPACITY_ENERGY = 1000 * atoi(argv[iField + 1]);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -316,14 +343,16 @@ bool ParseConfiguration(int argc, char* argv[])
 			//			}			
 			else if( field == "-spoken" )
 			{
-				if( iField < argc - 1 )
-					CNode::LIFETIME_SPOKEN_CACHE = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::LIFETIME_SPOKEN_CACHE = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-capacity-forward" )
 			{
-				if( iField < argc - 1 )
-					CProphet::CAPACITY_FORWARD = atoi(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CProphet::CAPACITY_FORWARD = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 
@@ -331,101 +360,109 @@ bool ParseConfiguration(int argc, char* argv[])
 			//double 参数
 			else if( field == "-alpha" )
 			{
-				if( iField < argc - 1 )
-					CPostSelect::ALPHA = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CPostSelect::ALPHA = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-beta" )
 			{
-				if( iField < argc - 1 )
-					HAR::BETA = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				HAR::BETA = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-lambda" )
 			{
-				if( iField < argc - 1 )
-					CHotspotSelect::LAMBDA = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CHotspotSelect::LAMBDA = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-merge" )
 			{
-				if( iField < argc - 1 )
-					CHotspotSelect::RATIO_MERGE_HOTSPOT = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CHotspotSelect::RATIO_MERGE_HOTSPOT = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-old" )
 			{
-				if( iField < argc - 1 )
-					CHotspotSelect::RATIO_OLD_HOTSPOT = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CHotspotSelect::RATIO_OLD_HOTSPOT = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-trans-prob" )
 			{
-				if( iField < argc - 1 )
-					CGeneralNode::PROB_TRANS = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CGeneralNode::PROB_TRANS = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-pred-init" )
 			{
-				if( iField < argc - 1 )
-					CNode::INIT_DELIVERY_PRED = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CProphet::INIT_PRED = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-pred-decay" )
 			{
-				if( iField < argc - 1 )
-					CNode::RATIO_PRED_DECAY = atof(argv[iField + 1]);
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CProphet::RATIO_PRED_DECAY = atof(argv[iField + 1]);
 				iField += 2;
 			}
 			//实际上对WSN而言不会使用到
 			//			else if( field == "-pred-trans" )
 			//			{
 			//				if( iField < argc - 1 )
-			//					CNode::RATIO_PRED_TRANS = atof( argv[ iField + 1 ] );
+			//					CProphet::RATIO_PRED_TRANS = atof( argv[ iField + 1 ] );
 			//				iField += 2;
 			//			}
+
+			//字符串参数
+			else if( field == "-dataset" )
+			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
+
+				char arg[20] = { '\0' };
+				strcpy(arg, argv[iField + 1]);
+				DATASET = string(arg);
+
+				iField += 2;
+			}
+			else if( field == "-log-path" )
+			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
+
+				char arg[20] = { '\0' };
+				strcpy(arg, argv[iField + 1]);
+				PATH_ROOT = "../" + string(arg) + "/";
+
+				iField += 2;
+			}
 
 
 			//带两个或以上数值的参数
 			else if( field == "-sink" )
 			{
-				if( iField < argc - 2 )
-				{
-					CSink::SINK_X = atof(argv[iField + 1]);
-					CSink::SINK_Y = atof(argv[iField + 2]);
-				}
+				if( ( iField + 2 ) >= argc )
+					throw field;
+				CSink::SINK_X = atof(argv[iField + 1]);
+				CSink::SINK_Y = atof(argv[iField + 2]);
 				iField += 3;
 			}
 			else if( field == "-heat" )
 			{
-				if( iField < argc - 2 )
-				{
-					HAR::CO_HOTSPOT_HEAT_A1 = atof(argv[iField + 1]);
-					HAR::CO_HOTSPOT_HEAT_A2 = atof(argv[iField + 2]);
-				}
+				if( ( iField + 2 ) >= argc )
+					throw field;
+				HAR::CO_HOTSPOT_HEAT_A1 = atof(argv[iField + 1]);
+				HAR::CO_HOTSPOT_HEAT_A2 = atof(argv[iField + 2]);
 				iField += 3;
-			}
-
-			//字符串参数
-			else if( field == "-dataset" )
-			{
-				if( iField < argc - 2 )
-				{
-					char arg[20] = { '\0' };
-					strcpy(arg, argv[iField + 1]);
-					DATASET = string(arg);
-				}
-				iField += 2;
-			}
-			else if( field == "-log-path" )
-			{
-				if( iField < argc - 2 )
-				{
-					char arg[20] = { '\0' };
-					strcpy(arg, argv[iField + 1]);
-					PATH_ROOT = "../" + string(arg) + "/";
-				}
-				iField += 2;
 			}
 
 
@@ -437,16 +474,29 @@ bool ParseConfiguration(int argc, char* argv[])
 				Exit(ESKIP);
 			}
 			else
-				throw field;
+				throw argv[iField];
 
 		}
 	}
+
+	// Unkown command name
+	catch( char* arg )
+	{
+		stringstream error;
+		error << "Error @ ParseConfiguration() : Cannot find command '" << arg << "' ! ";
+		cout << endl << error.str() << endl;
+		Help();
+		_PAUSE_;
+		Exit(EINVAL, error.str());
+		return false;
+	}
+
+	// Wrong value format for command
 	catch( string field )
 	{
 		stringstream error;
-		error << "Error @ ParseConfiguration() : Cannot find command '" << field << "' ! ";
+		error << "Error @ ParseConfiguration() : Need value for command '" << field << "' ! ";
 		cout << endl << error.str() << endl;
-		Help();
 		_PAUSE_;
 		Exit(EINVAL, error.str());
 		return false;
@@ -468,15 +518,18 @@ bool ParseConfiguration(int argc, char* argv[])
 
 bool ParseConfiguration(string filename)
 {
+	if( !CFileHelper::IfExists(filename) )
+	{
+		stringstream error;
+		error << "Error @ ParseConfiguration() : Cannot find file \"" << filename << "\" ! ";
+		cout << endl << error.str() << endl;
+		_PAUSE_;
+		Exit(ENOENT, error.str());
+	}
+
 	//read string from file
 	ifstream file(filename, ios::in);
 	string config(( std::istreambuf_iterator<char>(file) ), std::istreambuf_iterator<char>());
-
-	// 将默认参数输出到文件
-	ofstream config_log(PATH_ROOT + PATH_LOG + FILE_CONFIG, ios::app);
-	config_log << "####  " << filename << endl;
-	config_log << config << endl;
-	config_log.close();
 
 	//parse string into tokens
 	char* delim = " \t\n";
@@ -496,14 +549,14 @@ bool ParseConfiguration(string filename)
 		for(int i = 0; i < argc; ++i)
 			argv[i] = args[i];
 		
-		bool rtn = ParseConfiguration(argc, argv);
+		bool rtn = ParseConfiguration(argc, argv, filename);
 		delete argv;
 		return rtn;
 	}
 	else
 	{
 		stringstream error;
-		error << "Error @ ParseConfiguration() : Wrong format in " << filename << "!";
+		error << "Error @ ParseConfiguration() : Cannot find configuration in " << filename << "!";
 		cout << endl << error.str() << endl;
 		_PAUSE_;
 		Exit(ENOEXEC, error.str());
@@ -575,9 +628,9 @@ void InitConfiguration()
 
 	/******************************  Prophet  ******************************/
 
-	CNode::INIT_DELIVERY_PRED = 0.70;  //参考值 0.75
-	CNode::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
-	CNode::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
+	CProphet::INIT_PRED = 0.70;  //参考值 0.75
+	CProphet::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
+	CProphet::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
 	CProphet::TRANS_STRICT_BY_PRED = false;
 	CProphet::CAPACITY_FORWARD = 20;
 
@@ -685,6 +738,7 @@ void InitLogPath()
 
 }
 
+// TODO: print all significant parameters
 void PrintConfiguration()
 {
 	ofstream parameters( PATH_ROOT + PATH_LOG + FILE_PARAMETES, ios::app);
@@ -731,9 +785,9 @@ void PrintConfiguration()
 	{
 		INFO_LOG += "$Prophet ";
 		parameters << endl << "$Prophet " << endl << endl;
-		parameters << "PRED_INIT" << TAB << CNode::INIT_DELIVERY_PRED << endl;
-		parameters << "PRED_DECAY" << TAB << CNode::RATIO_PRED_DECAY << endl;
-		parameters << "PRED_TRANS" << TAB << CNode::RATIO_PRED_TRANS << endl;
+		parameters << "PRED_INIT" << TAB << CProphet::INIT_PRED << endl;
+		parameters << "PRED_DECAY" << TAB << CProphet::RATIO_PRED_DECAY << endl;
+		parameters << "PRED_TRANS" << TAB << CProphet::RATIO_PRED_TRANS << endl;
 	}
 
 	if( MAC_PROTOCOL == _hdc )
@@ -882,7 +936,7 @@ bool Run(int argc, char* argv[])
 
 	/********************************** 命令行参数解析 ************************************/
 
-	ParseConfiguration( argc - 1 , ++argv );
+	ParseConfiguration( argc - 1 , ++argv, "Command Line Configuration" );
 
 	/*************************** 将 log 信息和参数信息写入文件 ******************************/
 

@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			cout << "Cannot find " << old_name << " . " << endl;
+			cout << "Cannot find file \"" << old_name << "\" ! " << endl;
 			break;
 		}
 	}

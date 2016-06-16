@@ -253,7 +253,7 @@ bool CMacProtocol::transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackag
 			return true;
 		}
 		else
-			flash_cout << "####  ( Node " << NDigitString( package->getSrcNode()->getID(), 2) << "  >----  fail  xxxx>  Node " << NDigitString( dst->getID(), 2) << " )     " ;
+			flash_cout << "######  ( Node " << NDigitString( package->getSrcNode()->getID(), 2) << "  >----  fail  xxxx>  Node " << NDigitString( dst->getID(), 2) << " )     " ;
 	}
 	free(package);
 	
@@ -265,17 +265,17 @@ void CMacProtocol::ChangeNodeNumber(int currentTime)
 	if( ! ( currentTime % SLOT_CHANGE_NUM_NODE == 0 ) )
 		return;
 
-	flash_cout << endl << "########  < " << currentTime << " >  NODE NUMBER CHANGE" ;
+	flash_cout << endl << "####  < " << currentTime << " >  NODE NUMBER CHANGE" ;
 	
 	int delta = CNode::ChangeNodeNumber();
 
 	if(delta >= 0)
 	{
-		cout << "####  ( " << delta << " nodes added )" << endl;
+		cout << "######  ( " << delta << " nodes added )" << endl;
 	}
 	else
 	{
-		cout << "####  ( " << -delta << " nodes removed )" << endl;
+		cout << "######  ( " << -delta << " nodes removed )" << endl;
 	}
 }
 
@@ -331,7 +331,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	if( currentTime == 0 
 		|| print )
 	{
-		flash_cout << "########  < " << currentTime << " >  DATA DELIVERY            " << endl ;
+		flash_cout << "####  < " << currentTime << " >  DATA DELIVERY            " << endl ;
 		print = false;
 	}
 
@@ -379,7 +379,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	if( ( currentTime + SLOT ) % SLOT_LOG == 0 )
 	{
 		double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
-		flash_cout << "####  [ Delivery Ratio ]  " << deliveryRatio << " %                             " << endl << endl;
+		flash_cout << "######  [ Delivery Ratio ]  " << deliveryRatio << " %                             " << endl << endl;
 		print = true;
 	}
 }

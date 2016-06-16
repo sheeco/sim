@@ -9,6 +9,10 @@
 bool CProphet::TRANS_STRICT_BY_PRED = true;
 int CProphet::CAPACITY_FORWARD = 0;
 
+double CProphet::INIT_PRED = 0.75;  //参考值 0.75
+double CProphet::RATIO_PRED_DECAY = 0.98;  //参考值 0.98(/s)
+double CProphet::RATIO_PRED_TRANS = 0.25;  //参考值 0.25
+
 
 CProphet::CProphet()
 {
@@ -136,7 +140,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+				flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
 
 				return contentsToSend;
 
@@ -279,7 +283,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				//skip if has spoken recently
 				if( node->hasSpokenRecently(dynamic_cast<CNode*>(fromNode), time) )
 				{
-					flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(fromNode->getID(), 2) << " )                " ;
+					flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(fromNode->getID(), 2) << " )                " ;
 					return contentsToSend;
 				}
 				//rcv RTS from node
@@ -373,7 +377,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "####  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(fromNode->getID(), 2) << " )                       " ;
+				flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(fromNode->getID(), 2) << " )                       " ;
 
 				return contentsToSend;
 
