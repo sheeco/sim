@@ -73,7 +73,7 @@
       <AdditionalOptions>/NODEFAULTLIB:"MSVCRT" /NODEFAULTLIB:"UCRT" %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <BuildLog>
-      <Path>..\.build\$(ProjectName)\$(ProjectName).$(Configuration).log</Path>
+      <Path>..\.build\$(ProjectName)\$(ProjectName).debug.log</Path>
     </BuildLog>
     <PostBuildEvent>
       <Command>
@@ -101,7 +101,7 @@
     <BuildLog />
     <BuildLog />
     <BuildLog>
-      <Path>..\.build\$(ProjectName)\$(MSBuildProjectName).$(Configuration).log</Path>
+      <Path>..\.build\$(ProjectName)\$(MSBuildProjectName).release.log</Path>
     </BuildLog>
     <PostBuildEvent>
       <Command>XCOPY "../bin/HDC.release.exe" /F "../bin/HDC.exe"  /Y</Command>

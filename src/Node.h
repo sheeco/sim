@@ -96,9 +96,6 @@ private:
 
 	map<int, double> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
 
-	void initDeliveryPreds();
-	void decayDeliveryPreds(int currentTime);
-
 
 public:
 
@@ -278,8 +275,11 @@ public:
 	{
 		return deliveryPreds;
 	}
-	void updateDeliveryPredsWith(int node, map<int, double> preds);
-	void updateDeliveryPredsWithSink();
+
+	void setDeliveryPreds(map<int, double> deliveryPreds)
+	{
+		this->deliveryPreds = deliveryPreds;
+	}
 
 	//返回节点允许接收的最大数据数
 	int getCapacityForward();

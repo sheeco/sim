@@ -753,10 +753,18 @@
 - MNT：移除 TinyXML2 库及相关的 Helper 类；
 
 
-###### 2016-06-16  ·  *< 3.5.7 >*
+###### [ 2016-06-16  ·  *< 3.5.7 >* ]( 03472a7e891917adfae693ab78ef11e7f734e908 )
 
 - FIX：修复 `config.log` 和控制台输出中的错误和格式问题；
 - OPT：完善 `ParseConfiguration()` 中的异常捕获；
+
+
+###### 2016-06-17  ·  *< 3.5.8 >*
+
+- RFCT：将 Prophet 路由相关的参数和函数的定义从 `CNode` 移入 `CProphet` 中；
+- RFCT：将部分对 `CSink::getSink()` 的直接调用改为使用参数传入，以准备对多 sink 网络的适配；
+- [ ] RFCT：将所有配置参数的定义放入 `CConfiguration` 类并保存到一个数组，以简化 `ParseConfiguration()` 中的操作；
+- [ ] ADD：对多 sink 网络的适配；
 
 
 

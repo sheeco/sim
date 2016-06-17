@@ -30,6 +30,11 @@ public:
 	CProphet();
 	~CProphet();
 
+	static void initDeliveryPreds(CNode* node);
+	static void decayDeliveryPreds(CNode* node, int currentTime);
+	static void updateDeliveryPredsWith(CNode* node, int fromNode, map<int, double> preds);
+	static void updateDeliveryPredsWithSink(CNode* node, CSink* sink);
+
 	static bool shouldForward(CNode* node, map<int, double> dstPred);
 
 	// TODO: check hop

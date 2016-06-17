@@ -24,6 +24,63 @@ CProphet::~CProphet()
 	
 }
 
+void CProphet::initDeliveryPreds(CNode * node)
+{
+	map<int, double> deliveryPreds = node->getDeliveryPreds();
+	if( ! deliveryPreds.empty() )
+		return;
+
+	vector<CNode*> nodes = CNode::getNodes();
+	for( int id = 0; id <= nodes.size(); ++id )
+	{
+		if( id != node->getID() )
+			deliveryPreds[id] = CProphet::INIT_PRED;
+	}
+	node->setDeliveryPreds(deliveryPreds);
+}
+
+void CProphet::decayDeliveryPreds(CNode * node, int currentTime)
+{
+	// TODO: refine decay ratio ?
+	map<int, double> deliveryPreds = node->getDeliveryPreds();
+	for( map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap )
+		deliveryPreds[imap->first] = imap->second * pow(CProphet::RATIO_PRED_DECAY, ( currentTime - node->getTime() ) / CCTrace::SLOT_TRACE);
+	node->setDeliveryPreds(deliveryPreds);
+}
+
+void CProphet::updateDeliveryPredsWith(CNode * node, int fromNode, map<int, double> preds)
+{
+	map<int, double> deliveryPreds = node->getDeliveryPreds();
+	double oldPred = 0, transPred = 0, dstPred = 0;
+	if( deliveryPreds.find(fromNode) == deliveryPreds.end() )
+		deliveryPreds[fromNode] = CProphet::INIT_PRED;
+
+	oldPred = deliveryPreds[fromNode];
+	deliveryPreds[fromNode] = transPred = oldPred + ( 1 - oldPred ) * CProphet::INIT_PRED;
+
+	for( map<int, double>::iterator imap = preds.begin(); imap != preds.end(); ++imap )
+	{
+		int dst = imap->first;
+		if( dst == node->getID() )
+			continue;
+		if( deliveryPreds.find(fromNode) == deliveryPreds.end() )
+			deliveryPreds[fromNode] = CProphet::INIT_PRED;
+
+		oldPred = deliveryPreds[dst];
+		dstPred = imap->second;
+		deliveryPreds[dst] = oldPred + ( 1 - oldPred ) * transPred * dstPred * CProphet::RATIO_PRED_TRANS;
+	}
+	node->setDeliveryPreds(deliveryPreds);
+}
+
+void CProphet::updateDeliveryPredsWithSink(CNode * node, CSink * sink)
+{
+	map<int, double> deliveryPreds = node->getDeliveryPreds();
+	double oldPred = deliveryPreds[sink->getID()];
+	deliveryPreds[sink->getID()] = oldPred + ( 1 - oldPred ) * CProphet::INIT_PRED;
+	node->setDeliveryPreds(deliveryPreds);
+}
+
 bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 {
 	double predNode = node->getDeliveryPreds().find(CSink::getSink()->getID())->second;
@@ -98,7 +155,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 
 			case CCtrl::_rts:
 
-				node->updateDeliveryPredsWithSink();
+				updateDeliveryPredsWithSink(node, sink);
 
 				if( node->getAllData().empty() )
 				{
@@ -356,7 +413,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				//否则，不允许转发数据时，dataToSend留空
 
 				//update preds
-				node->updateDeliveryPredsWith( fromNode->getID(), ctrl->getPred() );
+				updateDeliveryPredsWith(node, fromNode->getID(), ctrl->getPred() );
 
 				//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输
 				//     否则并不结束传输，还将为对方发来的数据发送ACK；

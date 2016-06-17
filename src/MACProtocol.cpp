@@ -27,20 +27,19 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 	// Make local copy
 	package = new CPackage(*package);
 	CGeneralNode* gFromNode = package->getSrcNode();
-	CSink* sink = CSink::getSink();
 	vector<CGeneralData*> contents = package->getContents();
 	vector<CGeneralData*> contentsToSend;
 	CPackage* packageToSend = nullptr;
 
 	if( typeid(gnode) == typeid(CSink) )
 	{
-
+		CSink* toSink = dynamic_cast< CSink* >( &gnode );
 		/*********************************************** Sink <- MA *******************************************************/
 
 		if( typeid(*gFromNode) == typeid(CMANode) )
 		{
 			CMANode* fromMA = dynamic_cast<CMANode*>( gFromNode );
-			contentsToSend = HAR::receiveContents(sink, fromMA, contents, currentTime);
+			contentsToSend = HAR::receiveContents(toSink, fromMA, contents, currentTime);
 		}
 
 		/*********************************************** Sink <- Node *******************************************************/
@@ -48,7 +47,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		else if( typeid(*gFromNode) == typeid(CNode) )
 		{
 			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
-			contentsToSend = CProphet::receiveContents(sink, fromNode, contents, currentTime);
+			contentsToSend = CProphet::receiveContents(toSink, fromNode, contents, currentTime);
 		}
 
 	}
@@ -61,7 +60,8 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 		if( typeid(*gFromNode) == typeid(CSink) )
 		{
-			contentsToSend = HAR::receiveContents(toMA, sink, contents, currentTime);
+			CSink* fromSink = dynamic_cast< CSink* >( gFromNode );
+			contentsToSend = HAR::receiveContents(toMA, fromSink, contents, currentTime);
 		}
 		
 		/************************************************ MA <- node *******************************************************/
@@ -81,7 +81,8 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 		if( typeid(*gFromNode) == typeid(CSink) )
 		{
-			contentsToSend = CProphet::receiveContents(node, sink, contents, currentTime);
+			CSink* fromSink = dynamic_cast< CSink* >( gFromNode );
+			contentsToSend = CProphet::receiveContents(node, fromSink, contents, currentTime);
 		}
 
 		/************************************************ Node <- MA *******************************************************/
@@ -157,13 +158,13 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 
 	else if( typeid(src) == typeid(CSink) )
 	{
+		CSink* srcSink = dynamic_cast< CSink* >( &src );
 		// Prophet: sink => nodes
 		if( ROUTING_PROTOCOL == _prophet )
 		{
-			CSink* sink = CSink::getSink();	
 			for(vector<CNode*>::iterator dstNode = nodes.begin(); dstNode != nodes.end(); ++dstNode)
 			{
-				if( CBasicEntity::withinRange( *sink, **dstNode, CGeneralNode::RANGE_TRANS ) )
+				if( CBasicEntity::withinRange( *srcSink, **dstNode, CGeneralNode::RANGE_TRANS ) )
 				{
 					CSink::encount();
 					CMacProtocol::transmitTry();
@@ -185,11 +186,10 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 		// xHAR: sink => MAs
 		else if( ROUTING_PROTOCOL == _xhar )
 		{
-			CSink* sink = CSink::getSink();	
 			vector<CMANode*> MAs = CMANode::getMANodes();
 			for(vector<CMANode*>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA)
 			{
-				if( CBasicEntity::withinRange( *sink, **iMA, CGeneralNode::RANGE_TRANS ) )
+				if( CBasicEntity::withinRange( *srcSink, **iMA, CGeneralNode::RANGE_TRANS ) )
 				{
 					CMacProtocol::transmitTry();
 
@@ -338,7 +338,8 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	// TODO: sink receive RTS / send by slot ?
 	// Prophet: sink => nodes
 	// xHAR: sink => MAs
-	broadcastPackage( *CSink::getSink(), CSink::getSink()->sendRTS(currentTime) , currentTime );
+	CSink* sink = CSink::getSink();
+	broadcastPackage( *sink, sink->sendRTS(currentTime) , currentTime );
 
 	vector<CNode*> nodes = CNode::getNodes();
 	vector<CMANode*> MAs = CMANode::getMANodes();

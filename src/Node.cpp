@@ -96,10 +96,11 @@ void CNode::initNodes() {
 			CNode* node = new CNode(dataRate);
 			node->generateID();
 			node->loadTrace();
-			node->initDeliveryPreds();
 			CNode::nodes.push_back(node);
 			CNode::idNodes.push_back( node->getID() );
 		}
+		for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
+			CProphet::initDeliveryPreds(*inode);
 	}
 }
 
@@ -439,7 +440,7 @@ void CNode::newNodes(int n)
 			dataRate *= 5;
 		CNode* node = new CNode(dataRate);
 		node->generateID();
-		node->initDeliveryPreds();
+		CProphet::initDeliveryPreds(node);
 		CNode::nodes.push_back(node);
 		CNode::idNodes.push_back( node->getID() );
 		--n;
@@ -474,25 +475,6 @@ void CNode::removeNodes(int n)
 	for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
 		idNodes.push_back( (*inode)->getID() );
 	CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
-}
-
-void CNode::initDeliveryPreds() 
-{
-	if( ! deliveryPreds.empty() )
-		return;
-
-	for(int id = 0; id <= nodes.size(); ++id)
-	{
-		if( id != ID )
-			deliveryPreds[id] = CProphet::INIT_PRED;
-	}
-}
-
-void CNode::decayDeliveryPreds(int currentTime) 
-{
-	// TODO: refine decay ratio ?
-	for(map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap)
-		deliveryPreds[ imap->first ] = imap->second * pow(CProphet::RATIO_PRED_DECAY, ( currentTime - time ) / CCTrace::SLOT_TRACE );
 }
 
 // TODO: check LISTEN cons calculation if *move
@@ -551,7 +533,7 @@ void CNode::updateStatus(int currentTime)
 	/**************************************  Prophet  *************************************/
 	if( ROUTING_PROTOCOL == _prophet 
 		&& (currentTime % CCTrace::SLOT_TRACE) == 0 )
-		decayDeliveryPreds(currentTime);
+		CProphet::decayDeliveryPreds(this, currentTime);
 
 	//更新坐标及时间戳
 	if( ! trace->isValid(currentTime) )
@@ -588,36 +570,6 @@ vector<CData> CNode::getDataByRequestList(vector<int> requestList) const
 	vector<CData> result;
 	result = CData::GetItemsByID(buffer, requestList);
 	return result;
-}
-
-void CNode::updateDeliveryPredsWith(int node, map<int, double> preds) 
-{
-	double oldPred = 0, transPred = 0, dstPred = 0;
-	if( deliveryPreds.find(node) == deliveryPreds.end() )
-		deliveryPreds[ node ] = CProphet::INIT_PRED;
-
-	oldPred = this->deliveryPreds[ node ];
-	deliveryPreds[ node ] = transPred = oldPred + ( 1 - oldPred ) * CProphet::INIT_PRED;
-
-	for(map<int, double>::iterator imap = preds.begin(); imap != preds.end(); ++imap)
-	{
-		int dst = imap->first;
-		if( dst == this->ID )
-			continue;
-		if( deliveryPreds.find(node) == deliveryPreds.end() )
-			deliveryPreds[ node ] = CProphet::INIT_PRED;
-
-		oldPred = this->deliveryPreds[ dst ];
-		dstPred = imap->second;
-		deliveryPreds[ dst ] = oldPred + ( 1 - oldPred ) * transPred * dstPred * CProphet::RATIO_PRED_TRANS;
-	}
-		
-}
-
-void CNode::updateDeliveryPredsWithSink()
-{
-	double oldPred = deliveryPreds[CSink::getSink()->getID()];
-	deliveryPreds[CSink::getSink()->getID()] = oldPred + ( 1 - oldPred ) * CProphet::INIT_PRED;
 }
 
 int CNode::getCapacityForward()
