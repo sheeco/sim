@@ -240,7 +240,7 @@ public:
 	}
 
 	//MA node: all on
-	bool isListening() const
+	bool isAwake() const
 	{
 		return true;
 	}

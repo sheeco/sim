@@ -140,8 +140,8 @@ public:
 		this->HOP--;
 
 //		this->TTL -= ( currentTime - time );
-		this->timeArrival = currentTime;
-		this->time = currentTime;
+		//this->timeArrival = currentTime;
+		//this->time = currentTime;
 	}
 
 //	//判断是否已经超过生存期(TTL <= 0)，超出应丢弃
@@ -205,6 +205,7 @@ public:
 
 	//重载比较操作符，比较生成时间，用于mergeSort
 	friend bool operator < (const CData lt, const CData rt);
+	friend bool operator > (const CData lt, const CData rt);
 	//重载 == 操作符，比较 ID，用于去重
 	friend bool operator == (const CData lt, const CData rt);
 	//重载操作符 == 用于根据 ID 判断 identical

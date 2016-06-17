@@ -37,6 +37,7 @@ int CNode::SIZE_DATA = 0;
 
 int CNode::CAPACITY_BUFFER = 0;
 int CNode::CAPACITY_ENERGY = 0;
+int CNode::SPEED_TRANS = 0;
 int CNode::LIFETIME_SPOKEN_CACHE = 0;
 CGeneralNode::_RECEIVE CNode::MODE_RECEIVE = _loose;
 CGeneralNode::_SEND CNode::MODE_SEND = _dump;
@@ -48,21 +49,36 @@ void CNode::init()
 	trace = nullptr;
 	dataRate = 0;
 	atHotspot = nullptr;
-	SLOT_CARRIER_SENSE = DEFAULT_SLOT_CARRIER_SENSE;
-	discovering = false;
-	timeData = 0;
+	timerCarrierSense = DEFAULT_SLOT_CARRIER_SENSE;
+	//discovering = false;
+	timeLastData = 0;
 	timeDeath = 0;
 	recyclable = true;
 	capacityBuffer = CAPACITY_BUFFER;
 	sumBufferRecord = 0;
 	countBufferRecord = 0;
 	dutyCycle = DEFAULT_DUTY_CYCLE;
-	SLOT_LISTEN = dutyCycle * SLOT_TOTAL;
-	SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-	if( CMacProtocol::RANDOM_STATE_INIT )
-		state = RandomInt(-SLOT_SLEEP, SLOT_LISTEN);
+	SLOT_WAKE = int( dutyCycle * SLOT_TOTAL );
+	SLOT_SLEEP = SLOT_TOTAL - SLOT_WAKE;
+	if( SLOT_WAKE == 0 )
+	{
+		state = _asleep;
+		timerWake = UNVALID;
+		if( CMacProtocol::RANDOM_STATE_INIT )
+			timerSleep = RandomInt(1, SLOT_SLEEP);
+		else
+			timerSleep = SLOT_SLEEP;
+	}
 	else
-		state = 0;
+	{
+		state = _awake;
+		timerSleep = UNVALID;
+		if( CMacProtocol::RANDOM_STATE_INIT )
+			timerWake = RandomInt(1, SLOT_WAKE);
+		else
+			timerWake = SLOT_WAKE;
+		timerCarrierSense = RandomInt(0, CRoutingProtocol::getTimeWindowTrans());
+	}
 }
 
 CNode::CNode() 
@@ -105,16 +121,16 @@ void CNode::initNodes() {
 }
 
 void CNode::generateData(int currentTime) {
-	int timeDataIncre = currentTime - timeData;
-	int nData = timeDataIncre * dataRate;
+	int timeDataIncre = currentTime - timeLastData;
+	int nData = int( timeDataIncre * dataRate );
 	if(nData > 0)
 	{
 		for(int i = 0; i < nData; ++i)
 		{
 			CData data(ID, currentTime, SIZE_DATA);
-			buffer.push_back(data);
+			this->buffer = CSortHelper::insertIntoSortedList(this->buffer, data, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
 		}
-		timeData = currentTime;
+		timeLastData = currentTime;
 	}
 	updateBufferStatus(currentTime);
 }
@@ -236,37 +252,52 @@ double CNode::getSumEnergyConsumption()
 
 void CNode::raiseDutyCycle() 
 {
-	if( ZERO( this->dutyCycle - HOTSPOT_DUTY_CYCLE ) )
+	if( useHotspotDutyCycle() )
 		return;
 
-	if( state < 0 )
-		state = 0;
 	dutyCycle = HOTSPOT_DUTY_CYCLE;
-	SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-	SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-
-	if( state < -SLOT_LISTEN )
-		state = -SLOT_LISTEN;
+	int oldSlotWake = SLOT_WAKE;
+	SLOT_WAKE = int( SLOT_TOTAL * dutyCycle );
+	SLOT_SLEEP = SLOT_TOTAL - SLOT_WAKE;
+	//唤醒状态下，延长唤醒时间
+	if( isAwake() )
+		timerWake += SLOT_WAKE - oldSlotWake;
+	//休眠状态下，立即唤醒
+	else
+		Wake();
 }
 
 void CNode::resetDutyCycle() 
 {
-	if( ZERO( this->dutyCycle - DEFAULT_DUTY_CYCLE ) )
+	if( useDefaultDutyCycle() )
 		return;
 
-	dutyCycle = DEFAULT_DUTY_CYCLE;
-	SLOT_LISTEN = SLOT_TOTAL * dutyCycle;
-	SLOT_SLEEP = SLOT_TOTAL - SLOT_LISTEN;
-
-	//完成本次监听之后再休眠
-	if( state > SLOT_LISTEN )
-		state = SLOT_LISTEN;
+	dutyCycle = HOTSPOT_DUTY_CYCLE;
+	int oldSlotWake = SLOT_WAKE;
+	SLOT_WAKE = int(SLOT_TOTAL * dutyCycle);
+	SLOT_SLEEP = SLOT_TOTAL - SLOT_WAKE;
 }
 
 void CNode::checkDataByAck(vector<CData> ack)
 {
 	if( MODE_SEND == _dump )
 		RemoveFromList(buffer, ack);
+}
+
+void CNode::Wake()
+{
+	state = _awake;
+	timerSleep = UNVALID;
+	timerWake = SLOT_WAKE;
+	timerCarrierSense = RandomInt(0, CRoutingProtocol::getTimeWindowTrans());
+}
+
+void CNode::Sleep()
+{
+	state = _asleep;
+	timerWake = UNVALID;
+	timerCarrierSense = UNVALID;
+	timerSleep = SLOT_SLEEP;
 }
 
 CPackage* CNode::sendRTSWithCapacityAndPred(int currentTime)
@@ -321,17 +352,33 @@ void CNode::addToSpokenCache(CNode* node, int currentTime)
 //	return overflow;
 //}
 
-vector<CData> CNode::removeDataByCapacity(vector<CData> datas, int capacity)
+
+//手动将数据压入 buffer，不伴随其他任何操作
+//注意：必须在调用此函数之后手动调用 updateBufferStatus() 检查溢出
+
+void CNode::pushIntoBuffer(vector<CData> datas)
 {
-	if( capacity < datas.size() )
+	this->buffer = CSortHelper::insertIntoSortedList(this->buffer, datas, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
+}
+
+vector<CData> CNode::removeDataByCapacity(vector<CData> &datas, int capacity)
+{
+	vector<CData> overflow;
+	if( datas.size() <= capacity )
+		return overflow;
+
+	if( MODE_QUEUE == _fifo )
 	{
-		if( MODE_QUEUE == _fifo )
-			datas = vector<CData>(datas.begin(), datas.begin() + capacity);
-		else
-			datas = vector<CData>(datas.rbegin(), datas.rbegin() + capacity);
+		overflow = vector<CData>(datas.begin() + capacity, datas.end());
+		datas = vector<CData>(datas.begin(), datas.begin() + capacity);
+	}
+	else
+	{
+		overflow = vector<CData>(datas.rbegin() + capacity, datas.rend());
+		datas = vector<CData>(datas.rbegin(), datas.rbegin() + capacity);
 	}
 
-	return datas;
+	return overflow;
 }
 
 vector<CData> CNode::dropDataIfOverflow()
@@ -368,22 +415,8 @@ vector<CData> CNode::dropDataIfOverflow()
 //	else :
 
 	myData = buffer;
-	myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
-	//如果总长度溢出
-	if( myData.size() > capacityBuffer )
-	{
-		//flash_cout << "######  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                 " ;
-		if( CNode::MODE_QUEUE == CGeneralNode::_fifo )
-		{
-			overflow = 	vector<CData>( buffer.begin() + CAPACITY_BUFFER,  buffer.end() );
-			myData = vector<CData>( buffer.begin(), buffer.begin() + CAPACITY_BUFFER );
-		}
-		else
-		{
-			overflow = 	vector<CData>( buffer.begin(),  buffer.end() - CAPACITY_BUFFER );
-			myData = vector<CData>( buffer.end() - CAPACITY_BUFFER, buffer.end() );
-		}
-	}
+	//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
+	overflow = removeDataByCapacity(myData, capacityBuffer);
 
 	buffer = myData;
 	return overflow;
@@ -391,9 +424,7 @@ vector<CData> CNode::dropDataIfOverflow()
 
 vector<CData> CNode::updateBufferStatus(int currentTime) 
 {
-//	vector<CData> overflow_1 = dropOverdueData(currentTime);
 	vector<CData> overflow = dropDataIfOverflow();
-//	overflow_2.insert( overflow.end(), overflow_1.begin(), overflow_1.end() );
 
 	return overflow;
 }
@@ -477,52 +508,69 @@ void CNode::removeNodes(int n)
 	CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
 }
 
-// TODO: check LISTEN cons calculation if *move
-// TODO: move state update into mac layer
 void CNode::updateStatus(int currentTime)
 {
 	if( this->time == currentTime )
 		return;
 
-	int newState = this->state;
 	int newTime = this->time;
-	int timeIncre = 0;
-	// 0 时间时初始化
 
-
+	//计算能耗、更新工作状态
 	while( ( newTime + SLOT ) <= currentTime )
 	{
-		newTime += SLOT;
-
+		// 0 时间时初始化
 		if( newTime <= 0 )
-			;
-		else
-		{
-			timeIncre += SLOT;
-
-			//更新工作状态
-			newState = ( ( newState + SLOT ) + SLOT_SLEEP ) % SLOT_TOTAL - SLOT_SLEEP;
-
-			//计算能耗
-			if( newState > 0
-			   || newState == -SLOT_SLEEP )
-				consumeEnergy(CONSUMPTION_LISTEN * SLOT);
-			else
-				consumeEnergy(CONSUMPTION_SLEEP * SLOT);
-		}
-
-		//如果载波侦听结束，则暂停在此处，开始邻居节点发现
-		if( newState == SLOT_CARRIER_SENSE )
-		{
-			discovering = true;
-			currentTime = newTime;
 			break;
+
+		if( timerSleep <= 0
+		   && timerWake <= 0 )
+		{
+			cout << endl << "Error @ CNode::updateStatus() : timerSleep : " << timerSleep << ", timerWake : " << timerWake << endl;
+			_PAUSE_;
 		}
 
-	}
+		switch( state )
+		{
+			case _awake:
+				consumeEnergy(CONSUMPTION_WAKE * SLOT);
+				timerWake--;
 
-	//更新工作状态
-	this->state = newState;
+				if( timerWake == 0 )
+				{
+					if( SLOT_SLEEP > 0 )
+						Sleep();
+					//Always-On
+					else
+						Wake();
+				}
+				else if( timerCarrierSense > 0 )
+				{
+					timerCarrierSense--;
+					//开始邻居节点发现
+					if( timerCarrierSense == 0 )
+						startDiscovering();
+				}
+				break;
+			case _asleep:
+				consumeEnergy(CONSUMPTION_SLEEP * SLOT);
+				timerSleep--;
+
+				if( timerSleep == 0 )
+				{
+					if( SLOT_WAKE > 0 )
+						Wake();
+					//Always-off
+					else
+						Sleep();
+				}
+
+				break;
+			default:
+				break;
+		}
+
+		newTime += SLOT;
+	}
 
 
 	//生成数据
@@ -543,14 +591,6 @@ void CNode::updateStatus(int currentTime)
 	}
 	setLocation( trace->getLocation(currentTime), currentTime);
 
-}
-
-bool CNode::isListening() const 
-{
-	if( ZERO(dutyCycle) )
-		return false;
-
-	return state >= 0;
 }
 
 void CNode::recordBufferStatus() 

@@ -43,6 +43,10 @@ bool operator < (const CData lt, const CData rt)
 {
 	return lt.getTimeBirth() < rt.getTimeBirth();
 }
+bool operator > (const CData lt, const CData rt)
+{
+	return lt.getTimeBirth() > rt.getTimeBirth();
+}
 
 //重载 == 操作符，比较 ID，用于去重
 bool operator == (const CData lt, const CData rt)

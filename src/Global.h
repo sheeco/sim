@@ -54,6 +54,7 @@ using std::setfill;
 #define EQUAL(x, y) fabs( x - y ) < 0.000001
 #define ZERO(x) fabs(x) < 0.000001
 
+#define UNVALID -1
 
 /********************************** Output & Debug **********************************/
 
@@ -220,7 +221,7 @@ namespace global
 		return RandomFloat(0, 1) <= prob;
 	}
 
-	//Randomly product a int number between [min, max)
+	//Randomly product a int number between [min, max]
 	inline int RandomInt(int min, int max)
 	{
 		if (min == max)
@@ -231,6 +232,7 @@ namespace global
 			max = min;
 			min = temp;
 		}
+		max++;
 		return min + rand() % (max - min);
 	}
 

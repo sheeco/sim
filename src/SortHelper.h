@@ -45,7 +45,7 @@ public:
 	//CHotspot类按照x坐标或者ratio排序
 	static vector<CHotspot *> merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *));
 	static vector<CHotspot *> mergeSort(vector<CHotspot *> v, bool(*Comp)(CHotspot *, CHotspot *));
-	//CHotspot类静态拷贝按照( endTime - 900, endTime )期间的投递技术的降序排列
+	//CHotspot类静态拷贝按照( endTime - 900, endTime )期间的投递计数的降序排列
 	static vector<CHotspot> mergeByDeliveryCount(vector<CHotspot> left, vector<CHotspot> right, int endTime);
 	static vector<CHotspot> mergeSortByDeliveryCount(vector<CHotspot> v, int endTime);
 
@@ -54,9 +54,51 @@ public:
 	static bool ascendByRatio(CHotspot *left, CHotspot *right);
 	static bool descendByInt(int left, int right){	return left > right;	};
 	static bool ascendByInt(int left, int right){	return left < right;	};
-	static bool ascendByTimeBirth(CData left, CData right){	return left < right;	};
+	static bool ascendByTimeBirth(CData left, CData right){	return left < right; };
+	static bool descendByTimeBirth(CData left, CData right){ return left > right; };
 	static bool ascendByID(CNode *left, CNode *right){	return left->getID() < right->getID();	};
+
+	template <class E>
+	static vector<E> insertIntoSortedList(vector<E> dstList, E src, bool(*compPos)( E, E ), bool(*compNeg)( E, E ));
+
+	template <class E>
+	static vector<E> insertIntoSortedList(vector<E> dstList, vector<E> srcList, bool(*compPos)( E, E ), bool(*compNeg)( E, E ));
 
 };
 
 #endif // __SORT_HELPER_H__
+
+template<class E>
+inline vector<E> CSortHelper::insertIntoSortedList(vector<E> dstList, E src, bool(*compPos)( E, E ), bool(*compNeg)( E, E ))
+{
+	vector<E> rtn;
+	typename vector<E>::iterator idst = dstList.begin();
+	for( ; idst != dstList.end(); ++idst )
+	{
+		if( !compPos(*idst, src) )
+			break;
+	}
+	for( ; idst != dstList.end(); ++idst )
+	{
+		if( compNeg(*idst, src) )
+			break;
+		if( *idst == src )
+		{
+			idst = dstList.erase(idst);
+			break;
+		}
+	}
+	rtn = vector<E>(dstList.begin(), idst);
+	rtn.push_back(src);
+	rtn.insert(rtn.end(), idst, dstList.end());
+
+	return rtn;
+}
+
+template<class E>
+inline vector<E> CSortHelper::insertIntoSortedList(vector<E> dstList, vector<E> srcList, bool(*compPos)( E, E ), bool(*compNeg)( E, E ))
+{
+	for( typename vector<E>::iterator isrc = srcList.begin(); isrc != srcList.end(); ++isrc )
+		dstList = insertIntoSortedList(dstList, *isrc, compPos, compNeg);
+	return dstList;
+}

@@ -7,7 +7,6 @@
 #include "SortHelper.h"
 
 bool CProphet::TRANS_STRICT_BY_PRED = true;
-int CProphet::CAPACITY_FORWARD = 0;
 
 double CProphet::INIT_PRED = 0.75;  //参考值 0.75
 double CProphet::RATIO_PRED_DECAY = 0.98;  //参考值 0.98(/s)
@@ -101,15 +100,8 @@ vector<CData> CProphet::getDataForTrans(CNode* node)
 {
 	vector<CData> datas = node->getAllData();
 
-	if( CAPACITY_FORWARD > 0
-		&& datas.size() > CAPACITY_FORWARD )
-	{
-		datas = CSortHelper::mergeSort(datas, CSortHelper::ascendByTimeBirth);
-		if( CNode::MODE_QUEUE == CGeneralNode::_fifo )
-			datas = vector<CData>(datas.begin(), datas.begin() + CAPACITY_FORWARD);
-		else
-			datas = vector<CData>(datas.rbegin(), datas.rbegin() + CAPACITY_FORWARD);
-	}
+	if( WINDOW_TRANS > 0 )
+		CNode::removeDataByCapacity(datas, WINDOW_TRANS);
 
 	return datas;
 }
@@ -400,7 +392,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 						nodataToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
 					else if( capacity > 0 )
 					{
-						dataToSend = CNode::removeDataByCapacity(dataToSend, capacity);
+						CNode::removeDataByCapacity(dataToSend, capacity);
 					}
 					
 					//如果路由协议允许向该节点发送数据，对方节点就不允许发送数据，因此无需发送capacity

@@ -218,7 +218,7 @@ void HAR::HotspotClassification(int currentTime)
 			for(int ihotspot = 0; ihotspot < temp_hotspots.size(); ++ihotspot)
 			{
 				double min_length_increment = -1;
-				double best_front = -1;
+				int best_front = -1;
 				for(int i = 0; i < size_waypoints; ++i)  //先寻找最小路径增量？？
 				{
 					double length_increment = route.getIncreDistance(i, temp_hotspots[ihotspot]);
@@ -528,7 +528,7 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 				else if( capacity > 0
 						 && capacity < CNode::CAPACITY_BUFFER 
 						 && capacity < dataToSend.size() )
-					dataToSend = CNode::removeDataByCapacity(dataToSend, capacity);
+					CNode::removeDataByCapacity(dataToSend, capacity);
 
 				break;
 

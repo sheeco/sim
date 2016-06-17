@@ -92,7 +92,7 @@ public:
 
 		if( CONTINUOUS_TRACE )
 		{
-			double ratio = (double)( time - fromTime ) / (double)( toTime - fromTime );
+			double ratio = double( time - fromTime ) / double( toTime - fromTime );
 			return fromLocation + ratio * ( toLocation - fromLocation );
 		}
 		else

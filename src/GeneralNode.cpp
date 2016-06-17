@@ -3,7 +3,7 @@
 
 double CGeneralNode::CONSUMPTION_BYTE_SEND = 0.008;  //( mJ / Byte )
 double CGeneralNode::CONSUMPTION_BYTE_RECEIVE = 0.004;
-double CGeneralNode::CONSUMPTION_LISTEN = 13.5;  // ( mJ / s )
+double CGeneralNode::CONSUMPTION_WAKE = 13.5;  // ( mJ / s )
 double CGeneralNode::CONSUMPTION_SLEEP = 0.015;
 
 int CGeneralNode::RANGE_TRANS = 0;  //transmission range

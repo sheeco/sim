@@ -25,6 +25,11 @@ public:
 	CRoutingProtocol();
 	~CRoutingProtocol();
 
+	static int WINDOW_TRANS;
+	static int TIME_WINDOW_TRANS;
+
+	static int getTimeWindowTrans();
+
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);
 	//最终final输出

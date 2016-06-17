@@ -18,32 +18,45 @@ class CPackage;
 class CGeneralNode :
 	virtual public CBasicEntity
 {
-protected:
-
-	vector<CData> buffer;
-	int capacityBuffer;
-	double energyConsumption;
-
-	static double CONSUMPTION_LISTEN;
-	static double CONSUMPTION_SLEEP;
-
-
 public:
 
-	typedef enum _SEND {
+	typedef enum _STATE
+	{
+		_awake,  //无线收发器唤醒状态
+		_asleep   //无线收发器休眠状态
+	} _STATE;
+
+	typedef enum _SEND
+	{
 		_copy,  //发送数据成功后，保留自身副本
 		_dump   //发送数据成功后，删除自身副本
 	} _SEND;
 
-	typedef enum _RECEIVE {
+	typedef enum _RECEIVE
+	{
 		_loose,   //MA buffer已满时，仍允许继续接收数据
 		_selfish   //MA buffer已满时，不再从其他节点接收数据
 	} _RECEIVE;
 
-	typedef enum _QUEUE {
+	typedef enum _QUEUE
+	{
 		_fifo,   //可发送配额有限时，优先从头部发送
 		_lifo   //可发送配额有限时，优先从尾部发送
 	} _QUEUE;
+
+
+protected:
+
+	_STATE state;
+	vector<CData> buffer;
+	int capacityBuffer;
+	double energyConsumption;
+
+	static double CONSUMPTION_WAKE;
+	static double CONSUMPTION_SLEEP;
+
+
+public:
 
 	static double CONSUMPTION_BYTE_SEND;
 	static double CONSUMPTION_BYTE_RECEIVE;
@@ -55,6 +68,7 @@ public:
 	{
 		this->capacityBuffer = 0;
 		this->energyConsumption = 0;
+		state = _awake;
 	}
 
 	virtual ~CGeneralNode(){};
@@ -80,9 +94,18 @@ public:
 		return this->buffer;
 	}
 
-	virtual bool isListening() const
+	virtual inline void Wake()
 	{
-		return true;
+		state = _awake;
+	}
+	virtual inline void Sleep()
+	{
+		state = _asleep;
+	}
+	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus
+	virtual bool isAwake() const
+	{
+		return state == _awake;
 	}
 
 //	virtual void receivePackage(CPackage* package, int currentTime);

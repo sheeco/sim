@@ -169,7 +169,7 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 					CSink::encount();
 					CMacProtocol::transmitTry();
 
-					if( (*dstNode)->isListening() )
+					if( (*dstNode)->isAwake() )
 					{
 						CSink::encountActive();
 
@@ -193,7 +193,7 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 				{
 					CMacProtocol::transmitTry();
 
-					if( (*iMA)->isListening() )
+					if( (*iMA)->isAwake() )
 					{
 						if( Bet(CGeneralNode::PROB_TRANS) )
 						{
@@ -221,7 +221,7 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 				CMANode::encount();
 				CMacProtocol::transmitTry();
 
-				if( (*dstNode)->isListening() )
+				if( (*dstNode)->isAwake() )
 				{
 					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
@@ -244,7 +244,7 @@ bool CMacProtocol::transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackag
 	src.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
 	CMacProtocol::transmitTry();
 
-	if( dst->isListening() )
+	if( dst->isAwake() )
 	{
 		if( Bet(CGeneralNode::PROB_TRANS) )
 		{

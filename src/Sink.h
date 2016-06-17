@@ -56,7 +56,7 @@ public:
 		return sink;
 	}
 
-	bool isListening() const
+	bool isAwake() const
 	{
 		return true;
 	}

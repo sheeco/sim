@@ -272,14 +272,14 @@
 
 ###### 2015-12-11  ·  *< 2.3.0 >*  ·  *Epidemic + HDC*
 
-- ADD：用 `CNode::state` 标识和计算节点的工作状态，取值范围在 `[ - SLOT_TOTAL, + SLOT_LISTEN )` 之间，值大于等于 0 即代表 Listen 状态；
+- ADD：用 `CNode::state` 标识和计算节点的工作状态，取值范围在 `[ - SLOT_TOTAL, + SLOT_WAKE )` 之间，值大于等于 0 即代表 WAKE 状态；
 - ADD：按照通信成功率，多次往返通信时一旦有一次通信失败，之后的通信都不再成立；
 - ADD：节点的通信成功率和能量损耗，都已内置在 `CNode` 类内所有的数据收发操作中；
 - ADD：传感器节点的能量损耗来源包括：监听能耗、休眠能耗、数据发送能耗、数据接收能耗；
 - ADD：添加节点的总能量属性，以及相应的节点失效、网络运行终止的判定，默认为 0 即无限能量，可以通过命令行参数 `-node-energy` 赋值；
 - ADD：对于 HDC 中的热点选取操作：暂时只提供 HAR 和 IHAR 可选，参数可通过命令行参数修改；
 - NOTE：基本修改完毕，各类参数待测试：Epidemic 路由的相关参数、能耗参数、数据生成速率及大小参数、时隙及占空比参数；
-- NOTE：MAC 协议的无关内容：网络初始假定所有节点时隙同步、忽略 Listen 时隙内的 Sync 时隙即全部视作 Data 时隙、忽略传输延迟（之后也可以加入计算）；
+- NOTE：MAC 协议的无关内容：忽略传输延迟（之后也可以加入计算）；
 
 
 ###### 2015-12-23  ·  *< 2.3.1 >*
@@ -609,7 +609,7 @@
 
 - ADD：添加 `_HOTSPOT_SELECT::_none` 用于独立开启热点选取操作的功能，但暂时没有添加独立的节点是否位于热点中的检测操作；
 - ADD：在参数解析中添加异常捕获，如果命令行参数存在错误，则禁止运行；
-- ADD：添加命令行参数 `-capacity-forward`，赋值 Prophet 路由中单次数据转发的最大数据包数目；
+- ADD：添加命令行参数 `-window-trans`，赋值 Prophet 路由中单次数据转发的最大数据包数目；
 - ADD：重写 xHAR 路由的数据通信流程，函数 `HAR::receiveContents()` 待完成；
 - BUG：Prophet 路由中单次数据转发的最大数据包数目，对运行结果不造成影响；
 
@@ -708,7 +708,7 @@
 
 
 
-### 3.5.*
+### 3.5.* : 修复热点选取
 
 　
 ###### [ 2016-05-18  ·  *< 3.5.1 >* ]( 169dcb4d55408936ef0f88e45e03f931bf81dbd0 )
@@ -759,15 +759,35 @@
 - OPT：完善 `ParseConfiguration()` 中的异常捕获；
 
 
-###### 2016-06-17  ·  *< 3.5.8 >*
+###### [ 2016-06-17  ·  *< 3.5.8 >* ]( cd6bbef119fed4346a2dfc89b89bfe1a406080ed )
 
 - RFCT：将 Prophet 路由相关的参数和函数的定义从 `CNode` 移入 `CProphet` 中；
 - RFCT：将部分对 `CSink::getSink()` 的直接调用改为使用参数传入，以准备对多 sink 网络的适配；
+
+
+### 3.6.* : 重写 Duty Cycle
+
+　
+###### 2016-06-18  ·  *< 3.6.1 >*
+
+- ADD：添加 `timerSleep/Wake/CarrierSense` （倒数）计时器及 `_STATE` 枚举类，以重新实现 `CNode::updateStatus()`；
+- ADD：添加 `CSorHelper::insertIntoSortedList()` 和 `CNode::removeDataByCapacity()` 将缓冲区数据的排序，从取出数据时改为压入数据时；
+- ADD：添加 `CNode::SPEED_TRANS` 和 `CRoutingProtocol::TIME_WINDOW_TRANS, getTimeWindowTrans()`；
+- MOD：将载波侦听时间改为在 `CRoutingProtocol::TIME_WINDOW_TRANS` 内取随机值；
+- [ ] ADD：添加唤醒时间的统计及日志输出；
+- [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
+- [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；
+- [ ] ADD：将遍历寻找所有邻居节点对的操作提取成函数；
+- [ ] ADD：将广播及单播函数合并，以模拟过听；
+- [ ] ADD：添加节点对信道繁忙的检测及响应；
+- [ ] ADD：添加对信道冲突的检测及响应（传输失败）；
+- [ ] ADD：添加传输延迟的模拟；
+- [ ] RFCT：将队列管理相关操作提取成类；
+
+
+
 - [ ] RFCT：将所有配置参数的定义放入 `CConfiguration` 类并保存到一个数组，以简化 `ParseConfiguration()` 中的操作；
 - [ ] ADD：对多 sink 网络的适配；
-
-
-
 - [ ] FIX：检查 `CBasicEntity::time` 初始值由 0 改为 -1 可能导致的其他问题；
 - [ ] FIX：检查所有 `typeid` 的使用；
 - [ ] FIX：对比 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 找出 HAR 路由 MA 和节点通信流程中存在的问题；

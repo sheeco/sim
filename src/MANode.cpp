@@ -97,7 +97,7 @@ void CMANode::updateStatus(int time)
 		if( dynamic_cast<CHotspot *>( toPoint ) != nullptr )
 		{
 			this->atHotspot = dynamic_cast<CHotspot *>(toPoint);
-			waitingWindow = HAR::calculateWaitingTime(time, this->atHotspot);
+			waitingWindow = int( HAR::calculateWaitingTime(time, this->atHotspot) );
 			waitingState = 0;  //重新开始等待
 
 			route.updateToPoint();

@@ -226,6 +226,13 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 				CGeneralNode::RANGE_TRANS = atoi(argv[iField + 1]);
 				iField += 2;
 			}
+			else if( field == "-trans-speed" )
+			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				CNode::SPEED_TRANS = atoi(argv[iField + 1]);
+				iField += 2;
+			}
 			else if( field == "-lifetime" )
 			{
 				if( ( iField + 1 ) >= argc )
@@ -249,7 +256,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::DEFAULT_SLOT_CARRIER_SENSE = atof(argv[iField + 1]);
+				CNode::DEFAULT_SLOT_CARRIER_SENSE = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 			else if( field == "-dc-default" )
@@ -348,11 +355,11 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 				CNode::LIFETIME_SPOKEN_CACHE = atoi(argv[iField + 1]);
 				iField += 2;
 			}
-			else if( field == "-capacity-forward" )
+			else if( field == "-window-trans" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CProphet::CAPACITY_FORWARD = atoi(argv[iField + 1]);
+				CRoutingProtocol::WINDOW_TRANS = atoi(argv[iField + 1]);
 				iField += 2;
 			}
 
@@ -571,7 +578,8 @@ void InitConfiguration()
 
 	/************************************** Default Config **************************************/
 
-	CGeneralNode::RANGE_TRANS = 100;  //transmission range
+	CGeneralNode::RANGE_TRANS = 100;
+	CNode::SPEED_TRANS = 2500;
 	CGeneralNode::PROB_TRANS = 1.0;
 
 	CSink::SINK_ID = 0; //0为sink节点预留，传感器节点ID从1开始
@@ -632,7 +640,7 @@ void InitConfiguration()
 	CProphet::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
 	CProphet::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
 	CProphet::TRANS_STRICT_BY_PRED = false;
-	CProphet::CAPACITY_FORWARD = 20;
+	CProphet::WINDOW_TRANS = 10;
 
 
 	/**************************  Hotspot Select  ***************************/
@@ -678,8 +686,8 @@ void InitConfiguration()
 	CSink::SINK_X = -200;  //for KAIST
 	CSink::SINK_Y = 200;
 	CNode::INIT_NUM_NODE = 29;
-	CNode::MIN_NUM_NODE = CNode::INIT_NUM_NODE * 1.4;
-	CNode::MAX_NUM_NODE = CNode::INIT_NUM_NODE * 0.6;
+	CNode::MIN_NUM_NODE = int( CNode::INIT_NUM_NODE * 1.4 );
+	CNode::MAX_NUM_NODE = int( CNode::INIT_NUM_NODE * 0.6 );
 	/*********** ----------------- ***********/
 
 	/***************************  Node & Data  ***************************/
@@ -691,7 +699,7 @@ void InitConfiguration()
 	CNode::CAPACITY_ENERGY = 0;
 	CNode::LIFETIME_SPOKEN_CACHE = 0;
 
-	CNode::SIZE_DATA = 250;  //Up to 250 Bytes
+	CNode::SIZE_DATA = 200;  //Up to 250 Bytes
 	CGeneralNode::SIZE_CTRL = 10;
 
 	/********************************  DC  ********************************/
@@ -759,7 +767,7 @@ void PrintConfiguration()
 	parameters << "DATA_TIME" << TAB << DATATIME << endl;
 	parameters << "RUN_TIME" << TAB << RUNTIME << endl;
 	parameters << "PROB_TRANS" << TAB << CGeneralNode::PROB_TRANS << endl;
-	parameters << "DATA_TRANS" << TAB << CProphet::CAPACITY_FORWARD << endl;
+	parameters << "WINDOW_TRANS" << TAB << CProphet::WINDOW_TRANS << endl;
 
 
 	//输出文件为空时，输出文件头

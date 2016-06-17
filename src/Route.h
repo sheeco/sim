@@ -78,7 +78,7 @@ public:
 		if( toPoint > waypoints.size() - 1 
 			|| toPoint < 0  )
 		{
-			cout << endl << "Error @ CBasicEntity::getToPoint : toPoint exceeds the index range of waypoints " << endl;
+			cout << endl << "Error @ CBasicEntity::getToPoint() : toPoint exceeds the index range of waypoints " << endl;
 			_PAUSE_;
 		}
 		return waypoints[toPoint];

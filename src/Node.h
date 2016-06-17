@@ -26,15 +26,18 @@ private:
 	double dataRate;
 	double dutyCycle;
 
-	//  [ ----------SLEEP----------> | ----LISTEN----> ]
+	//  [ ----------SLEEP----------> | ----WAKE----> )
 
-	int state;  //取值范围在[ - SLOT_SLEEP, + SLOT_LISTEN )之间，值大于等于0即代表Listen状态
 	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
-	int SLOT_LISTEN;  //由SLOT_TOTAL和DC计算得到
-	int SLOT_CARRIER_SENSE;  //开始邻居节点发现之前，进行载波侦听的时间
+	int SLOT_WAKE;  //由SLOT_TOTAL和DC计算得到
+
+	//计时器：UNVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
+	int timerSleep;
+	int timerWake;
+	int timerCarrierSense;  //距离载波侦听结束、邻居节点发现开始的剩余时间
 	bool discovering;  //用于标记是否正在进行邻居节点发现，本次发现完毕将置false
 
-	int timeData;  //上一次数据生成的时间
+	int timeLastData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
 	bool recyclable;  //在节点死亡之后，指示节点是否仍可被回收，默认为 true，直到 trace 信息终止赋 false（暂未使用，如果有充电行为则应该读取此参数）
 	CHotspot *atHotspot;
@@ -113,6 +116,8 @@ public:
 
 	static int CAPACITY_BUFFER;
 	static int CAPACITY_ENERGY;
+	// TODO:
+	static int SPEED_TRANS;  // Byte / s
 	static int LIFETIME_SPOKEN_CACHE;  //在这个时间内交换过数据的节点暂时不再交换数据
 	static _RECEIVE MODE_RECEIVE;
 	static _SEND MODE_SEND;
@@ -155,15 +160,20 @@ public:
 
 	/*************************** DC相关 ***************************/
 
-	//判断是否正在监听
-	//注意：所有监听动作都应该在调用此函数判断之后进行，调用此函数之前必须确保已updateStatus
-	bool isListening() const;
+	void Wake() override;
+	void Sleep() override;
 
-	//判断是否遇到了邻居节点发现时槽
+	//判断是否处于邻居节点发现状态
 	//注意：调用此函数之前必须确保已updateStatus
 	bool isDiscovering() const
 	{
-		return discovering;
+		return discovering == true;
+	}
+
+	//标记开始邻居节点发现
+	void startDiscovering()
+	{
+		this->discovering = true;
 	}
 
 	//标记本次邻居节点发现已经完成
@@ -244,12 +254,11 @@ public:
 
 	//手动将数据压入 buffer，不伴随其他任何操作
 	//注意：必须在调用此函数之后手动调用 updateBufferStatus() 检查溢出
-	void pushIntoBuffer(vector<CData> datas)
-	{
-		AddToListUniquely( this->buffer, datas );
-	}
+	void pushIntoBuffer(vector<CData> datas);
 
-	static vector<CData> removeDataByCapacity(vector<CData> datas, int capacity);
+	//返回溢出的数据
+	//注意：调用之前应该确保数据已排序
+	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity);
 
 //	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
 //	vector<CData> dropOverdueData(int currentTime);

@@ -6,6 +6,8 @@
 #include "Trace.h"
 
 //int CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //Êý¾Ý·¢ËÍslot
+int CRoutingProtocol::WINDOW_TRANS = 0;
+int CRoutingProtocol::TIME_WINDOW_TRANS = 0;
 
 
 //CRoutingProtocol::CRoutingProtocol()
@@ -19,6 +21,13 @@
 CRoutingProtocol::CRoutingProtocol() {}
 
 CRoutingProtocol::~CRoutingProtocol() {}
+
+int CRoutingProtocol::getTimeWindowTrans()
+{
+	if( TIME_WINDOW_TRANS == 0 )
+		TIME_WINDOW_TRANS = ceil( double( WINDOW_TRANS * CNode::SIZE_DATA + CMacProtocol::SIZE_HEADER_MAC ) / double(CNode::SPEED_TRANS) );
+	return TIME_WINDOW_TRANS;
+}
 
 void CRoutingProtocol::PrintInfo(int currentTime)
 {

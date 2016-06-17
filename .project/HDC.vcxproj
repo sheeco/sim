@@ -108,7 +108,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\bin\default.config" />
+    <Text Include="..\bin\default.config">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </Text>
     <None Include="..\bin\HELP.md" />
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
