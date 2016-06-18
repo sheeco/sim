@@ -120,17 +120,17 @@ void CMANode::updateStatus(int time)
 
 }
 
-CPackage* CMANode::sendRTSWithCapacity(int currentTime) 
+CFrame* CMANode::sendRTSWithCapacity(int currentTime) 
 {
-	vector<CGeneralData*> contents;
-	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
+	vector<CPacket*> packets;
+	packets.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
 	if( MODE_RECEIVE == _selfish 
 		&& ( ! buffer.empty() ) )
-		contents.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, SIZE_CTRL, CCtrl::_capacity) );
+		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, SIZE_CTRL, CCtrl::_capacity) );
 
-	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
+	CFrame* frame = new CFrame(*this, packets);
 
-	return package;
+	return frame;
 }
 
 vector<CData> CMANode::bufferData(int time, vector<CData> datas)

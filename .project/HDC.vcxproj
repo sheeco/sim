@@ -119,12 +119,12 @@
   <ItemGroup>
     <ClCompile Include="..\src\BasicEntity.cpp" />
     <ClCompile Include="..\src\Coordinate.cpp" />
+    <ClCompile Include="..\src\Packet.cpp" />
     <ClCompile Include="..\src\Trace.cpp" />
     <ClCompile Include="..\src\Ctrl.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
     <ClCompile Include="..\src\Epidemic.cpp" />
     <ClCompile Include="..\src\FileHelper.cpp" />
-    <ClCompile Include="..\src\GeneralData.cpp" />
     <ClCompile Include="..\src\GeneralNode.cpp" />
     <ClCompile Include="..\src\Global.cpp" />
     <ClCompile Include="..\src\HAR.cpp" />
@@ -136,7 +136,7 @@
     <ClCompile Include="..\src\MANode.cpp" />
     <ClCompile Include="..\src\Node.cpp" />
     <ClCompile Include="..\src\NodeRepair.cpp" />
-    <ClCompile Include="..\src\Package.cpp" />
+    <ClCompile Include="..\src\Frame.cpp" />
     <ClCompile Include="..\src\Position.cpp" />
     <ClCompile Include="..\src\PostSelect.cpp" />
     <ClCompile Include="..\src\Prophet.cpp" />
@@ -151,6 +151,7 @@
     <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Coordinate.h" />
+    <ClInclude Include="..\src\Packet.h" />
     <ClInclude Include="..\src\Trace.h" />
     <ClInclude Include="..\src\Ctrl.h" />
     <ClInclude Include="..\src\Data.h" />
@@ -170,7 +171,7 @@
     <ClInclude Include="..\src\MANode.h" />
     <ClInclude Include="..\src\Node.h" />
     <ClInclude Include="..\src\NodeRepair.h" />
-    <ClInclude Include="..\src\Package.h" />
+    <ClInclude Include="..\src\Frame.h" />
     <ClInclude Include="..\src\Position.h" />
     <ClInclude Include="..\src\PostSelect.h" />
     <ClInclude Include="..\src\Process.h" />

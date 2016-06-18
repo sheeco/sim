@@ -10,7 +10,7 @@
 
 //包含用于文件解析的函数的类
 class CFileHelper :
-	public CHelper
+	virtual public CHelper
 {
 public:
 

@@ -8,7 +8,7 @@
 
 
 class CRoute : 
-	public CGeoEntity
+	virtual public CGeoEntity
 {
 ////注意：CRoute类的以下变量实际上不会也不应该被使用
 //

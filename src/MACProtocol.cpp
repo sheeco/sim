@@ -18,18 +18,14 @@ CMacProtocol::CMacProtocol()
 {
 }
 
-CMacProtocol::~CMacProtocol()
-{
-}
-
-void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int currentTime) 
+void CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentTime) 
 {
 	// Make local copy
-	package = new CPackage(*package);
-	CGeneralNode* gFromNode = package->getSrcNode();
-	vector<CGeneralData*> contents = package->getContents();
-	vector<CGeneralData*> contentsToSend;
-	CPackage* packageToSend = nullptr;
+	frame = new CFrame(*frame);
+	CGeneralNode* gFromNode = frame->getSrcNode();
+	vector<CPacket*> packets = frame->getPackets();
+	vector<CPacket*> packetsToSend;
+	CFrame* frameToSend = nullptr;
 
 	if( typeid(gnode) == typeid(CSink) )
 	{
@@ -39,7 +35,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		if( typeid(*gFromNode) == typeid(CMANode) )
 		{
 			CMANode* fromMA = dynamic_cast<CMANode*>( gFromNode );
-			contentsToSend = HAR::receiveContents(toSink, fromMA, contents, currentTime);
+			packetsToSend = HAR::receivePackets(toSink, fromMA, packets, currentTime);
 		}
 
 		/*********************************************** Sink <- Node *******************************************************/
@@ -47,7 +43,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		else if( typeid(*gFromNode) == typeid(CNode) )
 		{
 			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
-			contentsToSend = CProphet::receiveContents(toSink, fromNode, contents, currentTime);
+			packetsToSend = CProphet::receivePackets(toSink, fromNode, packets, currentTime);
 		}
 
 	}
@@ -61,7 +57,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		if( typeid(*gFromNode) == typeid(CSink) )
 		{
 			CSink* fromSink = dynamic_cast< CSink* >( gFromNode );
-			contentsToSend = HAR::receiveContents(toMA, fromSink, contents, currentTime);
+			packetsToSend = HAR::receivePackets(toMA, fromSink, packets, currentTime);
 		}
 		
 		/************************************************ MA <- node *******************************************************/
@@ -69,7 +65,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		if( typeid(*gFromNode) == typeid(CNode) )
 		{
 			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
-			contentsToSend = HAR::receiveContents(toMA, fromNode, contents, currentTime);
+			packetsToSend = HAR::receivePackets(toMA, fromNode, packets, currentTime);
 		}
 	}
 
@@ -82,7 +78,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		if( typeid(*gFromNode) == typeid(CSink) )
 		{
 			CSink* fromSink = dynamic_cast< CSink* >( gFromNode );
-			contentsToSend = CProphet::receiveContents(node, fromSink, contents, currentTime);
+			packetsToSend = CProphet::receivePackets(node, fromSink, packets, currentTime);
 		}
 
 		/************************************************ Node <- MA *******************************************************/
@@ -90,7 +86,7 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		else if( typeid(*gFromNode) == typeid(CMANode) )
 		{
 			CMANode* fromMA = dynamic_cast<CMANode*>( gFromNode );
-			contentsToSend = HAR::receiveContents(node, fromMA, contents, currentTime);
+			packetsToSend = HAR::receivePackets(node, fromMA, packets, currentTime);
 		}
 
 		/*********************************************** Node <- Node *******************************************************/
@@ -98,17 +94,17 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 		else if( typeid(*gFromNode) == typeid(CNode) )
 		{
 			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
-			contentsToSend = CProphet::receiveContents(node, fromNode, contents, currentTime);
+			packetsToSend = CProphet::receivePackets(node, fromNode, packets, currentTime);
 		}
 
 	}
 
 	/*********************************************** send reply *******************************************************/
 
-	if( ! contentsToSend.empty() )
+	if( ! packetsToSend.empty() )
 	{
-		packageToSend = new CPackage(gnode, *gFromNode, contentsToSend);
-		transmitPackage( gnode, gFromNode, packageToSend, currentTime );			
+		frameToSend = new CFrame(gnode, *gFromNode, packetsToSend);
+		transmitFrame( gnode, gFromNode, frameToSend, currentTime );			
 	}
 	else
 	{
@@ -117,17 +113,17 @@ void CMacProtocol::receivePackage(CGeneralNode& gnode, CPackage* package, int cu
 
 }
 
-void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int currentTime)
+void CMacProtocol::broadcastFrame(CGeneralNode& src, CFrame* frame, int currentTime)
 {
 	bool rcv = false;
 	vector<CNode*> nodes = CNode::getNodes();
-	if( package->getDstNode() != nullptr )
+	if( frame->getDstNode() != nullptr )
 	{
-		cout << "Error @ CMacProtocol::broadcastPackage() : package is not for broadcast" << endl;
+		cout << "Error @ CMacProtocol::broadcastFrame() : frame is not for broadcast" << endl;
 		_PAUSE_;
 	}
 
-	src.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
+	src.consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
 
 	/************************************************ Sensor Node *******************************************************/
 
@@ -147,8 +143,8 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 
 				if( Bet(CGeneralNode::PROB_TRANS) )
 				{
-					(*dstNode)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-					receivePackage(**dstNode, package, currentTime);
+					(*dstNode)->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
+					receiveFrame(**dstNode, frame, currentTime);
 				}
 			}
 		}
@@ -175,8 +171,8 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 
 						if( Bet(CGeneralNode::PROB_TRANS) )
 						{
-							(*dstNode)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-							receivePackage(**dstNode, package, currentTime);
+							(*dstNode)->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
+							receiveFrame(**dstNode, frame, currentTime);
 						}
 					}
 				}
@@ -197,8 +193,8 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 					{
 						if( Bet(CGeneralNode::PROB_TRANS) )
 						{
-							(*iMA)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-							receivePackage(**iMA, package, currentTime);
+							(*iMA)->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
+							receiveFrame(**iMA, frame, currentTime);
 						}
 					}
 				}
@@ -225,8 +221,8 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 				{
 					if( Bet(CGeneralNode::PROB_TRANS) )
 					{
-						(*dstNode)->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-						receivePackage(**dstNode, package, currentTime);
+						(*dstNode)->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
+						receiveFrame(**dstNode, frame, currentTime);
 					}
 				}
 			}
@@ -234,28 +230,28 @@ void CMacProtocol::broadcastPackage(CGeneralNode& src, CPackage* package, int cu
 
 	}
 	
-	free(package);
+	free(frame);
 
 	// TODO: sort by distance with src node ?
 }
 
-bool CMacProtocol::transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackage* package, int currentTime)
+bool CMacProtocol::transmitFrame(CGeneralNode& src, CGeneralNode* dst, CFrame* frame, int currentTime)
 {
-	src.consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
+	src.consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
 	CMacProtocol::transmitTry();
 
 	if( dst->isAwake() )
 	{
 		if( Bet(CGeneralNode::PROB_TRANS) )
 		{
-			dst->consumeEnergy( package->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-			receivePackage(*dst, package, currentTime);
+			dst->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
+			receiveFrame(*dst, frame, currentTime);
 			return true;
 		}
 		else
-			flash_cout << "######  ( Node " << NDigitString( package->getSrcNode()->getID(), 2) << "  >----  fail  xxxx>  Node " << NDigitString( dst->getID(), 2) << " )     " ;
+			flash_cout << "######  ( Node " << NDigitString( frame->getSrcNode()->getID(), 2) << "  >----  fail  xxxx>  Node " << NDigitString( dst->getID(), 2) << " )     " ;
 	}
-	free(package);
+	free(frame);
 	
 	return false;
 }
@@ -339,7 +335,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	// Prophet: sink => nodes
 	// xHAR: sink => MAs
 	CSink* sink = CSink::getSink();
-	broadcastPackage( *sink, sink->sendRTS(currentTime) , currentTime );
+	broadcastFrame( *sink, sink->sendRTS(currentTime) , currentTime );
 
 	vector<CNode*> nodes = CNode::getNodes();
 	vector<CMANode*> MAs = CMANode::getMANodes();
@@ -352,7 +348,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 		{
 			if( (*srcNode)->isDiscovering() )
 			{
-				broadcastPackage( **srcNode, (*srcNode)->sendRTSWithCapacityAndPred(currentTime), currentTime );
+				broadcastFrame( **srcNode, (*srcNode)->sendRTSWithCapacityAndPred(currentTime), currentTime );
 				(*srcNode)->finishDiscovering();
 			}
 		}
@@ -366,7 +362,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 		{
 			// skip discover if buffer is full && _selfish is used
 			if( (*srcMA)->getCapacityForward() > 0 )
-				broadcastPackage( **srcMA, (*srcMA)->sendRTSWithCapacity(currentTime) , currentTime );
+				broadcastFrame( **srcMA, (*srcMA)->sendRTSWithCapacity(currentTime) , currentTime );
 		}
 		// xHAR: no forward between nodes
 
@@ -435,6 +431,25 @@ void CMacProtocol::PrintInfo(int currentTime)
 		transmit << currentTime << TAB << CMacProtocol::getPercentTransmitSuccessful() << TAB << CMacProtocol::getTransmitSuccessful() << TAB << CMacProtocol::getTransmit() << TAB;
 		transmit << endl;
 		transmit.close();
+
+		//节点唤醒时间
+		ofstream activation(PATH_ROOT + PATH_LOG + FILE_ACTIVATION, ios::app);
+		if( currentTime == 0 )
+		{
+			activation << endl << INFO_LOG << endl;
+			activation << INFO_ACTIVATION;
+		}
+		activation << currentTime << TAB;
+		vector<CNode *> allNodes = CNode::getAllNodes(true);
+		for( auto inode = allNodes.begin(); inode != allNodes.end(); ++inode )
+		{
+			if( !( *inode )->isAlive() )
+				activation << "-" << TAB;
+			else
+				activation << ( *inode )->getPercentTimeAwake() << "  ";
+		}
+		activation << endl;
+		activation.close();
 
 		//平均能耗
 		ofstream energy_consumption( PATH_ROOT + PATH_LOG + FILE_ENERGY_CONSUMPTION, ios::app);

@@ -3,11 +3,11 @@
 #ifndef __DATA_H__
 #define __DATA_H__
 
-#include "GeneralData.h"
+#include "Packet.h"
 
 
 class CData : 
-	virtual public CGeneralData
+	virtual public CPacket
 {
 //protected:
 
@@ -57,7 +57,7 @@ protected:
 
 	void init()
 	{
-		CGeneralData::init();
+		CPacket::init();
 		this->timeArrival = -1;
 //		this->TTL = 0;
 	}
@@ -135,7 +135,7 @@ public:
 	// TODO: call this func when receiving anything
 	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
 	//注意：数据发送方应在发送之前检查剩余HOP大于1
-	inline void arriveAnotherNode(int currentTime)
+	inline void arriveAnotherNode(int currentTime) override
 	{
 		this->HOP--;
 

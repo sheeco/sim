@@ -13,12 +13,13 @@
 
 
 class CProtocol : 
-	public CAlgorithm
+	virtual public CAlgorithm
 {
 public:
 
 	CProtocol(){};
-	~CProtocol(){};
+	virtual ~CProtocol() = 0
+	{};
 
 };
 

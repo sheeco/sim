@@ -30,7 +30,8 @@ public:
 	CBasicEntity(): 
 		ID(-1), time(-1), flag(false) {};
 
-	~CBasicEntity(){};
+	virtual ~CBasicEntity() = 0
+	{};
 
 	//setters & getters
 	//手动设置ID
@@ -117,7 +118,7 @@ public:
 
 	//由from向to方向移动，给定时间和速度
 	//如果足够到达to位置，则返回大于等于 0 的剩余时间（精确到整数）；否则返回值小于 0
-	int moveTo(CBasicEntity to, int interval, double speed);
+	int moveTo(CBasicEntity &to, int interval, double speed);
 
 	//操作符重载，基于x坐标比较大小，用于position或hotspot间的排序
 	friend bool operator == (const CBasicEntity &lt, const CBasicEntity &rt);
@@ -128,5 +129,7 @@ public:
 	virtual void updateStatus() {};
 	virtual void updateStatus(int currentTime) {};
 };
+	
+//CBasicEntity::~CBasicEntity(){};
 
 #endif // __BASIC_ENTITY_H__

@@ -145,6 +145,8 @@ namespace global
 	extern string INFO_ENCOUNTER;
 	extern string FILE_TRANSMIT;
 	extern string INFO_TRANSMIT;
+	extern string FILE_ACTIVATION;
+	extern string INFO_ACTIVATION;
 	extern string FILE_ENERGY_CONSUMPTION;
 	extern string INFO_ENERGY_CONSUMPTION;
 	extern string FILE_SINK;

@@ -13,7 +13,7 @@
 
 
 class CRoutingProtocol :
-	public CProtocol
+	virtual public CProtocol
 {
 protected:
 
@@ -23,7 +23,8 @@ public:
 	//static int SLOT_DATA_SEND;  //Êý¾Ý·¢ËÍslot
 
 	CRoutingProtocol();
-	~CRoutingProtocol();
+	virtual ~CRoutingProtocol() = 0
+	{};
 
 	static int WINDOW_TRANS;
 	static int TIME_WINDOW_TRANS;

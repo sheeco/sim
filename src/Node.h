@@ -6,7 +6,7 @@
 #include <map>
 #include "GeneralNode.h"
 #include "Hotspot.h"
-#include "Package.h"
+#include "Frame.h"
 #include "Trace.h"
 
 class CNode :
@@ -42,6 +42,8 @@ private:
 	bool recyclable;  //在节点死亡之后，指示节点是否仍可被回收，默认为 true，直到 trace 信息终止赋 false（暂未使用，如果有充电行为则应该读取此参数）
 	CHotspot *atHotspot;
 
+	int sumTimeAwake;
+	int sumTimeAlive;
 	//用于统计输出节点的buffer状态信息
 	int sumBufferRecord;
 	int countBufferRecord;
@@ -79,8 +81,8 @@ private:
 	//待测试
 	static void removeNodes(int n);
 
-//	CPackage sendCTSWithIndex(CNode* dst, int currentTime);
-//	CPackage sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
+//	CFrame sendCTSWithIndex(CNode* dst, int currentTime);
+//	CFrame sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
 //	vector<CData> bufferData(int time, vector<CData> datas) override;
 
 
@@ -111,7 +113,7 @@ public:
 	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
 	static int DEFAULT_SLOT_CARRIER_SENSE;  //发送RTS之前，载波侦听的时间
 
-	static double DEFAULT_DATA_RATE;  //( package / s )
+	static double DEFAULT_DATA_RATE;  //( frame / s )
 	static int SIZE_DATA;  //( Byte )
 
 	static int CAPACITY_BUFFER;
@@ -134,11 +136,11 @@ public:
 	//更新所有node的坐标、占空比和工作状态，生成数据；调用之后应调用 isAlive() 检验存活
 	void updateStatus(int currentTime);
 
-//	void receiveRTS(CPackage package);
+//	void receiveRTS(CFrame frame);
 
-//	void receivePackage(CPackage* package, int currentTime) override;
+//	void receiveFrame(CFrame* frame, int currentTime) override;
 
-	CPackage* sendRTSWithCapacityAndPred(int currentTime);
+	CFrame* sendRTSWithCapacityAndPred(int currentTime);
 
 	bool hasSpokenRecently(CNode* node, int currentTime);
 
@@ -174,6 +176,7 @@ public:
 	void startDiscovering()
 	{
 		this->discovering = true;
+		this->timerCarrierSense = UNVALID;
 	}
 
 	//标记本次邻居节点发现已经完成
@@ -235,6 +238,18 @@ public:
 	static bool hasNodes(int currentTime);
 
 	static double getSumEnergyConsumption();
+
+	//统计唤醒时间
+	int getSumTimeAwake() const
+	{
+		return sumTimeAwake;
+	}
+	double getPercentTimeAwake() const
+	{
+		if( sumTimeAlive == 0 )
+			return 0;
+		return double(sumTimeAwake) / double(sumTimeAlive);
+	}
 
 	//将死亡节点整理移出
 	static void ClearDeadNodes();

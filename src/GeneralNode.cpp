@@ -32,7 +32,7 @@ int CGeneralNode::SIZE_CTRL = 0;
 //	}
 //}
 
-//void CGeneralNode::receivePackage(CPackage* package, int currentTime)
+//void CGeneralNode::receiveFrame(CFrame* frame, int currentTime)
 //{
 //	
 //}

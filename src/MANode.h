@@ -249,7 +249,7 @@ public:
 	//如果路线过期或缓存已满，立即返回sink
 	void updateStatus(int time);
 
-	CPackage* sendRTSWithCapacity(int currentTime);
+	CFrame* sendRTSWithCapacity(int currentTime);
 
 	vector<CData> bufferData(int time, vector<CData> datas);
 

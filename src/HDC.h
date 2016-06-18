@@ -7,7 +7,7 @@
 
 
 class CHDC :
-	public CMacProtocol
+	virtual public CMacProtocol
 {
 private:
 

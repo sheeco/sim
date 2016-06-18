@@ -21,9 +21,6 @@
     <None Include="..\bin\HELP.md">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="..\bin\default.config">
-      <Filter>资源文件</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Data.cpp">
@@ -89,12 +86,6 @@
     <ClCompile Include="..\src\Ctrl.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\GeneralData.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Package.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\BasicEntity.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -108,6 +99,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Run.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Frame.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Packet.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -205,9 +202,6 @@
     <ClInclude Include="..\src\GeneralData.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Package.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Global.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -217,10 +211,19 @@
     <ClInclude Include="..\src\Trace.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Frame.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Packet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HDC.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\bin\default.config" />
   </ItemGroup>
 </Project>

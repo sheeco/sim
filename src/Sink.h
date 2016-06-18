@@ -61,7 +61,7 @@ public:
 		return true;
 	}
 
-	CPackage* sendRTS(int currentTime);
+	CFrame* sendRTS(int currentTime);
 
 	//相遇计数：统计节点和 sink 的相遇
 	static void encount() 
@@ -90,7 +90,7 @@ public:
 
 	static vector<CData> bufferData(int time, vector<CData> datas);
 
-//	void receivePackage(CPackage* package, int currentTime) override;
+//	void receiveFrame(CFrame* frame, int currentTime) override;
 
 
 //	//从Node收取数据

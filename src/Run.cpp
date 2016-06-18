@@ -64,6 +64,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 		for( int iField = 0; iField < argc; )
 		{
 			string field = argv[iField];
+			char *endptr = nullptr;
 
 			//<mode> 不带值域的参数
 			if( field == "--hdc" )
@@ -176,7 +177,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				DATATIME = atoi(argv[iField + 1]);
+				DATATIME = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -186,7 +187,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				RUNTIME = atoi(argv[iField + 1]);
+				RUNTIME = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -205,14 +206,14 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::INIT_NUM_NODE = atoi(argv[iField + 1]);
+				CNode::INIT_NUM_NODE = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-log-slot" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				SLOT_LOG = atoi(argv[iField + 1]);
+				SLOT_LOG = strtol( argv[iField + 1], &endptr, 10);
 				//				//观测周期不应小于工作周期
 				//				if( SLOT_LOG < CNode::SLOT_TOTAL )
 				//					SLOT_LOG = CNode::SLOT_TOTAL;
@@ -223,28 +224,28 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CGeneralNode::RANGE_TRANS = atoi(argv[iField + 1]);
+				CGeneralNode::RANGE_TRANS = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-trans-speed" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::SPEED_TRANS = atoi(argv[iField + 1]);
+				CNode::SPEED_TRANS = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-lifetime" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CHotspotSelect::LIFETIME_POSITION = atoi(argv[iField + 1]);
+				CHotspotSelect::LIFETIME_POSITION = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-cycle" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::SLOT_TOTAL = atoi(argv[iField + 1]);
+				CNode::SLOT_TOTAL = strtol( argv[iField + 1], &endptr, 10);
 
 				//观测周期不应小于工作周期
 				if( SLOT_LOG < CNode::SLOT_TOTAL )
@@ -256,28 +257,28 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::DEFAULT_SLOT_CARRIER_SENSE = atoi(argv[iField + 1]);
+				CNode::DEFAULT_SLOT_CARRIER_SENSE = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-dc-default" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::DEFAULT_DUTY_CYCLE = atof(argv[iField + 1]);
+				CNode::DEFAULT_DUTY_CYCLE = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-dc-hotspot" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::HOTSPOT_DUTY_CYCLE = atof(argv[iField + 1]);
+				CNode::HOTSPOT_DUTY_CYCLE = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-hop" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CData::MAX_HOP = atoi(argv[iField + 1]);
+				CData::MAX_HOP = strtol( argv[iField + 1], &endptr, 10);
 				//				if( ( CData::MAX_HOP > 0 )
 				//					&& ( CData::MAX_TTL > 0 ) )
 				//				{
@@ -308,35 +309,35 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::CAPACITY_BUFFER = atoi(argv[iField + 1]);
+				CNode::CAPACITY_BUFFER = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-buffer-ma" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CMANode::CAPACITY_BUFFER = atoi(argv[iField + 1]);
+				CMANode::CAPACITY_BUFFER = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-data-rate" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::DEFAULT_DATA_RATE = double(1) / atoi(argv[iField + 1]);
+				CNode::DEFAULT_DATA_RATE = double(1) / strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-data-size" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::SIZE_DATA = atoi(argv[iField + 1]);
+				CNode::SIZE_DATA = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-energy" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::CAPACITY_ENERGY = 1000 * atoi(argv[iField + 1]);
+				CNode::CAPACITY_ENERGY = 1000 * strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -352,14 +353,14 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::LIFETIME_SPOKEN_CACHE = atoi(argv[iField + 1]);
+				CNode::LIFETIME_SPOKEN_CACHE = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
-			else if( field == "-window-trans" )
+			else if( field == "-trans-window" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CRoutingProtocol::WINDOW_TRANS = atoi(argv[iField + 1]);
+				CRoutingProtocol::WINDOW_TRANS = strtol( argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 
@@ -369,56 +370,56 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CPostSelect::ALPHA = atof(argv[iField + 1]);
+				CPostSelect::ALPHA = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-beta" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				HAR::BETA = atof(argv[iField + 1]);
+				HAR::BETA = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-lambda" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CHotspotSelect::LAMBDA = atof(argv[iField + 1]);
+				CHotspotSelect::LAMBDA = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-merge" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CHotspotSelect::RATIO_MERGE_HOTSPOT = atof(argv[iField + 1]);
+				CHotspotSelect::RATIO_MERGE_HOTSPOT = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-old" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CHotspotSelect::RATIO_OLD_HOTSPOT = atof(argv[iField + 1]);
+				CHotspotSelect::RATIO_OLD_HOTSPOT = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-trans-prob" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CGeneralNode::PROB_TRANS = atof(argv[iField + 1]);
+				CGeneralNode::PROB_TRANS = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-pred-init" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CProphet::INIT_PRED = atof(argv[iField + 1]);
+				CProphet::INIT_PRED = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-pred-decay" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CProphet::RATIO_PRED_DECAY = atof(argv[iField + 1]);
+				CProphet::RATIO_PRED_DECAY = strtod( argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			//实际上对WSN而言不会使用到
@@ -459,7 +460,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 2 ) >= argc )
 					throw field;
-				CSink::SINK_X = atof(argv[iField + 1]);
+				CSink::SINK_X = strtod( argv[iField + 1], &endptr);
 				CSink::SINK_Y = atof(argv[iField + 2]);
 				iField += 3;
 			}
@@ -467,7 +468,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 2 ) >= argc )
 					throw field;
-				HAR::CO_HOTSPOT_HEAT_A1 = atof(argv[iField + 1]);
+				HAR::CO_HOTSPOT_HEAT_A1 = strtod( argv[iField + 1], &endptr);
 				HAR::CO_HOTSPOT_HEAT_A2 = atof(argv[iField + 2]);
 				iField += 3;
 			}
@@ -482,6 +483,12 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			}
 			else
 				throw argv[iField];
+
+			if( endptr != nullptr 
+			    && *endptr != '\0' )
+			{
+				throw field;
+			}
 
 		}
 	}
@@ -502,7 +509,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 	catch( string field )
 	{
 		stringstream error;
-		error << "Error @ ParseConfiguration() : Need value for command '" << field << "' ! ";
+		error << "Error @ ParseConfiguration() : Wrong value for command '" << field << "' ! ";
 		cout << endl << error.str() << endl;
 		_PAUSE_;
 		Exit(EINVAL, error.str());

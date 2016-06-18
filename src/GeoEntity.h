@@ -18,7 +18,8 @@ class CGeoEntity :
 public:
 
 	CGeoEntity(){};
-	~CGeoEntity(){};
+	virtual ~CGeoEntity() = 0
+	{};
 
 };
 

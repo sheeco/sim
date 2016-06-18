@@ -310,16 +310,16 @@ void HAR::MANodeRouteDesign(int currentTime)
 	flash_cout << "######  [ MA ]  " << CMANode::getMANodes().size() << endl;
 }
 
-vector<CGeneralData*> HAR::receiveContents(CSink* sink, CMANode* fromMA, vector<CGeneralData*> contents, int time)
+vector<CPacket*> HAR::receivePackets(CSink* sink, CMANode* fromMA, vector<CPacket*> packets, int time)
 {
-	vector<CGeneralData*> contentsToSend;
+	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
 
-	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
-		if( typeid(**icontent) == typeid(CCtrl) )
+		if( typeid(**ipacket) == typeid(CCtrl) )
 		{
-			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*ipacket);
 			switch( ctrl->getType() )
 			{
 			case CCtrl::_rts:
@@ -350,18 +350,18 @@ vector<CGeneralData*> HAR::receiveContents(CSink* sink, CMANode* fromMA, vector<
 
 				break;
 			}
-			++icontent;
+			++ipacket;
 		}
 
-		else if( typeid(**icontent) == typeid(CData) )
+		else if( typeid(**ipacket) == typeid(CData) )
 		{
-			//extract data content
+			//extract data packet
 			vector<CData> datas;
 			do
 			{
-				datas.push_back( *dynamic_cast<CData*>(*icontent) );
-				++icontent;
-			} while( icontent != contents.end() );
+				datas.push_back( *dynamic_cast<CData*>(*ipacket) );
+				++ipacket;
+			} while( ipacket != packets.end() );
 
 			//accept data into buffer
 			vector<CData> ack = CSink::bufferData(time, datas);
@@ -373,28 +373,28 @@ vector<CGeneralData*> HAR::receiveContents(CSink* sink, CMANode* fromMA, vector<
 
 	/********************************** wrap ***********************************/
 
-	CPackage* packageToSend = nullptr;
+	CFrame* frameToSend = nullptr;
 	if( ctrlToSend != nullptr )
-		contentsToSend.push_back(ctrlToSend);
+		packetsToSend.push_back(ctrlToSend);
 
-	return contentsToSend;
+	return packetsToSend;
 
 }
 
-vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CSink* fromSink, vector<CGeneralData*> contents, int time)
+vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacket*> packets, int time)
 {
-	vector<CGeneralData*> contentsToSend;
+	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
 	vector<CData> dataToSend;  //空vector代表代表缓存为空
 
-	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
 
 		/***************************************** rcv Ctrl Message *****************************************/
 
-		if( typeid(**icontent) == typeid(CCtrl) )
+		if( typeid(**ipacket) == typeid(CCtrl) )
 		{
-			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*ipacket);
 			switch( ctrl->getType() )
 			{
 
@@ -405,7 +405,7 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CSink* fromSink, vector<
 
 				if( ! ma->hasData() )
 				{
-					return contentsToSend;
+					return packetsToSend;
 				}
 				//CTS
 				ctrlToSend = new CCtrl(ma->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
@@ -438,25 +438,25 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CSink* fromSink, vector<
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
-					return contentsToSend;
+					return packetsToSend;
 				//clear data with ack
 				else
 					ma->checkDataByAck( ctrl->getACK() );
 
 				flash_cout << "######  (  MA  " << ma->getID() << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
 
-				return contentsToSend;
+				return packetsToSend;
 
 				break;
 
 			default:
 				break;
 			}
-			++icontent;
+			++ipacket;
 		}
 		else
 		{
-			++icontent;
+			++ipacket;
 		}
 	}
 
@@ -464,33 +464,33 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CSink* fromSink, vector<
 
 	if( ctrlToSend != nullptr )
 	{
-		contentsToSend.push_back(ctrlToSend);
+		packetsToSend.push_back(ctrlToSend);
 	}
 	if( ! dataToSend.empty() )
 	{
 		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
-			contentsToSend.push_back(new CData(*idata));
+			packetsToSend.push_back(new CData(*idata));
 	}
 
-	return contentsToSend;
+	return packetsToSend;
 	
 }
 
-vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<CGeneralData*> contents, int time)
+vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacket*> packets, int time)
 {
-	vector<CGeneralData*> contentsToSend;
+	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
 	vector<CData> dataToSend;  //空vector代表代表缓存为空
 	int capacity = -1;
 
-	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
 
 		/***************************************** rcv Ctrl Message *****************************************/
 
-		if( typeid(**icontent) == typeid(CCtrl) )
+		if( typeid(**ipacket) == typeid(CCtrl) )
 		{
-			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*ipacket);
 			switch( ctrl->getType() )
 			{
 
@@ -500,7 +500,7 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 
 				if( node->getAllData().empty() )
 				{
-					return contentsToSend;
+					return packetsToSend;
 				}
 				//CTS
 				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
@@ -509,7 +509,7 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 				dataToSend = node->getAllData();
 
 				if( dataToSend.empty() )
-					return contentsToSend;
+					return packetsToSend;
 
 				break;
 
@@ -524,7 +524,7 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 				capacity = ctrl->getCapacity();
 
 				if( capacity == 0 )
-					return contentsToSend;
+					return packetsToSend;
 				else if( capacity > 0
 						 && capacity < CNode::CAPACITY_BUFFER 
 						 && capacity < dataToSend.size() )
@@ -546,25 +546,25 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
-					return contentsToSend;
+					return packetsToSend;
 				//clear data with ack
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
 				flash_cout << "######  ( Node  " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->   MA  " << ctrl->getNode() << " )       " ;
 
-				return contentsToSend;
+				return packetsToSend;
 
 				break;
 
 			default:
 				break;
 			}
-			++icontent;
+			++ipacket;
 		}
 		else
 		{
-			++icontent;
+			++ipacket;
 		}
 	}
 
@@ -572,28 +572,28 @@ vector<CGeneralData*> HAR::receiveContents(CNode* node, CMANode* fromMA, vector<
 
 	if( ctrlToSend != nullptr )
 	{
-		contentsToSend.push_back(ctrlToSend);
+		packetsToSend.push_back(ctrlToSend);
 	}
 	if( ! dataToSend.empty() )
 	{
 		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
-			contentsToSend.push_back(new CData(*idata));
+			packetsToSend.push_back(new CData(*idata));
 	}
 
-	return contentsToSend;
+	return packetsToSend;
 	
 }
 
-vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CNode* fromNode, vector<CGeneralData*> contents, int time)
+vector<CPacket*> HAR::receivePackets(CMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time)
 {
-	vector<CGeneralData*> contentsToSend;
+	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
 
-	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
-		if( typeid(**icontent) == typeid(CCtrl) )
+		if( typeid(**ipacket) == typeid(CCtrl) )
 		{
-			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*ipacket);
 			switch( ctrl->getType() )
 			{
 			case CCtrl::_rts:
@@ -624,18 +624,18 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CNode* fromNode, vector<
 
 				break;
 			}
-			++icontent;
+			++ipacket;
 		}
 
-		else if( typeid(**icontent) == typeid(CData) )
+		else if( typeid(**ipacket) == typeid(CData) )
 		{
-			//extract data content
+			//extract data packet
 			vector<CData> datas;
 			do
 			{
-				datas.push_back( *dynamic_cast<CData*>(*icontent) );
-				++icontent;
-			} while( icontent != contents.end() );
+				datas.push_back( *dynamic_cast<CData*>(*ipacket) );
+				++ipacket;
+			} while( ipacket != packets.end() );
 
 			//accept data into buffer
 			vector<CData> ack = ma->bufferData(time, datas);
@@ -647,11 +647,11 @@ vector<CGeneralData*> HAR::receiveContents(CMANode* ma, CNode* fromNode, vector<
 
 	/********************************** wrap ***********************************/
 
-	CPackage* packageToSend = nullptr;
+	CFrame* frameToSend = nullptr;
 	if( ctrlToSend != nullptr )
-		contentsToSend.push_back(ctrlToSend);
+		packetsToSend.push_back(ctrlToSend);
 
-	return contentsToSend;
+	return packetsToSend;
 
 }
 

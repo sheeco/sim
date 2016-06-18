@@ -15,7 +15,8 @@ class CEntity
 public:
 
 	CEntity(){};
-	~CEntity(){};
+	virtual ~CEntity() = 0
+	{};
 
 };
 

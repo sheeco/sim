@@ -6,13 +6,9 @@ CCtrl::CCtrl()
 	CCtrl::init();
 }
 
-CCtrl::~CCtrl()
-{
-}
-
 void CCtrl::init()
 {
-	CGeneralData::init();
+	CPacket::init();
 	this->HOP = 1;
 	this->type = _rts;
 }

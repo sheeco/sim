@@ -13,12 +13,13 @@
 
 
 class CAlgorithm : 
-	public CProcess
+	virtual public CProcess
 {
 public:
 
 	CAlgorithm(){};
-	~CAlgorithm(){};
+	virtual ~CAlgorithm() = 0
+	{};
 
 };
 

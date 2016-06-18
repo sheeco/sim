@@ -15,7 +15,8 @@ class CProcess
 public:
 
 	CProcess(){};
-	~CProcess(){};
+	virtual ~CProcess() = 0
+	{};
 
 };
 

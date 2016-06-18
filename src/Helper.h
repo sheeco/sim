@@ -13,12 +13,13 @@
 
 
 class CHelper : 
-	public CProcess
+	virtual public CProcess
 {
 public:
 
 	CHelper(){};
-	~CHelper(){};
+	virtual ~CHelper() = 0
+	{};
 
 };
 

@@ -8,7 +8,7 @@
 
 
 class CNodeRepair : 
-	public CAlgorithm
+	virtual public CAlgorithm
 {
 private:
 

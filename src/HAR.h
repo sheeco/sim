@@ -11,7 +11,7 @@
 
 // TODO: rewrite
 class HAR : 
-	public CRoutingProtocol
+	virtual public CRoutingProtocol
 {
 private:
 
@@ -88,13 +88,13 @@ public:
 
 	//从下层协议传入的控制/数据包
 	// sink <- MA 
-	static vector<CGeneralData*> receiveContents(CSink* sink, CMANode* fromMA, vector<CGeneralData*> contents, int time);
+	static vector<CPacket*> receivePackets(CSink* sink, CMANode* fromMA, vector<CPacket*> packets, int time);
 	// MA <- sink 
-	static vector<CGeneralData*> receiveContents(CMANode* ma, CSink* fromSink, vector<CGeneralData*> contents, int time);
+	static vector<CPacket*> receivePackets(CMANode* ma, CSink* fromSink, vector<CPacket*> packets, int time);
 	// Node <- MA 
-	static vector<CGeneralData*> receiveContents(CNode* node, CMANode* fromMA, vector<CGeneralData*> contents, int time);
+	static vector<CPacket*> receivePackets(CNode* node, CMANode* fromMA, vector<CPacket*> packets, int time);
 	// MA <- Node 
-	static vector<CGeneralData*> receiveContents(CMANode* ma, CNode* fromNode, vector<CGeneralData*> contents, int time);
+	static vector<CPacket*> receivePackets(CMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time);
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);

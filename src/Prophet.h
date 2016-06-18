@@ -8,7 +8,7 @@
 
 
 class CProphet :
-	public CRoutingProtocol
+	virtual public CRoutingProtocol
 {
 private:
 
@@ -44,11 +44,11 @@ public:
 
 	//从下层协议传入的控制/数据包
 	// Node <- Sink 
-	static vector<CGeneralData*> receiveContents(CNode* node, CSink* sink, vector<CGeneralData*> contents, int time);
+	static vector<CPacket*> receivePackets(CNode* node, CSink* sink, vector<CPacket*> packets, int time);
 	// Sink <- Node 
-	static vector<CGeneralData*> receiveContents(CSink* sink, CNode* fromNode, vector<CGeneralData*> contents, int time);
+	static vector<CPacket*> receivePackets(CSink* sink, CNode* fromNode, vector<CPacket*> packets, int time);
 	// Node <- Node 
-	static vector<CGeneralData*> receiveContents(CNode* node, CNode* fromNode, vector<CGeneralData*> contents, int time);
+	static vector<CPacket*> receivePackets(CNode* node, CNode* fromNode, vector<CPacket*> packets, int time);
 
 	static bool Operate(int currentTime);
 

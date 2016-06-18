@@ -9,7 +9,7 @@
 
 //HAR中原始的贪婪hotspot选取方法的包装
 class CHotspotSelect :
-	public CAlgorithm
+	virtual public CAlgorithm
 {
 private:
 

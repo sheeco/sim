@@ -10,10 +10,10 @@
 #define __GENERAL_NODE_H__
 
 #include "Data.h"
-//#include "Package.h"
+//#include "Frame.h"
 
 
-class CPackage;
+class CFrame;
 
 class CGeneralNode :
 	virtual public CBasicEntity
@@ -71,7 +71,8 @@ public:
 		state = _awake;
 	}
 
-	virtual ~CGeneralNode(){};
+	virtual ~CGeneralNode() = 0
+	{};
 
 	inline double getEnergyConsumption() const
 	{
@@ -108,7 +109,7 @@ public:
 		return state == _awake;
 	}
 
-//	virtual void receivePackage(CPackage* package, int currentTime);
+//	virtual void receiveFrame(CFrame* frame, int currentTime);
 
 //	virtual vector<CData> bufferData(int time, vector<CData> datas);
 

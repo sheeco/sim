@@ -55,6 +55,8 @@ void CNode::init()
 	timeDeath = 0;
 	recyclable = true;
 	capacityBuffer = CAPACITY_BUFFER;
+	sumTimeAwake = 0;
+	sumTimeAlive = 0;
 	sumBufferRecord = 0;
 	countBufferRecord = 0;
 	dutyCycle = DEFAULT_DUTY_CYCLE;
@@ -300,21 +302,24 @@ void CNode::Sleep()
 	timerSleep = SLOT_SLEEP;
 }
 
-CPackage* CNode::sendRTSWithCapacityAndPred(int currentTime)
+CFrame* CNode::sendRTSWithCapacityAndPred(int currentTime)
 {
-	vector<CGeneralData*> contents;
+	vector<CPacket*> packets;
 	if( MODE_RECEIVE == _selfish 
 		&& ( ! buffer.empty() ) )
-		contents.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, SIZE_CTRL, CCtrl::_capacity) );
-	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
-	contents.push_back( new CCtrl(ID, deliveryPreds, currentTime, SIZE_CTRL, CCtrl::_index) );
-	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
+		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, SIZE_CTRL, CCtrl::_capacity) );
+	packets.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
+	packets.push_back( new CCtrl(ID, deliveryPreds, currentTime, SIZE_CTRL, CCtrl::_index) );
+	CFrame* frame = new CFrame(*this, packets);
 
-	return package;	
+	return frame;	
 }
 
 bool CNode::hasSpokenRecently(CNode* node, int currentTime) 
 {
+	if( CNode::LIFETIME_SPOKEN_CACHE == 0 )
+		return false;
+
 	map<CNode *, int>::iterator icache = spokenCache.find( node );
 	if( icache == spokenCache.end() )
 		return false;
@@ -533,7 +538,8 @@ void CNode::updateStatus(int currentTime)
 		{
 			case _awake:
 				consumeEnergy(CONSUMPTION_WAKE * SLOT);
-				timerWake--;
+				timerWake -= SLOT;
+				sumTimeAwake += SLOT;
 
 				if( timerWake == 0 )
 				{
@@ -572,6 +578,12 @@ void CNode::updateStatus(int currentTime)
 		newTime += SLOT;
 	}
 
+	if( !isAlive() )
+	{
+		die(currentTime, false);
+		return;
+	}
+	sumTimeAlive += newTime - this->time;
 
 	//生成数据
 	if( currentTime <= DATATIME )

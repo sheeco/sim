@@ -16,8 +16,8 @@
 //		return;
 //
 //	vector<CNode*> dstNodes;
-//	CPackage rts = node->sendRTS(currentTime);
-//	dstNodes = CNode::broadcastPackage( rts );
+//	CFrame rts = node->sendRTS(currentTime);
+//	dstNodes = CNode::broadcastFrame( rts );
 //	for(vector<CNode*>::iterator idst = dstNodes.begin(); idst != dstNodes.end(); ++idst)
 //	{
 //		(*idst)->receiveRTS( rts );

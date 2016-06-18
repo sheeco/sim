@@ -9,7 +9,7 @@
 
 
 class CPostSelect : 
-	public CAlgorithm
+	virtual public CAlgorithm
 {
 private:
 

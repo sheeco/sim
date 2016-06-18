@@ -10,13 +10,13 @@ double CSink::SINK_Y = 0;
 int CSink::CAPACITY_BUFFER = 999999;  //ÎÞÏÞÖÆ
 
 
-CPackage* CSink::sendRTS(int currentTime) 
+CFrame* CSink::sendRTS(int currentTime) 
 {
-	vector<CGeneralData*> contents;
-	contents.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
-	CPackage* package = new CPackage(*this, CGeneralNode(), contents);
+	vector<CPacket*> packets;
+	packets.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
+	CFrame* frame = new CFrame(*this, packets);
 
-	return package;
+	return frame;
 }
 
 vector<CData> CSink::bufferData(int time, vector<CData> datas)

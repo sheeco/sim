@@ -13,16 +13,16 @@
 #include "GeneralNode.h"
 
 class CMacProtocol :
-	public CProtocol
+	virtual public CProtocol
 {
 private:
 
 	static int transmitSuccessful;  //成功的数据传输
 	static int transmit;
 	
-	static void receivePackage(CGeneralNode& src, CPackage* package, int currentTime);
-	static void broadcastPackage(CGeneralNode& src, CPackage* package, int currentTime);
-	static bool transmitPackage(CGeneralNode& src, CGeneralNode* dst, CPackage* package, int currentTime);
+	static void receiveFrame(CGeneralNode& src, CFrame* frame, int currentTime);
+	static void broadcastFrame(CGeneralNode& src, CFrame* frame, int currentTime);
+	static bool transmitFrame(CGeneralNode& src, CGeneralNode* dst, CFrame* frame, int currentTime);
 
 	//在限定范围内随机增删一定数量的node
 	static void ChangeNodeNumber(int currentTime);
@@ -33,7 +33,8 @@ private:
 protected:
 
 	CMacProtocol();
-	~CMacProtocol();
+	virtual ~CMacProtocol() = 0
+	{};
 
 	//注意：必须在 Prepare() 之后调用
 	static void CommunicateWithNeighbor(int currentTime);

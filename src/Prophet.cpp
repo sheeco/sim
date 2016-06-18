@@ -124,22 +124,22 @@ vector<CData> CProphet::bufferData(CNode* node, vector<CData> datas, int time)
 	return ack;
 }
 
-vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector<CGeneralData*> contents, int time)
+vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPacket*> packets, int time)
 {
-	vector<CGeneralData*> contentsToSend;
+	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
 	CCtrl* indexToSend = nullptr;
 	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
 	vector<CData> dataToSend;  //空vector代表拒绝传输数据
 
-	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
 
 		/***************************************** rcv Ctrl Message *****************************************/
 
-		if( typeid(**icontent) == typeid(CCtrl) )
+		if( typeid(**ipacket) == typeid(CCtrl) )
 		{
-			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*ipacket);
 			switch( ctrl->getType() )
 			{
 
@@ -151,7 +151,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 
 				if( node->getAllData().empty() )
 				{
-					return contentsToSend;
+					return packetsToSend;
 				}
 				//CTS
 				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
@@ -184,25 +184,25 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
-					return contentsToSend;
+					return packetsToSend;
 				//clear data with ack
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
 				flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
 
-				return contentsToSend;
+				return packetsToSend;
 
 				break;
 
 			default:
 				break;
 			}
-			++icontent;
+			++ipacket;
 		}
 		else
 		{
-			++icontent;
+			++ipacket;
 		}
 	}
 
@@ -210,36 +210,36 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CSink* sink, vector
 
 	if( ctrlToSend != nullptr )
 	{
-		contentsToSend.push_back(ctrlToSend);
+		packetsToSend.push_back(ctrlToSend);
 	}
 	if( indexToSend != nullptr )
 	{
-		contentsToSend.push_back(indexToSend);
+		packetsToSend.push_back(indexToSend);
 	}
 	if( nodataToSend != nullptr )
 	{
-		contentsToSend.push_back(nodataToSend);
+		packetsToSend.push_back(nodataToSend);
 	}
 	if( ! dataToSend.empty() )
 	{
 		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
-			contentsToSend.push_back(new CData(*idata));
+			packetsToSend.push_back(new CData(*idata));
 	}
 
-	return contentsToSend;
+	return packetsToSend;
 	
 }
 
-vector<CGeneralData*> CProphet::receiveContents(CSink* sink, CNode* fromNode, vector<CGeneralData*> contents, int time)
+vector<CPacket*> CProphet::receivePackets(CSink* sink, CNode* fromNode, vector<CPacket*> packets, int time)
 {
-	vector<CGeneralData*> contentsToSend;
+	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
 
-	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
-		if( typeid(**icontent) == typeid(CCtrl) )
+		if( typeid(**ipacket) == typeid(CCtrl) )
 		{
-			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*ipacket);
 			switch( ctrl->getType() )
 			{
 			case CCtrl::_rts:
@@ -270,18 +270,18 @@ vector<CGeneralData*> CProphet::receiveContents(CSink* sink, CNode* fromNode, ve
 
 				break;
 			}
-			++icontent;
+			++ipacket;
 		}
 
-		else if( typeid(**icontent) == typeid(CData) )
+		else if( typeid(**ipacket) == typeid(CData) )
 		{
-			//extract data content
+			//extract data packet
 			vector<CData> datas;
 			do
 			{
-				datas.push_back( *dynamic_cast<CData*>(*icontent) );
-				++icontent;
-			} while( icontent != contents.end() );
+				datas.push_back( *dynamic_cast<CData*>(*ipacket) );
+				++ipacket;
+			} while( ipacket != packets.end() );
 
 			//accept data into buffer
 			vector<CData> ack = CSink::bufferData(time, datas);
@@ -293,17 +293,17 @@ vector<CGeneralData*> CProphet::receiveContents(CSink* sink, CNode* fromNode, ve
 
 	/********************************** wrap ***********************************/
 
-	CPackage* packageToSend = nullptr;
+	CFrame* frameToSend = nullptr;
 	if( ctrlToSend != nullptr )
-		contentsToSend.push_back(ctrlToSend);
+		packetsToSend.push_back(ctrlToSend);
 
-	return contentsToSend;
+	return packetsToSend;
 
 }
 
-vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, vector<CGeneralData*> contents, int time)
+vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<CPacket*> packets, int time)
 {
-	vector<CGeneralData*> contentsToSend;
+	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
 	CCtrl* capacityToSend = nullptr;
 	CCtrl* indexToSend = nullptr;
@@ -314,14 +314,14 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 //	int debugNodeID = 0;
 //	int debugFromID = 0;
 
-	for(vector<CGeneralData*>::iterator icontent = contents.begin(); icontent != contents.end(); )
+	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
 
 		/***************************************** rcv Ctrl Message *****************************************/
 
-		if( typeid(**icontent) == typeid(CCtrl) )
+		if( typeid(**ipacket) == typeid(CCtrl) )
 		{
-			CCtrl* ctrl = dynamic_cast<CCtrl*>(*icontent);
+			CCtrl* ctrl = dynamic_cast<CCtrl*>(*ipacket);
 			switch( ctrl->getType() )
 			{
 
@@ -333,7 +333,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				if( node->hasSpokenRecently(dynamic_cast<CNode*>(fromNode), time) )
 				{
 					flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(fromNode->getID(), 2) << " )                " ;
-					return contentsToSend;
+					return packetsToSend;
 				}
 				//rcv RTS from node
 				else
@@ -382,7 +382,7 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 				{
 					if( capacity == 0 )
 					{
-						return contentsToSend;
+						return packetsToSend;
 					}
 
 					dataToSend = getDataForTrans(node);
@@ -421,14 +421,14 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
-					return contentsToSend;
+					return packetsToSend;
 				//clear data with ack
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
 				flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(fromNode->getID(), 2) << " )                       " ;
 
-				return contentsToSend;
+				return packetsToSend;
 
 				break;
 
@@ -453,20 +453,20 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 			default:
 				break;
 			}
-			++icontent;
+			++ipacket;
 		}
 
 		/******************************************* rcv Data *******************************************/
 
-		else if( typeid(**icontent) == typeid(CData) )
+		else if( typeid(**ipacket) == typeid(CData) )
 		{
-			//extract data content
+			//extract data packet
 			vector<CData> datas;
 			do
 			{
-				datas.push_back( *dynamic_cast<CData*>(*icontent) );
-				++icontent;
-			} while( icontent != contents.end() );
+				datas.push_back( *dynamic_cast<CData*>(*ipacket) );
+				++ipacket;
+			} while( ipacket != packets.end() );
 
 			//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据或NODATA（注意：前提是控制包必须在数据包之前）
 			dataToSend.clear();
@@ -491,27 +491,27 @@ vector<CGeneralData*> CProphet::receiveContents(CNode* node, CNode* fromNode, ve
 
 	if( ctrlToSend != nullptr )
 	{
-		contentsToSend.push_back(ctrlToSend);
+		packetsToSend.push_back(ctrlToSend);
 	}
 	if( capacityToSend != nullptr )
 	{
-		contentsToSend.push_back(capacityToSend);
+		packetsToSend.push_back(capacityToSend);
 	}
 	if( indexToSend != nullptr )
 	{
-		contentsToSend.push_back(indexToSend);
+		packetsToSend.push_back(indexToSend);
 	}
 	if( nodataToSend != nullptr )
 	{
-		contentsToSend.push_back(nodataToSend);
+		packetsToSend.push_back(nodataToSend);
 	}
 	if( ! dataToSend.empty() )
 	{
 		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
-			contentsToSend.push_back(new CData(*idata));
+			packetsToSend.push_back(new CData(*idata));
 	}
 
-	return contentsToSend;
+	return packetsToSend;
 
 }
 

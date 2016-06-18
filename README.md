@@ -65,15 +65,17 @@
     
     Entity.h
     
-	|-- Package.h & .cpp
-
     |-- BasicEntity.h & .cpp
 
 		|-- GeneralData.h & .cpp
 
-			|-- Ctrl.h & .cpp
+			|-- Frame.h & .cpp
 
-			|-- Data.h & .cpp
+			|-- Packet.h & .cpp
+
+				|-- Ctrl.h & .cpp
+
+				|-- Data.h & .cpp
 
 		|-- GeneralNode.h & .cpp
 
@@ -445,7 +447,7 @@
 
 ###### 2016-03-11  ·  *< 2.6.5 >*
 
-- MOD：平均能耗的统计，从以 byte 为单位改为以 package 为单位；
+- MOD：平均能耗的统计，从以 byte 为单位改为以 frame 为单位；
 - MOD：将增删节点和更新节点位置、工作状态等操作，整理到 MAC 协议层中（暂时全部放入 `CHDC`）；
 - RFCT：将输出调试信息的操作分别整理到 MAC 层和路由层的父类和子类中，以实现尽可能多的重用；
 - ADD：增加全局函数 `Exit()`，并将输出时间戳的操作统一放入其中；
@@ -471,13 +473,13 @@
 
 ###### 2016-03-17
 
-- ADD：添加类 `CGeneralData`、`CCtrl`、`CPackage`，和函数 `CNode::broadcastPackage()`、`::transmitPackage()`、`::sendRTS()`、`::receiveRTS()`、`::sendCTS()`、`::receivePackage()`；
+- ADD：添加类 `CPacket`、`CCtrl`、`CFrame`，和函数 `CNode::broadcastFrame()`、`::transmitFrame()`、`::sendRTS()`、`::receiveRTS()`、`::sendCTS()`、`::receiveFrame()`；
 
 
 ###### 2016-03-18  ·  *< 2.6.8 >*
 
-- ADD：将数据通信的操作整合到 `CMacProtocol::broadcastPackage()`、`::transmitPackage()`；
-- ADD：将数据发送的响应流程整合到 `CMacProtocol::receivePackage()`，涉及到路由层的操作提交给相应路由类处理（暂时只实现了 Prophet 路由，`CProphet::bufferData()` 和 `::selectDataByIndex`）；
+- ADD：将数据通信的操作整合到 `CMacProtocol::broadcastFrame()`、`::transmitFrame()`；
+- ADD：将数据发送的响应流程整合到 `CMacProtocol::receiveFrame()`，涉及到路由层的操作提交给相应路由类处理（暂时只实现了 Prophet 路由，`CProphet::bufferData()` 和 `::selectDataByIndex`）；
 
 
 ## 3.* : 重写 MAC 层
@@ -485,7 +487,7 @@
 
 ###### [ 2016-03-18  ·  *< 3.0.0 >*  ·  *重写 MAC 层* ]( b50107fb04bd0976fc54aa0a81e47b2f6d619e1b )
 
-- ADD：完成新定义的函数 `CMacProtocol::broadcastPackage()`、`::transmitPackage()`、`::receivePackage()`、`CProphet::bufferData()`、`::selectDataByIndex`；
+- ADD：完成新定义的函数 `CMacProtocol::broadcastFrame()`、`::transmitFrame()`、`::receiveFrame()`、`CProphet::bufferData()`、`::selectDataByIndex`；
 - MOD：删除原有的 `CRoutingProtocol::SendData()` 系列实现；
 - NOTE：暂时只实现了 Prophet 路由，未测试；未重写 Epidemic 路由和 HAR 路由；
         
@@ -516,7 +518,7 @@
 ###### [ 2016-03-21  ·  *< 3.1.5924.1169 >* ]( 2ad5fe57cc9d76fddfc53bf1a0894519cf3d6906 )
 
 - ADD：重新添加所有的控制台输出；
-- FIX：`CPackage` 类构造函数的错误；
+- FIX：`CFrame` 类构造函数的错误；
 - FIX：禁用 `CData::ID_MASK`，修复因此产生的错误；
 
 
@@ -532,7 +534,7 @@
 - ADD：添加命令行参数 `-pred-tolerance`、`-log-path`、`-log-slot`；
 - FIX：模板类函数 `GetItemsByID()` 可能不能成功调用？
 - FIX：`CProphet::selectDataByIndex()` 的错误；
-- FIX：`CMacProtocol::receivePackage()` 的迭代错误；
+- FIX：`CMacProtocol::receiveFrame()` 的迭代错误；
 
 
 ###### [ 2016-03-22  ·  *< 3.1.5925.29760 >* ]( c95ff6cce1eefcd8145a1272ba578d4ad41c4c6e )
@@ -547,7 +549,7 @@
 ###### [ 2016-03-23  ·  *< 3.2.5926.22497 >* ]( af30b1aed1c80c2f909c74a2add441cc26089bb6 )
 
 - RFCT：规范化变量命名和 getter 函数名；
-- FIX：更改节点是否将进行邻居节点发现的方法， 添加成员变量 `CNode::discovering`，以修复 `CMacProtocol::broadcastPackage()` 中节点相遇和数据传输计数重复计算的问题；
+- FIX：更改节点是否将进行邻居节点发现的方法， 添加成员变量 `CNode::discovering`，以修复 `CMacProtocol::broadcastFrame()` 中节点相遇和数据传输计数重复计算的问题；
 - FIX：更改数据传输计数的计算方法，单方节点收到一组数据就认为是一次数据传输成功；
 - ADD：添加成员变量 `CNode::encounterActiveAtHotspot`，更改相遇计数的计算方法；
 - ADD：添加节点工作状态随机初始化的可选功能，由变量 `CMacProtocol::RANDOM_STATE_INIT` 标记，命令行参数 `-random-state`；
@@ -567,15 +569,15 @@
 
 ###### [ 2016-03-24  ·  *< 3.2.5926.41581 >* ]( 6dab843a5108b472b1f642e88797d1253aa40ed8 )
 
-- FIX：修改 `CMacProtocol::receivePackage` 中的数据传输过程，发送 RTS 时直接捎带投递概率；
-- FIX：修改 `CMacProtocol::receivePackage` 中的数据传输计数方法，对于每个节点对只计入一次数据传输，以收到 ACK 为准则；
+- FIX：修改 `CMacProtocol::receiveFrame` 中的数据传输过程，发送 RTS 时直接捎带投递概率；
+- FIX：修改 `CMacProtocol::receiveFrame` 中的数据传输计数方法，对于每个节点对只计入一次数据传输，以收到 ACK 为准则；
 
 
 ###### [ 2016-03-24  ·  *< 3.2.5927.16957 >* ]( dc6a2d7dcfde527f1c85a7201a5c2ff41e2f3440 )
 
 - FIX：修改项目属性，添加链接器命令行参数 `/NODEFAULTLIB:MSVCRT`，以解决 `Warning LNK4098`；
 - ADD：宏定义 `_WIN32_WINNT`，用于为编译器指示系统版本；
-- FIX：修复 `CMacProtocol::receivePackage` 中的响应逻辑的重要错误；
+- FIX：修复 `CMacProtocol::receiveFrame` 中的响应逻辑的重要错误；
 - NOTE：只要路由协议允许转发数据，就将发送 DATA 或 NODATA 包，收到二者中的任何一个，都应回复 ACK；
 - ADD：添加成员变量 `CProphet::TRANS_STRICT_BY_PRED`，指示是否严格以投递概率**真**大于本节点为判断准则；
 - ----- （默认）值 `true` 时，对于相等投递概率的节点也允许发送（但仍保持单向）；值为 `true` 时，对于相等投递概率的节点，将以 0.5 的概率决定发送；
@@ -585,14 +587,14 @@
 
 ###### [ 2016-03-24  ·  *< 3.2.5927.20040 >* ]( fde3f0dc45bc1ca95317f803663aacc46b9bce92 )
 
-- RFCT：将数据包响应逻辑从 `CMacProtocol::receivePackage()` 中尽量分离到 `CProphet::receiveContents()` 中；
+- RFCT：将数据包响应逻辑从 `CMacProtocol::receiveFrame()` 中尽量分离到 `CProphet::receivePackets()` 中；
 
 
 ###### [ 2016-03-25  ·  *< 3.2.5928.23405 >* ]( 7fa4d90b398c905de325e4ab0e20e3515e50ab21 )
 
-- RFCT：将 `CProphet::receiveContents()` 中的响应操作按照源-目的节点对的类型，分类整合到三个重载的同名函数中；
+- RFCT：将 `CProphet::receivePackets()` 中的响应操作按照源-目的节点对的类型，分类整合到三个重载的同名函数中；
 - FIX：函数 `CMacProtocol::CommunicateWithNeighbor()` 更名为 `CMacProtocol::CommunicateWithNeighbor()`，并修复函数调用错误；
-- FIX：修复 `CProphet::receiveContents()` 中的错误；
+- FIX：修复 `CProphet::receivePackets()` 中的错误；
 - OPT：将 `CData::MAX_HOP` 和 `CData::MAX_TTL` 的冲突，改为在 `ParseConfiguration()` 中检查，如有冲突将报错退出；
 - BUG：数据传输计数存在差错，应检查 `CMacProtocol::transmitTry()` 和 `CMacProtocol::transmitSucceed()` 的调用；
 
@@ -610,7 +612,7 @@
 - ADD：添加 `_HOTSPOT_SELECT::_none` 用于独立开启热点选取操作的功能，但暂时没有添加独立的节点是否位于热点中的检测操作；
 - ADD：在参数解析中添加异常捕获，如果命令行参数存在错误，则禁止运行；
 - ADD：添加命令行参数 `-window-trans`，赋值 Prophet 路由中单次数据转发的最大数据包数目；
-- ADD：重写 xHAR 路由的数据通信流程，函数 `HAR::receiveContents()` 待完成；
+- ADD：重写 xHAR 路由的数据通信流程，函数 `HAR::receivePackets()` 待完成；
 - BUG：Prophet 路由中单次数据转发的最大数据包数目，对运行结果不造成影响；
 
 
@@ -619,7 +621,7 @@
 
 ###### [ 2016-03-30  ·  *< 3.3.5933.21567 >* ]( e1d4990c1d264bf4ac82eb1db3b135019e15ba32 )
 
-- ADD：完成函数 `HAR::receiveContents()`（待测试）；
+- ADD：完成函数 `HAR::receivePackets()`（待测试）；
 - RFCT：将 `CHDC::UpdateDutyCycleForNodes()` 中更新节点所在热点区域的操作提取到 `CHotspot::UpdateAtHotspotForNodes()`；
 - ADD：在 `CSmac::Operate()` 中添加独立开启热点选取的操作，添加独立的节点是否位于热点区域的检测操作；
 - REM：暂时删除所有 Epidemic 路由的相关定义、操作和引用，包括 `-ttl` 和 `-queue` 的使用；
@@ -768,24 +770,31 @@
 ### 3.6.* : 重写 Duty Cycle
 
 　
-###### 2016-06-18  ·  *< 3.6.1 >*
+###### [ 2016-06-18  ·  *< 3.6.1 >* ]( 3847980b9e8418ffd494371839a95e00bcbc57d3 )
 
 - ADD：添加 `timerSleep/Wake/CarrierSense` （倒数）计时器及 `_STATE` 枚举类，以重新实现 `CNode::updateStatus()`；
 - ADD：添加 `CSorHelper::insertIntoSortedList()` 和 `CNode::removeDataByCapacity()` 将缓冲区数据的排序，从取出数据时改为压入数据时；
 - ADD：添加 `CNode::SPEED_TRANS` 和 `CRoutingProtocol::TIME_WINDOW_TRANS, getTimeWindowTrans()`；
 - MOD：将载波侦听时间改为在 `CRoutingProtocol::TIME_WINDOW_TRANS` 内取随机值；
-- [ ] ADD：添加唤醒时间的统计及日志输出；
+
+　
+###### 2016-06-18  ·  *< 3.6.2 >*
+
+- ADD：添加唤醒时间的统计，输出到 `activation.log`；
+- RFCT：整理数据类的定义及继承结构，得到 `CGeneralData`、`CFrame`、`CPacket`、`CData`、`CCtrl`；
+- RFCT：为所有不允许实例化的抽象类添加纯虚析构函数，并将所有继承关系标记为 `virtual`；
+- FIX：使用 `strtol()` 和 `strtod()` 代替 `atoi()` 和 `atof()`, 并修复遗漏的字符串解析异常捕获；
+
+
+
+- [ ] ADD：将广播及单播函数合并，以模拟过听；
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
 - [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；
 - [ ] ADD：将遍历寻找所有邻居节点对的操作提取成函数；
-- [ ] ADD：将广播及单播函数合并，以模拟过听；
 - [ ] ADD：添加节点对信道繁忙的检测及响应；
 - [ ] ADD：添加对信道冲突的检测及响应（传输失败）；
 - [ ] ADD：添加传输延迟的模拟；
 - [ ] RFCT：将队列管理相关操作提取成类；
-
-
-
 - [ ] RFCT：将所有配置参数的定义放入 `CConfiguration` 类并保存到一个数组，以简化 `ParseConfiguration()` 中的操作；
 - [ ] ADD：对多 sink 网络的适配；
 - [ ] FIX：检查 `CBasicEntity::time` 初始值由 0 改为 -1 可能导致的其他问题；

@@ -18,7 +18,7 @@
 //	return result;
 //}
 
-int CBasicEntity::moveTo(CBasicEntity to, int interval, double speed)
+int CBasicEntity::moveTo(CBasicEntity &to, int interval, double speed)
 {
 	double fromX, fromY, toX, toY;
 	fromX = this->getX();
@@ -30,7 +30,7 @@ int CBasicEntity::moveTo(CBasicEntity to, int interval, double speed)
 	distance = sqrt((fromX - toX) * (fromX - toX) + (fromY - toY) * (fromY - toY));
 
 	//ÉÐÎ´µ½´ï
-	int timeArrival = distance / speed;
+	int timeArrival = int( distance / speed );
 	if( timeArrival > interval )
 	{
 		cos = (toX - fromX) / distance;

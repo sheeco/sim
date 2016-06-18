@@ -35,6 +35,8 @@ namespace global
 	string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot%	#EncounterAtHotspot)	#Encounter	 \n" ;
 	string FILE_TRANSMIT = "transmit.log";
 	string INFO_TRANSMIT = "#Time	(#TransmitSuccessful%	#TransmitSuccessful	#Transmit \n" ;
+	string FILE_ACTIVATION = "activation.log";
+	string INFO_ACTIVATION = "#Time	#PercentAwake... \n";
 	string FILE_ENERGY_CONSUMPTION = "energy-consumption.log";
 	string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEC	(#SumEC	#NodeCount	#CurrentEnergy...) \n" ;
 	string FILE_SINK = "sink.log";

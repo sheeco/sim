@@ -8,7 +8,7 @@
 
 
 class CSMac :
-	public CMacProtocol
+	virtual public CMacProtocol
 {
 public:
 

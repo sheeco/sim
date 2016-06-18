@@ -7,7 +7,7 @@
 
 
 class CCoordinate :
-	public CGeoEntity
+	virtual public CGeoEntity
 {
 protected:
 

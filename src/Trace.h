@@ -8,7 +8,7 @@
 
 
 class CCTrace :
-	public CGeoEntity
+	virtual public CGeoEntity
 {
 private:
 

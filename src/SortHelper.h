@@ -10,7 +10,7 @@
 
 //一些预处理函数包装成的类
 class CSortHelper :
-	public CHelper
+	virtual public CHelper
 {
 private:
 

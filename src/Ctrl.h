@@ -3,12 +3,12 @@
 #ifndef __CTRL_H__
 #define __CTRL_H__
 
-#include "GeneralData.h"
+#include "Packet.h"
 #include "Data.h"
 
 
 class CCtrl :
-	virtual public CGeneralData
+	virtual public CPacket
 {
 //protected:
 
@@ -28,7 +28,7 @@ public:
 		_rts, 
 		_cts, 
 		_ack, 
-		_capacity, 
+		_capacity,  //允许接受的最大数据个数
 		_index,   //data index ( delivery preds & summary vector )
 		_no_data  //inform no data to send
 	} _TYPE_CTRL;
@@ -59,7 +59,7 @@ public:
 	CCtrl(int node, map<int, double> pred, int timeBirth, int byte, _TYPE_CTRL type);
 //	//data index ( summary vector )
 //	CCtrl(int node, vector<int> sv, int timeBirth, int byte, _TYPE_CTRL type);
-	~CCtrl();
+	~CCtrl(){};
 
 	_TYPE_CTRL getType() const
 	{
@@ -86,7 +86,10 @@ public:
 		return ack;
 	}
 
-
+	bool allowForward() const
+	{
+		return HOP > 0;
+	};
 
 };
 

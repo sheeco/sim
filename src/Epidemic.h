@@ -8,7 +8,7 @@
 //
 //// TODO: rewrite
 //class CEpidemic :
-//	public CRoutingProtocol
+//	virtual public CRoutingProtocol
 //{
 //private:
 //

@@ -45,7 +45,7 @@ CCTrace* CCTrace::getTraceFromFile(string filename)
 			if( temp_time > RUNTIME )
 				break;
 
-			trace->addLocation(temp_time, CCoordinate(temp_x, temp_y) );
+			trace->addLocation(int(temp_time), CCoordinate(temp_x, temp_y) );
 		}
 
 		fclose(file);
