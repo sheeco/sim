@@ -31,6 +31,10 @@ namespace global
 	string FILE_FINAL = "final.log";
 	string INFO_FINAL = "#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#HOP/TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay/	#HOP/	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime	#Node)	#Log \n" ;
 
+	string FILE_NODE = "node.log";
+	string INFO_NODE = "#Time	#NodeCount \n";
+	string FILE_DEATH = "death.log";
+	string INFO_DEATH = "#Time	#DeathCount	#Delivery #DeliveryRatio \n";
 	string FILE_ENCOUNTER = "encounter.log";
 	string INFO_ENCOUNTER = "#Time	(#EncounterAtHotspot%	#EncounterAtHotspot)	#Encounter	 \n" ;
 	string FILE_TRANSMIT = "transmit.log";

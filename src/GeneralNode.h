@@ -51,6 +51,7 @@ protected:
 	vector<CData> buffer;
 	int capacityBuffer;
 	double energyConsumption;
+	int timerOccupied;
 
 	static double CONSUMPTION_WAKE;
 	static double CONSUMPTION_SLEEP;
@@ -68,6 +69,7 @@ public:
 	{
 		this->capacityBuffer = 0;
 		this->energyConsumption = 0;
+		this->timerOccupied = UNVALID;
 		state = _awake;
 	}
 
@@ -108,6 +110,27 @@ public:
 	{
 		return state == _awake;
 	}
+
+	virtual void Overhear();
+	//virtual void Occupy(int time)
+	//{
+	//	if( time <= 0 )
+	//		return;
+	//	this->timerOccupied = time;
+	//}
+	//bool isOccupied()
+	//{
+	//	return timerOccupied > 0;
+	//}
+
+	//void updateTimerOccupied(int time)
+	//{
+	//	if( timerOccupied > 0 )
+	//		timerOccupied -= time - this->time;
+	//	//±£Áô timerOccupied µÄÏÂÑØ
+	//	if( timerOccupied < 0 )
+	//		timerOccupied = UNVALID;
+	//}
 
 //	virtual void receiveFrame(CFrame* frame, int currentTime);
 

@@ -136,6 +136,9 @@ public:
 	//更新所有node的坐标、占空比和工作状态，生成数据；调用之后应调用 isAlive() 检验存活
 	void updateStatus(int currentTime);
 
+	void updateTimerWake(int time);
+	void updateTimerSleep(int time);
+
 //	void receiveRTS(CFrame frame);
 
 //	void receiveFrame(CFrame* frame, int currentTime) override;
@@ -154,16 +157,29 @@ public:
 
 	// TODO: skip sending RTS if node has received any RTS ? yes if *trans delay countable
 	//标记已收到过其他节点的 RTS (暂未使用)
-	bool skipRTS()
-	{
-		return false;
-	}
+	//bool skipRTS()
+	//{
+	//	return false;
+	//}
 
+	void Overhear() override;
+
+	static double calTimeForTrans(CFrame* frame)
+	{
+		return 0;
+		//return ROUND(double(frame->getSize()) / double(SPEED_TRANS));
+	}
 
 	/*************************** DC相关 ***************************/
 
 	void Wake() override;
 	void Sleep() override;
+
+	bool isAwake() const override
+	{
+		//将 timerOccupied 的下沿也认为是唤醒的
+		return state == _awake /*|| timerOccupied == 0*/;
+	}
 
 	//判断是否处于邻居节点发现状态
 	//注意：调用此函数之前必须确保已updateStatus
@@ -183,6 +199,29 @@ public:
 	void finishDiscovering()
 	{
 		this->discovering = false;
+	}
+
+	//发现过听之后，延迟载波侦听
+	void delayDiscovering(int timeDelay)
+	{
+		if( timeDelay <= 0 )
+			return;
+
+		this->timerCarrierSense += timeDelay;
+		this->discovering = false;
+		//延迟后超出唤醒时限，则立即休眠
+		if( timerCarrierSense >= timerWake )
+			Sleep();
+	}
+
+	void delaySleep(int timeDelay)
+	{
+		if( timeDelay <= 0 )
+			return;
+		if( state != _awake )
+			return;
+
+		this->timerWake += timeDelay;
 	}
 
 	inline bool useDefaultDutyCycle()
@@ -252,7 +291,7 @@ public:
 	}
 
 	//将死亡节点整理移出
-	static void ClearDeadNodes();
+	static void ClearDeadNodes(int currentTime);
 
 
 	/*************************** ------- ***************************/
@@ -273,7 +312,7 @@ public:
 
 	//返回溢出的数据
 	//注意：调用之前应该确保数据已排序
-	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity);
+	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity, bool fromLeft);
 
 //	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
 //	vector<CData> dropOverdueData(int currentTime);

@@ -88,9 +88,10 @@ bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 	if( predNode == predDst )
 	{
 		if( TRANS_STRICT_BY_PRED )
-			return Bet(0.5);
+			return false;
 		else
-			return true;
+			return Bet(0.5);
+			//return true;
 	}
 	else
 		return ( predDst > predNode );
@@ -101,7 +102,7 @@ vector<CData> CProphet::getDataForTrans(CNode* node)
 	vector<CData> datas = node->getAllData();
 
 	if( WINDOW_TRANS > 0 )
-		CNode::removeDataByCapacity(datas, WINDOW_TRANS);
+		CNode::removeDataByCapacity(datas, WINDOW_TRANS, false);
 
 	return datas;
 }
@@ -122,6 +123,47 @@ vector<CData> CProphet::bufferData(CNode* node, vector<CData> datas, int time)
 	RemoveFromList(ack, overflow);
 
 	return ack;
+}
+
+vector<CPacket*> CProphet::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int currentTime)
+{
+	vector<CPacket*> packetsToSend;
+
+	if( typeid( gToNode ) == typeid( CSink ) )
+	{
+		CSink* toSink = dynamic_cast< CSink* >( &gToNode );
+
+		/*********************************************** Sink <- Node *******************************************************/
+
+		if( typeid( gFromNode ) == typeid( CNode ) )
+		{
+			CNode* fromNode = dynamic_cast<CNode*>( &gFromNode );
+			packetsToSend = CProphet::receivePackets(toSink, fromNode, packets, currentTime);
+		}
+	}
+
+	else if( typeid( gToNode ) == typeid( CNode ) )
+	{
+		CNode* node = dynamic_cast<CNode*>( &gToNode );
+
+		/*********************************************** Node <- Sink *******************************************************/
+
+		if( typeid( gFromNode ) == typeid( CSink ) )
+		{
+			CSink* fromSink = dynamic_cast< CSink* >( &gFromNode );
+			packetsToSend = CProphet::receivePackets(node, fromSink, packets, currentTime);
+		}
+
+		/*********************************************** Node <- Node *******************************************************/
+
+		else if( typeid( gFromNode ) == typeid( CNode ) )
+		{
+			CNode* fromNode = dynamic_cast<CNode*>( &gFromNode );
+			packetsToSend = CProphet::receivePackets(node, fromNode, packets, currentTime);
+		}
+	}
+
+	return packetsToSend;
 }
 
 vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPacket*> packets, int time)
@@ -158,6 +200,9 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 				// + DATA
 				dataToSend = getDataForTrans(node);
 
+				node->delayDiscovering(CRoutingProtocol::getTimeWindowTrans());
+				node->delaySleep(CRoutingProtocol::getTimeWindowTrans());
+
 				// TODO: mark skipRTS ?
 				// TODO: connection established ?
 				break;
@@ -182,6 +227,8 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 
 			case CCtrl::_ack:
 
+				node->startDiscovering();
+
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
 					return packetsToSend;
@@ -189,7 +236,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+				flash_cout << "######  < " << time << " >  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
 
 				return packetsToSend;
 
@@ -293,7 +340,6 @@ vector<CPacket*> CProphet::receivePackets(CSink* sink, CNode* fromNode, vector<C
 
 	/********************************** wrap ***********************************/
 
-	CFrame* frameToSend = nullptr;
 	if( ctrlToSend != nullptr )
 		packetsToSend.push_back(ctrlToSend);
 
@@ -338,6 +384,9 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				//rcv RTS from node
 				else
 				{
+					//update preds
+					updateDeliveryPredsWith(node, fromNode->getID(), ctrl->getPred());
+
 					//CTS
 					ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 
@@ -392,7 +441,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 						nodataToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
 					else if( capacity > 0 )
 					{
-						CNode::removeDataByCapacity(dataToSend, capacity);
+						CNode::removeDataByCapacity(dataToSend, capacity, false);
 					}
 					
 					//如果路由协议允许向该节点发送数据，对方节点就不允许发送数据，因此无需发送capacity
@@ -403,9 +452,6 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 					}
 				}
 				//否则，不允许转发数据时，dataToSend留空
-
-				//update preds
-				updateDeliveryPredsWith(node, fromNode->getID(), ctrl->getPred() );
 
 				//注意：如果（取决于Prophet的要求）两个节点都拒绝发送数据，此处将导致空的响应，直接结束本次数据传输
 				//     否则并不结束传输，还将为对方发来的数据发送ACK；
@@ -419,6 +465,8 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				//加入最近邻居列表
 				node->addToSpokenCache( fromNode, time );
 
+				node->startDiscovering();
+
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
 					return packetsToSend;
@@ -426,7 +474,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(fromNode->getID(), 2) << " )                       " ;
+				flash_cout << "######  < " << time << " >  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(fromNode->getID(), 2) << " )                       " ;
 
 				return packetsToSend;
 
@@ -439,6 +487,8 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				ctrlToSend = new CCtrl(node->getID(), vector<CData>(), time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
 				//加入最近邻居列表
 				node->addToSpokenCache( fromNode, time );
+				node->startDiscovering();
+
 
 				//维持数据传输的单向性：如果收到数据或NODATA，就不发送数据或NODATA（注意：前提是控制包必须在数据包之前）
 				dataToSend.clear();
@@ -483,6 +533,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 			ctrlToSend = new CCtrl(node->getID(), ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
 			//加入最近邻居列表
 			node->addToSpokenCache( fromNode, time );
+			node->startDiscovering();
 
 		}
 	}

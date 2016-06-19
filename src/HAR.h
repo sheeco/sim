@@ -87,6 +87,7 @@ public:
 	static double calculateWaitingTime(int currentTime, CHotspot *hotspot);
 
 	//从下层协议传入的控制/数据包
+	static vector<CPacket*> receivePackets(CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time);
 	// sink <- MA 
 	static vector<CPacket*> receivePackets(CSink* sink, CMANode* fromMA, vector<CPacket*> packets, int time);
 	// MA <- sink 

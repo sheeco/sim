@@ -63,6 +63,16 @@ public:
 
 	CFrame* sendRTS(int currentTime);
 
+	//void Occupy(int time) override
+	//{
+	//	return;
+	//}
+
+	//void updateStatus(int time) override
+	//{
+	//	updateTimerOccupied(time);
+	//}
+
 	//相遇计数：统计节点和 sink 的相遇
 	static void encount() 
 	{

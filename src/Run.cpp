@@ -52,10 +52,12 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 	config_log << "######  " << description << endl;
 	for( int i = 0; i < argc; ++i )
 	{
-		if( argv[i][0] == '-' )
+		if( argv[i][0] == '-'
+		    && isalpha( argv[i][1] ) )
 			config_log << endl;
 		config_log << argv[i] << " ";
 	}
+	config_log << endl << endl;
 
 	config_log.close();
 
@@ -119,15 +121,15 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 					throw field;
 				iField += 2;
 			}
-			else if( field == "-hotspot-similarity" )
+			else if( field == "-dc-sync" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
 				string val(argv[iField + 1]);
 				if( val == "on" )
-					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
+					CMacProtocol::SYNC_DC = true;
 				else if( val == "off" )
-					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = false;
+					CMacProtocol::SYNC_DC = false;
 				else
 					throw field;
 				iField += 2;
@@ -145,6 +147,32 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 					throw field;
 				iField += 2;
 			}
+			else if( field == "-pred-strict" )
+			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				string val(argv[iField + 1]);
+				if( val == "on" )
+					CProphet::TRANS_STRICT_BY_PRED = true;
+				else if( val == "off" )
+					CProphet::TRANS_STRICT_BY_PRED = false;
+				else
+					throw field;
+				iField += 2;
+			}
+			else if( field == "-hotspot-similarity" )
+			{
+				if( ( iField + 1 ) >= argc )
+					throw field;
+				string val(argv[iField + 1]);
+				if( val == "on" )
+					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
+				else if( val == "off" )
+					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = false;
+				else
+					throw field;
+				iField += 2;
+			}
 			else if( field == "-balanced-ratio" )
 			{
 				if( ( iField + 1 ) >= argc )
@@ -154,19 +182,6 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 					HAR::TEST_BALANCED_RATIO = true;
 				else if( val == "off" )
 					HAR::TEST_BALANCED_RATIO = false;
-				else
-					throw field;
-				iField += 2;
-			}
-			else if( field == "-random-state" )
-			{
-				if( ( iField + 1 ) >= argc )
-					throw field;
-				string val(argv[iField + 1]);
-				if( val == "on" )
-					CMacProtocol::RANDOM_STATE_INIT = true;
-				else if( val == "off" )
-					CMacProtocol::RANDOM_STATE_INIT = false;
 				else
 					throw field;
 				iField += 2;
@@ -253,13 +268,13 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 
 				iField += 2;
 			}
-			else if( field == "-slot-carrier-sense" )
-			{
-				if( ( iField + 1 ) >= argc )
-					throw field;
-				CNode::DEFAULT_SLOT_CARRIER_SENSE = strtol( argv[iField + 1], &endptr, 10);
-				iField += 2;
-			}
+			//else if( field == "-slot-carrier-sense" )
+			//{
+			//	if( ( iField + 1 ) >= argc )
+			//		throw field;
+			//	CNode::DEFAULT_SLOT_CARRIER_SENSE = strtol( argv[iField + 1], &endptr, 10);
+			//	iField += 2;
+			//}
 			else if( field == "-dc-default" )
 			{
 				if( ( iField + 1 ) >= argc )
@@ -613,7 +628,7 @@ void InitConfiguration()
 	CNode::DEFAULT_DUTY_CYCLE = 0;
 	CNode::HOTSPOT_DUTY_CYCLE = 0; 
 	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;
-	CMacProtocol::RANDOM_STATE_INIT = true;
+	CMacProtocol::SYNC_DC = true;
 
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
@@ -646,7 +661,7 @@ void InitConfiguration()
 	CProphet::INIT_PRED = 0.70;  //参考值 0.75
 	CProphet::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
 	CProphet::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
-	CProphet::TRANS_STRICT_BY_PRED = false;
+	CProphet::TRANS_STRICT_BY_PRED = true;
 	CProphet::WINDOW_TRANS = 10;
 
 
@@ -687,7 +702,7 @@ void InitConfiguration()
 	RUNTIME = 15000;
 
 	/*********** Depend on DATASET ***********/
-	CCTrace::CONTINUOUS_TRACE = false;
+	CCTrace::CONTINUOUS_TRACE = true;
 	DATASET = "KAIST";
 	//CGeneralNode::RANGE_TRANS = 250;
 	CSink::SINK_X = -200;  //for KAIST

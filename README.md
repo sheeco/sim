@@ -12,6 +12,7 @@
 	delivery-ratio-100.log
 	delay.log
 	energy-consumption.log
+	activation.lgo
 	buffer.log
 	buffer-statistics.log
 	encounter.log
@@ -35,7 +36,8 @@
 
 ### Usage
 
-`HDC -help` / [/bin/help.md](/bin/help.md)
+- 默认配置文件为 `./default.config`；
+- 使用命令行进行参数配置的规则见文件 [/bin/help.md](/bin/help.md)，或运行 `HDC -help` 查看；
 
 
 
@@ -552,7 +554,7 @@
 - FIX：更改节点是否将进行邻居节点发现的方法， 添加成员变量 `CNode::discovering`，以修复 `CMacProtocol::broadcastFrame()` 中节点相遇和数据传输计数重复计算的问题；
 - FIX：更改数据传输计数的计算方法，单方节点收到一组数据就认为是一次数据传输成功；
 - ADD：添加成员变量 `CNode::encounterActiveAtHotspot`，更改相遇计数的计算方法；
-- ADD：添加节点工作状态随机初始化的可选功能，由变量 `CMacProtocol::RANDOM_STATE_INIT` 标记，命令行参数 `-random-state`；
+- ADD：添加节点工作状态随机初始化的可选功能，由变量 `CMacProtocol::DC_SYNC` 标记，命令行参数 `-dc-sync`；
 
 
 ###### [ 2016-03-23  ·  *< 3.2.5926.22866 >* ]( bbdcaf90421a36b0b3ff97a9b8cd2c6982d41acb )
@@ -778,16 +780,25 @@
 - MOD：将载波侦听时间改为在 `CRoutingProtocol::TIME_WINDOW_TRANS` 内取随机值；
 
 　
-###### 2016-06-18  ·  *< 3.6.2 >*
+###### [ 2016-06-18  ·  *< 3.6.2 >* ]( 5fd3d9eee4e67cac6af7994a2008794f0bbf5e18 )
 
 - ADD：添加唤醒时间的统计，输出到 `activation.log`；
 - RFCT：整理数据类的定义及继承结构，得到 `CGeneralData`、`CFrame`、`CPacket`、`CData`、`CCtrl`；
 - RFCT：为所有不允许实例化的抽象类添加纯虚析构函数，并将所有继承关系标记为 `virtual`；
 - FIX：使用 `strtol()` 和 `strtod()` 代替 `atoi()` 和 `atof()`, 并修复遗漏的字符串解析异常捕获；
 
+　
+###### 2016-06-20  ·  *< 3.6.3 >*
+
+- ADD：将广播及单播函数合并，并添加 `CGeneralNode::Overhear(), Occupy()`，以模拟过听和冲突（暂未使用）；
+- ADD：添加 `CNode::calTimeForTrans()` 和 `CMacProtocol::transmitFrame()` 中的静态变量 `frameArrivals`，以模拟时延（暂未使用）；
+- ADD：添加 `CNode::delayDiscovering(), startDiscoering()` 作为响应函数（暂未使用）；
+- ADD：`node.log` 及 `death.log`；
+- RFCT：优化路由类 `receivePackets()` 操作的分流；
+- NOTE：所有新增函数仍待调试，部分新增函数被注释掉，提交的源代码版本用于测试；
 
 
-- [ ] ADD：将广播及单播函数合并，以模拟过听；
+
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
 - [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；
 - [ ] ADD：将遍历寻找所有邻居节点对的操作提取成函数；

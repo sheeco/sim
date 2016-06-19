@@ -141,6 +141,10 @@ namespace global
 	extern string FILE_FINAL;
 	extern string INFO_FINAL;
 
+	extern string FILE_NODE;
+	extern string INFO_NODE;
+	extern string FILE_DEATH;
+	extern string INFO_DEATH;
 	extern string FILE_ENCOUNTER;
 	extern string INFO_ENCOUNTER;
 	extern string FILE_TRANSMIT;

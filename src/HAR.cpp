@@ -310,6 +310,62 @@ void HAR::MANodeRouteDesign(int currentTime)
 	flash_cout << "######  [ MA ]  " << CMANode::getMANodes().size() << endl;
 }
 
+vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int currentTime)
+{
+	vector<CPacket*> packetsToSend;
+
+	if( typeid( gToNode ) == typeid( CSink ) )
+	{
+		CSink* toSink = dynamic_cast< CSink* >( &gToNode );
+
+		/*********************************************** Sink <- MA *******************************************************/
+
+		if( typeid( gFromNode ) == typeid( CMANode ) )
+		{
+			CMANode* fromMA = dynamic_cast<CMANode*>( &gFromNode );
+			packetsToSend = HAR::receivePackets(toSink, fromMA, packets, currentTime);
+		}
+	}
+
+	else if( typeid( gToNode ) == typeid( CMANode ) )
+	{
+		CMANode* toMA = dynamic_cast<CMANode*>( &gToNode );
+
+		/************************************************ MA <- sink *******************************************************/
+
+		if( typeid( gFromNode ) == typeid( CSink ) )
+		{
+			CSink* fromSink = dynamic_cast< CSink* >( &gFromNode );
+			packetsToSend = HAR::receivePackets(toMA, fromSink, packets, currentTime);
+		}
+
+		/************************************************ MA <- node *******************************************************/
+
+		else if( typeid( gFromNode ) == typeid( CNode ) )
+		{
+			CNode* fromNode = dynamic_cast<CNode*>( &gFromNode );
+			packetsToSend = HAR::receivePackets(toMA, fromNode, packets, currentTime);
+		}
+	}
+
+	else if( typeid( gToNode ) == typeid( CNode ) )
+	{
+		CNode* node = dynamic_cast<CNode*>( &gToNode );
+
+		/************************************************ Node <- MA *******************************************************/
+
+		if( typeid( gFromNode ) == typeid( CMANode ) )
+		{
+			CMANode* fromMA = dynamic_cast<CMANode*>( &gFromNode );
+			packetsToSend = HAR::receivePackets(node, fromMA, packets, currentTime);
+		}
+	}
+
+	// TODO: + comm : node <--> sink ?
+
+	return packetsToSend;
+}
+
 vector<CPacket*> HAR::receivePackets(CSink* sink, CMANode* fromMA, vector<CPacket*> packets, int time)
 {
 	vector<CPacket*> packetsToSend;
@@ -443,7 +499,7 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacke
 				else
 					ma->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "######  (  MA  " << ma->getID() << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+				flash_cout << "######  < " << time << " >  (  MA  " << ma->getID() << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
 
 				return packetsToSend;
 
@@ -528,7 +584,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacke
 				else if( capacity > 0
 						 && capacity < CNode::CAPACITY_BUFFER 
 						 && capacity < dataToSend.size() )
-					CNode::removeDataByCapacity(dataToSend, capacity);
+					CNode::removeDataByCapacity(dataToSend, capacity, false);
 
 				break;
 
@@ -551,7 +607,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacke
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "######  ( Node  " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->   MA  " << ctrl->getNode() << " )       " ;
+				flash_cout << "######  < " << time << " >  ( Node  " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->   MA  " << ctrl->getNode() << " )       " ;
 
 				return packetsToSend;
 

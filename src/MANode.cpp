@@ -48,6 +48,9 @@ void CMANode::updateStatus(int time)
 	if( this->time < 0 )
 		this->time = time;
 	int interval = time - this->time;
+
+	//updateTimerOccupied(time);
+
 	//更新时间戳
 
 	//路线过期或缓存已满，立即返回sink

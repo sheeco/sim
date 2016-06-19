@@ -49,7 +49,7 @@ void CNode::init()
 	trace = nullptr;
 	dataRate = 0;
 	atHotspot = nullptr;
-	timerCarrierSense = DEFAULT_SLOT_CARRIER_SENSE;
+	//timerCarrierSense = DEFAULT_SLOT_CARRIER_SENSE;
 	//discovering = false;
 	timeLastData = 0;
 	timeDeath = 0;
@@ -62,23 +62,24 @@ void CNode::init()
 	dutyCycle = DEFAULT_DUTY_CYCLE;
 	SLOT_WAKE = int( dutyCycle * SLOT_TOTAL );
 	SLOT_SLEEP = SLOT_TOTAL - SLOT_WAKE;
+	timerCarrierSense = UNVALID;
 	if( SLOT_WAKE == 0 )
 	{
 		state = _asleep;
 		timerWake = UNVALID;
-		if( CMacProtocol::RANDOM_STATE_INIT )
-			timerSleep = RandomInt(1, SLOT_SLEEP);
-		else
+		if( CMacProtocol::SYNC_DC )
 			timerSleep = SLOT_SLEEP;
+		else
+			timerSleep = RandomInt(1, SLOT_SLEEP);
 	}
 	else
 	{
 		state = _awake;
 		timerSleep = UNVALID;
-		if( CMacProtocol::RANDOM_STATE_INIT )
-			timerWake = RandomInt(1, SLOT_WAKE);
-		else
+		if( CMacProtocol::SYNC_DC )
 			timerWake = SLOT_WAKE;
+		else
+			timerWake = RandomInt(1, SLOT_WAKE);
 		timerCarrierSense = RandomInt(0, CRoutingProtocol::getTimeWindowTrans());
 	}
 }
@@ -202,25 +203,41 @@ bool CNode::hasNodes(int currentTime)
 		}
 		++inode;
 	}
-	ClearDeadNodes();
+	ClearDeadNodes(currentTime);
 	if(death)
 		flash_cout << "######  [ Node ]  " << CNode::getNodes().size() << "                                     " << endl;
 
 	return ( ! nodes.empty() );
 }
 
-void CNode::ClearDeadNodes() 
+void CNode::ClearDeadNodes(int currentTime) 
 {
+	bool death = false;
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
 	{
 		if((*inode)->timeDeath > 0)
 		{
+			death = true;
 			deadNodes.push_back( *inode );
 			inode = nodes.erase( inode );
 		}
 		else
 			++inode;
 	}
+
+	if( death )
+	{
+		ofstream death(PATH_ROOT + PATH_LOG + FILE_DEATH, ios::app);
+		if( currentTime == 0 )
+		{
+			death << endl << INFO_LOG << endl;
+			death << INFO_DEATH;
+		}
+		death << currentTime << TAB << CNode::getAllNodes(false).size() - CNode::getNNodes()
+			<< TAB << CData::getCountDelivery() << TAB << CData::getDeliveryRatio() << endl;
+		death.close();
+	}
+
 }
 
 bool CNode::ifNodeExists(int id) 
@@ -286,8 +303,23 @@ void CNode::checkDataByAck(vector<CData> ack)
 		RemoveFromList(buffer, ack);
 }
 
+void CNode::Overhear()
+{
+	CGeneralNode::Overhear();
+
+	//继续载波侦听
+	//时间窗内随机值 / 立即休眠？
+	delayDiscovering( CRoutingProtocol::getTimeWindowTrans() );
+}
+
 void CNode::Wake()
 {
+	//Always On
+	if( SLOT_WAKE <= 0 )
+	{
+		Sleep();
+		return;
+	}
 	state = _awake;
 	timerSleep = UNVALID;
 	timerWake = SLOT_WAKE;
@@ -296,6 +328,12 @@ void CNode::Wake()
 
 void CNode::Sleep()
 {
+	//Always On
+	if( SLOT_SLEEP <= 0 )
+	{
+		Wake();
+		return;
+	}
 	state = _asleep;
 	timerWake = UNVALID;
 	timerCarrierSense = UNVALID;
@@ -366,21 +404,21 @@ void CNode::pushIntoBuffer(vector<CData> datas)
 	this->buffer = CSortHelper::insertIntoSortedList(this->buffer, datas, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
 }
 
-vector<CData> CNode::removeDataByCapacity(vector<CData> &datas, int capacity)
+vector<CData> CNode::removeDataByCapacity(vector<CData> &datas, int capacity, bool fromLeft)
 {
 	vector<CData> overflow;
 	if( datas.size() <= capacity )
 		return overflow;
 
-	if( MODE_QUEUE == _fifo )
+	if( fromLeft )
 	{
-		overflow = vector<CData>(datas.begin() + capacity, datas.end());
-		datas = vector<CData>(datas.begin(), datas.begin() + capacity);
+		overflow = vector<CData>(datas.begin(), datas.begin() + capacity);
+		datas = vector<CData>(datas.begin() + capacity, datas.end());
 	}
 	else
 	{
-		overflow = vector<CData>(datas.rbegin() + capacity, datas.rend());
-		datas = vector<CData>(datas.rbegin(), datas.rbegin() + capacity);
+		datas = vector<CData>(datas.begin(), datas.begin() + capacity);
+		overflow = vector<CData>(datas.begin() + capacity, datas.end());
 	}
 
 	return overflow;
@@ -421,7 +459,7 @@ vector<CData> CNode::dropDataIfOverflow()
 
 	myData = buffer;
 	//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
-	overflow = removeDataByCapacity(myData, capacityBuffer);
+	overflow = removeDataByCapacity(myData, capacityBuffer, true);
 
 	buffer = myData;
 	return overflow;
@@ -523,6 +561,8 @@ void CNode::updateStatus(int currentTime)
 	//计算能耗、更新工作状态
 	while( ( newTime + SLOT ) <= currentTime )
 	{
+		newTime += SLOT;
+
 		// 0 时间时初始化
 		if( newTime <= 0 )
 			break;
@@ -538,44 +578,20 @@ void CNode::updateStatus(int currentTime)
 		{
 			case _awake:
 				consumeEnergy(CONSUMPTION_WAKE * SLOT);
-				timerWake -= SLOT;
-				sumTimeAwake += SLOT;
+				updateTimerWake(newTime);
 
-				if( timerWake == 0 )
-				{
-					if( SLOT_SLEEP > 0 )
-						Sleep();
-					//Always-On
-					else
-						Wake();
-				}
-				else if( timerCarrierSense > 0 )
-				{
-					timerCarrierSense--;
-					//开始邻居节点发现
-					if( timerCarrierSense == 0 )
-						startDiscovering();
-				}
 				break;
 			case _asleep:
 				consumeEnergy(CONSUMPTION_SLEEP * SLOT);
-				timerSleep--;
-
-				if( timerSleep == 0 )
-				{
-					if( SLOT_WAKE > 0 )
-						Wake();
-					//Always-off
-					else
-						Sleep();
-				}
+				updateTimerSleep(newTime);
 
 				break;
 			default:
 				break;
 		}
 
-		newTime += SLOT;
+		//updateTimerOccupied(newTime);
+
 	}
 
 	if( !isAlive() )
@@ -592,7 +608,7 @@ void CNode::updateStatus(int currentTime)
 
 	/**************************************  Prophet  *************************************/
 	if( ROUTING_PROTOCOL == _prophet 
-		&& (currentTime % CCTrace::SLOT_TRACE) == 0 )
+		 && (currentTime % CCTrace::SLOT_TRACE) == 0  )
 		CProphet::decayDeliveryPreds(this, currentTime);
 
 	//更新坐标及时间戳
@@ -601,8 +617,47 @@ void CNode::updateStatus(int currentTime)
 		die(currentTime, false);  //因 trace 信息终止而死亡的节点，无法回收
 		return;
 	}
-	setLocation( trace->getLocation(currentTime), currentTime);
+	setLocation(trace->getLocation(currentTime));
+	setTime(currentTime);
 
+}
+
+void CNode::updateTimerWake(int time)
+{
+	if( state != _awake )
+		return;
+
+	int incr = time - this->time;
+	if( incr <= 0 )
+		return;
+
+	timerWake -= incr;
+	sumTimeAwake += incr;
+
+	if( timerWake == 0 )
+		Sleep();
+	else if( timerCarrierSense > 0 )
+	{
+		timerCarrierSense--;
+		//开始邻居节点发现
+		if( timerCarrierSense == 0 )
+			startDiscovering();
+	}
+}
+
+void CNode::updateTimerSleep(int time)
+{
+	if( state != _asleep )
+		return;
+
+	int incr = time - this->time;
+	if( incr <= 0 )
+		return;
+
+	timerSleep -= incr;
+
+	if( timerSleep == 0 )
+		Wake();
 }
 
 void CNode::recordBufferStatus() 

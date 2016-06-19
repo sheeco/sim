@@ -11,6 +11,7 @@ void CCtrl::init()
 	CPacket::init();
 	this->HOP = 1;
 	this->type = _rts;
+	this->capacity = 0;
 }
 
 CCtrl::CCtrl(int node, int timeBirth, int byte, _TYPE_CTRL type)

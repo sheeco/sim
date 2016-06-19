@@ -1,5 +1,6 @@
 #include "GeneralNode.h"
 #include "Node.h"
+#include "MacProtocol.h"
 
 double CGeneralNode::CONSUMPTION_BYTE_SEND = 0.008;  //( mJ / Byte )
 double CGeneralNode::CONSUMPTION_BYTE_RECEIVE = 0.004;
@@ -42,3 +43,7 @@ int CGeneralNode::SIZE_CTRL = 0;
 //	return vector<CData>();
 //}
 
+void CGeneralNode::Overhear()
+{
+	consumeEnergy(CONSUMPTION_BYTE_RECEIVE * CMacProtocol::SIZE_HEADER_MAC);
+}

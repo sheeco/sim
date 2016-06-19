@@ -20,9 +20,9 @@ private:
 	static int transmitSuccessful;  //成功的数据传输
 	static int transmit;
 	
-	static void receiveFrame(CGeneralNode& src, CFrame* frame, int currentTime);
-	static void broadcastFrame(CGeneralNode& src, CFrame* frame, int currentTime);
-	static bool transmitFrame(CGeneralNode& src, CGeneralNode* dst, CFrame* frame, int currentTime);
+	//过听时返回 false；否则返回 true
+	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime);
+	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int currentTime);
 
 	//在限定范围内随机增删一定数量的node
 	static void ChangeNodeNumber(int currentTime);
@@ -44,7 +44,7 @@ public:
 
 	static int SIZE_HEADER_MAC;  //Mac Header Size
 
-	static bool RANDOM_STATE_INIT;  //是否初始化所有节点的工作状态为随机的
+	static bool SYNC_DC;  //是否同步所有节点的工作状态
 	static bool TEST_DYNAMIC_NUM_NODE;
 	static int SLOT_CHANGE_NUM_NODE;  //动态节点个数测试时，节点个数发生变化的周期
 

@@ -13,9 +13,14 @@
 #endif
 #endif
 
+#ifndef __VERSION_H__
+#define __VERSION_H__
+
 #define _VERSION_MAJOR_ 3
 #define _VERSION_MINOR_ 6
-#define _VERSION_BUILD_ 2
+#define _VERSION_BUILD_ 3
 
 #define _VERSION_ {_VERSION_MAJOR_, _VERSION_MINOR_, _VERSION_BUILD_}
 #define _STR_VERSION_ ""##_VERSION_MAJOR_"."##_VERSION_MINOR_"."##_VERSION_BUILD_""
+
+#endif // __VERSION_H__

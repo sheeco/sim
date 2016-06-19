@@ -8,7 +8,7 @@
 
 int CMacProtocol::transmitSuccessful = 0;
 int CMacProtocol::transmit = 0;
-bool CMacProtocol::RANDOM_STATE_INIT = false;
+bool CMacProtocol::SYNC_DC = true;
 int CMacProtocol::SIZE_HEADER_MAC = 0;  //Mac Header Size
 bool CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
 int CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
@@ -18,85 +18,168 @@ CMacProtocol::CMacProtocol()
 {
 }
 
-void CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentTime) 
+bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime)
+{
+	static map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > > frameArrivals;
+
+	bool rcv = false;
+	vector<CGeneralNode*> neighbors;
+
+	src.consumeEnergy(frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
+	CMacProtocol::transmitTry();
+
+	/************************************************ Sensor Node *******************************************************/
+
+	vector<CNode*> nodes = CNode::getNodes();
+	for( vector<CNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
+	{
+		CNode* dstNode = *idstNode;
+		//skip itself
+		if( ( dstNode )->getID() == src.getID() )
+			continue;
+
+		if( CBasicEntity::withinRange(src, *dstNode, CGeneralNode::RANGE_TRANS) )
+		{
+			//统计sink节点的相遇计数
+			if( typeid( src ) == typeid( CSink ) )
+				CSink::encount();
+
+			if( dstNode->isAwake() )
+			{
+				//统计sink节点的相遇计数
+				if( typeid( src ) == typeid( CSink ) )
+					CSink::encountActive();
+
+				if( Bet(CGeneralNode::PROB_TRANS) )
+					neighbors.push_back(dstNode);
+			}
+		}
+	}
+
+	/*************************************************** Sink **********************************************************/
+
+	CSink* sink = CSink::getSink();
+	if( CBasicEntity::withinRange(src, *sink, CGeneralNode::RANGE_TRANS)
+	   && Bet(CGeneralNode::PROB_TRANS)
+	   && sink->getID() != src.getID() )
+	{
+		neighbors.push_back(sink);
+		CSink::encount();
+		CSink::encountActive();
+	}
+
+
+	/**************************************************** MA ***********************************************************/
+
+	vector<CMANode*> MAs = CMANode::getMANodes();
+	for( vector<CMANode*>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA )
+	{
+		//skip itself
+		if( ( *iMA )->getID() == src.getID() )
+			continue;
+
+		if( CBasicEntity::withinRange(src, **iMA, CGeneralNode::RANGE_TRANS)
+		   && Bet(CGeneralNode::PROB_TRANS)
+		   && ( *iMA )->isAwake() )
+		{
+			neighbors.push_back(*iMA);
+		}
+	}
+
+	int timeTrans = 0;
+	timeTrans = CNode::calTimeForTrans(frame);
+	int timeArrival = currentTime + timeTrans;
+	vector< pair<CFrame*, vector< CGeneralNode* > > > currentArrivals;
+
+	//压入将来的到达队列
+	if( timeArrival > currentTime )
+	{
+		vector< pair<CFrame*, vector< CGeneralNode* > > > futureArrivals;
+		map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > >::iterator iArrivals = frameArrivals.find(timeArrival);
+		if( iArrivals != frameArrivals.end() )
+			futureArrivals = ( *iArrivals ).second;
+
+		futureArrivals.push_back(pair<CFrame*, vector< CGeneralNode* > >(frame, neighbors));
+		frameArrivals[timeArrival] = futureArrivals;
+	}
+	//压入当前的到达队列
+	else
+		currentArrivals.push_back(pair<CFrame*, vector< CGeneralNode* > >(frame, neighbors));
+
+	//取出之前存入的当前时间的到达队列
+	map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > >::iterator iMoreArrivals = frameArrivals.find(currentTime);
+	if( iMoreArrivals != frameArrivals.end() )
+	{
+		vector< pair<CFrame*, vector< CGeneralNode* > > > moreCurrentArrivals = ( *iMoreArrivals ).second;
+		currentArrivals.insert(currentArrivals.end(), moreCurrentArrivals.begin(), moreCurrentArrivals.end());
+
+		//从队列中移除
+		frameArrivals.erase(iMoreArrivals);
+	}
+
+	//投递队列中的数据
+	for( vector< pair<CFrame*, vector< CGeneralNode* > > >::iterator iArrival = currentArrivals.begin();
+		 iArrival != currentArrivals.end(); ++iArrival )
+	{
+		CFrame* currentFrame = iArrival->first;
+		vector<CGeneralNode*> currentNeighbors = iArrival->second;
+		for( vector<CGeneralNode*>::iterator ineighbor = currentNeighbors.begin(); ineighbor != currentNeighbors.end(); ++ineighbor )
+		{
+			rcv = rcv || receiveFrame(**ineighbor, currentFrame, currentTime);
+		}
+
+		free(currentFrame);
+	}
+
+	return rcv;
+
+	// TODO: sort by distance with src node ?
+}
+
+bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentTime)
 {
 	// Make local copy
 	frame = new CFrame(*frame);
 	CGeneralNode* gFromNode = frame->getSrcNode();
+	CGeneralNode* gToNode = frame->getDstNode();
+	
+	//if( gnode.isOccupied() )
+	//	return false;
+
+	int timeTrans = 0;
+	timeTrans = CNode::calTimeForTrans(frame);;
+	//gnode.Occupy(timeTrans);    
+
+	//非广播且目标节点非本节点，即过听
+	if( gToNode != nullptr
+	    && gToNode->getID() != gnode.getID() )
+	{
+		gnode.Overhear();
+		return false;
+	}
+	
+	gnode.consumeEnergy(frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
+	
 	vector<CPacket*> packets = frame->getPackets();
 	vector<CPacket*> packetsToSend;
 	CFrame* frameToSend = nullptr;
 
-	if( typeid(gnode) == typeid(CSink) )
+	switch( ROUTING_PROTOCOL )
 	{
-		CSink* toSink = dynamic_cast< CSink* >( &gnode );
-		/*********************************************** Sink <- MA *******************************************************/
+		case _prophet:
 
-		if( typeid(*gFromNode) == typeid(CMANode) )
-		{
-			CMANode* fromMA = dynamic_cast<CMANode*>( gFromNode );
-			packetsToSend = HAR::receivePackets(toSink, fromMA, packets, currentTime);
-		}
+			packetsToSend = CProphet::receivePackets(gnode, *gFromNode, packets, currentTime);
 
-		/*********************************************** Sink <- Node *******************************************************/
+			break;
 
-		else if( typeid(*gFromNode) == typeid(CNode) )
-		{
-			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
-			packetsToSend = CProphet::receivePackets(toSink, fromNode, packets, currentTime);
-		}
+		case _xhar:
 
-	}
-	
-	else if( typeid(gnode) == typeid(CMANode) )
-	{
-		CMANode* toMA = dynamic_cast<CMANode*>( &gnode );
+			packetsToSend = HAR::receivePackets(gnode, *gFromNode, packets, currentTime);
+
+			break;
 		
-		/************************************************ MA <- sink *******************************************************/
-
-		if( typeid(*gFromNode) == typeid(CSink) )
-		{
-			CSink* fromSink = dynamic_cast< CSink* >( gFromNode );
-			packetsToSend = HAR::receivePackets(toMA, fromSink, packets, currentTime);
-		}
-		
-		/************************************************ MA <- node *******************************************************/
-
-		if( typeid(*gFromNode) == typeid(CNode) )
-		{
-			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
-			packetsToSend = HAR::receivePackets(toMA, fromNode, packets, currentTime);
-		}
-	}
-
-	else if( typeid(gnode) == typeid(CNode) )
-	{
-		CNode* node = dynamic_cast<CNode*>( &gnode );
-
-		/*********************************************** Node <- Sink *******************************************************/
-
-		if( typeid(*gFromNode) == typeid(CSink) )
-		{
-			CSink* fromSink = dynamic_cast< CSink* >( gFromNode );
-			packetsToSend = CProphet::receivePackets(node, fromSink, packets, currentTime);
-		}
-
-		/************************************************ Node <- MA *******************************************************/
-
-		else if( typeid(*gFromNode) == typeid(CMANode) )
-		{
-			CMANode* fromMA = dynamic_cast<CMANode*>( gFromNode );
-			packetsToSend = HAR::receivePackets(node, fromMA, packets, currentTime);
-		}
-
-		/*********************************************** Node <- Node *******************************************************/
-
-		else if( typeid(*gFromNode) == typeid(CNode) )
-		{
-			CNode* fromNode = dynamic_cast<CNode*>( gFromNode );
-			packetsToSend = CProphet::receivePackets(node, fromNode, packets, currentTime);
-		}
-
+		default:
+			break;
 	}
 
 	/*********************************************** send reply *******************************************************/
@@ -104,156 +187,13 @@ void CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentT
 	if( ! packetsToSend.empty() )
 	{
 		frameToSend = new CFrame(gnode, *gFromNode, packetsToSend);
-		transmitFrame( gnode, gFromNode, frameToSend, currentTime );			
+		transmitFrame( gnode, frameToSend, currentTime );			
 	}
 	else
 	{
 		CMacProtocol::transmitSucceed();
 	}
-
-}
-
-void CMacProtocol::broadcastFrame(CGeneralNode& src, CFrame* frame, int currentTime)
-{
-	bool rcv = false;
-	vector<CNode*> nodes = CNode::getNodes();
-	if( frame->getDstNode() != nullptr )
-	{
-		cout << "Error @ CMacProtocol::broadcastFrame() : frame is not for broadcast" << endl;
-		_PAUSE_;
-	}
-
-	src.consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
-
-	/************************************************ Sensor Node *******************************************************/
-
-	if( typeid(src) == typeid(CNode) )
-	{
-
-		CNode* srcNode = dynamic_cast<CNode*>( &src );	
-		for(vector<CNode*>::iterator dstNode = nodes.begin(); dstNode != nodes.end(); ++dstNode)
-		{
-			//skip itself
-			if( (*dstNode)->getID() == srcNode->getID() )
-				continue;
-
-			if( CBasicEntity::withinRange( *srcNode, **dstNode, CGeneralNode::RANGE_TRANS ) )
-			{
-				CMacProtocol::transmitTry();
-
-				if( Bet(CGeneralNode::PROB_TRANS) )
-				{
-					(*dstNode)->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-					receiveFrame(**dstNode, frame, currentTime);
-				}
-			}
-		}
-	}
-
-	/*************************************************** Sink **********************************************************/
-
-	else if( typeid(src) == typeid(CSink) )
-	{
-		CSink* srcSink = dynamic_cast< CSink* >( &src );
-		// Prophet: sink => nodes
-		if( ROUTING_PROTOCOL == _prophet )
-		{
-			for(vector<CNode*>::iterator dstNode = nodes.begin(); dstNode != nodes.end(); ++dstNode)
-			{
-				if( CBasicEntity::withinRange( *srcSink, **dstNode, CGeneralNode::RANGE_TRANS ) )
-				{
-					CSink::encount();
-					CMacProtocol::transmitTry();
-
-					if( (*dstNode)->isAwake() )
-					{
-						CSink::encountActive();
-
-						if( Bet(CGeneralNode::PROB_TRANS) )
-						{
-							(*dstNode)->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-							receiveFrame(**dstNode, frame, currentTime);
-						}
-					}
-				}
-			}
-		}
-
-		// xHAR: sink => MAs
-		else if( ROUTING_PROTOCOL == _xhar )
-		{
-			vector<CMANode*> MAs = CMANode::getMANodes();
-			for(vector<CMANode*>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA)
-			{
-				if( CBasicEntity::withinRange( *srcSink, **iMA, CGeneralNode::RANGE_TRANS ) )
-				{
-					CMacProtocol::transmitTry();
-
-					if( (*iMA)->isAwake() )
-					{
-						if( Bet(CGeneralNode::PROB_TRANS) )
-						{
-							(*iMA)->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-							receiveFrame(**iMA, frame, currentTime);
-						}
-					}
-				}
-			}
-		}
-		
-	}
-
-	/**************************************************** MA **********************************************************/
-
-	// xHAR: ma => nodes
-	else if( typeid(src) == typeid(CMANode) )
-	{
-
-		CMANode* ma = dynamic_cast<CMANode*>( &src );
-		for(vector<CNode*>::iterator dstNode = nodes.begin(); dstNode != nodes.end(); ++dstNode)
-		{
-			if( CBasicEntity::withinRange( *ma, **dstNode, CGeneralNode::RANGE_TRANS ) )
-			{
-				CMANode::encount();
-				CMacProtocol::transmitTry();
-
-				if( (*dstNode)->isAwake() )
-				{
-					if( Bet(CGeneralNode::PROB_TRANS) )
-					{
-						(*dstNode)->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-						receiveFrame(**dstNode, frame, currentTime);
-					}
-				}
-			}
-		}
-
-	}
-	
-	free(frame);
-
-	// TODO: sort by distance with src node ?
-}
-
-bool CMacProtocol::transmitFrame(CGeneralNode& src, CGeneralNode* dst, CFrame* frame, int currentTime)
-{
-	src.consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
-	CMacProtocol::transmitTry();
-
-	if( dst->isAwake() )
-	{
-		if( Bet(CGeneralNode::PROB_TRANS) )
-		{
-			dst->consumeEnergy( frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_RECEIVE);
-			receiveFrame(*dst, frame, currentTime);
-			return true;
-		}
-		else
-			flash_cout << "######  ( Node " << NDigitString( frame->getSrcNode()->getID(), 2) << "  >----  fail  xxxx>  Node " << NDigitString( dst->getID(), 2) << " )     " ;
-	}
-	free(frame);
-	
-	return false;
+	return true;
 }
 
 void CMacProtocol::ChangeNodeNumber(int currentTime)
@@ -282,11 +222,12 @@ bool CMacProtocol::UpdateNodeStatus(int currentTime)
 	for( vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
 	{
 		(*inode)->updateStatus(currentTime);
-		death |= ! ( *inode )->isAlive();
+		death = death || ( ! ( *inode )->isAlive() );
 	}
 	if( death )
-		CNode::ClearDeadNodes();
-
+	{
+		CNode::ClearDeadNodes(currentTime);
+	}
 	return CNode::hasNodes(currentTime);
 }
 
@@ -303,6 +244,8 @@ bool CMacProtocol::Prepare(int currentTime)
 	//Node Number Test:
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
+
+	CSink::getSink()->updateStatus(currentTime);
 
 	if( ! CMacProtocol::UpdateNodeStatus(currentTime) )
 		return false;
@@ -335,7 +278,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	// Prophet: sink => nodes
 	// xHAR: sink => MAs
 	CSink* sink = CSink::getSink();
-	broadcastFrame( *sink, sink->sendRTS(currentTime) , currentTime );
+	transmitFrame( *sink, sink->sendRTS(currentTime) , currentTime );
 
 	vector<CNode*> nodes = CNode::getNodes();
 	vector<CMANode*> MAs = CMANode::getMANodes();
@@ -348,7 +291,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 		{
 			if( (*srcNode)->isDiscovering() )
 			{
-				broadcastFrame( **srcNode, (*srcNode)->sendRTSWithCapacityAndPred(currentTime), currentTime );
+				transmitFrame( **srcNode, (*srcNode)->sendRTSWithCapacityAndPred(currentTime), currentTime );
 				(*srcNode)->finishDiscovering();
 			}
 		}
@@ -362,7 +305,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 		{
 			// skip discover if buffer is full && _selfish is used
 			if( (*srcMA)->getCapacityForward() > 0 )
-				broadcastFrame( **srcMA, (*srcMA)->sendRTSWithCapacity(currentTime) , currentTime );
+				transmitFrame( **srcMA, (*srcMA)->sendRTSWithCapacity(currentTime) , currentTime );
 		}
 		// xHAR: no forward between nodes
 
@@ -391,6 +334,16 @@ void CMacProtocol::PrintInfo(int currentTime)
 	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE  == 0
 		|| currentTime == RUNTIME )
 	{
+		//节点个数
+		ofstream node(PATH_ROOT + PATH_LOG + FILE_NODE, ios::app);
+		if( currentTime == 0 )
+		{
+			node << endl << INFO_LOG << endl;
+			node << INFO_NODE;
+		}
+		node << currentTime << TAB << CNode::getNNodes() << endl;
+		node.close();
+
 		//MA和节点 / 节点间的相遇次数
 		ofstream encounter( PATH_ROOT + PATH_LOG + FILE_ENCOUNTER, ios::app);
 		if(currentTime == 0)

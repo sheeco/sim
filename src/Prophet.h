@@ -43,6 +43,7 @@ public:
 	static vector<CData> bufferData(CNode* node, vector<CData> datas, int time);
 
 	//从下层协议传入的控制/数据包
+	static vector<CPacket*> receivePackets(CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time);
 	// Node <- Sink 
 	static vector<CPacket*> receivePackets(CNode* node, CSink* sink, vector<CPacket*> packets, int time);
 	// Sink <- Node 

@@ -14,9 +14,11 @@ CRoutingProtocol::CRoutingProtocol() {}
 
 int CRoutingProtocol::getTimeWindowTrans()
 {
-	if( TIME_WINDOW_TRANS == 0 )
-		TIME_WINDOW_TRANS = int( ceil( double( WINDOW_TRANS * CNode::SIZE_DATA + CMacProtocol::SIZE_HEADER_MAC ) / double(CNode::SPEED_TRANS) ) );
-	return TIME_WINDOW_TRANS;
+	return 0;
+
+	//if( TIME_WINDOW_TRANS == 0 )
+	//	TIME_WINDOW_TRANS = int( ceil( double( WINDOW_TRANS * CNode::SIZE_DATA + CMacProtocol::SIZE_HEADER_MAC ) / double(CNode::SPEED_TRANS) ) );
+	//return TIME_WINDOW_TRANS;
 }
 
 void CRoutingProtocol::PrintInfo(int currentTime)
