@@ -788,7 +788,7 @@
 - FIX：使用 `strtol()` 和 `strtod()` 代替 `atoi()` 和 `atof()`, 并修复遗漏的字符串解析异常捕获；
 
 　
-###### 2016-06-20  ·  *< 3.6.3 >*
+###### [ 2016-06-20  ·  *< 3.6.3 >* ]( 428975682d95aac39fa558eeba51b96702a91a5e )
 
 - ADD：将广播及单播函数合并，并添加 `CGeneralNode::Overhear(), Occupy()`，以模拟过听和冲突（暂未使用）；
 - ADD：添加 `CNode::calTimeForTrans()` 和 `CMacProtocol::transmitFrame()` 中的静态变量 `frameArrivals`，以模拟时延（暂未使用）；
@@ -796,6 +796,12 @@
 - ADD：`node.log` 及 `death.log`；
 - RFCT：优化路由类 `receivePackets()` 操作的分流；
 - NOTE：所有新增函数仍待调试，部分新增函数被注释掉，提交的源代码版本用于测试；
+
+　
+###### 2016-06-21  ·  *< 3.6.4 >*
+
+- ADD：按照轨迹文件时槽统计节点间的相遇计数，并优化输出；
+- OPT：调整部分日志文件的记录时槽；
 
 
 

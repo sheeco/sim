@@ -228,6 +228,27 @@ bool CMacProtocol::UpdateNodeStatus(int currentTime)
 	{
 		CNode::ClearDeadNodes(currentTime);
 	}
+
+	//按照轨迹文件的时槽统计节点相遇计数
+	if( nodes.empty() )
+		return false;
+
+	nodes = CSortHelper::mergeSort(nodes);
+
+	if( currentTime % CCTrace::SLOT_TRACE == 0 )
+	{
+		for( vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
+		{
+			for( vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode )
+			{
+				if( ( *inode )->getX() + CGeneralNode::RANGE_TRANS < ( *jnode )->getX() )
+					break;
+				if( CBasicEntity::withinRange(**inode, **jnode, CGeneralNode::RANGE_TRANS) )
+					CNode::encount();
+			}
+		}
+	}
+
 	return CNode::hasNodes(currentTime);
 }
 
@@ -331,8 +352,8 @@ void CMacProtocol::PrintInfo(int currentTime)
 		return;
 
 	//节点相遇、数据传输、能耗
-	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE  == 0
-		|| currentTime == RUNTIME )
+	if( currentTime % SLOT_LOG == 0
+	   || currentTime == RUNTIME )
 	{
 		//节点个数
 		ofstream node(PATH_ROOT + PATH_LOG + FILE_NODE, ios::app);
@@ -374,6 +395,11 @@ void CMacProtocol::PrintInfo(int currentTime)
 		sink << endl;
 		sink.close();
 
+	}
+
+	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0
+	   || currentTime == RUNTIME )
+	{
 		//数据传输
 		ofstream transmit( PATH_ROOT + PATH_LOG + FILE_TRANSMIT, ios::app);
 		if(currentTime == 0)
