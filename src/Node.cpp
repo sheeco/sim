@@ -565,7 +565,11 @@ void CNode::updateStatus(int currentTime)
 
 		// 0 时间时初始化
 		if( newTime <= 0 )
+		{
+			newTime = 0;
+			this->time = 0;
 			break;
+		}
 
 		if( timerSleep <= 0
 		   && timerWake <= 0 )
@@ -634,15 +638,17 @@ void CNode::updateTimerWake(int time)
 	timerWake -= incr;
 	sumTimeAwake += incr;
 
+	if( timerCarrierSense > 0 )
+	{
+		timerCarrierSense -= incr;
+	}
 	if( timerWake == 0 )
 		Sleep();
-	else if( timerCarrierSense > 0 )
-	{
-		timerCarrierSense--;
-		//开始邻居节点发现
-		if( timerCarrierSense == 0 )
-			startDiscovering();
-	}
+
+	if( timerCarrierSense == 0 )
+		startDiscovering();
+	if( SLOT_SLEEP <= 0 )
+		startDiscovering();
 }
 
 void CNode::updateTimerSleep(int time)

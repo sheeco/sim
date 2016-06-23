@@ -143,12 +143,17 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentT
 	CGeneralNode* gFromNode = frame->getSrcNode();
 	CGeneralNode* gToNode = frame->getDstNode();
 	
+	//if( gnode.getTime() > currentTime )
+	//	return false;
+
 	//if( gnode.isOccupied() )
 	//	return false;
 
 	int timeTrans = 0;
 	timeTrans = CNode::calTimeForTrans(frame);;
 	//gnode.Occupy(timeTrans);    
+	//if( timeTrans > 0 )
+	//	gnode.updateStatus(currentTime + timeTrans);
 
 	//非广播且目标节点非本节点，即过听
 	if( gToNode != nullptr
@@ -187,7 +192,7 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentT
 	if( ! packetsToSend.empty() )
 	{
 		frameToSend = new CFrame(gnode, *gFromNode, packetsToSend);
-		transmitFrame( gnode, frameToSend, currentTime );			
+		transmitFrame( gnode, frameToSend, currentTime + timeTrans);
 	}
 	else
 	{

@@ -111,6 +111,12 @@
     <ClCompile Include="..\src\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Configuration.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ParseHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Algorithm.h">
@@ -222,6 +228,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\RunHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ParseHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

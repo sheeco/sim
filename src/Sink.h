@@ -68,10 +68,12 @@ public:
 	//	return;
 	//}
 
-	//void updateStatus(int time) override
-	//{
-	//	updateTimerOccupied(time);
-	//}
+	void updateStatus(int time) override
+	{
+		//updateTimerOccupied(time);
+
+		this->time = time;
+	}
 
 	//相遇计数：统计节点和 sink 的相遇
 	static void encount() 

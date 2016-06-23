@@ -804,12 +804,22 @@
 - OPT：调整部分日志文件的记录时槽；
 
 
-###### 2016-06-23  ·  *< 3.6.5 >*
+###### [ 2016-06-23  ·  *< 3.6.5 >* ]( 3d0571d020f95ea034b3af9ccec850095bde165a )
 
 - RFCT：添加 `CRunHelper` 类，将 `Run.cpp` 中的全局函数移入类中；
 - RFCT：将字符串解析的操作提取到 `CRunHelper::ParseInt, Double, Bool, Token()` 函数，并加入异常抛出；
 - RFCT：向 `CConfiguration` 类中添加 `_TYPE_VALUE, _VALUE_CONFIGURATION` 和部分成员变量的定义；
 - MNT：文件 `Run.cpp` 重命名改回 `main.cpp`；
+
+
+###### 2016-06-23  ·  *< 3.6.6 >*
+
+- FIX：修复 `CNode::updateStatus()` 和 `CMacProtocol::receiveFrame()` 中的错误；
+- RFCT：将字符串解析的操作提取成新的 `CParseHelper` 类；
+- RFCT：添加 `CConfiguration::AddConfiguration()`，用于添加命令行配置，仅限友类 `CRunHelper` 访问；
+- [ ] RFCT：重写 `CConfiguration::ParseConfiguration()` 类；
+- [ ] RFCT：补全 `CConfiguration::AddConfiguration()` 的所有调用，重新实现原有的所有命令行配置格式；
+- [ ] MOD：将数据生成率 `CNode::DEFAULT_DATA_RATE` 的定义从“个数/秒”改为“字节/秒”，并修正该变量的所有引用，以适配新的配置格式；
 
 
 
@@ -835,7 +845,6 @@
 - [ ] ADD：如果轨迹文件中的时槽为动态变化的，需要在 `CCTrace::getLocation()` 中增加相应的读取代码；
 - [ ] RFCT：使用条件编译包裹不同协议相关的类内成员和函数的定义和引用；
 - [ ] RFCT：将文件夹操作提取到 `CFileHelper` 类；
-- [ ] MOD：数据生成率的定义应从“个数 / 秒”改为“字节 / 秒”，相应地，该定义的引用也应更改；
 - [ ] ADD：添加传输延迟的耗时计算；
 - [ ] ADD：将每个节点创建为一个线程，用线程编程实现时间同步；
 - [ ] ADD：对节点集合采用全局的 x 坐标排序存储（使用网格以减少二阶遍历？），并将搜索操作提取到全局，减少不必要的重复遍历搜索；
