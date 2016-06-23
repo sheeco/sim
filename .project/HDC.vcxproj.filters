@@ -21,6 +21,7 @@
     <None Include="..\bin\HELP.md">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="..\bin\default.config" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Data.cpp">
@@ -98,13 +99,16 @@
     <ClCompile Include="..\src\Trace.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Run.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Frame.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Packet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\RunHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -217,13 +221,13 @@
     <ClInclude Include="..\src\Packet.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\RunHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HDC.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\bin\default.config" />
   </ItemGroup>
 </Project>

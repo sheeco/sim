@@ -1,40 +1,276 @@
-#pragma once
-
-#include "../.project/version.h"
-#include "Global.h"
-#include "Sink.h"
-#include "MANode.h"
-#include "HDC.h"
+#include "RunHelper.h"
+#include "FileHelper.h"
 #include "Prophet.h"
 #include "HAR.h"
-//#include "Epidemic.h"
-#include "SortHelper.h"
-#include "HotspotSelect.h"
-#include "PostSelect.h"
-#include "Trace.h"
-#include "FileHelper.h"
+#include "HDC.h"
+#include "../.project/version.h"
+
+string CRunHelper::KEYWORD_TRUE = "on";
+string CRunHelper::KEYWORD_FALSE = "off";
 
 
-// TODO: move all func definition into cpp file except for inline func
-// TODO: 检查所有类内静态变量，决定 private / protected
-// TODO: CConfiguration / CConfigureHelper ?
-// TODO: 默认配置参数改为从 XML 读取
-// TODO: MulitCast ?
-
-
-void Help()
+CRunHelper::CRunHelper()
 {
-	//cout << INFO_HELP << endl;
-	//ofstream help(FILE_HELP, ios::out);
-	//help << INFO_HELP;
-	//help.close();
+}
 
+int CRunHelper::ParseInt(const char * str)
+{
+	int rtn = 0;
+	char *endptr = nullptr;
+	rtn = strtol(str, &endptr, 10);
+	if( endptr != nullptr
+	   && *endptr != '\0' )
+		throw str;
+
+	return rtn;
+}
+
+int CRunHelper::ParseInt(string str)
+{
+	return ParseInt(str.c_str());
+}
+
+double CRunHelper::ParseDouble(const char * str)
+{
+	double rtn = 0;
+	char *endptr = nullptr;
+	rtn = strtod(str, &endptr);
+	if( endptr != nullptr
+	   && *endptr != '\0' )
+		throw str;
+
+	return rtn;
+}
+
+double CRunHelper::ParseDouble(string str)
+{
+	return ParseDouble(str.c_str());
+}
+
+bool CRunHelper::ParseBool(const char * str)
+{
+	bool rtn = false;
+	if( strcmp(str, KEYWORD_TRUE.c_str()) == 0 )
+		rtn = true;
+	else if( strcmp(str, KEYWORD_FALSE.c_str()) == 0 )
+		rtn = false;
+	else
+		throw str;
+
+	return rtn;
+}
+
+bool CRunHelper::ParseBool(string str)
+{
+	return ParseBool(str.c_str());
+}
+
+//parse string into tokens
+vector<string> CRunHelper::ParseToken(const char * str, const char * delim)
+{
+	vector<string> tokens;
+	char* pToken = strtok(const_cast<char*>( str ), delim);
+
+	while( pToken != nullptr )
+	{
+		tokens.push_back(string(pToken));
+		pToken = strtok(nullptr, delim);
+	}
+
+	if( tokens.empty() )
+		throw str;
+
+	return tokens;
+}
+
+vector<string> CRunHelper::ParseToken(string str, string delim)
+{
+	return ParseToken(str.c_str(), delim.c_str());
+}
+
+void CRunHelper::InitLogPath()
+{
+	// Generate timestamp & output path
+
+	// Create root path (../test/) if doesn't exist
+	if( access(PATH_ROOT.c_str(), 00) != 0 )
+		_mkdir(PATH_ROOT.c_str());
+
+	time_t seconds;  //秒时间  
+	char temp[65] = { '\0' };
+	seconds = time(nullptr); //获取目前秒时间  
+	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
+	TIMESTAMP = string(temp);
+	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
+	string timestring;
+	timestring = string(temp);
+	INFO_LOG = "@" + TIMESTAMP + TAB;
+	PATH_LOG = "." + timestring + "/";
+
+	// Create log path
+	if( access(( PATH_ROOT + PATH_LOG ).c_str(), 00) != 0 )
+		_mkdir(( PATH_ROOT + PATH_LOG ).c_str());
+
+	// Hide folder
+	LPWSTR wstr = CString(( PATH_ROOT + PATH_LOG ).c_str()).AllocSysString();
+	int attr = GetFileAttributes(wstr);
+	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
+	{
+		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
+	}
+
+}
+
+void CRunHelper::Help()
+{
 	ifstream help(PATH_RUN + FILE_HELP, ios::in);
 	cout << help.rdbuf();
 	help.close();
 }
 
-bool ParseConfiguration(int argc, char* argv[], string description)
+void CRunHelper::InitConfiguration()
+{
+	SLOT = 1;
+	SLOT_LOG = 100;
+
+	/************************************** Default Config **************************************/
+
+	CGeneralNode::RANGE_TRANS = 100;
+	CNode::SPEED_TRANS = 2500;
+	CGeneralNode::PROB_TRANS = 1.0;
+
+	CSink::SINK_ID = 0; //0为sink节点预留，传感器节点ID从1开始
+	CSink::SINK_X = 0;
+	CSink::SINK_Y = 0;
+	CSink::CAPACITY_BUFFER = 999999999;  //无限制
+
+	CNode::INIT_NUM_NODE = 0;
+
+	//CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
+	CNode::DEFAULT_DATA_RATE = 0;
+	CNode::SIZE_DATA = 0;
+	CGeneralNode::SIZE_CTRL = 0;
+	CMacProtocol::SIZE_HEADER_MAC = 8;  //Mac Header Size
+
+	CNode::CAPACITY_BUFFER = 0;
+	CNode::CAPACITY_ENERGY = 0;
+	CNode::LIFETIME_SPOKEN_CACHE = 0;
+	CNode::MODE_RECEIVE = CGeneralNode::_loose;
+	CNode::MODE_SEND = CGeneralNode::_dump;
+	CNode::MODE_QUEUE = CGeneralNode::_fifo;
+
+	CNode::SLOT_TOTAL = 0;
+	CNode::DEFAULT_DUTY_CYCLE = 0;
+	CNode::HOTSPOT_DUTY_CYCLE = 0;
+	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;
+	CMacProtocol::SYNC_DC = true;
+
+	/********** Dynamic Node Number **********/
+	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
+	CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
+	CNode::INIT_NUM_NODE = 0;
+	CNode::MIN_NUM_NODE = 0;
+	CNode::MAX_NUM_NODE = 0;
+	/********** ------------------- **********/
+
+	/*********************************  HAR  *******************************/
+
+	CMANode::START_COUNT_ID = 100;  //ID的起始值，用于和传感器节点相区分
+	CMANode::SPEED = 30;
+	CMANode::CAPACITY_BUFFER = 100;
+	//CMANode::MODE_RECEIVE = CGeneralNode::_selfish;
+	CMANode::MODE_RECEIVE = CGeneralNode::_loose;
+
+	HAR::CO_HOTSPOT_HEAT_A1 = 1;
+	HAR::CO_HOTSPOT_HEAT_A2 = 30;
+
+	/******************************  Epidemic  *****************************/
+
+	CData::MAX_HOP = 0;
+	//	CData::MAX_TTL = 0;
+
+	//	CEpidemic::MAX_DATA_RELAY = -1;
+
+	/******************************  Prophet  ******************************/
+
+	CProphet::INIT_PRED = 0.70;  //参考值 0.75
+	CProphet::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
+	CProphet::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
+	CProphet::TRANS_STRICT_BY_PRED = true;
+	CProphet::WINDOW_TRANS = 10;
+
+
+	/**************************  Hotspot Select  ***************************/
+
+	CHotspotSelect::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
+	CHotspotSelect::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
+	CHotspotSelect::STARTTIME_HOSPOT_SELECT = CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //no MA node at first
+	CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
+
+	CPostSelect::ALPHA = 0.03;  //ratio for post selection
+	HAR::BETA = 0.0025;  //ratio for true hotspot
+						 //HAR::GAMMA = 0.5;  //ratio for HotspotsAboveAverage
+
+						 /******************************** IHS **********************************/
+
+	CHotspotSelect::LAMBDA = 0;
+	CHotspotSelect::LIFETIME_POSITION = 3600;
+
+	/****************************** merge-HS *******************************/
+
+	CHotspotSelect::RATIO_MERGE_HOTSPOT = 1.0;
+	CHotspotSelect::RATIO_NEW_HOTSPOT = 1.0;
+	CHotspotSelect::RATIO_OLD_HOTSPOT = 1.0;
+	HAR::MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
+	HAR::TEST_BALANCED_RATIO = false;
+
+	//HAR::TEST_LEARN = false;
+	//CPosition::CO_POSITION_DECAY = 1.0;
+	//HAR::MIN_POSITION_WEIGHT = 0;
+
+
+	/************************************** Necessary Config **************************************/
+
+	// TODO: should be read from .trace file
+	CCTrace::SLOT_TRACE = 30;
+	DATATIME = 15000;
+	RUNTIME = 15000;
+
+	/*********** Depend on DATASET ***********/
+	CCTrace::CONTINUOUS_TRACE = true;
+	DATASET = "KAIST";
+	//CGeneralNode::RANGE_TRANS = 250;
+	CSink::SINK_X = -200;  //for KAIST
+	CSink::SINK_Y = 200;
+	CNode::INIT_NUM_NODE = 29;
+	CNode::MIN_NUM_NODE = int(CNode::INIT_NUM_NODE * 1.4);
+	CNode::MAX_NUM_NODE = int(CNode::INIT_NUM_NODE * 0.6);
+	/*********** ----------------- ***********/
+
+	/***************************  Node & Data  ***************************/
+
+	CGeneralNode::PROB_TRANS = 1.0;
+
+	CNode::DEFAULT_DATA_RATE = 1.0 / 30.0;
+	CNode::CAPACITY_BUFFER = 0;
+	CNode::CAPACITY_ENERGY = 0;
+	CNode::LIFETIME_SPOKEN_CACHE = 0;
+
+	CNode::SIZE_DATA = 200;  //Up to 250 Bytes
+	CGeneralNode::SIZE_CTRL = 10;
+
+	/********************************  DC  ********************************/
+
+	CNode::SLOT_TOTAL = CCTrace::SLOT_TRACE;
+	CNode::DEFAULT_DUTY_CYCLE = 1.0;
+	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;
+
+
+	ParseConfiguration(PATH_RUN + FILE_DEFAULT_CONFIG);
+
+}
+
+bool CRunHelper::ParseConfiguration(int argc, char* argv[], string description)
 {
 	if( argc <= 0 )
 	{
@@ -53,7 +289,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 	for( int i = 0; i < argc; ++i )
 	{
 		if( argv[i][0] == '-'
-		    && isalpha( argv[i][1] ) )
+		   && isalpha(argv[i][1]) )
 			config_log << endl;
 		config_log << argv[i] << " ";
 	}
@@ -192,7 +428,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				DATATIME = strtol( argv[iField + 1], &endptr, 10);
+				DATATIME = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -202,7 +438,7 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				RUNTIME = strtol( argv[iField + 1], &endptr, 10);
+				RUNTIME = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -221,14 +457,14 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::INIT_NUM_NODE = strtol( argv[iField + 1], &endptr, 10);
+				CNode::INIT_NUM_NODE = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-log-slot" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				SLOT_LOG = strtol( argv[iField + 1], &endptr, 10);
+				SLOT_LOG = strtol(argv[iField + 1], &endptr, 10);
 				//				//观测周期不应小于工作周期
 				//				if( SLOT_LOG < CNode::SLOT_TOTAL )
 				//					SLOT_LOG = CNode::SLOT_TOTAL;
@@ -239,28 +475,28 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CGeneralNode::RANGE_TRANS = strtol( argv[iField + 1], &endptr, 10);
+				CGeneralNode::RANGE_TRANS = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-trans-speed" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::SPEED_TRANS = strtol( argv[iField + 1], &endptr, 10);
+				CNode::SPEED_TRANS = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-lifetime" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CHotspotSelect::LIFETIME_POSITION = strtol( argv[iField + 1], &endptr, 10);
+				CHotspotSelect::LIFETIME_POSITION = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-cycle" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::SLOT_TOTAL = strtol( argv[iField + 1], &endptr, 10);
+				CNode::SLOT_TOTAL = strtol(argv[iField + 1], &endptr, 10);
 
 				//观测周期不应小于工作周期
 				if( SLOT_LOG < CNode::SLOT_TOTAL )
@@ -279,21 +515,21 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::DEFAULT_DUTY_CYCLE = strtod( argv[iField + 1], &endptr);
+				CNode::DEFAULT_DUTY_CYCLE = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-dc-hotspot" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::HOTSPOT_DUTY_CYCLE = strtod( argv[iField + 1], &endptr);
+				CNode::HOTSPOT_DUTY_CYCLE = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-hop" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CData::MAX_HOP = strtol( argv[iField + 1], &endptr, 10);
+				CData::MAX_HOP = strtol(argv[iField + 1], &endptr, 10);
 				//				if( ( CData::MAX_HOP > 0 )
 				//					&& ( CData::MAX_TTL > 0 ) )
 				//				{
@@ -324,35 +560,35 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::CAPACITY_BUFFER = strtol( argv[iField + 1], &endptr, 10);
+				CNode::CAPACITY_BUFFER = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-buffer-ma" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CMANode::CAPACITY_BUFFER = strtol( argv[iField + 1], &endptr, 10);
+				CMANode::CAPACITY_BUFFER = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-data-rate" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::DEFAULT_DATA_RATE = double(1) / strtol( argv[iField + 1], &endptr, 10);
+				CNode::DEFAULT_DATA_RATE = double(1) / strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-data-size" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::SIZE_DATA = strtol( argv[iField + 1], &endptr, 10);
+				CNode::SIZE_DATA = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-energy" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::CAPACITY_ENERGY = 1000 * strtol( argv[iField + 1], &endptr, 10);
+				CNode::CAPACITY_ENERGY = 1000 * strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 
 				if( CNode::finiteEnergy() )
@@ -368,14 +604,14 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CNode::LIFETIME_SPOKEN_CACHE = strtol( argv[iField + 1], &endptr, 10);
+				CNode::LIFETIME_SPOKEN_CACHE = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 			else if( field == "-trans-window" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CRoutingProtocol::WINDOW_TRANS = strtol( argv[iField + 1], &endptr, 10);
+				CRoutingProtocol::WINDOW_TRANS = strtol(argv[iField + 1], &endptr, 10);
 				iField += 2;
 			}
 
@@ -385,56 +621,56 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CPostSelect::ALPHA = strtod( argv[iField + 1], &endptr);
+				CPostSelect::ALPHA = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-beta" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				HAR::BETA = strtod( argv[iField + 1], &endptr);
+				HAR::BETA = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-lambda" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CHotspotSelect::LAMBDA = strtod( argv[iField + 1], &endptr);
+				CHotspotSelect::LAMBDA = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-merge" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CHotspotSelect::RATIO_MERGE_HOTSPOT = strtod( argv[iField + 1], &endptr);
+				CHotspotSelect::RATIO_MERGE_HOTSPOT = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-old" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CHotspotSelect::RATIO_OLD_HOTSPOT = strtod( argv[iField + 1], &endptr);
+				CHotspotSelect::RATIO_OLD_HOTSPOT = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-trans-prob" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CGeneralNode::PROB_TRANS = strtod( argv[iField + 1], &endptr);
+				CGeneralNode::PROB_TRANS = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-pred-init" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CProphet::INIT_PRED = strtod( argv[iField + 1], &endptr);
+				CProphet::INIT_PRED = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			else if( field == "-pred-decay" )
 			{
 				if( ( iField + 1 ) >= argc )
 					throw field;
-				CProphet::RATIO_PRED_DECAY = strtod( argv[iField + 1], &endptr);
+				CProphet::RATIO_PRED_DECAY = strtod(argv[iField + 1], &endptr);
 				iField += 2;
 			}
 			//实际上对WSN而言不会使用到
@@ -475,16 +711,16 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			{
 				if( ( iField + 2 ) >= argc )
 					throw field;
-				CSink::SINK_X = strtod( argv[iField + 1], &endptr);
-				CSink::SINK_Y = atof(argv[iField + 2]);
+				CSink::SINK_X = strtod(argv[iField + 1], &endptr);
+				CSink::SINK_Y = strtod(argv[iField + 2], &endptr);
 				iField += 3;
 			}
 			else if( field == "-heat" )
 			{
 				if( ( iField + 2 ) >= argc )
 					throw field;
-				HAR::CO_HOTSPOT_HEAT_A1 = strtod( argv[iField + 1], &endptr);
-				HAR::CO_HOTSPOT_HEAT_A2 = atof(argv[iField + 2]);
+				HAR::CO_HOTSPOT_HEAT_A1 = strtod(argv[iField + 1], &endptr);
+				HAR::CO_HOTSPOT_HEAT_A2 = strtod(argv[iField + 2], &endptr);
 				iField += 3;
 			}
 
@@ -499,8 +735,8 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 			else
 				throw argv[iField];
 
-			if( endptr != nullptr 
-			    && *endptr != '\0' )
+			if( endptr != nullptr
+			   && *endptr != '\0' )
 			{
 				throw field;
 			}
@@ -545,7 +781,12 @@ bool ParseConfiguration(int argc, char* argv[], string description)
 
 }
 
-bool ParseConfiguration(string filename)
+bool CRunHelper::ParseConfiguration(vector<string> args, string description)
+{
+	return false;
+}
+
+bool CRunHelper::ParseConfiguration(string filename)
 {
 	if( !CFileHelper::IfExists(filename) )
 	{
@@ -561,28 +802,14 @@ bool ParseConfiguration(string filename)
 	string config(( std::istreambuf_iterator<char>(file) ), std::istreambuf_iterator<char>());
 
 	//parse string into tokens
-	char* delim = " \t\n";
-	vector<char*> args; 
-	char* pToken = strtok( const_cast<char*>( config.c_str() ), delim);
-	
-	while( pToken != nullptr )
+	string delim = " \t\n";
+	vector<string> args;
+	bool rtn = false;
+	try
 	{
-		args.push_back(pToken);
-		pToken = strtok(nullptr, delim);
+		args = ParseToken(config, delim);
 	}
-
-	if( ! args.empty() )
-	{
-		int argc = args.size();
-		char** argv = (char**)(new char*[argc]);
-		for(int i = 0; i < argc; ++i)
-			argv[i] = args[i];
-		
-		bool rtn = ParseConfiguration(argc, argv, filename);
-		delete argv;
-		return rtn;
-	}
-	else
+	catch(const char * str )
 	{
 		stringstream error;
 		error << "Error @ ParseConfiguration() : Cannot find configuration in " << filename << "!";
@@ -591,197 +818,26 @@ bool ParseConfiguration(string filename)
 		Exit(ENOEXEC, error.str());
 		return false;
 	}
-}
+		
+	rtn = ParseConfiguration(args, filename);
 
-void InitConfiguration()
-{
-	SLOT = 1;
-	SLOT_LOG = 100;
-
-	/************************************** Default Config **************************************/
-
-	CGeneralNode::RANGE_TRANS = 100;
-	CNode::SPEED_TRANS = 2500;
-	CGeneralNode::PROB_TRANS = 1.0;
-
-	CSink::SINK_ID = 0; //0为sink节点预留，传感器节点ID从1开始
-	CSink::SINK_X = 0;
-	CSink::SINK_Y = 0;
-	CSink::CAPACITY_BUFFER = 999999999;  //无限制
-
-	CNode::INIT_NUM_NODE = 0;
-
-	//CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
-	CNode::DEFAULT_DATA_RATE = 0;
-	CNode::SIZE_DATA = 0;
-	CGeneralNode::SIZE_CTRL = 0;
-	CMacProtocol::SIZE_HEADER_MAC = 8;  //Mac Header Size
-
-	CNode::CAPACITY_BUFFER = 0;
-	CNode::CAPACITY_ENERGY = 0;
-	CNode::LIFETIME_SPOKEN_CACHE = 0;
-	CNode::MODE_RECEIVE = CGeneralNode::_loose;
-	CNode::MODE_SEND = CGeneralNode::_dump;
-	CNode::MODE_QUEUE = CGeneralNode::_fifo;
-
-	CNode::SLOT_TOTAL = 0;
-	CNode::DEFAULT_DUTY_CYCLE = 0;
-	CNode::HOTSPOT_DUTY_CYCLE = 0; 
-	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;
-	CMacProtocol::SYNC_DC = true;
-
-	/********** Dynamic Node Number **********/
-	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
-	CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
-	CNode::INIT_NUM_NODE = 0;
-	CNode::MIN_NUM_NODE = 0;
-	CNode::MAX_NUM_NODE = 0;
-	/********** ------------------- **********/
-
-	/*********************************  HAR  *******************************/
-
-	CMANode::START_COUNT_ID = 100;  //ID的起始值，用于和传感器节点相区分
-	CMANode::SPEED = 30;
-	CMANode::CAPACITY_BUFFER = 100;
-	//CMANode::MODE_RECEIVE = CGeneralNode::_selfish;
-	CMANode::MODE_RECEIVE = CGeneralNode::_loose;
-
-	HAR::CO_HOTSPOT_HEAT_A1 = 1;
-	HAR::CO_HOTSPOT_HEAT_A2 = 30;
-
-	/******************************  Epidemic  *****************************/
-
-	CData::MAX_HOP = 0;
-//	CData::MAX_TTL = 0;
-
-//	CEpidemic::MAX_DATA_RELAY = -1;
-
-	/******************************  Prophet  ******************************/
-
-	CProphet::INIT_PRED = 0.70;  //参考值 0.75
-	CProphet::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
-	CProphet::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
-	CProphet::TRANS_STRICT_BY_PRED = true;
-	CProphet::WINDOW_TRANS = 10;
-
-
-	/**************************  Hotspot Select  ***************************/
-
-	CHotspotSelect::SLOT_POSITION_UPDATE = 100;  //地理信息收集的slot
-	CHotspotSelect::SLOT_HOTSPOT_UPDATE = 900;  //更新热点和分类的slot
-	CHotspotSelect::STARTTIME_HOSPOT_SELECT = CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //no MA node at first
-	CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
-
-	CPostSelect::ALPHA = 0.03;  //ratio for post selection
-	HAR::BETA = 0.0025;  //ratio for true hotspot
-	//HAR::GAMMA = 0.5;  //ratio for HotspotsAboveAverage
-
-	/******************************** IHS **********************************/
-
-	CHotspotSelect::LAMBDA = 0;
-	CHotspotSelect::LIFETIME_POSITION = 3600;
-
-	/****************************** merge-HS *******************************/
-
-	CHotspotSelect::RATIO_MERGE_HOTSPOT = 1.0;
-	CHotspotSelect::RATIO_NEW_HOTSPOT = 1.0;
-	CHotspotSelect::RATIO_OLD_HOTSPOT = 1.0;
-	HAR::MIN_WAITING_TIME = 0;  //add minimum waiting time to each hotspot
-	HAR::TEST_BALANCED_RATIO = false;
-
-	//HAR::TEST_LEARN = false;
-	//CPosition::CO_POSITION_DECAY = 1.0;
-	//HAR::MIN_POSITION_WEIGHT = 0;
-
-
-	/************************************** Necessary Config **************************************/
-
-	// TODO: should be read from .trace file
-	CCTrace::SLOT_TRACE = 30;
-	DATATIME = 15000;
-	RUNTIME = 15000;
-
-	/*********** Depend on DATASET ***********/
-	CCTrace::CONTINUOUS_TRACE = true;
-	DATASET = "KAIST";
-	//CGeneralNode::RANGE_TRANS = 250;
-	CSink::SINK_X = -200;  //for KAIST
-	CSink::SINK_Y = 200;
-	CNode::INIT_NUM_NODE = 29;
-	CNode::MIN_NUM_NODE = int( CNode::INIT_NUM_NODE * 1.4 );
-	CNode::MAX_NUM_NODE = int( CNode::INIT_NUM_NODE * 0.6 );
-	/*********** ----------------- ***********/
-
-	/***************************  Node & Data  ***************************/
-
-	CGeneralNode::PROB_TRANS = 1.0;
-
-	CNode::DEFAULT_DATA_RATE = 1.0 / 30.0;
-	CNode::CAPACITY_BUFFER = 0;
-	CNode::CAPACITY_ENERGY = 0;
-	CNode::LIFETIME_SPOKEN_CACHE = 0;
-
-	CNode::SIZE_DATA = 200;  //Up to 250 Bytes
-	CGeneralNode::SIZE_CTRL = 10;
-
-	/********************************  DC  ********************************/
-
-	CNode::SLOT_TOTAL = CCTrace::SLOT_TRACE;
-	CNode::DEFAULT_DUTY_CYCLE = 1.0;
-	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0; 
-
-
-	ParseConfiguration(PATH_RUN + FILE_DEFAULT_CONFIG);
-
-}
-
-void InitLogPath()
-{
-	// Generate timestamp & output path
-
-	// Create root path (../test/) if doesn't exist
-	if( access(PATH_ROOT.c_str(), 00) != 0 )
-		_mkdir(PATH_ROOT.c_str());
-
-	time_t seconds;  //秒时间  
-	char temp[65] = { '\0' };
-	seconds = time(nullptr); //获取目前秒时间  
-	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
-	TIMESTAMP = string(temp);
-	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
-	string timestring;
-	timestring = string(temp);
-	INFO_LOG = "@" + TIMESTAMP + TAB;
-	PATH_LOG = "." + timestring + "/";
-
-	// Create log path
-	if( access(( PATH_ROOT + PATH_LOG ).c_str(), 00) != 0 )
-		_mkdir(( PATH_ROOT + PATH_LOG ).c_str());
-
-	// Hide folder
-	LPWSTR wstr = CString(( PATH_ROOT + PATH_LOG ).c_str()).AllocSysString();
-	int attr = GetFileAttributes(wstr);
-	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
-	{
-		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
-	}
-
+	return rtn;
 }
 
 // TODO: print all significant parameters
-void PrintConfiguration()
+void CRunHelper::PrintConfiguration()
 {
-	ofstream parameters( PATH_ROOT + PATH_LOG + FILE_PARAMETES, ios::app);
+	ofstream parameters(PATH_ROOT + PATH_LOG + FILE_PARAMETES, ios::app);
 	parameters << endl << endl << INFO_LOG << endl << endl;
 
 	parameters << "CYCLE" << TAB << CNode::SLOT_TOTAL << endl;
-	parameters << "DEFAULT_DC" << TAB << CNode::DEFAULT_DUTY_CYCLE<< endl;
+	parameters << "DEFAULT_DC" << TAB << CNode::DEFAULT_DUTY_CYCLE << endl;
 
 	if( CData::useHOP() )
 		parameters << "HOP" << TAB << CData::MAX_HOP << endl;
-//	else
-//		parameters << "TTL" << TAB << CData::MAX_TTL << endl;
-	parameters << "DATA_RATE" << TAB << "1 / " << int( 1 / CNode::DEFAULT_DATA_RATE ) << endl;
+	//	else
+	//		parameters << "TTL" << TAB << CData::MAX_TTL << endl;
+	parameters << "DATA_RATE" << TAB << "1 / " << int(1 / CNode::DEFAULT_DATA_RATE) << endl;
 	parameters << "DATA_SIZE" << TAB << CNode::SIZE_DATA << endl;
 	parameters << "BUFFER" << TAB << CNode::CAPACITY_BUFFER << endl;
 	parameters << "ENERGY" << TAB << CNode::CAPACITY_ENERGY << endl;
@@ -793,23 +849,23 @@ void PrintConfiguration()
 
 
 	//输出文件为空时，输出文件头
-	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
+	ofstream final(PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
 	final.seekp(0, ios::end);
-	if( ! final.tellp() )
-		final << INFO_FINAL ;
+	if( !final.tellp() )
+		final << INFO_FINAL;
 
-	final << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_TRANS << TAB << CNode::CAPACITY_BUFFER << TAB << CNode::CAPACITY_ENERGY << TAB ;
+	final << DATATIME << TAB << RUNTIME << TAB << CGeneralNode::PROB_TRANS << TAB << CNode::CAPACITY_BUFFER << TAB << CNode::CAPACITY_ENERGY << TAB;
 	if( CData::useHOP() )
-		final << CData::MAX_HOP << TAB ;
+		final << CData::MAX_HOP << TAB;
 
-	final << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB ;
+	final << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB;
 
-//	if( ROUTING_PROTOCOL == _epidemic )
-//	{
-//		INFO_LOG += "$Epidemic ";
-//		parameters << "$Epidemic " << endl << endl;
-//	}
-//	else 
+	//	if( ROUTING_PROTOCOL == _epidemic )
+	//	{
+	//		INFO_LOG += "$Epidemic ";
+	//		parameters << "$Epidemic " << endl << endl;
+	//	}
+	//	else 
 
 	if( ROUTING_PROTOCOL == _prophet )
 	{
@@ -825,7 +881,7 @@ void PrintConfiguration()
 		INFO_LOG += "$HDC ";
 		parameters << endl << "$HDC " << endl << endl;
 		parameters << "HOTSPOT_DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
-		final << CNode::HOTSPOT_DUTY_CYCLE << TAB ;
+		final << CNode::HOTSPOT_DUTY_CYCLE << TAB;
 	}
 
 	if( HOTSPOT_SELECT != _none )
@@ -836,7 +892,7 @@ void PrintConfiguration()
 			parameters << endl << "$iHS " << endl << endl;
 			parameters << "POSITION_LIFETIME" << TAB << CHotspotSelect::LIFETIME_POSITION << endl << endl;
 
-			final << CHotspotSelect::LIFETIME_POSITION << TAB ;
+			final << CHotspotSelect::LIFETIME_POSITION << TAB;
 		}
 
 		else if( HOTSPOT_SELECT == _merge )
@@ -847,7 +903,7 @@ void PrintConfiguration()
 			parameters << "RATIO_NEW" << TAB << CHotspotSelect::RATIO_NEW_HOTSPOT << endl;
 			parameters << "RATIO_OLD" << TAB << CHotspotSelect::RATIO_OLD_HOTSPOT << endl;
 
-			final << CHotspotSelect::RATIO_MERGE_HOTSPOT << TAB << CHotspotSelect::RATIO_OLD_HOTSPOT << TAB ;
+			final << CHotspotSelect::RATIO_MERGE_HOTSPOT << TAB << CHotspotSelect::RATIO_OLD_HOTSPOT << TAB;
 
 		}
 
@@ -871,7 +927,7 @@ void PrintConfiguration()
 		//final << HAR::BETA << TAB;
 	}
 
-	if( CMacProtocol::TEST_DYNAMIC_NUM_NODE)
+	if( CMacProtocol::TEST_DYNAMIC_NUM_NODE )
 	{
 		INFO_LOG += "#DYNAMIC_NODE_NUMBER";
 		parameters << endl << "#DYNAMIC_NODE_NUMBER" << endl;
@@ -898,7 +954,7 @@ void PrintConfiguration()
 
 }
 
-bool RunSimulation()
+bool CRunHelper::RunSimulation()
 {
 	int currentTime = 0;
 	while( currentTime <= RUNTIME )
@@ -908,15 +964,15 @@ bool RunSimulation()
 		switch( ROUTING_PROTOCOL )
 		{
 			case _prophet:
-				dead = ! CProphet::Operate(currentTime);
+				dead = !CProphet::Operate(currentTime);
 				break;
 
-//			case _epidemic:
-//				dead = ! CEpidemic::Operate(currentTime);
-//				break;
+				//			case _epidemic:
+				//				dead = ! CEpidemic::Operate(currentTime);
+				//				break;
 
 			case _xhar:
-				dead = ! HAR::Operate(currentTime);
+				dead = !HAR::Operate(currentTime);
 				break;
 
 			default:
@@ -937,9 +993,9 @@ bool RunSimulation()
 			CProphet::PrintFinal(currentTime);
 			break;
 
-//		case _epidemic:
-//			CEpidemic::PrintFinal(currentTime);
-//			break;
+			//		case _epidemic:
+			//			CEpidemic::PrintFinal(currentTime);
+			//			break;
 
 		case _xhar:
 			HAR::PrintFinal(currentTime);
@@ -952,7 +1008,7 @@ bool RunSimulation()
 	return true;
 }
 
-bool Run(int argc, char* argv[])
+bool CRunHelper::Run(int argc, char* argv[])
 {
 	// TODO: release 版本中应改为 while(1) 循环
 
@@ -966,7 +1022,7 @@ bool Run(int argc, char* argv[])
 
 	/********************************** 命令行参数解析 ************************************/
 
-	ParseConfiguration( argc - 1 , ++argv, "Command Line Configuration" );
+	ParseConfiguration(argc - 1, ++argv, "Command Line Configuration");
 
 	/*************************** 将 log 信息和参数信息写入文件 ******************************/
 
@@ -983,8 +1039,3 @@ bool Run(int argc, char* argv[])
 	return true;
 }
 
-
-int main(int argc, char* argv[])
-{
-	return Run(argc, argv);
-}

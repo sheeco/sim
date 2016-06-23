@@ -797,11 +797,19 @@
 - RFCT：优化路由类 `receivePackets()` 操作的分流；
 - NOTE：所有新增函数仍待调试，部分新增函数被注释掉，提交的源代码版本用于测试；
 
-　
-###### 2016-06-21  ·  *< 3.6.4 >*
+
+###### [ 2016-06-21  ·  *< 3.6.4 >* ]( ed6a20f1e5dcf7d7582639c4dd1e44d75b156f81 )
 
 - ADD：按照轨迹文件时槽统计节点间的相遇计数，并优化输出；
 - OPT：调整部分日志文件的记录时槽；
+
+
+###### 2016-06-23  ·  *< 3.6.5 >*
+
+- RFCT：添加 `CRunHelper` 类，将 `Run.cpp` 中的全局函数移入类中；
+- RFCT：将字符串解析的操作提取到 `CRunHelper::ParseInt, Double, Bool, Token()` 函数，并加入异常抛出；
+- RFCT：向 `CConfiguration` 类中添加 `_TYPE_VALUE, _VALUE_CONFIGURATION` 和部分成员变量的定义；
+- MNT：文件 `Run.cpp` 重命名改回 `main.cpp`；
 
 
 

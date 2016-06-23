@@ -4,6 +4,8 @@
 #define __HAR_H__
 
 #include "Hotspot.h"
+#include "HotspotSelect.h"
+#include "PostSelect.h"
 #include "MANode.h"
 #include "Route.h"
 #include "RoutingProtocol.h"
