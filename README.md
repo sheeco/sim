@@ -61,7 +61,7 @@
 
     Global.h & .cpp
     
-    Run.cpp
+    main.cpp
     
     ---
     
@@ -131,7 +131,9 @@
     
 		|-- SortHelper.h & .cpp
     
-	Configuration.h
+		|-- ParseHelper.h & .cpp
+    
+	Configuration.h & .cpp
         
 
 
@@ -812,14 +814,20 @@
 - MNT：文件 `Run.cpp` 重命名改回 `main.cpp`；
 
 
-###### 2016-06-23  ·  *< 3.6.6 >*
+###### [ 2016-06-23  ·  *< 3.6.6 >* ]( 1de0e0a1e534164313f6319509ebef709abc33e8 )
 
 - FIX：修复 `CNode::updateStatus()` 和 `CMacProtocol::receiveFrame()` 中的错误；
 - RFCT：将字符串解析的操作提取成新的 `CParseHelper` 类；
 - RFCT：添加 `CConfiguration::AddConfiguration()`，用于添加命令行配置，仅限友类 `CRunHelper` 访问；
-- [ ] RFCT：重写 `CConfiguration::ParseConfiguration()` 类；
-- [ ] RFCT：补全 `CConfiguration::AddConfiguration()` 的所有调用，重新实现原有的所有命令行配置格式；
-- [ ] MOD：将数据生成率 `CNode::DEFAULT_DATA_RATE` 的定义从“个数/秒”改为“字节/秒”，并修正该变量的所有引用，以适配新的配置格式；
+
+
+###### 2016-06-26  ·  *< 3.6.7 >*
+
+- RFCT：重写 `CConfiguration::ParseConfiguration()` 函数；
+- RFCT：补全 `CConfiguration::AddConfiguration()` 的所有调用，重新实现原有的所有命令行配置格式；
+- MOD：将数据生成率 `CNode::DEFAULT_DATA_RATE` 的定义从“个数/秒”改为“字节/秒”，并修正该变量的所有引用，以适配新的配置格式；
+- [ ] RFCT：将所有的错误提示及对 `Exit()` 的直接调用改为使用 `throw` 抛出异常；
+- [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
 
 
 

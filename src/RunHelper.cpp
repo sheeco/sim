@@ -45,6 +45,7 @@ void CRunHelper::Help()
 	ifstream help(PATH_RUN + FILE_HELP, ios::in);
 	cout << help.rdbuf();
 	help.close();
+	_PAUSE_;
 }
 
 void CRunHelper::InitConfiguration()
@@ -170,7 +171,7 @@ void CRunHelper::InitConfiguration()
 
 	CGeneralNode::PROB_TRANS = 1.0;
 
-	CNode::DEFAULT_DATA_RATE = 1.0 / 30.0;
+	CNode::DEFAULT_DATA_RATE = 6.8;  // 200 Byte / 30 s
 	CNode::CAPACITY_BUFFER = 0;
 	CNode::CAPACITY_ENERGY = 0;
 	CNode::LIFETIME_SPOKEN_CACHE = 0;
@@ -185,563 +186,86 @@ void CRunHelper::InitConfiguration()
 	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;
 
 
+	/*********************************************  添加命令格式定义  *********************************************/
+
+	//不带参数的命令
+	CConfiguration::AddConfiguration("--hdc", &MAC_PROTOCOL, _hdc, "");
+	CConfiguration::AddConfiguration("--prophet", &ROUTING_PROTOCOL, _prophet, "");
+	CConfiguration::AddConfiguration("--har", &ROUTING_PROTOCOL, _xhar, "");
+	CConfiguration::AddConfiguration("--hs", &HOTSPOT_SELECT, _original, "");
+	CConfiguration::AddConfiguration("--ihs", &HOTSPOT_SELECT, _improved, "");
+	CConfiguration::AddConfiguration("--mhs", &HOTSPOT_SELECT, _merge, "");
+
+	//bool 参数
+	CConfiguration::AddConfiguration("-continuous-trace", CConfiguration::_bool, &CCTrace::CONTINUOUS_TRACE, "");
+	CConfiguration::AddConfiguration("-dc-sync", CConfiguration::_bool, &CMacProtocol::SYNC_DC, "");
+	CConfiguration::AddConfiguration("-dynamic-node-number", CConfiguration::_bool, &CMacProtocol::TEST_DYNAMIC_NUM_NODE, "");
+	CConfiguration::AddConfiguration("-pred-strict", CConfiguration::_bool, &CProphet::TRANS_STRICT_BY_PRED, "");
+	CConfiguration::AddConfiguration("-hotspot-similarity", CConfiguration::_bool, &CHotspotSelect::TEST_HOTSPOT_SIMILARITY, "");
+	CConfiguration::AddConfiguration("-balanced-ratio", CConfiguration::_bool, &HAR::TEST_BALANCED_RATIO, "");
+	CConfiguration::AddConfiguration("-time-data", CConfiguration::_int, &DATATIME, "");
+	CConfiguration::AddConfiguration("-time-run", CConfiguration::_int, &RUNTIME, "");
+	CConfiguration::AddConfiguration("-slot", CConfiguration::_int, &SLOT, "");
+	CConfiguration::AddConfiguration("-node", CConfiguration::_int, &CNode::INIT_NUM_NODE, "");
+	CConfiguration::AddConfiguration("-log-slot", CConfiguration::_int, &SLOT_LOG, "");
+	CConfiguration::AddConfiguration("-trans-range", CConfiguration::_int, &CGeneralNode::RANGE_TRANS, "");
+	CConfiguration::AddConfiguration("-trans-speed", CConfiguration::_int, &CNode::SPEED_TRANS, "");
+	CConfiguration::AddConfiguration("-lifetime", CConfiguration::_int, &CHotspotSelect::LIFETIME_POSITION, "");
+	CConfiguration::AddConfiguration("-cycle", CConfiguration::_int, &CNode::SLOT_TOTAL, "");
+	CConfiguration::AddConfiguration("-slot-carrier-sense", CConfiguration::_int, &CNode::DEFAULT_SLOT_CARRIER_SENSE, "");
+	//CConfiguration::AddConfiguration("-ttl", CConfiguration::_int, &CData::MAX_TTL, "");
+	CConfiguration::AddConfiguration("-hop", CConfiguration::_int, &CData::MAX_HOP, "");
+	CConfiguration::AddConfiguration("-buffer", CConfiguration::_int, &CNode::CAPACITY_BUFFER, "");
+	CConfiguration::AddConfiguration("-buffer-ma", CConfiguration::_int, &CMANode::CAPACITY_BUFFER, "");
+	CConfiguration::AddConfiguration("-data-rate", CConfiguration::_int, &CNode::DEFAULT_DATA_RATE, "");  // TODO: 
+	CConfiguration::AddConfiguration("-data-size", CConfiguration::_int, &CNode::SIZE_DATA, "");
+	//CConfiguration::AddConfiguration("-queue", CConfiguration::_int, &CEpidemic::MAX_DATA_RELAY, "");
+	CConfiguration::AddConfiguration("-energy", CConfiguration::_int, &CNode::CAPACITY_ENERGY, "");
+	CConfiguration::AddConfiguration("-spoken", CConfiguration::_int, &CNode::LIFETIME_SPOKEN_CACHE, "");
+	CConfiguration::AddConfiguration("-trans-window", CConfiguration::_int, &CRoutingProtocol::WINDOW_TRANS, "");
+
+	//double 参数
+	CConfiguration::AddConfiguration("-dc-default", CConfiguration::_double, &CNode::DEFAULT_DUTY_CYCLE, "");
+	CConfiguration::AddConfiguration("-dc-hotspot", CConfiguration::_double, &CNode::HOTSPOT_DUTY_CYCLE, "");
+	CConfiguration::AddConfiguration("-alpha", CConfiguration::_double, &CPostSelect::ALPHA, "");
+	CConfiguration::AddConfiguration("-beta", CConfiguration::_double, &HAR::BETA, "");
+	CConfiguration::AddConfiguration("-lambda", CConfiguration::_double, &CHotspotSelect::LAMBDA, "");
+	CConfiguration::AddConfiguration("-merge", CConfiguration::_double, &CHotspotSelect::RATIO_MERGE_HOTSPOT, "");
+	CConfiguration::AddConfiguration("-old", CConfiguration::_double, &CHotspotSelect::RATIO_OLD_HOTSPOT, "");
+	CConfiguration::AddConfiguration("-trans-prob", CConfiguration::_double, &CGeneralNode::PROB_TRANS, "");
+	CConfiguration::AddConfiguration("-pred-init", CConfiguration::_double, &CProphet::INIT_PRED, "");
+	CConfiguration::AddConfiguration("-pred-decay", CConfiguration::_double, &CProphet::RATIO_PRED_DECAY, "");
+
+	//string 参数
+	CConfiguration::AddConfiguration("-dataset", CConfiguration::_string, &DATASET, "");
+	// PATH_ROOT = "../" + string(arg) + "/";
+	CConfiguration::AddConfiguration("-log-path", CConfiguration::_string, &PATH_ROOT, "");
+
+	//带双参数的命令
+	CConfiguration::AddConfiguration("-sink", CConfiguration::_double, &CSink::SINK_X, CConfiguration::_double, &CSink::SINK_Y, "");
+	CConfiguration::AddConfiguration("-heat", CConfiguration::_double, &HAR::CO_HOTSPOT_HEAT_A1, CConfiguration::_double, &HAR::CO_HOTSPOT_HEAT_A2, "");
+
+
+	/*********************************************  按照命令格式解析参数配置  *********************************************/
+
 	CConfiguration::ParseConfiguration(PATH_RUN + FILE_DEFAULT_CONFIG);
 
+
+	/*********************************************  检验和修整相互耦合的参数  *********************************************/
+
+	if( CNode::finiteEnergy() )
+		RUNTIME = DATATIME = 999999;
+
+	//if( ( CData::MAX_HOP > 0 )
+	//   && ( CData::MAX_TTL > 0 ) )
+	//{
+	//	string error = "Error @ CConfiguration::ParseConfiguration() : Argument -hop & -ttl cannot be used both";
+	//	cout << error << endl;
+	//	_PAUSE_;
+	//	Exit(EINVAL, error);
+	//}
+
 }
-
-//bool CRunHelper::ParseConfiguration(int argc, char* argv[], string description)
-//{
-//	if( argc <= 0 )
-//	{
-//		stringstream error;
-//		error << "Error @ ParseConfiguration() : Parameters are requested ! ";
-//		cout << endl << error.str() << endl;
-//		Help();
-//		_PAUSE_;
-//		Exit(EINVAL, error.str());
-//		return false;
-//	}
-//
-//	// 将使用的命令行参数输出到文件
-//	ofstream config_log(PATH_ROOT + PATH_LOG + FILE_CONFIG, ios::app);
-//	config_log << "######  " << description << endl;
-//	for( int i = 0; i < argc; ++i )
-//	{
-//		if( argv[i][0] == '-'
-//		   && isalpha(argv[i][1]) )
-//			config_log << endl;
-//		config_log << argv[i] << " ";
-//	}
-//	config_log << endl << endl;
-//
-//	config_log.close();
-//
-//	try
-//	{
-//		for( int iField = 0; iField < argc; )
-//		{
-//			string field = argv[iField];
-//			char *endptr = nullptr;
-//
-//			//<mode> 不带值域的参数
-//			if( field == "--hdc" )
-//			{
-//				MAC_PROTOCOL = _hdc;
-//				HOTSPOT_SELECT = _original;
-//				++iField;
-//			}
-//			else if( field == "--prophet" )
-//			{
-//				ROUTING_PROTOCOL = _prophet;
-//				++iField;
-//			}
-//			//			else if( field == "-epidemic" )
-//			//			{
-//			//				ROUTING_PROTOCOL = _epidemic;
-//			//				++iField;
-//			//			}
-//			else if( field == "--har" )
-//			{
-//				ROUTING_PROTOCOL = _xhar;
-//				HOTSPOT_SELECT = _original;
-//				++iField;
-//			}
-//			else if( field == "--hs" )
-//			{
-//				HOTSPOT_SELECT = _original;
-//				++iField;
-//			}
-//			else if( field == "--ihs" )
-//			{
-//				HOTSPOT_SELECT = _improved;
-//				++iField;
-//			}
-//			else if( field == "--mhs" )
-//			{
-//				HOTSPOT_SELECT = _merge;
-//				++iField;
-//			}
-//
-//			//bool 参数
-//			else if( field == "-continuous-trace" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				string val(argv[iField + 1]);
-//				if( val == "on" )
-//					CCTrace::CONTINUOUS_TRACE = true;
-//				else if( val == "off" )
-//					CCTrace::CONTINUOUS_TRACE = false;
-//				else
-//					throw field;
-//				iField += 2;
-//			}
-//			else if( field == "-dc-sync" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				string val(argv[iField + 1]);
-//				if( val == "on" )
-//					CMacProtocol::SYNC_DC = true;
-//				else if( val == "off" )
-//					CMacProtocol::SYNC_DC = false;
-//				else
-//					throw field;
-//				iField += 2;
-//			}
-//			else if( field == "-dynamic-node-number" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				string val(argv[iField + 1]);
-//				if( val == "on" )
-//					CMacProtocol::TEST_DYNAMIC_NUM_NODE = true;
-//				else if( val == "off" )
-//					CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
-//				else
-//					throw field;
-//				iField += 2;
-//			}
-//			else if( field == "-pred-strict" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				string val(argv[iField + 1]);
-//				if( val == "on" )
-//					CProphet::TRANS_STRICT_BY_PRED = true;
-//				else if( val == "off" )
-//					CProphet::TRANS_STRICT_BY_PRED = false;
-//				else
-//					throw field;
-//				iField += 2;
-//			}
-//			else if( field == "-hotspot-similarity" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				string val(argv[iField + 1]);
-//				if( val == "on" )
-//					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = true;
-//				else if( val == "off" )
-//					CHotspotSelect::TEST_HOTSPOT_SIMILARITY = false;
-//				else
-//					throw field;
-//				iField += 2;
-//			}
-//			else if( field == "-balanced-ratio" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				string val(argv[iField + 1]);
-//				if( val == "on" )
-//					HAR::TEST_BALANCED_RATIO = true;
-//				else if( val == "off" )
-//					HAR::TEST_BALANCED_RATIO = false;
-//				else
-//					throw field;
-//				iField += 2;
-//			}
-//
-//			//int 参数
-//			else if( field == "-time-data" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				DATATIME = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//
-//				if( CNode::finiteEnergy() )
-//					RUNTIME = DATATIME = 999999;
-//			}
-//			else if( field == "-time-run" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				RUNTIME = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//
-//				if( CNode::finiteEnergy() )
-//					RUNTIME = DATATIME = 999999;
-//			}
-//			//else if( field == "-slot" )
-//			//{
-//			//	if( iField < argc - 1 )
-//			//		SLOT = atoi( argv[ iField + 1 ] );
-//
-//			//	if( SLOT > CCTrace::SLOT_TRACE )
-//			//		SLOT = CCTrace::SLOT_TRACE;
-//			//	iField += 2;
-//			//}
-//			else if( field == "-node" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::INIT_NUM_NODE = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-log-slot" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				SLOT_LOG = strtol(argv[iField + 1], &endptr, 10);
-//				//				//观测周期不应小于工作周期
-//				//				if( SLOT_LOG < CNode::SLOT_TOTAL )
-//				//					SLOT_LOG = CNode::SLOT_TOTAL;
-//
-//				iField += 2;
-//			}
-//			else if( field == "-trans-range" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CGeneralNode::RANGE_TRANS = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-trans-speed" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::SPEED_TRANS = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-lifetime" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CHotspotSelect::LIFETIME_POSITION = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-cycle" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::SLOT_TOTAL = strtol(argv[iField + 1], &endptr, 10);
-//
-//				//观测周期不应小于工作周期
-//				if( SLOT_LOG < CNode::SLOT_TOTAL )
-//					SLOT_LOG = CNode::SLOT_TOTAL;
-//
-//				iField += 2;
-//			}
-//			//else if( field == "-slot-carrier-sense" )
-//			//{
-//			//	if( ( iField + 1 ) >= argc )
-//			//		throw field;
-//			//	CNode::DEFAULT_SLOT_CARRIER_SENSE = strtol( argv[iField + 1], &endptr, 10);
-//			//	iField += 2;
-//			//}
-//			else if( field == "-dc-default" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::DEFAULT_DUTY_CYCLE = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-dc-hotspot" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::HOTSPOT_DUTY_CYCLE = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-hop" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CData::MAX_HOP = strtol(argv[iField + 1], &endptr, 10);
-//				//				if( ( CData::MAX_HOP > 0 )
-//				//					&& ( CData::MAX_TTL > 0 ) )
-//				//				{
-//				//					string error = "Error @ ParseConfiguration() : Argument -hop & -ttl cannot be used both";
-//				//					cout << error << endl;
-//				//					_PAUSE_;
-//				//					Exit(EINVAL, error);
-//				//				}
-//
-//				iField += 2;
-//			}
-//			//			else if( field == "-ttl" )
-//			//			{
-//			//				if( iField < argc - 1 )
-//			//					CData::MAX_TTL = atoi( argv[ iField + 1 ] );
-//			//				if( ( CData::MAX_HOP > 0 )
-//			//					&& ( CData::MAX_TTL > 0 ) )
-//			//				{
-//			//					string error = "Error @ ParseConfiguration() : Argument -hop & -ttl cannot be used both";
-//			//					cout << error << endl;
-//			//					_PAUSE_;
-//			//					Exit(EINVAL, error);
-//			//				}
-//			//
-//			//				iField += 2;
-//			//			}
-//			else if( field == "-buffer" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::CAPACITY_BUFFER = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-buffer-ma" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CMANode::CAPACITY_BUFFER = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-data-rate" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::DEFAULT_DATA_RATE = double(1) / strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-data-size" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::SIZE_DATA = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-energy" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::CAPACITY_ENERGY = 1000 * strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//
-//				if( CNode::finiteEnergy() )
-//					RUNTIME = DATATIME = 999999;
-//			}
-//			//			else if( field == "-queue" )
-//			//			{
-//			//				if( iField < argc - 1 )
-//			//					CEpidemic::MAX_DATA_RELAY = atoi( argv[ iField + 1 ] );
-//			//				iField += 2;
-//			//			}			
-//			else if( field == "-spoken" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CNode::LIFETIME_SPOKEN_CACHE = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//			else if( field == "-trans-window" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CRoutingProtocol::WINDOW_TRANS = strtol(argv[iField + 1], &endptr, 10);
-//				iField += 2;
-//			}
-//
-//
-//			//double 参数
-//			else if( field == "-alpha" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CPostSelect::ALPHA = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-beta" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				HAR::BETA = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-lambda" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CHotspotSelect::LAMBDA = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-merge" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CHotspotSelect::RATIO_MERGE_HOTSPOT = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-old" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CHotspotSelect::RATIO_OLD_HOTSPOT = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-trans-prob" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CGeneralNode::PROB_TRANS = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-pred-init" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CProphet::INIT_PRED = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			else if( field == "-pred-decay" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//				CProphet::RATIO_PRED_DECAY = strtod(argv[iField + 1], &endptr);
-//				iField += 2;
-//			}
-//			//实际上对WSN而言不会使用到
-//			//			else if( field == "-pred-trans" )
-//			//			{
-//			//				if( iField < argc - 1 )
-//			//					CProphet::RATIO_PRED_TRANS = atof( argv[ iField + 1 ] );
-//			//				iField += 2;
-//			//			}
-//
-//			//字符串参数
-//			else if( field == "-dataset" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//
-//				char arg[20] = { '\0' };
-//				strcpy(arg, argv[iField + 1]);
-//				DATASET = string(arg);
-//
-//				iField += 2;
-//			}
-//			else if( field == "-log-path" )
-//			{
-//				if( ( iField + 1 ) >= argc )
-//					throw field;
-//
-//				char arg[20] = { '\0' };
-//				strcpy(arg, argv[iField + 1]);
-//				PATH_ROOT = "../" + string(arg) + "/";
-//
-//				iField += 2;
-//			}
-//
-//
-//			//带两个或以上数值的参数
-//			else if( field == "-sink" )
-//			{
-//				if( ( iField + 2 ) >= argc )
-//					throw field;
-//				CSink::SINK_X = strtod(argv[iField + 1], &endptr);
-//				CSink::SINK_Y = strtod(argv[iField + 2], &endptr);
-//				iField += 3;
-//			}
-//			else if( field == "-heat" )
-//			{
-//				if( ( iField + 2 ) >= argc )
-//					throw field;
-//				HAR::CO_HOTSPOT_HEAT_A1 = strtod(argv[iField + 1], &endptr);
-//				HAR::CO_HOTSPOT_HEAT_A2 = strtod(argv[iField + 2], &endptr);
-//				iField += 3;
-//			}
-//
-//
-//			//输出help信息
-//			else if( field == "-help" )
-//			{
-//				Help();
-//				_PAUSE_;
-//				Exit(ESKIP);
-//			}
-//			else
-//				throw argv[iField];
-//
-//			if( endptr != nullptr
-//			   && *endptr != '\0' )
-//			{
-//				throw field;
-//			}
-//
-//		}
-//	}
-//
-//	// Unkown command name
-//	catch( char* arg )
-//	{
-//		stringstream error;
-//		error << "Error @ ParseConfiguration() : Cannot find command '" << arg << "' ! ";
-//		cout << endl << error.str() << endl;
-//		Help();
-//		_PAUSE_;
-//		Exit(EINVAL, error.str());
-//		return false;
-//	}
-//
-//	// Wrong value format for command
-//	catch( string field )
-//	{
-//		stringstream error;
-//		error << "Error @ ParseConfiguration() : Wrong value for command '" << field << "' ! ";
-//		cout << endl << error.str() << endl;
-//		_PAUSE_;
-//		Exit(EINVAL, error.str());
-//		return false;
-//	}
-//
-//	catch( exception e )
-//	{
-//		stringstream error;
-//		error << "Error @ ParseConfiguration() : Unknown parse error ! ";
-//		cout << endl << error.str() << endl;
-//		Help();
-//		_PAUSE_;
-//		Exit(EINVAL, error.str());
-//		return false;
-//	}
-//	return true;
-//
-//}
-
-//bool CRunHelper::ParseConfiguration(vector<string> args, string description)
-//{
-//	return false;
-//}
-
-//bool CRunHelper::ParseConfiguration(string filename)
-//{
-//	if( !CFileHelper::IfExists(filename) )
-//	{
-//		stringstream error;
-//		error << "Error @ ParseConfiguration() : Cannot find file \"" << filename << "\" ! ";
-//		cout << endl << error.str() << endl;
-//		_PAUSE_;
-//		Exit(ENOENT, error.str());
-//	}
-//
-//	//read string from file
-//	ifstream file(filename, ios::in);
-//	string config(( std::istreambuf_iterator<char>(file) ), std::istreambuf_iterator<char>());
-//
-//	//parse string into tokens
-//	string delim = " \t\n";
-//	vector<string> args;
-//	bool rtn = false;
-//	try
-//	{
-//		args = ParseToken(config, delim);
-//	}
-//	catch(const char * str )
-//	{
-//		stringstream error;
-//		error << "Error @ ParseConfiguration() : Cannot find configuration in " << filename << "!";
-//		cout << endl << error.str() << endl;
-//		_PAUSE_;
-//		Exit(ENOEXEC, error.str());
-//		return false;
-//	}
-//		
-//	rtn = ParseConfiguration(args, filename);
-//
-//	return rtn;
-//}
 
 // TODO: print all significant parameters
 void CRunHelper::PrintConfiguration()

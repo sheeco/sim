@@ -113,7 +113,7 @@ public:
 	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
 	static int DEFAULT_SLOT_CARRIER_SENSE;  //发送RTS之前，载波侦听的时间
 
-	static double DEFAULT_DATA_RATE;  //( frame / s )
+	static double DEFAULT_DATA_RATE;  //( Byte / s )
 	static int SIZE_DATA;  //( Byte )
 
 	static int CAPACITY_BUFFER;

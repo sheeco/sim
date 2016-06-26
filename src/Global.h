@@ -70,6 +70,7 @@ using std::setfill;
 // #define ENOENT 2  //File Not Found
 // #define ENOEXEC 8  //Wrong File Format
 // #define EINVAL 22  //Wrong Argument Format
+// #define ENOMEM 12  //Wrong Memory Access
 
 
 /******************************** User Defined ERRNO ********************************/

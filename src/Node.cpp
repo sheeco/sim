@@ -125,7 +125,7 @@ void CNode::initNodes() {
 
 void CNode::generateData(int currentTime) {
 	int timeDataIncre = currentTime - timeLastData;
-	int nData = int( timeDataIncre * dataRate );
+	int nData = int( timeDataIncre * dataRate / SIZE_DATA);
 	if(nData > 0)
 	{
 		for(int i = 0; i < nData; ++i)

@@ -87,7 +87,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 	}
 
 	int timeTrans = 0;
-	timeTrans = CNode::calTimeForTrans(frame);
+	timeTrans = int( CNode::calTimeForTrans(frame) );
 	int timeArrival = currentTime + timeTrans;
 	vector< pair<CFrame*, vector< CGeneralNode* > > > currentArrivals;
 
@@ -150,7 +150,7 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentT
 	//	return false;
 
 	int timeTrans = 0;
-	timeTrans = CNode::calTimeForTrans(frame);;
+	timeTrans = int( CNode::calTimeForTrans(frame) );
 	//gnode.Occupy(timeTrans);    
 	//if( timeTrans > 0 )
 	//	gnode.updateStatus(currentTime + timeTrans);
