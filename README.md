@@ -36,7 +36,7 @@
 
 ### Usage
 
-- 默认配置文件为 `./default.config`；
+- 默认配置文件 [/bin/default.config](/bin/default.config)；
 - 使用命令行进行参数配置的规则见文件 [/bin/help.md](/bin/help.md)，或运行 `HDC -help` 查看；
 
 
@@ -46,9 +46,10 @@
 
 ### Environment
 
-- Windows 10
-- Visual Studio Enterprise 2015 Update 2 ( 14.0.25123.00 )
-- Microsoft Visual C++ 2015 ( 00322-90150-00888-AA891 )
+- OS: Windows 10
+- IDE: Visual Studio Enterprise 2015 Update 2 ( 14.0.25123.00 )
+- C++ Standard: Microsoft Visual C++ 2015 ( 00322-90150-00888-AA891 )
+- Platform Toolset: Visual Studio 2012 (v110)
 
 
 ### Files
@@ -57,7 +58,7 @@
     
     HELP.md
     
-    version.h & HDC.rc
+    version.h & sim.rc
 
     Global.h & .cpp
     
@@ -132,6 +133,8 @@
 		|-- SortHelper.h & .cpp
     
 		|-- ParseHelper.h & .cpp
+    
+		|-- RunHelper.h & .cpp
     
 	Configuration.h & .cpp
         
@@ -821,16 +824,21 @@
 - RFCT：添加 `CConfiguration::AddConfiguration()`，用于添加命令行配置，仅限友类 `CRunHelper` 访问；
 
 
-###### 2016-06-26  ·  *< 3.6.7 >*
+###### [ 2016-06-26  ·  *< 3.6.7 >* ]( 25640030afbfc783c9da9bc8224a7134f19462a7 )
 
 - RFCT：重写 `CConfiguration::ParseConfiguration()` 函数；
 - RFCT：补全 `CConfiguration::AddConfiguration()` 的所有调用，重新实现原有的所有命令行配置格式；
 - MOD：将数据生成率 `CNode::DEFAULT_DATA_RATE` 的定义从“个数/秒”改为“字节/秒”，并修正该变量的所有引用，以适配新的配置格式；
+
+
+###### 2016-06-29  ·  *< 3.6.8 >*
+
+- MNT：更改项目名为 sim (simulation)；
+
+
+
 - [ ] RFCT：将所有的错误提示及对 `Exit()` 的直接调用改为使用 `throw` 抛出异常；
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
-
-
-
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
 - [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；
 - [ ] ADD：将遍历寻找所有邻居节点对的操作提取成函数；

@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>HDC</RootNamespace>
+    <RootNamespace>sim</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -104,7 +104,7 @@
       <Path>..\.build\$(ProjectName)\$(MSBuildProjectName).release.log</Path>
     </BuildLog>
     <PostBuildEvent>
-      <Command>XCOPY "../bin/HDC.release.exe" /F "../bin/HDC.exe"  /Y</Command>
+      <Command>XCOPY "../bin/sim.release.exe" /F "../bin/sim.exe"  /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -192,7 +192,7 @@
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="HDC.rc" />
+    <ResourceCompile Include="sim.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "file-formatter", ".project\file-formatter.vcxproj", "{392E2C88-BFB0-4DBB-8EBE-904814F41D52}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDC", ".project\HDC.vcxproj", "{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sim", ".project\sim.vcxproj", "{5B4E4A17-AFE6-4676-B97A-7707EF6C545C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "项目文件", "项目文件", "{50C498CB-27D2-411D-B31C-1EFFA2EFF802}"
 	ProjectSection(SolutionItems) = preProject
