@@ -831,13 +831,18 @@
 - MOD：将数据生成率 `CNode::DEFAULT_DATA_RATE` 的定义从“个数/秒”改为“字节/秒”，并修正该变量的所有引用，以适配新的配置格式；
 
 
-###### 2016-06-29  ·  *< 3.6.8 >*
+###### [ 2016-06-29  ·  *< 3.6.8 >* ]( c5a214bcb4bb1e104b8e9064069d5c58b61fca2c )
 
 - MNT：更改项目名为 sim (simulation)；
 
 
+###### 2016-06-29  ·  *< 3.6.9 >*
 
-- [ ] RFCT：将所有的错误提示及对 `Exit()` 的直接调用改为使用 `throw` 抛出异常；
+- RFCT：将所有的错误提示及对 `Exit()` 的直接调用改为使用 `throw` 抛出异常，并在 `CRunHelper::Run()` 中添加顶级的异常捕获；
+- RFCT：将命令行参数类型转换的操作提取成函数 `CConfiguration::getConfiguration()`；
+
+
+
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
 - [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；

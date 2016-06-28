@@ -143,8 +143,7 @@ vector<CNode*>& CNode::getNodes()
 {
 	if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
 	{
-		cout << endl << "Error @ CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0" << endl;
-		_PAUSE_;
+		throw string("CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0");
 	}
 
 	if( nodes.empty() && deadNodes.empty() )
@@ -476,8 +475,7 @@ vector<int> CNode::updateSummaryVector()
 {
 	if( buffer.size() > CAPACITY_BUFFER )
 	{
-		cout << endl << "Error @ CNode::updateSummaryVector() : Buffer isn't clean !" << endl;
-		_PAUSE_;
+		throw string("CNode::updateSummaryVector() : Buffer isn't clean !");
 	}
 
 	summaryVector.clear();
@@ -574,8 +572,7 @@ void CNode::updateStatus(int currentTime)
 		if( timerSleep <= 0
 		   && timerWake <= 0 )
 		{
-			cout << endl << "Error @ CNode::updateStatus() : timerSleep : " << timerSleep << ", timerWake : " << timerWake << endl;
-			_PAUSE_;
+			throw string("CNode::updateStatus() : timerSleep : " + STRING(timerSleep) + ", timerWake : " + STRING(timerWake) );
 		}
 
 		switch( state )

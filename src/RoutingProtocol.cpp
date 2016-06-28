@@ -155,4 +155,7 @@ void CRoutingProtocol::PrintFinal(int currentTime)
 			break;
 	}
 
+	double deliveryRatio = NDigitFloat(CData::getDeliveryRatio() * 100, 1);
+	cout << endl << endl << "####  < " << currentTime << " >  " << "SIMULATION FINISHED" << endl;
+	cout << "######  [ Delivery Ratio ]  " << deliveryRatio << " % " << endl << endl;
 }

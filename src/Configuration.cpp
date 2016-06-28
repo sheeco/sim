@@ -90,27 +90,27 @@ bool CConfiguration::AddConfiguration(string keyword, _TYPE_FIELD type_1, void *
 	return true;
 }
 
-bool CConfiguration::ParseConfiguration(int argc, char* argv[], string description)
+vector<string> CConfiguration::getConfiguration(int argc, char * argv[])
 {
-	vector<string> args;
+	vector<string> configs;
 	try
 	{
 		for( int i = 0; i < argc; ++i )
 		{
-			args.push_back(string(argv[i]));
+			configs.push_back(string(argv[i]));
 		}
 	}
 	catch( exception e )
 	{
-		throw pair<int, string>(ENOMEM, string( "Error @ CConfiguration::ParseConfiguration() : Unvalid access to char* argv[] ! " ) );
+		throw pair<int, string>(ENOMEM, string( "CConfiguration::ParseConfiguration() : Unvalid access to char* argv[] ! " ) );
 	}
-	return ParseConfiguration(args, description);
+	return configs;
 }
 
 bool CConfiguration::ParseConfiguration(vector<string> args, string description)
 {
 	if( args.empty() )
-		throw string( "Error @ CConfiguration::ParseConfiguration() : Parameters are requested ! ");
+		throw string( "CConfiguration::ParseConfiguration() : Parameters are requested ! ");
 
 	// 将使用的命令行参数输出到文件
 	ofstream log(PATH_ROOT + PATH_LOG + FILE_CONFIG, ios::app);
@@ -132,7 +132,7 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string description)
 
 		//未定义的关键字
 		if( imap == configurations.end() )
-			throw string("Error @ CConfiguration::ParseConfiguration() : Cannot find command \"" + keyword + "\" !");
+			throw string("CConfiguration::ParseConfiguration() : Cannot find command \"" + keyword + "\" !");
 
 		stringstream strConfig;
 		strConfig << keyword;
@@ -146,8 +146,8 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string description)
 			string arg;
 			if( field.type != _none
 			   && (iarg + 1) == args.end() )
-				throw string("Error @ CConfiguration::ParseConfiguration() : Wrong value for command \"" + keyword + "\" ! \n"
-							 + "Hint : " + descriptionForKeyword);
+				throw string("CConfiguration::ParseConfiguration() : Wrong value for command \"" + keyword + "\" ! ("
+							 + "Hint : " + descriptionForKeyword) + ")";
 			
 			try
 			{
@@ -211,7 +211,7 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string description)
 			}
 			catch( exception e )
 			{
-				throw string("Error @ CConfiguration::ParseConfiguration : Cannot resolve argument \"" + arg + "\" ! \n"
+				throw string("CConfiguration::ParseConfiguration : Cannot resolve argument \"" + arg + "\" ! \n"
 							 + "Hint : " + descriptionForKeyword);
 			}
 
@@ -230,7 +230,7 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string description)
 bool CConfiguration::ParseConfiguration(string filename)
 {
 	if( ! CFileHelper::IfExists(filename) )
-		throw pair<int, string>(ENOENT, string( "Error @ CConfiguration::ParseConfiguration() : Cannot find file \"" + filename + "\" ! " ) );
+		throw pair<int, string>(ENOENT, string( "CConfiguration::ParseConfiguration() : Cannot find file \"" + filename + "\" ! " ) );
 
 	//read string from file
 	ifstream file(filename, ios::in);
@@ -246,7 +246,7 @@ bool CConfiguration::ParseConfiguration(string filename)
 	}
 	catch( const char * str )
 	{
-		throw pair<int, string>(ENOEXEC, string("Error @ CConfiguration::ParseConfiguration() : Cannot find configuration in " + filename + "!"));
+		throw pair<int, string>(ENOEXEC, string("CConfiguration::ParseConfiguration() : Cannot find configuration in " + filename + "!"));
 	}
 
 	rtn = ParseConfiguration(args, filename);

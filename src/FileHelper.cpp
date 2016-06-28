@@ -105,8 +105,7 @@ bool CFileHelper::UnsetHidden(string filename)
 //	}
 //	catch(exception e)
 //	{
-//		cout << endl << "Error @ CFileHelper::getHotspotFromFile() : Wrong Format"<<endl;
-//		_PAUSE_;
+//		throw string("CFileHelper::getHotspotFromFile() : Wrong Format");
 //	}
 //	file.close();
 //
@@ -128,8 +127,7 @@ bool CFileHelper::UnsetHidden(string filename)
 //			writeHotspotToFile(filename, *it, withDetail);
 //		else
 //		{
-//			cout << endl << "Error @ CFileHelper::writeHotspotToFile() : list_hotspot has a nullptr"<<endl;
-//			_PAUSE_;
+//			throw string("CFileHelper::writeHotspotToFile() : list_hotspot has a nullptr");
 //		}
 //	}
 //}
@@ -146,8 +144,7 @@ bool CFileHelper::UnsetHidden(string filename)
 //		}
 //		else
 //		{
-//			cout << endl << "Error @ CFileHelper::writeHotspotToFile() : list_hotspot has a nullptr"<<endl;
-//			_PAUSE_;
+//			throw string("CFileHelper::writeHotspotToFile() : list_hotspot has a nullptr");
 //		}
 //	}
 //

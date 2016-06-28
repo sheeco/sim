@@ -259,10 +259,7 @@ void CRunHelper::InitConfiguration()
 	//if( ( CData::MAX_HOP > 0 )
 	//   && ( CData::MAX_TTL > 0 ) )
 	//{
-	//	string error = "Error @ CConfiguration::ParseConfiguration() : Argument -hop & -ttl cannot be used both";
-	//	cout << error << endl;
-	//	_PAUSE_;
-	//	Exit(EINVAL, error);
+	//	throw pair<int, string>(EINVAL, string("CConfiguration::ParseConfiguration() : Argument -hop & -ttl cannot be used both") );
 	//}
 
 }
@@ -397,6 +394,35 @@ void CRunHelper::PrintConfiguration()
 
 }
 
+bool CRunHelper::Simulation(vector<string> args)
+{
+	PrepareSimulation(args);
+	RunSimulation();
+
+	return true;
+}
+
+bool CRunHelper::PrepareSimulation(vector<string> args)
+{
+	/***************************** 初始化时间戳和 log 文件夹等******************************/
+
+	InitLogPath();
+
+	/************************************ 参数默认值 *************************************/
+
+	InitConfiguration();
+
+	/********************************** 命令行参数解析 ************************************/
+
+	CConfiguration::ParseConfiguration(args, "Command Line Configuration");
+
+	/*************************** 将 log 信息和参数信息写入文件 ******************************/
+
+	PrintConfiguration();
+
+	return true;
+}
+
 bool CRunHelper::RunSimulation()
 {
 	int currentTime = 0;
@@ -455,29 +481,32 @@ bool CRunHelper::Run(int argc, char* argv[])
 {
 	// TODO: release 版本中应改为 while(1) 循环
 
-	/***************************** 初始化时间戳和 log 文件夹等******************************/
-
-	InitLogPath();
-
-	/************************************ 参数默认值 *************************************/
-
-	InitConfiguration();
-
-	/********************************** 命令行参数解析 ************************************/
-
-	CConfiguration::ParseConfiguration(argc - 1, ++argv, "Command Line Configuration");
-
-	/*************************** 将 log 信息和参数信息写入文件 ******************************/
-
-	PrintConfiguration();
-
 	srand(static_cast<unsigned>( time(nullptr) ));
 
-	RunSimulation();
+	try
+	{
+		vector<string> args = CConfiguration::getConfiguration(argc - 1, ( argv + 1 ));
+
+		Simulation(args);
+
+	}
+	catch(string error)
+	{
+		cout << "Error @ " << error << endl;
+		Exit(EERROR, error);
+	}
+	catch(pair<int, string> &pairError)
+	{
+		cout << "Error " << pairError.first << " @ " << pairError.second << endl;
+		Exit(pairError.first, pairError.second);
+	}
+	catch(exception ex)
+	{
+		cout << "Uncaught Error : " << ex.what() << endl;
+		Exit(EERROR, ex.what() );
+	}
 
 	Exit(EFINISH);
-
-	_ALERT_;
 
 	return true;
 }

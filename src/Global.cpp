@@ -170,6 +170,13 @@ void global::Exit(int code)
 		}
 	}
 
+	// Alert & Pause
+	if( code > EFINISH )
+	{
+		_ALERT_;
+		_PAUSE_;
+	}
+
 	exit(code);
 }
 

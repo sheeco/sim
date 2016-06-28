@@ -66,7 +66,7 @@ protected:
 	static bool AddConfiguration(string keyword, _TYPE_FIELD type, void * dstAttr, string description);
 	static bool AddConfiguration(string keyword, _TYPE_FIELD type_1, void * dstAttr_1, _TYPE_FIELD type_2, void * dstAttr_2, string description);
 
-	static bool ParseConfiguration(int argc, char * argv[], string description);
+	static vector<string> getConfiguration(int argc, char * argv[]);
 	static bool ParseConfiguration(vector<string> args, string description);
 	static bool ParseConfiguration(string filename);
 };

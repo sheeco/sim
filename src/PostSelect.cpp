@@ -19,9 +19,7 @@ double CPostSelect::getRatioForHotspot(CHotspot *hotspot) const
 {
 	if(maxRatio == 0)
 	{
-		cout << endl << "Error @ CPostSelect::getRatioForHotspot() : maxRatio = 0"<<endl;
-		_PAUSE_;
-		return -1;
+		throw string("CPostSelect::getRatioForHotspot() : maxRatio = 0");
 	}
 	else
 	{
@@ -136,8 +134,7 @@ vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 	}
 	if( ! verifyCompleted())
 	{
-		cout << endl << "Error @ CPostSelect::PostSelect() : not completed"<<endl;
-		_PAUSE_;
+		throw string("CPostSelect::PostSelect() : not completed");
 	}
 
 	//将未选中的候选热点放回全局候选集

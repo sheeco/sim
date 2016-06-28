@@ -57,8 +57,7 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 	}
 	//if(result == nullptr)
 	//{
-	//	cout << endl << "Error @ CNodeRepair::findMaxCoverHotspotForNode() : result = nullptr"<<endl;
-	//	_PAUSE_;
+	//	throw string("CNodeRepair::findMaxCoverHotspotForNode() : result = nullptr");
 	//}
 	return result;
 }

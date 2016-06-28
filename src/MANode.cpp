@@ -18,9 +18,7 @@ CGeneralNode::_RECEIVE CMANode::MODE_RECEIVE = _selfish;
 //{
 //	if(buffer.size() > CAPACITY_BUFFER)
 //	{
-//		cout << endl << "Error @ CMANode::receiveData() : buffer overflown"<<endl;
-//		_PAUSE_;
-//		return false;
+//		throw string("CMANode::receiveData() : buffer overflown");
 //	}
 //	int num = datas.size();
 //

@@ -53,6 +53,7 @@ using std::setfill;
 #define ROUND(x) (x - floor(x) >= 0.5) ? (int)ceil(x) : (int)floor(x)
 #define EQUAL(x, y) fabs( x - y ) < 0.000001
 #define ZERO(x) fabs(x) < 0.000001
+#define STRING(x) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str()
 
 #define UNVALID -1
 
@@ -75,6 +76,7 @@ using std::setfill;
 
 /******************************** User Defined ERRNO ********************************/
 
+#define EERROR 1  //Unspecified Error
 #define EFINISH 0  //Finish Execution Successfully
 #define ESKIP -2  //Exit Without Execution
 
@@ -290,8 +292,7 @@ namespace global
 			}while(duplicate);
 			if(temp < 0)
 			{
-				cout << endl << "Error @ RandomIntList() : temp < 0" << endl;
-				_PAUSE_;
+				throw string("RandomIntList() : temp < 0");
 			}
 			else
 				result.push_back(temp);

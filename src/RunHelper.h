@@ -21,6 +21,8 @@ public:
 	static void InitConfiguration();
 	static void PrintConfiguration();
 
+	static bool Simulation(vector<string> args);
+	static bool PrepareSimulation(vector<string> args);
 	static bool RunSimulation();
 
 	static bool Run(int argc, char * argv[]);

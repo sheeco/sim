@@ -251,8 +251,8 @@ void HAR::HotspotClassification(int currentTime)
 			if( new_buffer > CMANode::getCapacityBuffer()
 				&& route.getNWayPoints() == 1)
 			{
-				//cout << endl << "Error @ HAR::HotspotClassification() : A single hotspot's buffer expection > BUFFER_CAPACITY_MA"<<endl;
-				//_PAUSE_;
+				//throw string("HAR::HotspotClassification() : A single hotspot's buffer expection > BUFFER_CAPACITY_MA");
+
 				route.AddHotspot(max_front, temp_hotspots[max_hotspot]);
 				vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin() + max_hotspot;
 				temp_hotspots.erase(ihotspot);

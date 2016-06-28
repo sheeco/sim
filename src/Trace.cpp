@@ -25,11 +25,7 @@ CCTrace* CCTrace::getTraceFromFile(string filename)
 
 		if( ! CFileHelper::IfExists(filename) )
 		{
-			stringstream error;
-			error << "Error @ CCTrace::getTraceFromFile() : Cannot find file \"" << filename << "\" ! ";
-			cout << endl << error.str() << endl;
-			_PAUSE_;
-			Exit(ENOENT, error.str());
+			throw pair<int, string>(ENOENT, string("CCTrace::getTraceFromFile() : Cannot find file \"" + filename + "\" ! ") );
 		}
 		FILE *file;
 		file = fopen(filename.c_str(), "rb");
@@ -53,8 +49,6 @@ CCTrace* CCTrace::getTraceFromFile(string filename)
 	}
 	catch( exception e )
 	{
-		cout << endl << "Error @ CCTrace::getTraceFromFile() : Unknown error without assertion" << endl;
-		_PAUSE_;
-		return nullptr;
+		throw string("CCTrace::getTraceFromFile() : Unknown error without assertion");
 	}
 }
