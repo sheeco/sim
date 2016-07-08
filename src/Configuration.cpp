@@ -102,7 +102,7 @@ vector<string> CConfiguration::getConfiguration(int argc, char * argv[])
 	}
 	catch( exception e )
 	{
-		throw pair<int, string>(ENOMEM, string( "CConfiguration::ParseConfiguration() : Unvalid access to char* argv[] ! " ) );
+		throw pair<int, string>(EMEMORY, string( "CConfiguration::ParseConfiguration() : Unvalid access to char* argv[] ! " ) );
 	}
 	return configs;
 }
@@ -230,7 +230,7 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string description)
 bool CConfiguration::ParseConfiguration(string filename)
 {
 	if( ! CFileHelper::IfExists(filename) )
-		throw pair<int, string>(ENOENT, string( "CConfiguration::ParseConfiguration() : Cannot find file \"" + filename + "\" ! " ) );
+		throw pair<int, string>(EFILE, string( "CConfiguration::ParseConfiguration() : Cannot find file \"" + filename + "\" ! " ) );
 
 	//read string from file
 	ifstream file(filename, ios::in);
@@ -246,7 +246,7 @@ bool CConfiguration::ParseConfiguration(string filename)
 	}
 	catch( const char * str )
 	{
-		throw pair<int, string>(ENOEXEC, string("CConfiguration::ParseConfiguration() : Cannot find configuration in " + filename + "!"));
+		throw pair<int, string>(EPARSE, string("CConfiguration::ParseConfiguration() : Cannot find configuration in " + filename + "!"));
 	}
 
 	rtn = ParseConfiguration(args, filename);

@@ -26,6 +26,9 @@ public:
 	static bool RunSimulation();
 
 	static bool Run(int argc, char * argv[]);
+	static bool Debug();
+	//static bool Catch();
+
 
 };
 

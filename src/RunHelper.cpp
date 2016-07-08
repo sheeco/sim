@@ -259,7 +259,7 @@ void CRunHelper::InitConfiguration()
 	//if( ( CData::MAX_HOP > 0 )
 	//   && ( CData::MAX_TTL > 0 ) )
 	//{
-	//	throw pair<int, string>(EINVAL, string("CConfiguration::ParseConfiguration() : Argument -hop & -ttl cannot be used both") );
+	//	throw pair<int, string>(EARG, string("CConfiguration::ParseConfiguration() : Argument -hop & -ttl cannot be used both") );
 	//}
 
 }
@@ -388,7 +388,7 @@ void CRunHelper::PrintConfiguration()
 
 	ofstream version(PATH_ROOT + PATH_LOG + FILE_VERION, ios::out);
 
-	version << _VERSION_MAJOR_ << "." << _VERSION_MINOR_ << "." << _VERSION_BUILD_;
+	version << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_BUILD;
 
 	version.close();
 
@@ -485,6 +485,9 @@ bool CRunHelper::Run(int argc, char* argv[])
 
 	try
 	{
+
+		Debug();
+
 		vector<string> args = CConfiguration::getConfiguration(argc - 1, ( argv + 1 ));
 
 		Simulation(args);
@@ -509,5 +512,13 @@ bool CRunHelper::Run(int argc, char* argv[])
 	Exit(EFINISH);
 
 	return true;
+}
+
+bool CRunHelper::Debug()
+{
+	throw exception("test");
+
+	Exit(ESKIP);
+	return false;
 }
 

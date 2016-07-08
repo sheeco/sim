@@ -3,7 +3,7 @@
 #ifndef __NODE_H__
 #define __NODE_H__
 
-#include <map>
+#include "Global.h"
 #include "GeneralNode.h"
 #include "Hotspot.h"
 #include "Frame.h"

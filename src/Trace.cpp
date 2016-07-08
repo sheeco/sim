@@ -25,7 +25,7 @@ CCTrace* CCTrace::getTraceFromFile(string filename)
 
 		if( ! CFileHelper::IfExists(filename) )
 		{
-			throw pair<int, string>(ENOENT, string("CCTrace::getTraceFromFile() : Cannot find file \"" + filename + "\" ! ") );
+			throw pair<int, string>(EFILE, string("CCTrace::getTraceFromFile() : Cannot find file \"" + filename + "\" ! ") );
 		}
 		FILE *file;
 		file = fopen(filename.c_str(), "rb");

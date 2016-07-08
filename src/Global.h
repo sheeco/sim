@@ -64,21 +64,24 @@ using std::setfill;
 #define _PAUSE_ _ALERT_; system("pause")
 #define _ALERT_ cout << '\a'
 #define flash_cout cout << CR  //控制台输出位置回到行首，在动态显示的输出时使用 flash_cout 代替 cout 即可
+#define CURRENT_LOCATION string(__FILE__) + string(", ") + string(__FUNCTION__) + string(", ") + STRING(__LINE__)
 
-
-/******************************* User Explained ERRNO *******************************/
-
-// #define ENOENT 2  //File Not Found
-// #define ENOEXEC 8  //Wrong File Format
-// #define EINVAL 22  //Wrong Argument Format
-// #define ENOMEM 12  //Wrong Memory Access
+#define __DEBUG__
+#ifdef __DEBUG__
+#define _DEBUG_PRINT_ (str) cout << "$ DEBUG : " << str << endl;
+#endif
 
 
 /******************************** User Defined ERRNO ********************************/
 
-#define EERROR 1  //Unspecified Error
+#define ESKIP -2  //Skip Without Execution
 #define EFINISH 0  //Finish Execution Successfully
-#define ESKIP -2  //Exit Without Execution
+#define EERROR 1  //Unspecified Error
+#define EDEBUG 2  //Debug Error
+#define EFILE 3  //External File Error
+#define EPARSE 4  //Wrong Format For Parse
+#define EARG 5  //Wrong Argument
+#define EMEMORY 6  //Wrong Memory Access
 
 
 /********************************** Optional Macro **********************************/

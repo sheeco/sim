@@ -40,7 +40,7 @@ public:
 		// 部分数据集的轨迹文件中可能存在重复行，因此暂时不做此检查
 		//if( trace.find(time) != trace.end() )
 		//{
-		//	throw pair<int, string>(ENOEXEC, string("CCTrace::addTrace() : Duplicate locations at Time " + time + " ! ") );
+		//	throw pair<int, string>(EFORMAT, string("CCTrace::addTrace() : Duplicate locations at Time " + time + " ! ") );
 		//}
 
 		trace.insert(pair<int, CCoordinate>(time, location));
@@ -68,14 +68,14 @@ public:
 			}
 			catch(exception e)
 			{
-				throw pair<int, string>(ENOEXEC, string("CCTrace::getLocation() : Cannot find trace at Time " + STRING(time) + " ( should call CCTrace::isValid() for assertion ) ") );
+				throw pair<int, string>(EPARSE, string("CCTrace::getLocation() : Cannot find trace at Time " + STRING(time) + " ( should call CCTrace::isValid() for assertion ) ") );
 			}
 		}
 		else
 		{
 			//UNDONE: dynamic slot_trace
 
-			throw pair<int, string>(ENOEXEC, string("CCTrace::getLocation() : SLOT_TRACE = " + STRING(SLOT_TRACE) ) );
+			throw pair<int, string>(EPARSE, string("CCTrace::getLocation() : SLOT_TRACE = " + STRING(SLOT_TRACE) ) );
 		}
 
 		if( CONTINUOUS_TRACE )
