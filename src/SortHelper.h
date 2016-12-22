@@ -36,11 +36,11 @@ public:
 	static vector<CPosition *> mergeSort(vector<CPosition *> v);
 
 	//CNode类按照x坐标排序
-	static vector<CNode *> merge(vector<CNode *> left, vector<CNode *> right);
-	static vector<CNode *> mergeSort(vector<CNode *> v);
+	static vector<CNode &> merge(vector<CNode &> left, vector<CNode &> right);
+	static vector<CNode &> mergeSort(vector<CNode &> v);
 	//CNode类按照ID排序
-	static vector<CNode *> merge(vector<CNode *> left, vector<CNode *> right, bool(*Comp)(CNode *, CNode *));
-	static vector<CNode *> mergeSort(vector<CNode *> v, bool(*Comp)(CNode *, CNode *));
+	static vector<CNode &> merge(vector<CNode &> left, vector<CNode &> right, bool(*Comp)(CNode &, CNode & ));
+	static vector<CNode &> mergeSort(vector<CNode &> v, bool(*Comp)(CNode &, CNode &));
 
 	//CHotspot类按照x坐标或者ratio排序
 	static vector<CHotspot *> merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *));
@@ -56,7 +56,7 @@ public:
 	static bool ascendByInt(int left, int right){	return left < right;	};
 	static bool ascendByTimeBirth(CData left, CData right){	return left < right; };
 	static bool descendByTimeBirth(CData left, CData right){ return left > right; };
-	static bool ascendByID(CNode *left, CNode *right){	return left->getID() < right->getID();	};
+	static bool ascendByID(CNode &left, CNode &right){	return left.getID() < right.getID();	};
 
 	template <class E>
 	static vector<E> insertIntoSortedList(vector<E> dstList, E src, bool(*compPos)( E, E ), bool(*compNeg)( E, E ));

@@ -51,9 +51,6 @@
     <ClCompile Include="..\src\MANode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Node.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\NodeRepair.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -117,6 +114,18 @@
     <ClCompile Include="..\src\ParseHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\DutyCycle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ProphetNode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BasicNode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Node.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Algorithm.h">
@@ -162,9 +171,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\MANode.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Node.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\NodeRepair.h">
@@ -231,6 +237,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ParseHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DutyCycle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ProphetNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BasicNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Node.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

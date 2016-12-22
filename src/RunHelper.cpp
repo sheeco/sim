@@ -79,9 +79,9 @@ void CRunHelper::InitConfiguration()
 	CNode::MODE_SEND = CGeneralNode::_dump;
 	CNode::MODE_QUEUE = CGeneralNode::_fifo;
 
-	CNode::SLOT_TOTAL = 0;
-	CNode::DEFAULT_DUTY_CYCLE = 0;
-	CNode::HOTSPOT_DUTY_CYCLE = 0;
+	CDutyCycle::SLOT_TOTAL = 0;
+	CDutyCycle::DEFAULT_DUTY_CYCLE = 0;
+	CHDC::HOTSPOT_DUTY_CYCLE = 0;
 	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;
 	CMacProtocol::SYNC_DC = true;
 
@@ -117,7 +117,7 @@ void CRunHelper::InitConfiguration()
 	CProphet::RATIO_PRED_DECAY = 0.90;  //参考值 0.98(/s)
 	CProphet::RATIO_PRED_TRANS = 0.20;  //参考值 0.25
 	CProphet::TRANS_STRICT_BY_PRED = true;
-	CProphet::WINDOW_TRANS = 10;
+	CRoutingProtocol::WINDOW_TRANS = 10;
 
 
 	/**************************  Hotspot Select  ***************************/
@@ -181,8 +181,8 @@ void CRunHelper::InitConfiguration()
 
 	/********************************  DC  ********************************/
 
-	CNode::SLOT_TOTAL = CCTrace::SLOT_TRACE;
-	CNode::DEFAULT_DUTY_CYCLE = 1.0;
+	CDutyCycle::SLOT_TOTAL = CCTrace::SLOT_TRACE;
+	CDutyCycle::DEFAULT_DUTY_CYCLE = 1.0;
 	CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;
 
 
@@ -211,7 +211,7 @@ void CRunHelper::InitConfiguration()
 	CConfiguration::AddConfiguration("-trans-range", CConfiguration::_int, &CGeneralNode::RANGE_TRANS, "");
 	CConfiguration::AddConfiguration("-trans-speed", CConfiguration::_int, &CNode::SPEED_TRANS, "");
 	CConfiguration::AddConfiguration("-lifetime", CConfiguration::_int, &CHotspotSelect::LIFETIME_POSITION, "");
-	CConfiguration::AddConfiguration("-cycle", CConfiguration::_int, &CNode::SLOT_TOTAL, "");
+	CConfiguration::AddConfiguration("-cycle", CConfiguration::_int, &CDutyCycle::SLOT_TOTAL, "");
 	CConfiguration::AddConfiguration("-slot-carrier-sense", CConfiguration::_int, &CNode::DEFAULT_SLOT_CARRIER_SENSE, "");
 	//CConfiguration::AddConfiguration("-ttl", CConfiguration::_int, &CData::MAX_TTL, "");
 	CConfiguration::AddConfiguration("-hop", CConfiguration::_int, &CData::MAX_HOP, "");
@@ -225,8 +225,8 @@ void CRunHelper::InitConfiguration()
 	CConfiguration::AddConfiguration("-trans-window", CConfiguration::_int, &CRoutingProtocol::WINDOW_TRANS, "");
 
 	//double 参数
-	CConfiguration::AddConfiguration("-dc-default", CConfiguration::_double, &CNode::DEFAULT_DUTY_CYCLE, "");
-	CConfiguration::AddConfiguration("-dc-hotspot", CConfiguration::_double, &CNode::HOTSPOT_DUTY_CYCLE, "");
+	CConfiguration::AddConfiguration("-dc-default", CConfiguration::_double, &CDutyCycle::DEFAULT_DUTY_CYCLE, "");
+	CConfiguration::AddConfiguration("-dc-hotspot", CConfiguration::_double, &CHDC::HOTSPOT_DUTY_CYCLE, "");
 	CConfiguration::AddConfiguration("-alpha", CConfiguration::_double, &CPostSelect::ALPHA, "");
 	CConfiguration::AddConfiguration("-beta", CConfiguration::_double, &HAR::BETA, "");
 	CConfiguration::AddConfiguration("-lambda", CConfiguration::_double, &CHotspotSelect::LAMBDA, "");
@@ -270,8 +270,8 @@ void CRunHelper::PrintConfiguration()
 	ofstream parameters(PATH_ROOT + PATH_LOG + FILE_PARAMETES, ios::app);
 	parameters << endl << endl << INFO_LOG << endl << endl;
 
-	parameters << "CYCLE" << TAB << CNode::SLOT_TOTAL << endl;
-	parameters << "DEFAULT_DC" << TAB << CNode::DEFAULT_DUTY_CYCLE << endl;
+	parameters << "CYCLE" << TAB << CDutyCycle::SLOT_TOTAL << endl;
+	parameters << "DEFAULT_DC" << TAB << CDutyCycle::DEFAULT_DUTY_CYCLE << endl;
 
 	if( CData::useHOP() )
 		parameters << "HOP" << TAB << CData::MAX_HOP << endl;
@@ -298,7 +298,7 @@ void CRunHelper::PrintConfiguration()
 	if( CData::useHOP() )
 		final << CData::MAX_HOP << TAB;
 
-	final << CNode::SLOT_TOTAL << TAB << CNode::DEFAULT_DUTY_CYCLE << TAB;
+	final << CDutyCycle::SLOT_TOTAL << TAB << CDutyCycle::DEFAULT_DUTY_CYCLE << TAB;
 
 	//	if( ROUTING_PROTOCOL == _epidemic )
 	//	{
@@ -320,8 +320,8 @@ void CRunHelper::PrintConfiguration()
 	{
 		INFO_LOG += "$HDC ";
 		parameters << endl << "$HDC " << endl << endl;
-		parameters << "HOTSPOT_DC" << TAB << CNode::HOTSPOT_DUTY_CYCLE << endl;
-		final << CNode::HOTSPOT_DUTY_CYCLE << TAB;
+		parameters << "HOTSPOT_DC" << TAB << CHDC::HOTSPOT_DUTY_CYCLE << endl;
+		final << CHDC::HOTSPOT_DUTY_CYCLE << TAB;
 	}
 
 	if( HOTSPOT_SELECT != _none )

@@ -49,11 +49,11 @@ public:
 	static int CAPACITY_BUFFER;
 
 	//Sink为单例模式
-	static CSink* getSink()
+	static CSink& getSink()
 	{
 		if(sink == nullptr)
 			sink = new CSink();
-		return sink;
+		return *sink;
 	}
 
 	bool isAwake() const

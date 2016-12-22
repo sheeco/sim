@@ -122,8 +122,11 @@
     <ClCompile Include="..\src\BasicEntity.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\Coordinate.cpp" />
+    <ClCompile Include="..\src\DutyCycle.cpp" />
+    <ClCompile Include="..\src\Node.cpp" />
     <ClCompile Include="..\src\Packet.cpp" />
     <ClCompile Include="..\src\ParseHelper.cpp" />
+    <ClCompile Include="..\src\ProphetNode.cpp" />
     <ClCompile Include="..\src\RunHelper.cpp" />
     <ClCompile Include="..\src\Trace.cpp" />
     <ClCompile Include="..\src\Ctrl.cpp" />
@@ -139,7 +142,7 @@
     <ClCompile Include="..\src\MacProtocol.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\MANode.cpp" />
-    <ClCompile Include="..\src\Node.cpp" />
+    <ClCompile Include="..\src\BasicNode.cpp" />
     <ClCompile Include="..\src\NodeRepair.cpp" />
     <ClCompile Include="..\src\Frame.cpp" />
     <ClCompile Include="..\src\Position.cpp" />
@@ -156,8 +159,11 @@
     <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\Coordinate.h" />
+    <ClInclude Include="..\src\DutyCycle.h" />
+    <ClInclude Include="..\src\Node.h" />
     <ClInclude Include="..\src\Packet.h" />
     <ClInclude Include="..\src\ParseHelper.h" />
+    <ClInclude Include="..\src\ProphetNode.h" />
     <ClInclude Include="..\src\RunHelper.h" />
     <ClInclude Include="..\src\Trace.h" />
     <ClInclude Include="..\src\Ctrl.h" />
@@ -176,7 +182,7 @@
     <ClInclude Include="..\src\HotspotSelect.h" />
     <ClInclude Include="..\src\MacProtocol.h" />
     <ClInclude Include="..\src\MANode.h" />
-    <ClInclude Include="..\src\Node.h" />
+    <ClInclude Include="..\src\BasicNode.h" />
     <ClInclude Include="..\src\NodeRepair.h" />
     <ClInclude Include="..\src\Frame.h" />
     <ClInclude Include="..\src\Position.h" />

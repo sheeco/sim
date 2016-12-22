@@ -20,31 +20,31 @@ CMacProtocol::CMacProtocol()
 
 bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime)
 {
-	static map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > > frameArrivals;
+	static map<int, vector< pair<CFrame*, vector< CGeneralNode & > > > > frameArrivals;
 
 	bool rcv = false;
-	vector<CGeneralNode*> neighbors;
+	vector<CGeneralNode&> neighbors;
 
 	src.consumeEnergy(frame->getSize() * CGeneralNode::CONSUMPTION_BYTE_SEND);
 	CMacProtocol::transmitTry();
 
 	/************************************************ Sensor Node *******************************************************/
 
-	vector<CNode*> nodes = CNode::getNodes();
-	for( vector<CNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
+	vector<CNode &> nodes = CNode::getNodes();
+	for( vector<CNode &>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
 	{
-		CNode* dstNode = *idstNode;
+		CNode & dstNode = *idstNode;
 		//skip itself
-		if( ( dstNode )->getID() == src.getID() )
+		if( dstNode.getID() == src.getID() )
 			continue;
 
-		if( CBasicEntity::withinRange(src, *dstNode, CGeneralNode::RANGE_TRANS) )
+		if( CBasicEntity::withinRange(src, dstNode, CGeneralNode::RANGE_TRANS) )
 		{
 			//统计sink节点的相遇计数
 			if( typeid( src ) == typeid( CSink ) )
 				CSink::encount();
 
-			if( dstNode->isAwake() )
+			if( dstNode.isAwake() )
 			{
 				//统计sink节点的相遇计数
 				if( typeid( src ) == typeid( CSink ) )
@@ -58,10 +58,10 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 
 	/*************************************************** Sink **********************************************************/
 
-	CSink* sink = CSink::getSink();
-	if( CBasicEntity::withinRange(src, *sink, CGeneralNode::RANGE_TRANS)
+	CSink& sink = CSink::getSink();
+	if( CBasicEntity::withinRange(src, sink, CGeneralNode::RANGE_TRANS)
 	   && Bet(CGeneralNode::PROB_TRANS)
-	   && sink->getID() != src.getID() )
+	   && sink.getID() != src.getID() )
 	{
 		neighbors.push_back(sink);
 		CSink::encount();
@@ -82,35 +82,35 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 		   && Bet(CGeneralNode::PROB_TRANS)
 		   && ( *iMA )->isAwake() )
 		{
-			neighbors.push_back(*iMA);
+			neighbors.push_back(**iMA);
 		}
 	}
 
 	int timeTrans = 0;
 	timeTrans = int( CNode::calTimeForTrans(frame) );
 	int timeArrival = currentTime + timeTrans;
-	vector< pair<CFrame*, vector< CGeneralNode* > > > currentArrivals;
+	vector< pair<CFrame*, vector< CGeneralNode & > > > currentArrivals;
 
 	//压入将来的到达队列
 	if( timeArrival > currentTime )
 	{
-		vector< pair<CFrame*, vector< CGeneralNode* > > > futureArrivals;
-		map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > >::iterator iArrivals = frameArrivals.find(timeArrival);
+		vector< pair<CFrame*, vector< CGeneralNode & > > > futureArrivals;
+		map<int, vector< pair<CFrame*, vector< CGeneralNode & > > > >::iterator iArrivals = frameArrivals.find(timeArrival);
 		if( iArrivals != frameArrivals.end() )
 			futureArrivals = ( *iArrivals ).second;
 
-		futureArrivals.push_back(pair<CFrame*, vector< CGeneralNode* > >(frame, neighbors));
+		futureArrivals.push_back(pair<CFrame*, vector< CGeneralNode & > >(frame, neighbors));
 		frameArrivals[timeArrival] = futureArrivals;
 	}
 	//压入当前的到达队列
 	else
-		currentArrivals.push_back(pair<CFrame*, vector< CGeneralNode* > >(frame, neighbors));
+		currentArrivals.push_back(pair<CFrame*, vector< CGeneralNode & > >(frame, neighbors));
 
 	//取出之前存入的当前时间的到达队列
-	map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > >::iterator iMoreArrivals = frameArrivals.find(currentTime);
+	map<int, vector< pair<CFrame*, vector< CGeneralNode & > > > >::iterator iMoreArrivals = frameArrivals.find(currentTime);
 	if( iMoreArrivals != frameArrivals.end() )
 	{
-		vector< pair<CFrame*, vector< CGeneralNode* > > > moreCurrentArrivals = ( *iMoreArrivals ).second;
+		vector< pair<CFrame*, vector< CGeneralNode & > > > moreCurrentArrivals = ( *iMoreArrivals ).second;
 		currentArrivals.insert(currentArrivals.end(), moreCurrentArrivals.begin(), moreCurrentArrivals.end());
 
 		//从队列中移除
@@ -118,14 +118,14 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 	}
 
 	//投递队列中的数据
-	for( vector< pair<CFrame*, vector< CGeneralNode* > > >::iterator iArrival = currentArrivals.begin();
+	for( vector< pair<CFrame*, vector< CGeneralNode & > > >::iterator iArrival = currentArrivals.begin();
 		 iArrival != currentArrivals.end(); ++iArrival )
 	{
 		CFrame* currentFrame = iArrival->first;
-		vector<CGeneralNode*> currentNeighbors = iArrival->second;
-		for( vector<CGeneralNode*>::iterator ineighbor = currentNeighbors.begin(); ineighbor != currentNeighbors.end(); ++ineighbor )
+		vector<CGeneralNode &> currentNeighbors = iArrival->second;
+		for( vector<CGeneralNode &>::iterator ineighbor = currentNeighbors.begin(); ineighbor != currentNeighbors.end(); ++ineighbor )
 		{
-			rcv = rcv || receiveFrame(**ineighbor, currentFrame, currentTime);
+			rcv = rcv || receiveFrame(*ineighbor, currentFrame, currentTime);
 		}
 
 		free(currentFrame);
@@ -223,11 +223,11 @@ void CMacProtocol::ChangeNodeNumber(int currentTime)
 bool CMacProtocol::UpdateNodeStatus(int currentTime)
 {
 	bool death = false;
-	vector<CNode *> nodes = CNode::getNodes();
-	for( vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
+	vector<CNode &> nodes = CNode::getNodes();
+	for( vector<CNode &>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
 	{
-		(*inode)->updateStatus(currentTime);
-		death = death || ( ! ( *inode )->isAlive() );
+		( *inode ).updateStatus(currentTime);
+		death = death || ( !( *inode ).isAlive() );
 	}
 	if( death )
 	{
@@ -242,13 +242,13 @@ bool CMacProtocol::UpdateNodeStatus(int currentTime)
 
 	if( currentTime % CCTrace::SLOT_TRACE == 0 )
 	{
-		for( vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
+		for( vector<CNode &>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
 		{
-			for( vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode )
+			for( vector<CNode &>::iterator jnode = inode; jnode != nodes.end(); ++jnode )
 			{
-				if( ( *inode )->getX() + CGeneralNode::RANGE_TRANS < ( *jnode )->getX() )
+				if( ( *inode ).getX() + CGeneralNode::RANGE_TRANS < ( *jnode ).getX() )
 					break;
-				if( CBasicEntity::withinRange(**inode, **jnode, CGeneralNode::RANGE_TRANS) )
+				if( CBasicEntity::withinRange(*inode, *jnode, CGeneralNode::RANGE_TRANS) )
 					CNode::encount();
 			}
 		}
@@ -271,7 +271,7 @@ bool CMacProtocol::Prepare(int currentTime)
 	if( TEST_DYNAMIC_NUM_NODE )
 		CMacProtocol::ChangeNodeNumber(currentTime);
 
-	CSink::getSink()->updateStatus(currentTime);
+	CSink::getSink().updateStatus(currentTime);
 
 	if( ! CMacProtocol::UpdateNodeStatus(currentTime) )
 		return false;
@@ -303,22 +303,22 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	// TODO: sink receive RTS / send by slot ?
 	// Prophet: sink => nodes
 	// xHAR: sink => MAs
-	CSink* sink = CSink::getSink();
-	transmitFrame( *sink, sink->sendRTS(currentTime) , currentTime );
+	CSink& sink = CSink::getSink();
+	transmitFrame( sink, sink.sendRTS(currentTime) , currentTime );
 
-	vector<CNode*> nodes = CNode::getNodes();
+	vector<CNode &> nodes = CNode::getNodes();
 	vector<CMANode*> MAs = CMANode::getMANodes();
 
 	switch( ROUTING_PROTOCOL )
 	{
 	case _prophet:
 
-		for(vector<CNode*>::iterator srcNode = nodes.begin(); srcNode != nodes.end(); ++srcNode )
+		for(vector<CNode &>::iterator srcNode = nodes.begin(); srcNode != nodes.end(); ++srcNode )
 		{
-			if( (*srcNode)->isDiscovering() )
+			if( (*srcNode).isDiscovering() )
 			{
-				transmitFrame( **srcNode, (*srcNode)->sendRTSWithCapacityAndPred(currentTime), currentTime );
-				(*srcNode)->finishDiscovering();
+				transmitFrame( *srcNode, srcNode->sendRTSWithCapacityAndPred(currentTime), currentTime );
+				srcNode->finishDiscovering();
 			}
 		}
 		
@@ -424,13 +424,13 @@ void CMacProtocol::PrintInfo(int currentTime)
 			activation << INFO_ACTIVATION;
 		}
 		activation << currentTime << TAB;
-		vector<CNode *> allNodes = CNode::getAllNodes(true);
+		vector<CNode &> allNodes = CNode::getAllNodes(true);
 		for( auto inode = allNodes.begin(); inode != allNodes.end(); ++inode )
 		{
-			if( !( *inode )->isAlive() )
+			if( ! inode->isAlive() )
 				activation << "-" << TAB;
 			else
-				activation << ( *inode )->getPercentTimeAwake() << "  ";
+				activation << inode->getPercentTimeAwake() << "  ";
 		}
 		activation << endl;
 		activation.close();
@@ -447,9 +447,9 @@ void CMacProtocol::PrintInfo(int currentTime)
 		{			
 			//节点剩余能量
 			energy_consumption << TAB << CNode::getSumEnergyConsumption() << TAB << CNode::getNodes().size() << TAB;
-			vector<CNode *> allNodes = CNode::getAllNodes(true);
+			vector<CNode &> allNodes = CNode::getAllNodes(true);
 			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
-				energy_consumption << (*inode)->getEnergy() << TAB;
+				energy_consumption << inode->getEnergy() << TAB;
 		}
 		energy_consumption << endl;
 		energy_consumption.close();

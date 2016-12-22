@@ -5,6 +5,8 @@
 #include "HotspotSelect.h"
 #include "Trace.h"
 
+double CHDC::HOTSPOT_DUTY_CYCLE = 0;
+
 
 CHDC::CHDC()
 {
@@ -14,6 +16,22 @@ CHDC::CHDC()
 CHDC::~CHDC()
 {
 	
+}
+
+void CHDC::raiseDutyCycle(CDutyCycle* node)
+{
+	if( node->ifUseDutyCycle(HOTSPOT_DUTY_CYCLE) )
+		return;
+
+	node->setDutyCycle(HOTSPOT_DUTY_CYCLE);
+}
+
+void CHDC::resetDutyCycle(CDutyCycle* node)
+{
+	if( node->ifUseDutyCycle(CDutyCycle::DEFAULT_DUTY_CYCLE) )
+		return;
+
+	node->setDutyCycle(CDutyCycle::DEFAULT_DUTY_CYCLE);
 }
 
 void CHDC::UpdateDutyCycleForNodes(int currentTime)
@@ -39,17 +57,17 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
 		//update duty cycle
-		if( (*inode)->useHotspotDutyCycle()
+		if( (*inode)->ifUseDutyCycle(HOTSPOT_DUTY_CYCLE)
 			&& ( ! (*inode)->isAtHotspot() ) )
 		{
 			flash_cout << "######  ( Node " << (*inode)->getID() << " leaves Hotspot )              " ;			
-			(*inode)->resetDutyCycle();
+			resetDutyCycle(*inode);
 		}
-		else if( (*inode)->useDefaultDutyCycle()
+		else if( (*inode)->ifUseDutyCycle(CDutyCycle::DEFAULT_DUTY_CYCLE)
 				 && (*inode)->isAtHotspot() )
 		{
 			flash_cout << "######  ( Node " << (*inode)->getID() << " enters Hotspot )               " ;
-			(*inode)->raiseDutyCycle();
+			raiseDutyCycle(*inode);
 		}
 	}
 
