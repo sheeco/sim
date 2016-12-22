@@ -223,6 +223,7 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string description)
 
 	} while( iarg != args.end() );
 
+	log << endl;
 	log.close();
 	return true;
 }

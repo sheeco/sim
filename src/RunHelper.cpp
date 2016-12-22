@@ -217,7 +217,7 @@ void CRunHelper::InitConfiguration()
 	CConfiguration::AddConfiguration("-hop", CConfiguration::_int, &CData::MAX_HOP, "");
 	CConfiguration::AddConfiguration("-buffer", CConfiguration::_int, &CNode::CAPACITY_BUFFER, "");
 	CConfiguration::AddConfiguration("-buffer-ma", CConfiguration::_int, &CMANode::CAPACITY_BUFFER, "");
-	CConfiguration::AddConfiguration("-data-rate", CConfiguration::_int, &CNode::DEFAULT_DATA_RATE, "");  // TODO: 
+	CConfiguration::AddConfiguration("-data-rate", CConfiguration::_double, &CNode::DEFAULT_DATA_RATE, "");
 	CConfiguration::AddConfiguration("-data-size", CConfiguration::_int, &CNode::SIZE_DATA, "");
 	//CConfiguration::AddConfiguration("-queue", CConfiguration::_int, &CEpidemic::MAX_DATA_RELAY, "");
 	CConfiguration::AddConfiguration("-energy", CConfiguration::_int, &CNode::CAPACITY_ENERGY, "");
@@ -250,11 +250,17 @@ void CRunHelper::InitConfiguration()
 
 	CConfiguration::ParseConfiguration(PATH_RUN + FILE_DEFAULT_CONFIG);
 
+}
 
-	/*********************************************  检验和修整相互耦合的参数  *********************************************/
-
+void CRunHelper::ValidateConfiguration()
+{
 	if( CNode::finiteEnergy() )
 		RUNTIME = DATATIME = 999999;
+
+	if( ( ROUTING_PROTOCOL == _xhar
+		 || MAC_PROTOCOL == _hdc )
+	   && HOTSPOT_SELECT == _none )
+		HOTSPOT_SELECT = _original;
 
 	//if( ( CData::MAX_HOP > 0 )
 	//   && ( CData::MAX_TTL > 0 ) )
@@ -277,7 +283,7 @@ void CRunHelper::PrintConfiguration()
 		parameters << "HOP" << TAB << CData::MAX_HOP << endl;
 	//	else
 	//		parameters << "TTL" << TAB << CData::MAX_TTL << endl;
-	parameters << "DATA_RATE" << TAB << "1 / " << int(1 / CNode::DEFAULT_DATA_RATE) << endl;
+	parameters << "DATA_RATE" << TAB << CNode::SIZE_DATA << "B / " << CNode::SIZE_DATA / CNode::DEFAULT_DATA_RATE << "s" << endl;
 	parameters << "DATA_SIZE" << TAB << CNode::SIZE_DATA << endl;
 	parameters << "BUFFER" << TAB << CNode::CAPACITY_BUFFER << endl;
 	parameters << "ENERGY" << TAB << CNode::CAPACITY_ENERGY << endl;
@@ -416,6 +422,10 @@ bool CRunHelper::PrepareSimulation(vector<string> args)
 
 	CConfiguration::ParseConfiguration(args, "Command Line Configuration");
 
+	/*****************************  检验和修整相互耦合的参数  *******************************/
+
+	ValidateConfiguration();
+
 	/*************************** 将 log 信息和参数信息写入文件 ******************************/
 
 	PrintConfiguration();
@@ -486,7 +496,7 @@ bool CRunHelper::Run(int argc, char* argv[])
 	try
 	{
 
-		Debug();
+		//Debug();
 
 		vector<string> args = CConfiguration::getConfiguration(argc - 1, ( argv + 1 ));
 

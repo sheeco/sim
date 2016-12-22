@@ -842,10 +842,17 @@
 - RFCT：将命令行参数类型转换的操作提取成函数 `CConfiguration::getConfiguration()`；
 
 
-###### 2016-07-08  ·  *< 3.6.10 >*
+###### [ 2016-07-08  ·  *< 3.6.10 >* ]( dd4dfaf5388abb429ada815f5a62e0db71856e78 )
 
 - OPT：异常捕获及错误代码；
 
+
+###### 2016-12-23  ·  *< 3.6.11 >*
+
+- FIX：`CParseHelper` 中的异常抛出代码；
+- FIX：将数据生成率 `CNode::DEFAULT_DATA_RATE` 的定义从“个数/秒”改为“字节/秒” 带来的错误；
+- FIX：在 `CRunHelper::InitConfiguration` 中补充参数耦合，以修复添加独立的热点选取时将 `HOTSPOT_SELECT` 默认值改为 `_none` 之后，导致运行 HAR 或 HDC 时热点选取缺失的问题；
+- FIX：重新认为数据到达 MA 节点即等于到达 sink；
 
 
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；

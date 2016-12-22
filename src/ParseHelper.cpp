@@ -11,7 +11,7 @@ int CParseHelper::ParseInt(const char * str)
 	rtn = strtol(str, &endptr, 10);
 	if( endptr != nullptr
 	   && *endptr != '\0' )
-		throw str;
+		throw string("CParseHelper::ParseInt : Cannot parse \"" + string(str) + "\" into int !");
 
 	return rtn;
 }
@@ -28,7 +28,7 @@ double CParseHelper::ParseDouble(const char * str)
 	rtn = strtod(str, &endptr);
 	if( endptr != nullptr
 	   && *endptr != '\0' )
-		throw str;
+		throw string("CParseHelper::ParseDouble : Cannot parse \"" + string(str) + "\" into double !");
 
 	return rtn;
 }
@@ -46,7 +46,7 @@ bool CParseHelper::ParseBool(const char * str)
 	else if( strcmp(str, KEYWORD_FALSE.c_str()) == 0 )
 		rtn = false;
 	else
-		throw str;
+		throw string("CParseHelper::ParseBool : Cannot parse \"" + string(str) + "\" into bool !");
 
 	return rtn;
 }
@@ -69,7 +69,7 @@ vector<string> CParseHelper::ParseToken(const char * str, const char * delim)
 	}
 
 	if( tokens.empty() )
-		throw str;
+		throw string("CParseHelper::ParseToken : Cannot parse any token from \"" + string(str) + "\" !");
 
 	return tokens;
 }

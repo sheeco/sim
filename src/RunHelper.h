@@ -19,6 +19,7 @@ public:
 	static void Help();
 
 	static void InitConfiguration();
+	static void ValidateConfiguration();
 	static void PrintConfiguration();
 
 	static bool Simulation(vector<string> args);
