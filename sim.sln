@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "项目文件", "项目文�
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		CHANGE.md = CHANGE.md
 		README.md = README.md
 	EndProjectSection
 EndProject
