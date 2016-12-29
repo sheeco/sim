@@ -21,3 +21,13 @@ void CRoute::updateLength()
 	toPoint = 1;  //toPoint指向sink之后的第一个点
 }
 
+//string CRoute::toString()
+//{
+//	stringstream sstr;
+//	for( vector<CBasicEntity*>::iterator iwaypoint = waypoints.begin(); iwaypoint != waypoints.end(); iwaypoint++ )
+//	{
+//		sstr << ( *iwaypoint )->getLocation().toString() << TAB;
+//	}
+//	// e.g "0.0, 1.234	234.5, 345.6 ..."
+//	return sstr.str();
+//}

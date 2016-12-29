@@ -82,6 +82,8 @@ namespace global
 	string INFO_MERGE_DETAILS = "#Time	#HotspotType/#MergeAge ... \n" ;
 	string FILE_MA = "ma.log";
 	string INFO_MA = "#Time	#MACount	#AvgMAWayPointCount \n" ;
+	string FILE_MA_ROUTE = "ma-route.log";
+	string INFO_MA_ROUTE = "#Time	#WayPoints ... \n";
 	string FILE_BUFFER_MA = "buffer-ma.log";
 	string INFO_BUFFER_MA = "#Time	#BufferStateOfEachMA \n" ;
 	string FILE_ED = "ed.log";

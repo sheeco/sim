@@ -119,6 +119,17 @@ public:
 	//计算路径长度，应该在路径更改或更新之后手动后调用
 	void updateLength();
 
+	string toString() const
+	{
+		stringstream sstr;
+		for( vector<CBasicEntity *>::const_iterator iwaypoint = waypoints.begin(); iwaypoint != waypoints.end(); iwaypoint++ )
+		{
+			sstr << ( *iwaypoint )->getLocation().toString() << TAB;
+		}
+		// e.g "0.0, 1.234	234.5, 345.6 ..."
+		return sstr.str();
+	}
+
 };
 
 #endif // __ROUTE_H__

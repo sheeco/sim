@@ -709,9 +709,15 @@
 - FIX：重新认为数据到达 MA 节点即等于到达 sink；
 
 
-###### 2016-12-29
+###### [ 2016-12-29 }( 19cc2c9d12a4f35410638a236b22a9db4ba72636 )
 
 - MNT：将更新日志部分从 `README.md` 中分离到单独的文件 `CHANGE.md`；
+
+
+###### 2016-12-29
+
+- ADD：输出 MA 节点路径信息到 `ma-route.log`；
+- ADD：`CCoordinate::toString` 和 `CRoute::toString`；
 
 
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；

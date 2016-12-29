@@ -745,6 +745,19 @@ void HAR::PrintInfo(int currentTime)
 		ma << currentTime << TAB << m_routes.size() << TAB << ( double(m_hotspots.size()) / double(m_routes.size()) ) << endl;
 		ma.close();
 
+			//
+		ofstream ma_route(PATH_ROOT + PATH_LOG + FILE_MA_ROUTE, ios::app);
+		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+		{
+			ma_route << endl << INFO_LOG << endl;
+			ma_route << INFO_MA_ROUTE;
+		}
+		for( vector<CRoute>::iterator iroute = m_routes.begin(); iroute != m_routes.end(); iroute++ )
+		{
+			ma_route << currentTime << TAB << iroute->toString() << endl;
+		}
+		ma_route.close();			
+
 		//用于计算MA节点个数的历史平均值信息
 		SUM_MA_COST += m_routes.size();
 		++COUNT_MA_COST;

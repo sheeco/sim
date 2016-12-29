@@ -3,6 +3,7 @@
 #ifndef __COORDINATE_H__
 #define __COORDINATE_H__
 
+#include "Global.h"
 #include "GeoEntity.h"
 
 
@@ -43,6 +44,12 @@ public:
 	inline void setY(double y)
 	{
 		this->y = y;
+	}
+	inline string toString() const
+	{
+		string xstr = STRING(this->x);
+		string ystr = STRING(this->y);
+		return xstr + ", " + ystr;
 	}
 
 	// ËãÊõ²Ù×÷·ûÖØÔØ

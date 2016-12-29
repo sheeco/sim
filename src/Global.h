@@ -197,6 +197,8 @@ namespace global
 	extern string INFO_MERGE_DETAILS;
 	extern string FILE_MA;
 	extern string INFO_MA;
+	extern string FILE_MA_ROUTE;
+	extern string INFO_MA_ROUTE;
 	extern string FILE_BUFFER_MA;
 	extern string INFO_BUFFER_MA;
 	extern string FILE_ED;
