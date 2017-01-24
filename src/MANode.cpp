@@ -88,10 +88,10 @@ void CMANode::updateStatus(int time)
 	atHotspot = nullptr;  //离开热点
 
 	CBasicEntity *toPoint = route.getToPoint();
-	bool arrival = this->moveTo(*toPoint , interval, SPEED);
+	int timeLeftAfterArrival = this->moveTo(*toPoint , interval, SPEED);
 
 	//如果已到达目的地
-	if(arrival)
+	if( timeLeftAfterArrival >= 0 )
 	{
 
 		//若目的地的类型是 hotspot

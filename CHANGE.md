@@ -714,10 +714,16 @@
 - MNT：将更新日志部分从 `README.md` 中分离到单独的文件 `CHANGE.md`；
 
 
-###### 2016-12-29
+###### [ 2016-12-29 ]( 918bce08512d6d9d51f1162a1452f5fad3ded96f )
 
 - ADD：输出 MA 节点路径信息到 `ma-route.log`；
 - ADD：`CCoordinate::toString` 和 `CRoute::toString`；
+
+
+###### 2017-01-24
+
+- FIX: Wrong use of `CBasicEntity::moveTo()` ret value in `CMANode::updateStatus`, which leads to false arrival to waypoints;
+- FIX: Bug in `CCTrace::getTraceFromFile()`, which leads to early death of nodes due to lack of trace entry;
 
 
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
@@ -733,7 +739,6 @@
 - [ ] FIX：检查 `CBasicEntity::time` 初始值由 0 改为 -1 可能导致的其他问题；
 - [ ] FIX：检查所有 `typeid` 的使用；
 - [ ] FIX：对比 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 找出 HAR 路由 MA 和节点通信流程中存在的问题；
-- [ ] ADD：在 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 中找回 `CHotspotSelect::PrintInfo()` 中统计热点投递计数的代码；
 - [ ] RFCT：将文件 `GPS.h` 和 `MotionRange.h` 中的定义整理到 Helper 类 ?
 - [ ] RFCT：将文件分离到解决方案下的不同子项目 ?
 - [ ] RFCT：将第一个命令行参数用于分离操作，而非定义多个主函数入口 ?

@@ -116,7 +116,7 @@ public:
 
 	//static vector<CBasicEntity*> GetItemsByID(vector<CBasicEntity*> list, vector<int> ids);
 
-	//由from向to方向移动，给定时间和速度
+	//由from向to方向移动，给定时间和速度，将更新时间戳和坐标为目的地或能到达的最远点
 	//如果足够到达to位置，则返回大于等于 0 的剩余时间（精确到整数）；否则返回值小于 0
 	int moveTo(CBasicEntity &to, int interval, double speed);
 
