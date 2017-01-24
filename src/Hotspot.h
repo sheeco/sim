@@ -16,8 +16,8 @@ class CHotspot :
 	friend class CHotspotSelect;
 	friend class CPostSelect;
 	friend class CNodeRepair;
-	friend class HAR;
-	friend class CHDC;
+	//friend class HAR;
+	//friend class CHDC;
 
 
 protected:
@@ -30,8 +30,8 @@ protected:
 	static vector<CHotspot *> selectedHotspots;
 	//上一次贪婪选取最终得到的热点集合，保留
 	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
-	static vector<CHotspot *> oldSelectedHotspots;
-	static vector<CHotspot *> deletedHotspots;
+	static map<int, vector<CHotspot *>> oldSelectedHotspots;
+	//static vector<CHotspot *> deletedHotspots;
 
 
 private:
@@ -40,8 +40,8 @@ private:
 	vector<CPosition *> coveredPositions;  //覆盖列表
 	vector<int> coveredNodes;  //覆盖的node列表，hotspot选取结束后手动调用generateCoveredNodes生成
 	double heat;
-	vector<int> countsDelivery;  //存储该热点上的投递计数，连任的热点应对每一任期内的投递计数进行统计
-	vector<int> waitingTimes;  //存储该热点上的等待时间，连任的热点应对每一任期内的投递计数进行统计
+	map<int, int> countsDelivery;  //存储该热点上的投递计数，连任的热点应对每一任期内的投递计数进行统计
+	map<int, int> waitingTimes;  //存储该热点上的等待时间: key指示开始时间，value指示等待时长
 	double ratio;  //用于测试新的ratio计算方法，将在贪婪选取和后续选取过程中用到
 
 	static int COUNT_ID;
@@ -65,13 +65,11 @@ private:
 	void init()
 	{
 		this->heat = 0;
-		this->waitingTimes.push_back(0);
 		this->ratio = 0;		
 		
 		//merge_HAR
 		this->typeHotspotCandidate = _new_hotspot;
 		this->age = 0;
-		this->countsDelivery.push_back(0);		
 	}
 
 	void generateHotspot(CCoordinate location, int time)
@@ -79,6 +77,8 @@ private:
 		init();
 		this->setLocation(location);
 		this->setTime(time);
+		//必须在setTime之后初始化
+		this->countsDelivery[this->time] = 0;
 		this->generateID();
 
 		//重置flag
@@ -175,10 +175,8 @@ public:
 	inline void setAge(int age)
 	{
 		this->age = age;
-		while( countsDelivery.size() < age + 1 )
-			countsDelivery.push_back(0);
-		while( waitingTimes.size() < age + 1 )
-			waitingTimes.push_back(0);
+		if( countsDelivery.find(this->time) == countsDelivery.end() )
+			countsDelivery[this->time] = 0;
 	}
 	inline int getNCoveredNodes() const
 	{
@@ -206,41 +204,74 @@ public:
 
 	int getNCoveredPositionsForNode(int inode);	
 	
-	//从当前这一热点任期内的投递计数，该函数应当在MA的路径更新时调用输出统计结果
+	inline void recordCountDelivery(int n)
+	{
+		map<int, int>::iterator imap = countsDelivery.find(this->time);
+		if( imap == countsDelivery.end() )
+			countsDelivery[this->time] = n;
+		else
+			countsDelivery[this->time] = imap->second + n;
+	}
+
+	//最后这一任期内的投递计数
 	//FIXEME: 未测试
 	inline int getCountDelivery()
 	{
-		if(age == 0)
-			return countsDelivery.at(0);
+		map<int, int>::iterator imap = countsDelivery.find(this->time);
+		if( imap != countsDelivery.end() )
+		{
+			return imap->second;
+		}
 		else
-			return countsDelivery.at( age - 1 );
+			throw string("CHotspot::getCountDelivery() : Cannot find delivery count for time " + STRING(this->time) + ") !");
 	}
+	//返回( sinceTime, sinceTime + 900 )期间的投递计数
+	inline int getCountDelivery(int sinceTime)
+	{
+		map<int, int>::iterator imap = countsDelivery.find(sinceTime);
+		if( imap != countsDelivery.end() )
+		{
+			return imap->second;
+		}
+		else
+			throw string("CHotspot::getCountDelivery(" + STRING(sinceTime) + ") : Cannot find delivery count for given arg !");
+	}
+
 	double getRatioByTypeHotspotCandidate() const;
 
-	//返回( untilTime - 900, untilTime )期间的投递计数
-	int getCountDelivery(int untilTime);
-
-	inline void addDeliveryCount(int n)
+	//在 CMANode::updateStatus 中，在每次等待结束waitingState重置时调用
+	inline void recordWaitingTime(int startTime, int duration)
 	{
-		countsDelivery.at( countsDelivery.size() - 1 ) += n;
+		if( waitingTimes.find(startTime) != waitingTimes.end() )
+			throw string("CHotspot::recordWaitingTime(" + STRING(startTime) + ", " + STRING(duration) + ") : "
+						 "Record (" + STRING(startTime) + ", " + STRING(waitingTimes.find(startTime)->second) + ") has already existed !");
+		waitingTimes[startTime] = duration;
 	}
-	//从当前这一热点任期内的等待时间，该函数应当在MA的路径更新时调用输出统计结果
-	//FIXEME: 未测试
-	inline int getWaitingTime()
+	//返回等待时间map，用于统计等待时间
+	inline map<int, int> getWaitingTimes()
 	{
-		if(age == 0)
-			return waitingTimes[0];
-		else
-			return waitingTimes[ age - 1 ];
+		return waitingTimes;
 	}
-	//返回( untilTime - 900, untilTime )期间的等待时间
-	//用于统计等待时间输出时
-	int getWaitingTime(int untilTime);
-
-	//setter / 用于规定最小等待时间时
-	inline void addWaitingTime(int t)
+	string getWaitingTimesString(bool details)
 	{
-		waitingTimes.at( waitingTimes.size() - 1 ) += t;
+		stringstream sstr;
+		int sum = 0;
+		for( map<int, int>::iterator imap = waitingTimes.begin(); imap != waitingTimes.end();  )
+		{
+			if( details )
+				sstr << imap->first << ":";
+			sstr << imap->second;
+			sum += imap->second;
+			if( ++imap != waitingTimes.end() )
+				sstr << ",";
+			else
+			{
+				sstr << ";";
+				break;
+			}
+		}
+		sstr << "=" << STRING(sum);
+		return sstr.str();
 	}
 
 	//自动生成ID，需手动调用，为了确保热点ID的唯一性，制作临时拷贝时不应调用此函数
@@ -268,6 +299,21 @@ public:
 
 	//确定覆盖的node列表，在hotspot选取结束后手动调用
 	void generateCoveredNodes();
+
+	static vector<CHotspot*> getSelectedHotspots()
+	{
+		return selectedHotspots;
+	}
+	static vector<CHotspot*> getSelectedHotspots(int forTime)
+	{
+		if( !selectedHotspots.empty()
+		   && forTime == selectedHotspots[0]->getTime() )
+			return selectedHotspots;
+		else if( oldSelectedHotspots.find(forTime) != oldSelectedHotspots.end() )
+			return oldSelectedHotspots[forTime];
+		else
+			throw string("CHotspot::getSelectedHotspots(" + STRING(forTime) + ") : Cannot find selected hotspots for given time !");
+	}
 
 	//为所有节点检查是否位于热点区域内，并统计visiter和encounter的热点区域计数
 	//visit 和 encounter 计数的统计时槽仅由轨迹文件决定

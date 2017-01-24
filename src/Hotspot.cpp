@@ -8,8 +8,8 @@
 int CHotspot::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 vector<CHotspot *> CHotspot::hotspotCandidates;
 vector<CHotspot *> CHotspot::selectedHotspots;
-vector<CHotspot *> CHotspot::oldSelectedHotspots;
-vector<CHotspot *> CHotspot::deletedHotspots;
+map<int, vector<CHotspot *>> CHotspot::oldSelectedHotspots;
+//vector<CHotspot *> CHotspot::deletedHotspots;
 
 
 bool CHotspot::ifPositionExists(CPosition* pos)
@@ -139,27 +139,6 @@ double CHotspot::getRatioByTypeHotspotCandidate() const
 	default:
 		return 1;
 	}
-}
-
-//返回( untilTime - 900, untilTime )期间的投递计数
-int CHotspot::getCountDelivery(int untilTime)
-{
-	int i = ( untilTime - time ) / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1;
-	if( i < 0 || i > countsDelivery.size() )
-	{
-		throw string("CHotspot::getCountDelivery(" + STRING(untilTime) + ") : " + STRING(i) + " exceeds (0," + STRING(countsDelivery.size() - 1) + ") !");
-	}
-	return countsDelivery.at( i );
-}
-
-int CHotspot::getWaitingTime(int untilTime)
-{
-	int i = ( untilTime - time ) / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1;
-	if( i < 0 || i > waitingTimes.size() )
-	{
-		throw string("CHotspot::getCountDelivery(" + STRING(untilTime) + ") : " + STRING(i) + " exceeds (0," + STRING(waitingTimes.size() - 1) + ") !");
-	}		
-	return waitingTimes[ i ];
 }
 
 double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)

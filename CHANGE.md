@@ -720,10 +720,18 @@
 - ADD：`CCoordinate::toString` 和 `CRoute::toString`；
 
 
-###### 2017-01-24
+###### [ 2017-01-24 ]( 8d8a1f2c8ed83974e37a1defaf2a6b0740af511b )
 
 - FIX: Wrong use of `CBasicEntity::moveTo()` ret value in `CMANode::updateStatus`, which leads to false arrival to waypoints;
 - FIX: Bug in `CCTrace::getTraceFromFile()`, which leads to early death of nodes due to lack of trace entry;
+
+###### 2017-01-24
+
+- ADD: Delivery count & waiting time stat info printed to `hotspot-statistics.log` by `HAR::PrintInfo()`, which was once abandoned after [48b5f2](48b5f2fe380ebfa510da3f2e578984bd353894b6);
+- MOD: Redefine `CHotspot::countsDelivery` & `CHotspot::waitingTimes` as `map<int, int>`;
+- NOTE: Bugs may be introduced with merged hotspots in mHAR. Need to check if a merged hotspot would overwrite the old one;
+- RFCT: Redefine `CHotspot::oldSelectedHotspots` as `map<int, vector<CHotspot*>>` to store all the previous hotspot selection, rather than just last one;
+- RFCT: Extract access to `CHotspot::selectedHotspots, oldSelectedHotspots` into `CHotspot::getSelectedHotspots()`, store & clean before new selection into `CHotspotSelect::SaveOldSelectedHotspots()`;
 
 
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；

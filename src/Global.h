@@ -92,7 +92,6 @@ using std::setfill;
 /********************************** Global Namespace ***********************************/
 
 namespace global
-//class CGlobalHelper
 {
 	/******************************** Config Const ********************************/
 
@@ -185,8 +184,6 @@ namespace global
 	extern string INFO_VISIT;
 	extern string FILE_HOTSPOT_STATISTICS;
 	extern string INFO_HOTSPOT_STATISTICS;
-	extern string FILE_HOTSPOT_RANK;
-	extern string INFO_HOTSPOT_RANK;
 	extern string FILE_DELIVERY_HOTSPOT;
 	extern string INFO_DELIVERY_HOTSPOT;
 	extern string FILE_DELIVERY_STATISTICS;

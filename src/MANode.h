@@ -195,6 +195,7 @@ public:
 		this->atHotspot = atHotspot;
 	}
 
+	//TODO: include when im still in range of the hotspot after leaving the center, maybe introducing m_lastAtHotspot
 	inline bool isAtHotspot() const
 	{
 		if(atHotspot == nullptr)

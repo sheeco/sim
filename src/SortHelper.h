@@ -45,13 +45,15 @@ public:
 	//CHotspot类按照x坐标或者ratio排序
 	static vector<CHotspot *> merge(vector<CHotspot *> left, vector<CHotspot *> right, bool(*Comp)(CHotspot *, CHotspot *));
 	static vector<CHotspot *> mergeSort(vector<CHotspot *> v, bool(*Comp)(CHotspot *, CHotspot *));
-	//CHotspot类静态拷贝按照( endTime - 900, endTime )期间的投递计数的降序排列
-	static vector<CHotspot> mergeByDeliveryCount(vector<CHotspot> left, vector<CHotspot> right, int endTime);
-	static vector<CHotspot> mergeSortByDeliveryCount(vector<CHotspot> v, int endTime);
+	////CHotspot类静态拷贝按照( endTime - 900, endTime )期间的投递计数的降序排列
+	//static vector<CHotspot> mergeByDeliveryCount(vector<CHotspot> left, vector<CHotspot> right, int endTime);
+	//static vector<CHotspot> mergeSortByDeliveryCount(vector<CHotspot> v, int endTime);
 
 	//用于作为参数传入mergeSort函数的Comparison函数
 	static bool ascendByLocationX(CHotspot *left, CHotspot *right);
 	static bool ascendByRatio(CHotspot *left, CHotspot *right);
+	//按照热点最后一任内的投递计数降序
+	static bool descendByCountDelivery(CHotspot *left, CHotspot *right){	return left->getCountDelivery() < right->getCountDelivery();	};
 	static bool descendByInt(int left, int right){	return left > right;	};
 	static bool ascendByInt(int left, int right){	return left < right;	};
 	static bool ascendByTimeBirth(CData left, CData right){	return left < right; };

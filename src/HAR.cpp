@@ -186,8 +186,8 @@ void HAR::HotspotClassification(int currentTime)
 		&& currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT ) )
 		return;
 
-	vector<CHotspot *> temp_hotspots = CHotspot::selectedHotspots;
-	m_hotspots = CHotspot::selectedHotspots;
+	vector<CHotspot *> temp_hotspots = CHotspot::getSelectedHotspots();
+	m_hotspots = CHotspot::getSelectedHotspots();
 	for(vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin(); ihotspot != temp_hotspots.end(); ++ihotspot)
 	{
 		(*ihotspot)->setHeat( getHotspotHeat(*ihotspot) );
@@ -733,7 +733,8 @@ void HAR::PrintInfo(int currentTime)
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、MA节点buffer状态 ...
 
-	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 )
+	if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0
+	    || currentTime == RUNTIME )
 	{
 		//MA节点个数
 		ofstream ma(PATH_ROOT + PATH_LOG + FILE_MA, ios::app);
@@ -745,7 +746,7 @@ void HAR::PrintInfo(int currentTime)
 		ma << currentTime << TAB << m_routes.size() << TAB << ( double(m_hotspots.size()) / double(m_routes.size()) ) << endl;
 		ma.close();
 
-			//
+		//
 		ofstream ma_route(PATH_ROOT + PATH_LOG + FILE_MA_ROUTE, ios::app);
 		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
 		{
@@ -774,10 +775,49 @@ void HAR::PrintInfo(int currentTime)
 		}
 		ed << currentTime << TAB << calculateEDTime(currentTime) << endl;
 		ed.close();
+
+		//热点质量、投递计数等统计信息
+		ofstream hotspot_statistics(PATH_ROOT + PATH_LOG + FILE_HOTSPOT_STATISTICS, ios::app);
+		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+		{
+			hotspot_statistics << endl << INFO_LOG << endl;
+			hotspot_statistics << INFO_HOTSPOT_STATISTICS;
+		}
+		//在 t 被时刻选出的热点，工作周期截至到 t + 900，在 t + 1800 时刻才被统计输出
+		int timeBeforeYesterday = currentTime - 2 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+		vector<int> timesToPrint;
+		if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+			timesToPrint.push_back(timeBeforeYesterday);
+		if( ! timesToPrint.empty()
+		   || currentTime == RUNTIME )
+		{
+			//运行结束，补充输出上一轮的热点统计
+ 			if( currentTime == RUNTIME )
+			{
+				timeBeforeYesterday = ( currentTime / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1 ) * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+				int timeYesterday = timeBeforeYesterday + CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+				if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+					timesToPrint.push_back(timeBeforeYesterday);
+				if( timeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+					timesToPrint.push_back(timeYesterday);
+			}
+
+			for( vector<int>::iterator itime = timesToPrint.begin(); itime != timesToPrint.end(); itime++ )
+			{
+				vector<CHotspot *> hotspotsToPrint = CHotspot::getSelectedHotspots(*itime);
+				hotspotsToPrint = CSortHelper::mergeSort(hotspotsToPrint, CSortHelper::descendByCountDelivery);
+				for( vector<CHotspot *>::iterator it = hotspotsToPrint.begin(); it != hotspotsToPrint.end(); ++it )
+					hotspot_statistics << *itime << '-' << *itime + CHotspotSelect::SLOT_HOTSPOT_UPDATE << TAB
+					<< ( *it )->getID() << TAB << ( *it )->getLocation().toString() << TAB << ( *it )->getNCoveredPosition() << "," << ( *it )->getNCoveredNodes() << TAB
+					<< ( *it )->getRatio() << TAB << ( *it )->getWaitingTimesString(true) << TAB << ( *it )->getCountDelivery(*itime) << endl;
+			}
+		}
+		hotspot_statistics.close();
 	}
 
 	//MA Buffer
-	if( currentTime % SLOT_LOG == 0 )
+	if( currentTime % SLOT_LOG == 0
+	    || currentTime == RUNTIME )
 	{
 		//每个MA的当前buffer状态
 		ofstream buffer_ma( PATH_ROOT + PATH_LOG + FILE_BUFFER_MA, ios::app);

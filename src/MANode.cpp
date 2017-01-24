@@ -40,7 +40,7 @@ CGeneralNode::_RECEIVE CMANode::MODE_RECEIVE = _selfish;
 //	return true;
 //}
 
-// TODO: need test
+// UNDONE: test recordWaitingTime
 void CMANode::updateStatus(int time)
 {
 	if( this->time < 0 )
@@ -56,6 +56,10 @@ void CMANode::updateStatus(int time)
 		|| ( MODE_RECEIVE == _selfish
 		&& buffer.size() >= capacityBuffer ) )
 	{
+		//记录一次未填满窗口的等待；可能录入(t, 0)，即说明由于路线过期而跳过等待
+		if( isAtHotspot() )
+			getAtHotspot()->recordWaitingTime(time - waitingState, waitingState);
+
 		waitingWindow = waitingState = 0;
 		route.updateToPointWithSink();
 	}
@@ -66,6 +70,9 @@ void CMANode::updateStatus(int time)
 		//等待即将结束		
 		if( (waitingState + interval) >= waitingWindow )
 		{
+			//记录一次满窗口的等待
+			getAtHotspot()->recordWaitingTime(time - waitingWindow, waitingWindow);
+
 			interval = waitingState + interval - waitingWindow;  //等待结束后，剩余的将用于移动的时间
 			waitingWindow = waitingState = 0;  //等待结束，将时间窗重置
 		}
@@ -136,12 +143,19 @@ CFrame* CMANode::sendRTSWithCapacity(int currentTime)
 
 vector<CData> CMANode::bufferData(int time, vector<CData> datas)
 {
-	if( isAtHotspot() )
-		this->getAtHotspot()->addDeliveryCount(datas.size());
-
 	vector<CData> ack = datas;
 	RemoveFromList( datas, this->buffer );
-	for(auto idata = datas.begin(); idata != datas.end(); ++idata)
+
+	bool atHotspot = isAtHotspot();
+	if( atHotspot )
+	{
+		this->getAtHotspot()->recordCountDelivery(datas.size());
+		CData::deliverAtHotspot(datas.size());
+	}
+	else
+		CData::deliverOnRoute(datas.size());
+
+	for( auto idata = datas.begin(); idata != datas.end(); ++idata )
 	{
 		// TODO: 认为到达 MA 节点即到达 sink
 		idata->arriveSink(time);

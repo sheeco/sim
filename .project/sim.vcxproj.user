@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-energy 500 -trans-prob 1 -buffer 500 -data-rate 30 -cycle 60   -dc-default 0.05  --prophet -dc-sync on</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-time-run 1900 -trans-prob 1 -buffer 20 -buffer-ma 100 -data-rate 6.8 -cycle 1 -dc-default 1.0  --har</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>..\.debug\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

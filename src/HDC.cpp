@@ -21,7 +21,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	if( ! ( currentTime % CCTrace::SLOT_TRACE == 0 ) )
 		return;
 
-	vector<CHotspot *> hotspots = CHotspot::selectedHotspots;
+	vector<CHotspot *> hotspots = CHotspot::getSelectedHotspots();
 	vector<CNode *> nodes = CNode::getNodes();
 	if( hotspots.empty()
 		|| nodes.empty() )

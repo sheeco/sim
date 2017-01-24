@@ -45,6 +45,9 @@ private:
 	//更新hotspotsAboveAverage，在每一次迭代后调用
 	static void updateStatus();
 
+	//保存过期的选中热点，释放上一轮选取中未被选中的废弃热点
+	static void SaveOldSelectedHotspots(int currentTime);
+
 	//根据到目前为止的所有position记录，构建候选hotspot列表
 	//由main函数，在每个hotspot更新时隙上调用
 	static void BuildCandidateHotspots(int currentTime);

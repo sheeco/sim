@@ -231,41 +231,41 @@ vector<CHotspot *> CSortHelper::mergeSort(vector<CHotspot *> v, bool(*Comp)(CHot
 	return merge(left, right, Comp);
 }
 
-vector<CHotspot> CSortHelper::mergeByDeliveryCount(vector<CHotspot> left, vector<CHotspot> right, int endTime)
-{
-	vector<CHotspot> result;
-	vector<CHotspot>::size_type li = 0;
-	vector<CHotspot>::size_type ri = 0;
-	while(li < left.size()
-		&& ri < right.size())
-	{
-		int lv = left[li].getCountDelivery(endTime);
-		int rv = right[ri].getCountDelivery(endTime);
-		if( lv < rv )
-			result.push_back(right[ri++]);
-		else
-			result.push_back(left[li++]);
-	}
-	while(li < left.size())
-		result.push_back(left[li++]);
-	while(ri < right.size())
-		result.push_back(right[ri++]);
-	return result;
-}
-
-vector<CHotspot> CSortHelper::mergeSortByDeliveryCount(vector<CHotspot> v, int endTime)
-{
-	if(v.size() == 0)
-		return vector<CHotspot>();
-	if(v.size() == 1)
-		return vector<CHotspot>(1, v[0]);
-
-	vector<CHotspot>::iterator mid = v.begin() + v.size() / 2;
-	vector<CHotspot> left(v.begin(), mid);
-	vector<CHotspot> right(mid, v.end());
-	left = mergeSortByDeliveryCount(left, endTime);
-	right = mergeSortByDeliveryCount(right, endTime);
-
-	return mergeByDeliveryCount(left, right, endTime);
-}
+//vector<CHotspot> CSortHelper::mergeByDeliveryCount(vector<CHotspot> left, vector<CHotspot> right, int endTime)
+//{
+//	vector<CHotspot> result;
+//	vector<CHotspot>::size_type li = 0;
+//	vector<CHotspot>::size_type ri = 0;
+//	while(li < left.size()
+//		&& ri < right.size())
+//	{
+//		int lv = left[li].getCountDelivery(endTime);
+//		int rv = right[ri].getCountDelivery(endTime);
+//		if( lv < rv )
+//			result.push_back(right[ri++]);
+//		else
+//			result.push_back(left[li++]);
+//	}
+//	while(li < left.size())
+//		result.push_back(left[li++]);
+//	while(ri < right.size())
+//		result.push_back(right[ri++]);
+//	return result;
+//}
+//
+//vector<CHotspot> CSortHelper::mergeSortByDeliveryCount(vector<CHotspot> v, int endTime)
+//{
+//	if(v.size() == 0)
+//		return vector<CHotspot>();
+//	if(v.size() == 1)
+//		return vector<CHotspot>(1, v[0]);
+//
+//	vector<CHotspot>::iterator mid = v.begin() + v.size() / 2;
+//	vector<CHotspot> left(v.begin(), mid);
+//	vector<CHotspot> right(mid, v.end());
+//	left = mergeSortByDeliveryCount(left, endTime);
+//	right = mergeSortByDeliveryCount(right, endTime);
+//
+//	return mergeByDeliveryCount(left, right, endTime);
+//}
 

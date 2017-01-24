@@ -63,15 +63,13 @@ namespace global
 	string FILE_HOTSPOT = "hotspot.log";
 	string INFO_HOTSPOT = "#Time	#HotspotCount \n" ;
 	string FILE_HOTSPOT_DETAILS = "hotspot-details.log";
-	string INFO_HOTSPOT_DETAILS = "#Time 	#X	#Y \n";
+	string INFO_HOTSPOT_DETAILS = "#Time #ID	#X	#Y \n";
 	string FILE_HOTSPOT_SIMILARITY = "hotspot-similarity.log";
 	string INFO_HOTSPOT_SIMILARITY = "#Time	#Overlap/Old	#Overlap/New	#OverlapArea	#OldArea	#NewArea \n";
 	string FILE_VISIT = "visit.log";
 	string INFO_VISIT = "#Time	#VisitAtHotspotPercent	#VisitAtHotspot	#VisitSum \n" ;
 	string FILE_HOTSPOT_STATISTICS = "hotspot-statistics.log";
-	string INFO_HOTSPOT_STATISTICS = "#Time	#CoverPercent	#HotspotCount	#AvgCover \n" ;
-	string FILE_HOTSPOT_RANK = "hotspot-rank.log";
-	string INFO_HOTSPOT_RANK =  "#WorkTime	#ID	#Location	#nPosition, nNode	#Ratio	#Tw	#DeliveryCount \n" ;
+	string INFO_HOTSPOT_STATISTICS = "#Cycle	#ID	#Location	#nPosition, nNode	#Ratio	#Tw	#DeliveryCount \n";
 	string FILE_DELIVERY_HOTSPOT = "delivery-hotspot.log";
 	string INFO_DELIVERY_HOTSPOT = "#Time	#DeliveryCountForSingleHotspotInThisSlot ... \n";
 	string FILE_DELIVERY_STATISTICS = "delivery-statistics.log";
