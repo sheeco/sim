@@ -36,7 +36,6 @@ public:
 
 	static bool shouldForward(CNode* node, map<int, double> dstPred);
 
-	// TODO: check hop
 	//select proper data to send
 	static vector<CData> getDataForTrans(CNode* node);
 

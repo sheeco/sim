@@ -87,7 +87,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			if( ! (*inode)->isAlive() )
 				buffer << "-" << TAB ;
 			else
-				buffer << (*inode)->getAverageSizeBuffer() << TAB;
+				buffer << NDigitFloat( (*inode)->getAverageSizeBuffer(), 1) << TAB;
 		}
 		buffer << endl;
 		buffer.close();
@@ -156,6 +156,6 @@ void CRoutingProtocol::PrintFinal(int currentTime)
 	}
 
 	double deliveryRatio = NDigitFloat(CData::getDeliveryRatio() * 100, 1);
-	cout << endl << endl << "####  < " << currentTime << " >  " << "SIMULATION FINISHED" << endl;
+	cout << endl << endl << "####  < " << currentTime - 1 << " >  " << "SIMULATION FINISHED" << endl;
 	cout << "######  [ Delivery Ratio ]  " << deliveryRatio << " % " << endl << endl;
 }

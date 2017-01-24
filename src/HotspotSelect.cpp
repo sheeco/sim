@@ -89,7 +89,6 @@ void CHotspotSelect::CollectNewPositions(int currentTime)
 		return ;
 	CPosition* temp_pos = nullptr;
 
-	// TODO: 待测试
 	//用于筛选出新的死亡节点
 	static vector<int> idNodes = CNode::getIdNodes();
 	vector<int> deadNodes = idNodes;

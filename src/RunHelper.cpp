@@ -151,7 +151,6 @@ void CRunHelper::InitConfiguration()
 
 	/************************************** Necessary Config **************************************/
 
-	// TODO: should be read from .trace file
 	CCTrace::SLOT_TRACE = 30;
 	DATATIME = 15000;
 	RUNTIME = 15000;
@@ -270,7 +269,6 @@ void CRunHelper::ValidateConfiguration()
 
 }
 
-// TODO: print all significant parameters
 void CRunHelper::PrintConfiguration()
 {
 	ofstream parameters(PATH_ROOT + PATH_LOG + FILE_PARAMETES, ios::app);
@@ -505,17 +503,17 @@ bool CRunHelper::Run(int argc, char* argv[])
 	}
 	catch(string error)
 	{
-		cout << "Error @ " << error << endl;
+		cout << endl << "Error @ " << error << endl;
 		Exit(EERROR, error);
 	}
 	catch(pair<int, string> &pairError)
 	{
-		cout << "Error " << pairError.first << " @ " << pairError.second << endl;
+		cout << endl << "Error " << pairError.first << " @ " << pairError.second << endl;
 		Exit(pairError.first, pairError.second);
 	}
 	catch(exception ex)
 	{
-		cout << "Uncaught Error : " << ex.what() << endl;
+		cout << endl << "Uncaught Error : " << ex.what() << endl;
 		Exit(EERROR, ex.what() );
 	}
 

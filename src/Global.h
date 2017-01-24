@@ -114,7 +114,6 @@ namespace global
 
 	/********************************* Global Var *********************************/
 
-	// TODO: move these global config to a global CConfiguration parameter
 	extern _MAC_PROTOCOL MAC_PROTOCOL;
 	extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
 	extern _HOTSPOT_SELECT HOTSPOT_SELECT;
@@ -126,8 +125,6 @@ namespace global
 	extern int SLOT_LOG;  //记录数据投递率和数据投递时延的slot
 
 	/********************************* Usage & Output ***********************************/
-
-	// TODO: print info into different folders
 
 	extern string TIMESTAMP;
 	extern string PATH_TRACE;
@@ -206,10 +203,8 @@ namespace global
 
 	void Exit(int code);
 
-	// TODO: 
 	void Exit(int code, string error);
 
-	// TODO: find all refs & replace with Bet()
 	//Randomly product a float number between min and max
 	inline double RandomFloat(double min, double max)
 	{

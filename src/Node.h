@@ -118,7 +118,6 @@ public:
 
 	static int CAPACITY_BUFFER;
 	static int CAPACITY_ENERGY;
-	// TODO:
 	static int SPEED_TRANS;  // Byte / s
 	static int LIFETIME_SPOKEN_CACHE;  //在这个时间内交换过数据的节点暂时不再交换数据
 	static _RECEIVE MODE_RECEIVE;

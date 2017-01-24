@@ -77,7 +77,7 @@ public:
 
 	static int START_COUNT_ID;
 	static int SPEED;
-	static int CAPACITY_BUFFER;  // TODO: static getter & ref mod
+	static int CAPACITY_BUFFER;
 	static _RECEIVE MODE_RECEIVE;
 
 	static vector<CMANode *>& getMANodes()

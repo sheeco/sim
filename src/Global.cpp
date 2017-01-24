@@ -44,7 +44,7 @@ namespace global
 	string FILE_ENERGY_CONSUMPTION = "energy-consumption.log";
 	string INFO_ENERGY_CONSUMPTION = "#Time	#AvgEC	(#SumEC	#NodeCount	#CurrentEnergy...) \n" ;
 	string FILE_SINK = "sink.log";
-	string INFO_SINK = "#Time	#EncounterAtSink \n";  // TODO: unprinted
+	string INFO_SINK = "#Time	#EncounterAtSink \n";
 
 	string FILE_DELIVERY_RATIO_900 = "delivery-ratio.log";
 	string INFO_DELIVERY_RATIO_900 = "#Time	#ArrivalCount	#TotalCount	#DeliveryRatio% \n" ;
@@ -56,7 +56,6 @@ namespace global
 	string INFO_HOP	 = "#Time	#AvgHOP \n" ;
 	string FILE_BUFFER = "buffer.log";
 	string INFO_BUFFER = "#Time	#BufferStateOfEachNode \n" ;
-	// TODO: all 0 in output
 	string FILE_BUFFER_STATISTICS = "buffer-statistics.log";
 	string INFO_BUFFER_STATISTICS =  "#Time	#AvgBufferStateInHistoryOfEachNode \n" ;
 

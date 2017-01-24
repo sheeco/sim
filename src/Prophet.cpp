@@ -40,7 +40,6 @@ void CProphet::initDeliveryPreds(CNode * node)
 
 void CProphet::decayDeliveryPreds(CNode * node, int currentTime)
 {
-	// TODO: refine decay ratio ?
 	map<int, double> deliveryPreds = node->getDeliveryPreds();
 	for( map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap )
 		deliveryPreds[imap->first] = imap->second * pow(CProphet::RATIO_PRED_DECAY, ( currentTime - node->getTime() ) / CCTrace::SLOT_TRACE);

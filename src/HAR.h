@@ -11,7 +11,6 @@
 #include "RoutingProtocol.h"
 
 
-// TODO: rewrite
 class HAR : 
 	virtual public CRoutingProtocol
 {

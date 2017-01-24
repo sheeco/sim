@@ -130,7 +130,6 @@ public:
 	//执行热点选取
 	static void HotspotSelect(int currentTime);
 
-	// TODO: move print operation here
 	static void PrintInfo(int currentTime);
 	static void PrintFinal(int currentTime);
 

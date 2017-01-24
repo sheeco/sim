@@ -725,13 +725,20 @@
 - FIX: Wrong use of `CBasicEntity::moveTo()` ret value in `CMANode::updateStatus`, which leads to false arrival to waypoints;
 - FIX: Bug in `CCTrace::getTraceFromFile()`, which leads to early death of nodes due to lack of trace entry;
 
-###### 2017-01-24
+###### [ 2017-01-24 ]( 82b2c533f2c4f268542d6c144568452cfcc351d3 )
 
 - ADD: Delivery count & waiting time stat info printed to `hotspot-statistics.log` by `HAR::PrintInfo()`, which was once abandoned after [48b5f2](48b5f2fe380ebfa510da3f2e578984bd353894b6);
 - MOD: Redefine `CHotspot::countsDelivery` & `CHotspot::waitingTimes` as `map<int, int>`;
 - NOTE: Bugs may be introduced with merged hotspots in mHAR. Need to check if a merged hotspot would overwrite the old one;
 - RFCT: Redefine `CHotspot::oldSelectedHotspots` as `map<int, vector<CHotspot*>>` to store all the previous hotspot selection, rather than just last one;
 - RFCT: Extract access to `CHotspot::selectedHotspots, oldSelectedHotspots` into `CHotspot::getSelectedHotspots()`, store & clean before new selection into `CHotspotSelect::SaveOldSelectedHotspots()`;
+
+###### 2017-01-24
+
+- OPT: Minor improvement for some printings & removal of obsolete TODOs;
+- [ ] MNT: Use VCB command line util `AUTOVER` for version control;
+- [ ] BUG: Only 1 waypoint is possible for all the MAs;
+- [ ] RFCT: Extract print method into `CPrintHelper` or `global`;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

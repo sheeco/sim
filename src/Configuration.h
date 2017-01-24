@@ -12,7 +12,6 @@
 #include "Global.h"
 
 
-// TODO: def in this class or create multiple derived class ?
 class CConfiguration
 {
 	friend class CRunHelper;

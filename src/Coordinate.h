@@ -49,7 +49,7 @@ public:
 	{
 		string xstr = STRING(this->x);
 		string ystr = STRING(this->y);
-		return xstr + ", " + ystr;
+		return xstr + "," + ystr;
 	}
 
 	// ËãÊõ²Ù×÷·ûÖØÔØ

@@ -1,7 +1,6 @@
 #include "MANode.h"
 #include "HAR.h"
 
-// TODO: read from xml instead of constant initial value
 int CMANode::encounter = 0;
 //int CMANode::encounterActive = 0;
 int CMANode::COUNT_ID = 0;  //从START_COUNT_ID开始，差值等于当前实例总数
@@ -40,7 +39,6 @@ CGeneralNode::_RECEIVE CMANode::MODE_RECEIVE = _selfish;
 //	return true;
 //}
 
-// UNDONE: test recordWaitingTime
 void CMANode::updateStatus(int time)
 {
 	if( this->time < 0 )
@@ -157,7 +155,7 @@ vector<CData> CMANode::bufferData(int time, vector<CData> datas)
 
 	for( auto idata = datas.begin(); idata != datas.end(); ++idata )
 	{
-		// TODO: 认为到达 MA 节点即到达 sink
+		// UNDONE: 认为到达 MA 节点即到达 sink
 		idata->arriveSink(time);
 		this->buffer.push_back(*idata);
 	}
