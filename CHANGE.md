@@ -737,12 +737,15 @@
 
 - OPT: Minor improvement for some printings & removal of obsolete TODOs;
 
-###### 2017-01-26
+###### [ 2017-01-26 ]( b04463874887150c377fe83f718b42d48e225fdd )
 
 - OPT: Minor improvement for path & filename string definitions in `global`;
 
+###### 2017-01-26 ¡¤ *< 3.6.6234.36098 >*
 
-- [ ] MNT: Use VCB command line util `AUTOVER` for version control;
+- [x] MNT: Use VCB command line util `AUTOVER` for version control. & Allow switching back to manual versioning by undefining `__VERSIONING_CONTOLLED_BUILD__`;
+
+
 - [ ] BUG: Only 1 waypoint is possible for all the MAs;
 - [ ] RFCT: Extract print method into `CPrintHelper` or `global`;
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

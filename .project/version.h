@@ -1,6 +1,9 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by HDC.rc
+// Used by sim.rc
+
+#ifndef __VERSION_H__
+#define __VERSION_H__
 
 // 新对象的下一组默认值
 // 
@@ -13,13 +16,23 @@
 #endif
 #endif
 
-#ifndef __VERSION_H__
-#define __VERSION_H__
+//如果移除 VCB，应该注释此宏定义
+#define __VERSIONING_CONTOLLED_BUILD__
 
-#define VERSION_MAJOR 3
-#define VERSION_MINOR 6
-#define VERSION_BUILD 11
+/************************************ 移除 VCB 之后的手动版本号定义 ****************************************/
 
-#define STR_VERSION ""##VERSION_MAJOR"."##VERSION_MINOR"."##VERSION_BUILD""
+#ifndef __VERSIONING_CONTOLLED_BUILD__
+#define __MANUAL_VERSIONING__
+
+#define FILE_VERSION_MAJOR 3
+#define FILE_VERSION_MINOR 6
+#define FILE_VERSION_BUILD 11
+#define PRODUCT_VERSION_MAJOR 0
+#define PRODUCT_VERSION_MINOR 1
+
+#define FILE_VERSION_STR ""##FILE_VERSION_MAJOR"."##FILE_VERSION_MINOR"."##FILE_VERSION_BUILD""
+#define PRODUCT_VERSION_STR ""##PRODUCT_VERSION_MAJOR"."##PRODUCT_VERSION_MINOR""
+
+#endif // __VERSIONING_CONTOLLED_BUILD__
 
 #endif // __VERSION_H__

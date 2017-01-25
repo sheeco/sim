@@ -54,6 +54,7 @@ using std::setfill;
 #define EQUAL(x, y) fabs( x - y ) < 0.000001
 #define ZERO(x) fabs(x) < 0.000001
 #define STRING(x) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str()
+#define _STRING(x) #x
 
 #define UNVALID -1
 

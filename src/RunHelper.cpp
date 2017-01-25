@@ -384,16 +384,16 @@ void CRunHelper::PrintConfiguration()
 
 	// 输出版本信息
 
-	//ifstream versionInput( PATH_RUN + FILE_VERION, ios::in);
-	//ofstream version( PATH_ROOT + PATH_LOG + FILE_VERION, ios::out);
-	//version << versionInput.rdbuf();
-	//versionInput.close();
-	//version.close();
-
 	ofstream version(DIR_LOG + PATH_TIMESTAMP + FILE_VERSION, ios::out);
-
-	version << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_BUILD;
-
+#define __VERSIONING_CONTROLLED_BUILD__
+#ifdef __VERSIONING_CONTROLLED_BUILD__
+	ifstream in_version(DIR_ROOT + FILE_VERSION, ios::in);
+	version << in_version.rdbuf();
+	in_version.close();
+#endif
+#ifdef __MANUAL_VERSIONING__
+	version << _STRING(FILE_VERSION_STR);
+#endif
 	version.close();
 
 }
