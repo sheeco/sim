@@ -126,16 +126,18 @@ namespace global
 
 	/********************************* Usage & Output ***********************************/
 
+	extern string DIR_ROOT;
+	extern string DIR_PROJECT;
+	extern string DIR_RUN;
+	extern string DIR_RESOURCE;
+	extern string DIR_LOG;
 	extern string TIMESTAMP;
-	extern string PATH_TRACE;
-	extern string PATH_RUN;
-	extern string PATH_LOG;
-	extern string PATH_ROOT;
+	extern string PATH_TIMESTAMP;
 
 	extern string INFO_LOG;
 	extern string FILE_DEFAULT_CONFIG;
 	extern string FILE_PARAMETES;
-	extern string FILE_VERION;
+	extern string FILE_VERSION;
 	extern string FILE_HELP;
 	//extern string INFO_HELP;
 	extern string FILE_ERROR;

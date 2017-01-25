@@ -14,7 +14,7 @@
 ////		return;
 ////	cout << "####  < " << currentTime << " >  DATA DELIVERY" << endl ;
 ////
-////	ofstream sink( PATH_ROOT + PATH_LOG + FILE_SINK, ios::app);
+////	ofstream sink( DIR_LOG + PATH_TIMESTAMP + FILE_SINK, ios::app);
 ////	if(currentTime == 0)
 ////	{
 ////		sink << endl << INFO_LOG << endl ;

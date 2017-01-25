@@ -226,7 +226,7 @@ void CNode::ClearDeadNodes(int currentTime)
 
 	if( death )
 	{
-		ofstream death(PATH_ROOT + PATH_LOG + FILE_DEATH, ios::app);
+		ofstream death(DIR_LOG + PATH_TIMESTAMP + FILE_DEATH, ios::app);
 		if( currentTime == 0 )
 		{
 			death << endl << INFO_LOG << endl;

@@ -44,7 +44,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		|| currentTime == RUNTIME )
 	{
 		//数据投递率-900（用于debug）
-		ofstream delivery_ratio( PATH_ROOT + PATH_LOG + FILE_DELIVERY_RATIO_900, ios::app);
+		ofstream delivery_ratio( DIR_LOG + PATH_TIMESTAMP + FILE_DELIVERY_RATIO_900, ios::app);
 		if(currentTime == 0)
 		{
 			delivery_ratio << endl << INFO_LOG << endl ;
@@ -54,7 +54,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		delivery_ratio.close();
 
 		//数据投递延迟
-		ofstream delay( PATH_ROOT + PATH_LOG + FILE_DELAY, ios::app);
+		ofstream delay( DIR_LOG + PATH_TIMESTAMP + FILE_DELAY, ios::app);
 		if(currentTime == 0)
 		{
 			delay << endl << INFO_LOG << endl ;
@@ -64,7 +64,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		delay.close();
 
 		//数据投递跳数
-		ofstream hop( PATH_ROOT + PATH_LOG + FILE_HOP, ios::app);
+		ofstream hop( DIR_LOG + PATH_TIMESTAMP + FILE_HOP, ios::app);
 		if(currentTime == 0)
 		{
 			hop << endl << INFO_LOG << endl ;
@@ -74,7 +74,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		hop.close();
 
 		//每个节点buffer状态的历史平均值
-		ofstream buffer( PATH_ROOT + PATH_LOG + FILE_BUFFER_STATISTICS, ios::app);
+		ofstream buffer( DIR_LOG + PATH_TIMESTAMP + FILE_BUFFER_STATISTICS, ios::app);
 		if(currentTime == 0)
 		{
 			buffer << endl << INFO_LOG << endl ;
@@ -99,7 +99,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		|| currentTime == RUNTIME)
 	{
 		//数据投递率-100（用于绘制曲线）
-		ofstream delivery_ratio( PATH_ROOT + PATH_LOG + FILE_DELIVERY_RATIO_100, ios::app);
+		ofstream delivery_ratio( DIR_LOG + PATH_TIMESTAMP + FILE_DELIVERY_RATIO_100, ios::app);
 		if(currentTime == 0)
 		{
 			delivery_ratio << endl << INFO_LOG << endl ;
@@ -109,7 +109,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 		delivery_ratio.close();
 
 		//每个节点的当前buffer状态
-		ofstream buffer( PATH_ROOT + PATH_LOG + FILE_BUFFER, ios::app);
+		ofstream buffer( DIR_LOG + PATH_TIMESTAMP + FILE_BUFFER, ios::app);
 		if(currentTime == 0)
 		{
 			buffer << endl << INFO_LOG << endl ;
@@ -135,7 +135,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 
 void CRoutingProtocol::PrintFinal(int currentTime)
 {
-	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
+	ofstream final( DIR_LOG + PATH_TIMESTAMP + FILE_FINAL, ios::app);
 	if( CNode::finiteEnergy() )
 		final << CData::getCountDelivery() << TAB ;
 	else

@@ -92,7 +92,7 @@ public:
 	{
 		char buffer[30] = { '\0' };
 		sprintf(buffer, "%d%s", nodeID, EXTENSION_TRACE.c_str());
-		string filename = PATH_TRACE + DATASET + "/" + buffer;  //.exe 文件必须在 bin/ 文件夹下
+		string filename = DIR_RESOURCE + DATASET + "/" + buffer;  //.exe 文件必须在 bin/ 文件夹下
 		return filename;
 	}
 

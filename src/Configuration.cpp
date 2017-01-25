@@ -113,7 +113,7 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string description)
 		throw string( "CConfiguration::ParseConfiguration() : Parameters are requested ! ");
 
 	// 将使用的命令行参数输出到文件
-	ofstream log(PATH_ROOT + PATH_LOG + FILE_CONFIG, ios::app);
+	ofstream log(DIR_LOG + PATH_TIMESTAMP + FILE_CONFIG, ios::app);
 	log << "######  " << description << endl << endl;
 
 	vector<string>::iterator iarg = args.begin();

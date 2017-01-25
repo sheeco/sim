@@ -361,7 +361,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 	   || currentTime == RUNTIME )
 	{
 		//节点个数
-		ofstream node(PATH_ROOT + PATH_LOG + FILE_NODE, ios::app);
+		ofstream node(DIR_LOG + PATH_TIMESTAMP + FILE_NODE, ios::app);
 		if( currentTime == 0 )
 		{
 			node << endl << INFO_LOG << endl;
@@ -371,7 +371,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		node.close();
 
 		//MA和节点 / 节点间的相遇次数
-		ofstream encounter( PATH_ROOT + PATH_LOG + FILE_ENCOUNTER, ios::app);
+		ofstream encounter( DIR_LOG + PATH_TIMESTAMP + FILE_ENCOUNTER, ios::app);
 		if(currentTime == 0)
 		{
 			encounter <<  endl << INFO_LOG << endl ;
@@ -389,7 +389,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		encounter.close();
 
 		//sink和节点的相遇次数
-		ofstream sink( PATH_ROOT + PATH_LOG + FILE_SINK, ios::app);
+		ofstream sink( DIR_LOG + PATH_TIMESTAMP + FILE_SINK, ios::app);
 		if(currentTime == 0)
 		{
 			sink <<  endl << INFO_LOG << endl ;
@@ -406,7 +406,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 	   || currentTime == RUNTIME )
 	{
 		//数据传输
-		ofstream transmit( PATH_ROOT + PATH_LOG + FILE_TRANSMIT, ios::app);
+		ofstream transmit( DIR_LOG + PATH_TIMESTAMP + FILE_TRANSMIT, ios::app);
 		if(currentTime == 0)
 		{
 			transmit << endl << INFO_LOG << endl ;
@@ -417,7 +417,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		transmit.close();
 
 		//节点唤醒时间
-		ofstream activation(PATH_ROOT + PATH_LOG + FILE_ACTIVATION, ios::app);
+		ofstream activation(DIR_LOG + PATH_TIMESTAMP + FILE_ACTIVATION, ios::app);
 		if( currentTime == 0 )
 		{
 			activation << endl << INFO_LOG << endl;
@@ -436,7 +436,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		activation.close();
 
 		//平均能耗
-		ofstream energy_consumption( PATH_ROOT + PATH_LOG + FILE_ENERGY_CONSUMPTION, ios::app);
+		ofstream energy_consumption( DIR_LOG + PATH_TIMESTAMP + FILE_ENERGY_CONSUMPTION, ios::app);
 		if(currentTime == 0)
 		{
 			energy_consumption <<  endl << INFO_LOG << endl ; 
@@ -460,7 +460,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 
 void CMacProtocol::PrintFinal(int currentTime)
 {
-	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
+	ofstream final( DIR_LOG + PATH_TIMESTAMP + FILE_FINAL, ios::app);
 	final << CData::getAverageEnergyConsumption() << TAB << CMacProtocol::getPercentTransmitSuccessful() << TAB;
 	//final << CNode::getPercentEncounterActive() << TAB ;
 	if( CNode::finiteEnergy() )

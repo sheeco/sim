@@ -12,8 +12,8 @@ void CRunHelper::InitLogPath()
 	// Generate timestamp & output path
 
 	// Create root path (../test/) if doesn't exist
-	if( access(PATH_ROOT.c_str(), 00) != 0 )
-		_mkdir(PATH_ROOT.c_str());
+	if( access(DIR_LOG.c_str(), 00) != 0 )
+		_mkdir(DIR_LOG.c_str());
 
 	time_t seconds;  //秒时间  
 	char temp[65] = { '\0' };
@@ -24,14 +24,14 @@ void CRunHelper::InitLogPath()
 	string timestring;
 	timestring = string(temp);
 	INFO_LOG = "@" + TIMESTAMP + TAB;
-	PATH_LOG = "." + timestring + "/";
+	PATH_TIMESTAMP = "." + timestring + "/";
 
 	// Create log path
-	if( access(( PATH_ROOT + PATH_LOG ).c_str(), 00) != 0 )
-		_mkdir(( PATH_ROOT + PATH_LOG ).c_str());
+	if( access(( DIR_LOG + PATH_TIMESTAMP ).c_str(), 00) != 0 )
+		_mkdir(( DIR_LOG + PATH_TIMESTAMP ).c_str());
 
 	// Hide folder
-	LPWSTR wstr = CString(( PATH_ROOT + PATH_LOG ).c_str()).AllocSysString();
+	LPWSTR wstr = CString(( DIR_LOG + PATH_TIMESTAMP ).c_str()).AllocSysString();
 	int attr = GetFileAttributes(wstr);
 	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
 	{
@@ -42,7 +42,7 @@ void CRunHelper::InitLogPath()
 
 void CRunHelper::Help()
 {
-	ifstream help(PATH_RUN + FILE_HELP, ios::in);
+	ifstream help(DIR_RUN + FILE_HELP, ios::in);
 	cout << help.rdbuf();
 	help.close();
 	_PAUSE_;
@@ -237,8 +237,8 @@ void CRunHelper::InitConfiguration()
 
 	//string 参数
 	CConfiguration::AddConfiguration("-dataset", CConfiguration::_string, &DATASET, "");
-	// PATH_ROOT = "../" + string(arg) + "/";
-	CConfiguration::AddConfiguration("-log-path", CConfiguration::_string, &PATH_ROOT, "");
+	// DIR_LOG = "../" + string(arg) + "/";
+	CConfiguration::AddConfiguration("-log-path", CConfiguration::_string, &DIR_LOG, "");
 
 	//带双参数的命令
 	CConfiguration::AddConfiguration("-sink", CConfiguration::_double, &CSink::SINK_X, CConfiguration::_double, &CSink::SINK_Y, "");
@@ -247,7 +247,7 @@ void CRunHelper::InitConfiguration()
 
 	/*********************************************  按照命令格式解析参数配置  *********************************************/
 
-	CConfiguration::ParseConfiguration(PATH_RUN + FILE_DEFAULT_CONFIG);
+	CConfiguration::ParseConfiguration(DIR_RUN + FILE_DEFAULT_CONFIG);
 
 }
 
@@ -271,7 +271,7 @@ void CRunHelper::ValidateConfiguration()
 
 void CRunHelper::PrintConfiguration()
 {
-	ofstream parameters(PATH_ROOT + PATH_LOG + FILE_PARAMETES, ios::app);
+	ofstream parameters(DIR_LOG + PATH_TIMESTAMP + FILE_PARAMETES, ios::app);
 	parameters << endl << endl << INFO_LOG << endl << endl;
 
 	parameters << "CYCLE" << TAB << CNode::SLOT_TOTAL << endl;
@@ -293,7 +293,7 @@ void CRunHelper::PrintConfiguration()
 
 
 	//输出文件为空时，输出文件头
-	ofstream final(PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
+	ofstream final(DIR_LOG + PATH_TIMESTAMP + FILE_FINAL, ios::app);
 	final.seekp(0, ios::end);
 	if( !final.tellp() )
 		final << INFO_FINAL;
@@ -390,7 +390,7 @@ void CRunHelper::PrintConfiguration()
 	//versionInput.close();
 	//version.close();
 
-	ofstream version(PATH_ROOT + PATH_LOG + FILE_VERION, ios::out);
+	ofstream version(DIR_LOG + PATH_TIMESTAMP + FILE_VERSION, ios::out);
 
 	version << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_BUILD;
 

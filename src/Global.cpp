@@ -13,17 +13,19 @@ namespace global
 	int SLOT = 0;
 	int SLOT_LOG = 0;
 
+	string DIR_ROOT = "../";
+	string DIR_PROJECT = "../.project/";
+	string DIR_RUN = "";
+	string DIR_RESOURCE = "../res/";
+	string DIR_LOG = "../log/";
 	string TIMESTAMP;
-	string PATH_TRACE = "../res/";
-	string PATH_RUN = "";
-	string PATH_LOG = "";  // " YY-MM-DD-HH-MM-SS/ "
-	string PATH_ROOT = "../log/";
+	string PATH_TIMESTAMP = "";  // " YY-MM-DD-HH-MM-SS/ "
 
 	string INFO_LOG;
 	string FILE_DEFAULT_CONFIG = "default.config";
 	string FILE_PARAMETES = "parameters.log";
 	string FILE_HELP = "help.md";
-	string FILE_VERION = "HDC.version";
+	string FILE_VERSION = "sim.version";
 	//string INFO_HELP;
 
 	string FILE_ERROR = "error.log";
@@ -98,15 +100,15 @@ void global::Exit(int code)
 
 	//		// Remove entire folder if empty & exit directly
 	//
-	//		LPWSTR pathContent = CString( (PATH_ROOT + PATH_LOG + "*.*").c_str()).AllocSysString();
-	//		LPWSTR pathFolder = CString( (PATH_ROOT + PATH_LOG).c_str()).AllocSysString();
+	//		LPWSTR pathContent = CString( (DIR_LOG + PATH_TIMESTAMP + "*.*").c_str()).AllocSysString();
+	//		LPWSTR pathFolder = CString( (DIR_LOG + PATH_TIMESTAMP).c_str()).AllocSysString();
 	//		CFileFind tempFind;
 	//		bool anyContentFound = (bool) tempFind.FindFile(pathContent);
 	//		if( ! anyContentFound )
 	//		{
 	//			//去掉文件的系统和隐藏属性
 	//			SetFileAttributes(pathFolder, FILE_ATTRIBUTE_NORMAL);
-	//			remove( (PATH_ROOT + PATH_LOG).c_str() );
+	//			remove( (DIR_LOG + PATH_TIMESTAMP).c_str() );
 	//
 	//			exit(code);
 	//		}
@@ -115,12 +117,12 @@ void global::Exit(int code)
 
 	if( code == EFINISH )
 	{
-		ifstream finalInput(PATH_ROOT + PATH_LOG + FILE_FINAL, ios::in);
+		ifstream finalInput(DIR_LOG + PATH_TIMESTAMP + FILE_FINAL, ios::in);
 		if( finalInput.is_open()
 		   && ( !finalInput.eof() ) )
 		{
 
-			ofstream copy(PATH_ROOT + FILE_FINAL, ios::app);
+			ofstream copy(DIR_LOG + FILE_FINAL, ios::app);
 			char temp[310] = { '\0' };
 			copy.seekp(0, ios::end);
 			if( !copy.tellp() )
@@ -139,7 +141,7 @@ void global::Exit(int code)
 
 	if( code >= EFINISH )
 	{
-		fstream final(PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app | ios::in);
+		fstream final(DIR_LOG + PATH_TIMESTAMP + FILE_FINAL, ios::app | ios::in);
 		final << INFO_LOG << TAB << "@" << finalTime << endl;
 		final.close();
 	}
@@ -149,19 +151,19 @@ void global::Exit(int code)
 	if( code == EFINISH )
 	{
 
-		if( _access(( PATH_ROOT + PATH_LOG ).c_str(), 02) == 0
-		   && ( PATH_LOG.find(".") != PATH_LOG.npos ) )   //if writeable & '.' found in filename
+		if( _access(( DIR_LOG + PATH_TIMESTAMP ).c_str(), 02) == 0
+		   && ( PATH_TIMESTAMP.find(".") != PATH_TIMESTAMP.npos ) )   //if writeable & '.' found in filename
 		{
-			string newPathLog = PATH_LOG.substr(1, PATH_LOG.npos);
-			if( _access(( PATH_ROOT + newPathLog ).c_str(), 00) != 0 )  //if no collision
+			string newPathLog = PATH_TIMESTAMP.substr(1, PATH_TIMESTAMP.npos);
+			if( _access(( DIR_LOG + newPathLog ).c_str(), 00) != 0 )  //if no collision
 			{
-				rename(( PATH_ROOT + PATH_LOG ).c_str(), ( PATH_ROOT + newPathLog ).c_str());
-				PATH_LOG = newPathLog;
+				rename(( DIR_LOG + PATH_TIMESTAMP ).c_str(), ( DIR_LOG + newPathLog ).c_str());
+				PATH_TIMESTAMP = newPathLog;
 			}
 		}
 
 		// Unhide folder
-		LPWSTR wstr = CString(( PATH_ROOT + PATH_LOG ).c_str()).AllocSysString();
+		LPWSTR wstr = CString(( DIR_LOG + PATH_TIMESTAMP ).c_str()).AllocSysString();
 		int attr = GetFileAttributes(wstr);
 		if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == FILE_ATTRIBUTE_HIDDEN )
 		{
@@ -181,7 +183,7 @@ void global::Exit(int code)
 
 void global::Exit(int code, string error)
 {
-	ofstream errorFile(PATH_ROOT + PATH_LOG + FILE_ERROR, ios::app);
+	ofstream errorFile(DIR_LOG + PATH_TIMESTAMP + FILE_ERROR, ios::app);
 	errorFile << error << endl << endl;
 	errorFile.close();
 

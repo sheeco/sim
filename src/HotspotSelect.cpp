@@ -477,7 +477,7 @@ void CHotspotSelect::CompareWithOldHotspots(int currentTime)
 	double oldArea = CHotspot::oldSelectedHotspots[currentTime - SLOT_HOTSPOT_UPDATE].size() * AreaCircle(CGeneralNode::RANGE_TRANS) - CHotspot::getOverlapArea(CHotspot::oldSelectedHotspots[currentTime - SLOT_HOTSPOT_UPDATE]);
 	double newArea = CHotspot::selectedHotspots.size() * AreaCircle(CGeneralNode::RANGE_TRANS) - CHotspot::getOverlapArea(CHotspot::selectedHotspots);
 
-	ofstream similarity( PATH_ROOT + PATH_LOG + FILE_HOTSPOT_SIMILARITY, ios::app);
+	ofstream similarity( DIR_LOG + PATH_TIMESTAMP + FILE_HOTSPOT_SIMILARITY, ios::app);
 	if( currentTime == STARTTIME_HOSPOT_SELECT + SLOT_HOTSPOT_UPDATE )
 	{
 		similarity << endl << endl << INFO_LOG << endl ;
@@ -499,7 +499,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 		return;
 	
 	//热点个数
-	ofstream hotspot( PATH_ROOT + PATH_LOG + FILE_HOTSPOT, ios::app);
+	ofstream hotspot( DIR_LOG + PATH_TIMESTAMP + FILE_HOTSPOT, ios::app);
 	if(currentTime == STARTTIME_HOSPOT_SELECT)
 	{
 		hotspot << endl << INFO_LOG << endl ;
@@ -510,7 +510,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 
 	
 	//热点位置
-	ofstream hotspot_details(PATH_ROOT + PATH_LOG + FILE_HOTSPOT_DETAILS, ios::app);
+	ofstream hotspot_details(DIR_LOG + PATH_TIMESTAMP + FILE_HOTSPOT_DETAILS, ios::app);
 	if( currentTime == STARTTIME_HOSPOT_SELECT )
 	{
 		hotspot_details << endl << INFO_LOG << endl;
@@ -522,7 +522,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 
 
 	//节点在热点内的百分比（从热点选取开始时开始统计）
-	ofstream at_hotspot( PATH_ROOT + PATH_LOG + FILE_VISIT, ios::app);
+	ofstream at_hotspot( DIR_LOG + PATH_TIMESTAMP + FILE_VISIT, ios::app);
 	if(currentTime == STARTTIME_HOSPOT_SELECT)
 	{
 		at_hotspot << endl << INFO_LOG << endl ; 
@@ -544,8 +544,8 @@ void CHotspotSelect::PrintInfo(int currentTime)
 			int mergeCount = 0;
 			int oldCount = 0;
 			int newCount = 0;
-			ofstream merge( PATH_ROOT + PATH_LOG + FILE_MERGE, ios::app);
-			ofstream merge_details( PATH_ROOT + PATH_LOG + FILE_MERGE_DETAILS, ios::app);
+			ofstream merge( DIR_LOG + PATH_TIMESTAMP + FILE_MERGE, ios::app);
+			ofstream merge_details( DIR_LOG + PATH_TIMESTAMP + FILE_MERGE_DETAILS, ios::app);
 
 			if(currentTime == STARTTIME_HOSPOT_SELECT)
 			{
@@ -597,7 +597,7 @@ void CHotspotSelect::PrintInfo(int currentTime)
 void CHotspotSelect::PrintFinal(int currentTime)
 {
 	//最终final输出（补充）
-	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
+	ofstream final( DIR_LOG + PATH_TIMESTAMP + FILE_FINAL, ios::app);
 	//final << CNode::getPercentEncounterActiveAtHotspot() << TAB ;
 	//final << CData::getPercentDeliveryAtHotspot() << TAB ;
 	if( HOTSPOT_SELECT == _merge )

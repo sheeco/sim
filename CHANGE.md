@@ -733,14 +733,18 @@
 - RFCT: Redefine `CHotspot::oldSelectedHotspots` as `map<int, vector<CHotspot*>>` to store all the previous hotspot selection, rather than just last one;
 - RFCT: Extract access to `CHotspot::selectedHotspots, oldSelectedHotspots` into `CHotspot::getSelectedHotspots()`, store & clean before new selection into `CHotspotSelect::SaveOldSelectedHotspots()`;
 
-###### 2017-01-24
+###### [ 2017-01-24 ]( d442f8466ea046fa72062ddd73422f1085573677 )
 
 - OPT: Minor improvement for some printings & removal of obsolete TODOs;
+
+###### 2017-01-26
+
+- OPT: Minor improvement for path & filename string definitions in `global`;
+
+
 - [ ] MNT: Use VCB command line util `AUTOVER` for version control;
 - [ ] BUG: Only 1 waypoint is possible for all the MAs;
 - [ ] RFCT: Extract print method into `CPrintHelper` or `global`;
-
-
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
 - [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；

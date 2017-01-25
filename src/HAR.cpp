@@ -737,7 +737,7 @@ void HAR::PrintInfo(int currentTime)
 	    || currentTime == RUNTIME )
 	{
 		//MA节点个数
-		ofstream ma(PATH_ROOT + PATH_LOG + FILE_MA, ios::app);
+		ofstream ma(DIR_LOG + PATH_TIMESTAMP + FILE_MA, ios::app);
 		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
 		{
 			ma << endl << INFO_LOG << endl;
@@ -747,7 +747,7 @@ void HAR::PrintInfo(int currentTime)
 		ma.close();
 
 		//
-		ofstream ma_route(PATH_ROOT + PATH_LOG + FILE_MA_ROUTE, ios::app);
+		ofstream ma_route(DIR_LOG + PATH_TIMESTAMP + FILE_MA_ROUTE, ios::app);
 		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
 		{
 			ma_route << endl << INFO_LOG << endl;
@@ -767,7 +767,7 @@ void HAR::PrintInfo(int currentTime)
 		++COUNT_WAYPOINT_PER_MA;
 
 		//ED即平均投递延迟的理论值
-		ofstream ed(PATH_ROOT + PATH_LOG + FILE_ED, ios::app);
+		ofstream ed(DIR_LOG + PATH_TIMESTAMP + FILE_ED, ios::app);
 		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
 		{
 			ed << endl << INFO_LOG << endl;
@@ -777,7 +777,7 @@ void HAR::PrintInfo(int currentTime)
 		ed.close();
 
 		//热点质量、投递计数等统计信息
-		ofstream hotspot_statistics(PATH_ROOT + PATH_LOG + FILE_HOTSPOT_STATISTICS, ios::app);
+		ofstream hotspot_statistics(DIR_LOG + PATH_TIMESTAMP + FILE_HOTSPOT_STATISTICS, ios::app);
 		if( currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT )
 		{
 			hotspot_statistics << endl << INFO_LOG << endl;
@@ -820,7 +820,7 @@ void HAR::PrintInfo(int currentTime)
 	    || currentTime == RUNTIME )
 	{
 		//每个MA的当前buffer状态
-		ofstream buffer_ma( PATH_ROOT + PATH_LOG + FILE_BUFFER_MA, ios::app);
+		ofstream buffer_ma( DIR_LOG + PATH_TIMESTAMP + FILE_BUFFER_MA, ios::app);
 		if(currentTime == CHotspotSelect::STARTTIME_HOSPOT_SELECT)
 		{
 			buffer_ma << endl << INFO_LOG << endl ;
@@ -841,7 +841,7 @@ void HAR::PrintFinal(int currentTime)
 	CRoutingProtocol::PrintFinal(currentTime);
 
 	//最终final输出（补充）
-	ofstream final( PATH_ROOT + PATH_LOG + FILE_FINAL, ios::app);
+	ofstream final( DIR_LOG + PATH_TIMESTAMP + FILE_FINAL, ios::app);
 	final << getAverageMACost() << TAB ;
 	final << CData::getPercentDeliveryAtHotspot() << TAB ;
 	final.close();
