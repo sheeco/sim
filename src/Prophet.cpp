@@ -96,15 +96,15 @@ bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 		return ( predDst > predNode );
 }
 
-vector<CData> CProphet::getDataForTrans(CNode* node)
-{
-	vector<CData> datas = node->getAllData();
-
-	if( WINDOW_TRANS > 0 )
-		CNode::removeDataByCapacity(datas, WINDOW_TRANS, false);
-
-	return datas;
-}
+//vector<CData> CProphet::getDataForTrans(CNode* node)
+//{
+//	vector<CData> datas = node->getAllData();
+//
+//	if( WINDOW_TRANS > 0 )
+//		CNode::removeDataByCapacity(datas, WINDOW_TRANS, false);
+//
+//	return datas;
+//}
 
 vector<CData> CProphet::bufferData(CNode* node, vector<CData> datas, int time)
 {
@@ -197,7 +197,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 				//CTS
 				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 				// + DATA
-				dataToSend = getDataForTrans(node);
+				dataToSend = getDataForTrans(node, 0, true);
 
 				node->delayDiscovering(CRoutingProtocol::getTimeWindowTrans());
 				node->delaySleep(CRoutingProtocol::getTimeWindowTrans());
@@ -433,7 +433,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 						return packetsToSend;
 					}
 
-					dataToSend = getDataForTrans(node);
+					dataToSend = getDataForTrans(node, 0, true);
 
 					//µ«»º´æÎª¿Õ
 					if( dataToSend.empty() )

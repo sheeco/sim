@@ -21,6 +21,16 @@ int CRoutingProtocol::getTimeWindowTrans()
 	//return TIME_WINDOW_TRANS;
 }
 
+vector<CData> CRoutingProtocol::getDataForTrans(CGeneralNode* node, int capacity, bool FIFO)
+{
+	if( capacity <= 0
+	   || capacity > WINDOW_TRANS )
+		capacity = WINDOW_TRANS;
+	vector<CData> datas = node->getAllData();
+	CNode::removeDataByCapacity(datas, capacity, ! FIFO);
+	return datas;
+}
+
 void CRoutingProtocol::PrintInfo(int currentTime)
 {
 	switch( MAC_PROTOCOL )

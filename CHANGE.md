@@ -749,9 +749,13 @@
 
 - [x] FIX: Only 1 waypoint for each MA, which is caused by definition change of `CNode::DEFAULT_DATA_RATE`;
 
-###### 2017-01-26 ¡¤ *< 3.6.6235.28166 >*
+###### [ 2017-01-26 ¡¤ *< 3.6.6235.28166 >* ]( c24bad16eb016ceff17e3c3c91ad4507fdf9a8dd )
 
 - FIX: And some opt for data communication between MA & sink in HAR;
+
+###### 2017-01-26 ¡¤ *< 3.6.6235.29389 >*
+
+- ADD: Length limit to data transmission in HAR according to `CRoutingProtocol::WINDOW_TRANS`;
 
    
 - [ ] RFCT: Extract print method into `CPrintHelper` or `global`;

@@ -406,7 +406,8 @@ void CNode::pushIntoBuffer(vector<CData> datas)
 vector<CData> CNode::removeDataByCapacity(vector<CData> &datas, int capacity, bool fromLeft)
 {
 	vector<CData> overflow;
-	if( datas.size() <= capacity )
+	if( capacity <= 0
+	   || datas.size() <= capacity )
 		return overflow;
 
 	if( fromLeft )

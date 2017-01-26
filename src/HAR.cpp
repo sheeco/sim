@@ -468,7 +468,7 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacke
 				//CTS
 				ctrlToSend = new CCtrl(ma->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 				// + DATA
-				dataToSend = ma->getAllData();
+				dataToSend = getDataForTrans(ma, 0, true);
 
 				// TODO: mark skipRTS ?
 				// TODO: connection established ?
@@ -481,7 +481,7 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacke
 					return packetsToSend;
 				}
 				// + DATA
-				dataToSend = ma->getAllData();
+				dataToSend = getDataForTrans(ma, 0, true);
 
 				break;
 
@@ -563,7 +563,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacke
 
 			case CCtrl::_rts:
 
-				if( node->getAllData().empty() )
+				if( ! node->hasData() )
 				{
 					return packetsToSend;
 				}
@@ -571,7 +571,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacke
 				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
 
 				// + DATA
-				dataToSend = node->getAllData();
+				dataToSend = getDataForTrans(node, 0, true);
 
 				if( dataToSend.empty() )
 					return packetsToSend;
