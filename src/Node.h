@@ -450,12 +450,17 @@ public:
 
 	/*************************** ------- ***************************/
 
-	double getDataRate() const 
+	double getDataByteRate() const 
 	{
 		return dataRate;
 	}
 
-	CHotspot* getAtHotspot() const 
+	double getDataCountRate() const
+	{
+		return dataRate / SIZE_DATA;
+	}
+
+	CHotspot* getAtHotspot() const
 	{
 		return atHotspot;
 	}

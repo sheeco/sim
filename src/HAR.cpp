@@ -41,7 +41,7 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 			nCoveredNodes--;
 			continue;
 		}
-		sum_generationRate += CNode::getNodeByID( coveredNodes[i] )->getDataRate();
+		sum_generationRate += CNode::getNodeByID( coveredNodes[i] )->getDataCountRate();
 	}
 
 	double ratio = 1;
@@ -96,7 +96,7 @@ double HAR::getSumDataRate(vector<int> nodes)
 	{
 		if( ! CNode::ifNodeExists( nodes[i] ) )
 			continue;
-		sum += CNode::getNodeByID( nodes[i] )->getDataRate();
+		sum += CNode::getNodeByID( nodes[i] )->getDataCountRate();
 	}
 	return sum;
 }

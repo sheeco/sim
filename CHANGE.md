@@ -741,12 +741,15 @@
 
 - OPT: Minor improvement for path & filename string definitions in `global`;
 
-###### 2017-01-26 · *< 3.6.6234.36098 >*
+###### [ 2017-01-26 · *< 3.6.6234.36098 >* ]( 127ce48e7a110837e898f575c672952cc6b70246 )
 
 - [x] MNT: Use VCB command line util `AUTOVER` for version control. & Allow switching back to manual versioning by undefining `__VERSIONING_CONTOLLED_BUILD__`;
 
+###### 2017-01-26 · *< 3.6.6235.24502 >*
 
-- [ ] BUG: Only 1 waypoint is possible for all the MAs;
+- [x] FIX: Only 1 waypoint for each MA, which is caused by definition change of `CNode::DEFAULT_DATA_RATE`;
+
+   
 - [ ] RFCT: Extract print method into `CPrintHelper` or `global`;
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
