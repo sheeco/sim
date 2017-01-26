@@ -125,7 +125,8 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 		vector<CGeneralNode*> currentNeighbors = iArrival->second;
 		for( vector<CGeneralNode*>::iterator ineighbor = currentNeighbors.begin(); ineighbor != currentNeighbors.end(); ++ineighbor )
 		{
-			rcv = rcv || receiveFrame(**ineighbor, currentFrame, currentTime);
+			bool new_rcv = receiveFrame(**ineighbor, currentFrame, currentTime);
+			rcv = rcv || new_rcv;
 		}
 
 		free(currentFrame);

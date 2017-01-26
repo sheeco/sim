@@ -25,7 +25,8 @@ vector<CData> CSink::bufferData(int time, vector<CData> datas)
 	RemoveFromList( datas, sink->buffer );
 	for(auto idata = datas.begin(); idata != datas.end(); ++idata)
 	{
-		idata->arriveSink(time);
+		if( idata->getTimeArrival() == UNVALID )
+			idata->arriveSink(time);
 		sink->buffer.push_back(*idata);
 	}
 	

@@ -155,8 +155,8 @@ vector<CData> CMANode::bufferData(int time, vector<CData> datas)
 
 	for( auto idata = datas.begin(); idata != datas.end(); ++idata )
 	{
-		// UNDONE: 认为到达 MA 节点即到达 sink
-		idata->arriveSink(time);
+		////认为到达 MA 节点即到达 sink
+		//idata->arriveSink(time);
 		this->buffer.push_back(*idata);
 	}
 	

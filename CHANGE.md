@@ -745,9 +745,13 @@
 
 - [x] MNT: Use VCB command line util `AUTOVER` for version control. & Allow switching back to manual versioning by undefining `__VERSIONING_CONTOLLED_BUILD__`;
 
-###### 2017-01-26 ¡¤ *< 3.6.6235.24502 >*
+###### [ 2017-01-26 ¡¤ *< 3.6.6235.24502 >* ]( 45ec30d8e864d3cc15562e38e4702ab2bfe058f0 )
 
 - [x] FIX: Only 1 waypoint for each MA, which is caused by definition change of `CNode::DEFAULT_DATA_RATE`;
+
+###### 2017-01-26 ¡¤ *< 3.6.6235.28166 >*
+
+- FIX: And some opt for data communication between MA & sink in HAR;
 
    
 - [ ] RFCT: Extract print method into `CPrintHelper` or `global`;

@@ -380,6 +380,9 @@ vector<CPacket*> HAR::receivePackets(CSink* sink, CMANode* fromMA, vector<CPacke
 			{
 			case CCtrl::_rts:
 
+				//CTS
+				ctrlToSend = new CCtrl(sink->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+
 				break;
 
 			case CCtrl::_cts:
@@ -458,7 +461,6 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacke
 
 			case CCtrl::_rts:
 
-
 				if( ! ma->hasData() )
 				{
 					return packetsToSend;
@@ -473,6 +475,13 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacke
 				break;
 
 			case CCtrl::_cts:
+
+				if( !ma->hasData() )
+				{
+					return packetsToSend;
+				}
+				// + DATA
+				dataToSend = ma->getAllData();
 
 				break;
 
