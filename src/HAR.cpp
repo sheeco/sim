@@ -8,6 +8,7 @@
 #include "Node.h"
 #include "HDC.h"
 #include "SMac.h"
+#include "PrintHelper.h"
 
 vector<CHotspot *> HAR::m_hotspots;
 vector<CRoute> HAR::m_routes;
@@ -307,7 +308,7 @@ void HAR::MANodeRouteDesign(int currentTime)
 		}
 	}
 
-	flash_cout << "######  [ MA ]  " << CMANode::getMANodes().size() << endl;
+	CPrintHelper::PrintAttribute("MA", CMANode::getMANodes().size());
 }
 
 vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int currentTime)
@@ -508,7 +509,7 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacke
 				else
 					ma->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "######  < " << time << " >  (  MA  " << ma->getID() << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+				CPrintHelper::PrintCommunication(time, ma->toString(), fromSink->toString(), ctrl->getACK().size());
 
 				return packetsToSend;
 
@@ -616,7 +617,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacke
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "######  < " << time << " >  ( Node  " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->   MA  " << ctrl->getNode() << " )       " ;
+				CPrintHelper::PrintCommunication(time, node->toString(), fromMA->toString(), ctrl->getACK().size());
 
 				return packetsToSend;
 

@@ -153,6 +153,11 @@ public:
 //		return double(encounterActive) / double(encounter);
 //	}
 
+	string toString() const
+	{
+		return "MA " + NDigitIntString(this->ID, 3);
+	}
+
 	//‘› ±œ–÷√
 	void turnFree()
 	{

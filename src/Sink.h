@@ -56,6 +56,10 @@ public:
 		return sink;
 	}
 
+	string toString() const
+	{
+		return "Sink";
+	}
 	bool isAwake() const
 	{
 		return true;

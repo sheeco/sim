@@ -2,6 +2,7 @@
 #include "PostSelect.h"
 #include "NodeRepair.h"
 #include "FileHelper.h"
+#include "PrintHelper.h"
 
 //vector<CHotspot *> CHotspotSelect::copy_hotspotCandidates;
 vector<CPosition *> CHotspotSelect::uncoveredPositions;
@@ -169,7 +170,7 @@ void CHotspotSelect::SaveOldSelectedHotspots(int currentTime)
 
 void CHotspotSelect::BuildCandidateHotspots(int currentTime)
 {
-	flash_cout << "######  ( CANDIDATE BUILDING )     " ;
+	CPrintHelper::PrintDoing("CANDIDATE BUILDING");
 
 	//将所有position按x坐标排序，以便简化遍历操作
 	CPosition::positions = CSortHelper::mergeSort(CPosition::positions);
@@ -185,11 +186,12 @@ void CHotspotSelect::BuildCandidateHotspots(int currentTime)
 	CHotspot::hotspotCandidates = CSortHelper::mergeSort(CHotspot::hotspotCandidates, CSortHelper::ascendByRatio);
 
 	updateHotspotCandidates();
+	CPrintHelper::PrintDone();
 }
 
 void CHotspotSelect::GreedySelect(int currentTime)
 {
-	flash_cout << "######  ( GREEDY SELECT )          " ;
+	CPrintHelper::PrintDoing("GREEDY SELECT");
 
 	do
 	{
@@ -287,11 +289,12 @@ void CHotspotSelect::GreedySelect(int currentTime)
 		}
 	}while(! uncoveredPositions.empty());
 
+	CPrintHelper::PrintDone();
 }
 
 void CHotspotSelect::MergeHotspots(int currentTime)
 {
-	flash_cout << "######  ( HOTSPOT MERGE )          " ;
+	CPrintHelper::PrintDoing("HOTSPOT MERGE");
 
 	vector<CHotspot *> mergeResult;
 	int mergeCount = 0;
@@ -381,6 +384,7 @@ void CHotspotSelect::MergeHotspots(int currentTime)
 	uncoveredPositions = CPosition::positions;
 	unselectedHotspots = CHotspot::hotspotCandidates;
 
+	CPrintHelper::PrintDone();
 }
 
 vector<CHotspot *> CHotspotSelect::assignPositionsToHotspots(vector<CHotspot *> hotspots)
@@ -416,7 +420,7 @@ void CHotspotSelect::HotspotSelect(int currentTime)
 //	if( TEST_LEARN )
 //		DecayPositionsWithoutDeliveryCount(currentTime);
 
-	flash_cout << "####  < " << currentTime << " >  HOTSPOT SELECT            " << endl;
+	CPrintHelper::PrintHeading(currentTime, "HOTSPOT SELECT");
 
 	SaveOldSelectedHotspots(currentTime);
 
@@ -458,7 +462,7 @@ void CHotspotSelect::HotspotSelect(int currentTime)
 	hotspotsAboveAverage.clear();
 	uncoveredPositions.clear();
 
-	flash_cout << "######  [ Hotspot ] " << CHotspot::selectedHotspots.size() << "                           " << endl;
+	CPrintHelper::PrintAttribute("Hotspot", CHotspot::selectedHotspots.size());
 
 	//比较相邻两次热点选取的相似度
 	if( TEST_HOTSPOT_SIMILARITY )

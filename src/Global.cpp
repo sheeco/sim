@@ -1,4 +1,5 @@
 #include "Global.h"
+#include "PrintHelper.h"
 
 
 namespace global
@@ -174,7 +175,7 @@ void global::Exit(int code)
 	// Alert & Pause
 	if( code > EFINISH )
 	{
-		_ALERT_;
+		CPrintHelper::Alert();
 		_PAUSE_;
 	}
 

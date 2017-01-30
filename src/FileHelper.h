@@ -8,7 +8,7 @@
 #include "Coordinate.h"
 #include "Trace.h"
 
-//包含用于文件解析的函数的类
+//包含用于文件相关操作的函数的类
 class CFileHelper :
 	virtual public CHelper
 {

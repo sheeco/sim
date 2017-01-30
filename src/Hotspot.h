@@ -279,6 +279,10 @@ public:
 		++COUNT_ID;
 		this->ID = COUNT_ID;
 	}
+	string toString() const
+	{
+		return "Hotspot " + STRING(this->ID);
+	}
 
 	//用于在ifExists和RemoveFromList等函数中作为判断参数传入
 	inline static bool identical(CHotspot *x, CHotspot *y)

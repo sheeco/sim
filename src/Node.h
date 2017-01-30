@@ -480,7 +480,10 @@ public:
 		++COUNT_ID;
 		this->ID = COUNT_ID;		
 	}
-
+	string toString() const
+	{
+		return "Node " + NDigitIntString(this->ID, 2);
+	}
 	void loadTrace()
 	{
 		trace = CCTrace::getTraceFromFile(CCTrace::getTraceFilename(this->ID));

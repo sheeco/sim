@@ -120,6 +120,9 @@
     <ClCompile Include="AssemblyInfo.cpp">
       <Filter>资源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\PrintHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Algorithm.h">
@@ -235,6 +238,9 @@
     </ClInclude>
     <ClInclude Include="version.h">
       <Filter>资源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PrintHelper.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

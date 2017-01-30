@@ -5,6 +5,7 @@
 #include "Prophet.h"
 #include "HAR.h"
 #include "HotspotSelect.h"
+#include "PrintHelper.h"
 
 int CMacProtocol::transmitSuccessful = 0;
 int CMacProtocol::transmit = 0;
@@ -207,17 +208,17 @@ void CMacProtocol::ChangeNodeNumber(int currentTime)
 	if( ! ( currentTime % SLOT_CHANGE_NUM_NODE == 0 ) )
 		return;
 
-	flash_cout << endl << "####  < " << currentTime << " >  NODE NUMBER CHANGE" ;
+	CPrintHelper::PrintHeading(currentTime, "NODE NUMBER CHANGE");
 	
 	int delta = CNode::ChangeNodeNumber();
 
 	if(delta >= 0)
 	{
-		cout << "######  ( " << delta << " nodes added )" << endl;
+		CPrintHelper::PrintAttribute("Node", "+" + STRING(delta));
 	}
 	else
 	{
-		cout << "######  ( " << -delta << " nodes removed )" << endl;
+		CPrintHelper::PrintAttribute("Node", "-" + STRING(delta));
 	}
 }
 
@@ -297,7 +298,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	if( currentTime == 0 
 		|| print )
 	{
-		flash_cout << "####  < " << currentTime << " >  DATA DELIVERY            " << endl ;
+		CPrintHelper::PrintHeading(currentTime, "DATA DELIVERY");
 		print = false;
 	}
 
@@ -345,8 +346,8 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 
 	if( ( currentTime + SLOT ) % SLOT_LOG == 0 )
 	{
-		double deliveryRatio = NDigitFloat( CData::getDeliveryRatio() * 100, 1);
-		flash_cout << "######  [ Delivery Ratio ]  " << deliveryRatio << " %                             " << endl << endl;
+		CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
+		CPrintHelper::PrintNewLine();
 		print = true;
 	}
 }

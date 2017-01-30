@@ -5,6 +5,7 @@
 #include "HDC.h"
 #include "Prophet.h"
 #include "SortHelper.h"
+#include "PrintHelper.h"
 
 bool CProphet::TRANS_STRICT_BY_PRED = true;
 
@@ -235,7 +236,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "######  < " << time << " >  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Sink )       " ;
+				CPrintHelper::PrintCommunication(time, node->toString(), sink->toString(), ctrl->getACK().size());
 
 				return packetsToSend;
 
@@ -377,7 +378,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				//skip if has spoken recently
 				if( node->hasSpokenRecently(dynamic_cast<CNode*>(fromNode), time) )
 				{
-					flash_cout << "######  ( Node " << NDigitString(node->getID(), 2) << "  ----- skip -----  Node " << NDigitString(fromNode->getID(), 2) << " )                " ;
+					CPrintHelper::PrintCommunication(time, node->toString(), fromNode->toString(), "skip");
 					return packetsToSend;
 				}
 				//rcv RTS from node
@@ -473,7 +474,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				flash_cout << "######  < " << time << " >  ( Node " << NDigitString(node->getID(), 2) << "  >---- " << NDigitString( ctrl->getACK().size(), 3, ' ') << "  ---->  Node " << NDigitString(fromNode->getID(), 2) << " )                       " ;
+				CPrintHelper::PrintCommunication(time, node->toString(), fromNode->toString(), ctrl->getACK().size());
 
 				return packetsToSend;
 

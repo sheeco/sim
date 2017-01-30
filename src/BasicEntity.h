@@ -128,6 +128,16 @@ public:
 	
 	virtual void updateStatus() {};
 	virtual void updateStatus(int currentTime) {};
+
+	virtual string toString() const
+	{
+		return toString(0);
+	};
+	virtual string toString(int level) const
+	{
+		return "<CBasicEntity>";
+	};
+
 };
 	
 //CBasicEntity::~CBasicEntity(){};

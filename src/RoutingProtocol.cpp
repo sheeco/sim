@@ -4,6 +4,7 @@
 #include "HDC.h"
 #include "HotspotSelect.h"
 #include "Trace.h"
+#include "PrintHelper.h"
 
 //int CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //Êý¾Ý·¢ËÍslot
 int CRoutingProtocol::WINDOW_TRANS = 0;
@@ -165,7 +166,7 @@ void CRoutingProtocol::PrintFinal(int currentTime)
 			break;
 	}
 
-	double deliveryRatio = NDigitFloat(CData::getDeliveryRatio() * 100, 1);
-	cout << endl << endl << "####  < " << currentTime - 1 << " >  " << "SIMULATION FINISHED" << endl;
-	cout << "######  [ Delivery Ratio ]  " << deliveryRatio << " % " << endl << endl;
+	CPrintHelper::PrintNewLine();
+	CPrintHelper::PrintHeading(currentTime - 1, "SIMULATION FINISHED");
+	CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
 }

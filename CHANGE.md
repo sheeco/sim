@@ -753,12 +753,15 @@
 
 - FIX: And some opt for data communication between MA & sink in HAR;
 
-###### 2017-01-26 · *< 3.6.6235.29389 >*
+###### [ 2017-01-26 · *< 3.6.6235.29389 >* ]( f5b4ee1a57eedb9365677850a8f27d135b3fbee4 )
 
 - ADD: Length limit to data transmission in HAR according to `CRoutingProtocol::WINDOW_TRANS`;
 
+###### 2017-01-30 · *< 3.6.6239.28044 >*
+
+- [x] RFCT: Extract printing operations into `CPrintHelper`;
+
    
-- [ ] RFCT: Extract print method into `CPrintHelper` or `global`;
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
 - [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；

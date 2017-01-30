@@ -60,17 +60,17 @@ using std::setfill;
 
 /********************************** Output & Debug **********************************/
 
-#define TAB '\t'
-#define CR '\r'  //用于控制台输出时同行改写的转义字符
-#define _PAUSE_ _ALERT_; system("pause")
-#define _ALERT_ cout << '\a'
-#define flash_cout cout << CR  //控制台输出位置回到行首，在动态显示的输出时使用 flash_cout 代替 cout 即可
+#define TAB "\t"
+#define CR "\r"  //用于控制台输出时同行改写的转义字符
+#define LF "\n"
+#define ALERT "\a"
+#define _PAUSE_ system("pause")
 #define CURRENT_LOCATION string(__FILE__) + string(", ") + string(__FUNCTION__) + string(", ") + STRING(__LINE__)
 
-#define __DEBUG__
-#ifdef __DEBUG__
-#define _DEBUG_PRINT_ (str) cout << "$ DEBUG : " << str << endl;
-#endif
+//#define __DEBUG__
+//#ifdef __DEBUG__
+//#define _DEBUG_PRINT_ (str) cout << "$ DEBUG : " << str << endl;
+//#endif
 
 
 /******************************** User Defined ERRNO ********************************/
@@ -316,16 +316,27 @@ namespace global
 		return original;
 	}
 
-	inline string NDigitString(int input, int n, char ch)
+	inline string NDigitString(string input, int n, char ch)
 	{
 		stringstream ss;
 		ss << setw(n) << setfill(ch) << input;
 		return ss.str();
 	}
-
+	inline string NDigitString(string input, int n)
+	{
+		return NDigitString(input, n, ' ');
+	}
 	inline string NDigitString(int input, int n)
 	{
-		return NDigitString(input, n, '0');
+		return NDigitString(STRING(input), n);
+	}
+	inline string NDigitString(double input, int n)
+	{
+		return NDigitString(STRING(input), n);
+	}
+	inline string NDigitIntString(int input, int n)
+	{
+		return NDigitString(STRING(input), n, '0');
 	}
 
 	//圆形区域面积

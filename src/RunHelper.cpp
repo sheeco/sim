@@ -5,6 +5,7 @@
 #include "HAR.h"
 #include "HDC.h"
 #include "../.project/version.h"
+#include "PrintHelper.h"
 
 
 void CRunHelper::InitLogPath()
@@ -42,9 +43,7 @@ void CRunHelper::InitLogPath()
 
 void CRunHelper::Help()
 {
-	ifstream help(DIR_RUN + FILE_HELP, ios::in);
-	cout << help.rdbuf();
-	help.close();
+	CPrintHelper::PrintFile(DIR_RUN + FILE_HELP, "");
 	_PAUSE_;
 }
 
@@ -503,17 +502,17 @@ bool CRunHelper::Run(int argc, char* argv[])
 	}
 	catch(string error)
 	{
-		cout << endl << "Error @ " << error << endl;
+		CPrintHelper::PrintError(error);
 		Exit(EERROR, error);
 	}
 	catch(pair<int, string> &pairError)
 	{
-		cout << endl << "Error " << pairError.first << " @ " << pairError.second << endl;
+		CPrintHelper::PrintError(pairError);
 		Exit(pairError.first, pairError.second);
 	}
 	catch(exception ex)
 	{
-		cout << endl << "Uncaught Error : " << ex.what() << endl;
+		CPrintHelper::PrintError(ex);
 		Exit(EERROR, ex.what() );
 	}
 

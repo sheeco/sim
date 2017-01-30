@@ -124,6 +124,7 @@
     <ClCompile Include="..\src\Coordinate.cpp" />
     <ClCompile Include="..\src\Packet.cpp" />
     <ClCompile Include="..\src\ParseHelper.cpp" />
+    <ClCompile Include="..\src\PrintHelper.cpp" />
     <ClCompile Include="..\src\RunHelper.cpp" />
     <ClCompile Include="..\src\Trace.cpp" />
     <ClCompile Include="..\src\Ctrl.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="..\src\Coordinate.h" />
     <ClInclude Include="..\src\Packet.h" />
     <ClInclude Include="..\src\ParseHelper.h" />
+    <ClInclude Include="..\src\PrintHelper.h" />
     <ClInclude Include="..\src\RunHelper.h" />
     <ClInclude Include="..\src\Trace.h" />
     <ClInclude Include="..\src\Ctrl.h" />

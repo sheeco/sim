@@ -8,6 +8,7 @@
 #include "Prophet.h"
 #include "MacProtocol.h"
 #include "Trace.h"
+#include "PrintHelper.h"
 
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
@@ -204,7 +205,7 @@ bool CNode::hasNodes(int currentTime)
 	}
 	ClearDeadNodes(currentTime);
 	if(death)
-		flash_cout << "######  [ Node ]  " << CNode::getNodes().size() << "                                     " << endl;
+		CPrintHelper::PrintAttribute("Node", CNode::getNodes().size());
 
 	return ( ! nodes.empty() );
 }

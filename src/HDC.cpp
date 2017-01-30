@@ -4,6 +4,7 @@
 #include "SortHelper.h"
 #include "HotspotSelect.h"
 #include "Trace.h"
+#include "PrintHelper.h"
 
 
 CHDC::CHDC()
@@ -31,24 +32,24 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	if( currentTime == 0 
 		|| print )
 	{
-		flash_cout << "####  < " << currentTime << " >  DUTY CYCLE UPDATE            " << endl ;
+		CPrintHelper::PrintHeading(currentTime, "DUTY CYCLE UPDATE");
 		print = false;
 	}
 
-//	int atHotspotCount = 0;
+	int atHotspotCount = 0;
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
 		//update duty cycle
 		if( (*inode)->useHotspotDutyCycle()
 			&& ( ! (*inode)->isAtHotspot() ) )
 		{
-			flash_cout << "######  ( Node " << (*inode)->getID() << " leaves Hotspot )              " ;			
+			CPrintHelper::PrintDetail(currentTime, (*inode)->toString() + " leaves hotspot");
 			(*inode)->resetDutyCycle();
 		}
 		else if( (*inode)->useDefaultDutyCycle()
 				 && (*inode)->isAtHotspot() )
 		{
-			flash_cout << "######  ( Node " << (*inode)->getID() << " enters Hotspot )               " ;
+			CPrintHelper::PrintDetail(currentTime, ( *inode )->toString() + " enters " + ( *inode )->getAtHotspot()->toString());
 			(*inode)->raiseDutyCycle();
 		}
 	}
@@ -56,11 +57,10 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	//控制台输出时保留一位小数
 	if( ( currentTime + SLOT ) % SLOT_LOG == 0 )
 	{
-		double encounterRatio = NDigitFloat( CNode::getPercentEncounterAtHotspot() * 100, 1);
-		flash_cout << "######  [ Hotspot Encounter ]  " << encounterRatio << " %                                           " << endl << endl;
+		CPrintHelper::PrintPercentage("Hotspot Encounter", CNode::getPercentEncounterAtHotspot());
 		print = true;
 	}
-	//flash_cout << "######  [ At Hotspot ]  " << atHotspotCount << " / " << CNode::getNodes().size() << "                              " ;
+	CPrintHelper::PrintPercentage("Hot-Node", atHotspotCount);
 
 }
 

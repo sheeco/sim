@@ -1,6 +1,7 @@
 #include "NodeRepair.h"
 #include "HotspotSelect.h"
 #include "Node.h"
+#include "PrintHelper.h"
 
 
 CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *> &unselectedHotspots) : selectedHotspots(selectedHotspots), unselectedHotspots(unselectedHotspots)
@@ -64,7 +65,7 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 
 vector<CHotspot *> CNodeRepair::RepairPoorNodes(int time)
 {
-	flash_cout << "######  ( POOR NODE REPAIR )          " ;
+	CPrintHelper::PrintDoing("POOR NODE REPAIR");
 
 	this->time = time;
 	while(! poorNodes.empty())
@@ -84,6 +85,7 @@ vector<CHotspot *> CNodeRepair::RepairPoorNodes(int time)
 		poorNodes.erase(poorNodes.begin());
 	}
 
+	CPrintHelper::PrintDone();
 	return selectedHotspots;
 }
 

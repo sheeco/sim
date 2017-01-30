@@ -1,6 +1,7 @@
 #include "PostSelect.h"
 #include "SortHelper.h"
 #include "HotspotSelect.h"
+#include "PrintHelper.h"
 
 double CPostSelect::ALPHA = 0.03;  //ratio for post selection
 
@@ -89,7 +90,7 @@ bool CPostSelect::verifyCompleted()
 
 vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 {
-	flash_cout << "######  ( POST SELECT )          " ;
+	CPrintHelper::PrintDoing("POST SELECT");
 
 	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
 	{
@@ -139,6 +140,7 @@ vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 
 	//将未选中的候选热点放回全局候选集
 	unselectedHotspots.insert(unselectedHotspots.end(), hotspotCandidates.begin(), hotspotCandidates.end() );
+	CPrintHelper::PrintDone();
 	return selectedHotspots;
 }
 
