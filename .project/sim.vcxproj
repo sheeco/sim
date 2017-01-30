@@ -101,7 +101,7 @@
     <BuildLog />
     <BuildLog />
     <BuildLog>
-      <Path>..\.build\$(ProjectName)\$(MSBuildProjectName).release.log</Path>
+      <Path>..\.build\$(ProjectName)\$(ProjectName).release.log</Path>
     </BuildLog>
     <PostBuildEvent>
       <Command>XCOPY "../bin/sim.release.exe" /F "../bin/sim.exe"  /Y</Command>

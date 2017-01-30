@@ -21,23 +21,22 @@ Log files in `/log`:
 	hop.log
 
 	hotspot.log
-	at-hotspot.log
-
+	hotspot-details.log
 	hotspot-similarity.log
-	hotspot-rank.log
-	delivery-hotspot.log
-	delivery-statistics.log
-	merge.log
-	merge-details.log
+	hotspot-statistics.log
 	ma.log
 	buffer-ma.log
 	ed.log
+	visit.log
+
+	merge.log
+	merge-details.log
 
 
 ### Usage
 
 - 默认配置文件 [/bin/default.config](/bin/default.config)；
-- 使用命令行进行参数配置的规则见文件 [/bin/help.md](/bin/help.md)，或运行 `HDC -help` 查看；
+- 使用命令行进行参数配置的规则见文件 [/bin/help.md](/bin/help.md)，或运行 `sim -help` 查看；
 
 
 ### Dependency
@@ -57,6 +56,8 @@ Log files in `/log`:
 
     README.md
     
+    CHANGE.md
+
     HELP.md
     
     version.h & sim.rc
@@ -136,6 +137,8 @@ Log files in `/log`:
 		|-- ParseHelper.h & .cpp
     
 		|-- RunHelper.h & .cpp
+
+		|-- PrintHelper.h & .cpp
     
 	Configuration.h & .cpp
         

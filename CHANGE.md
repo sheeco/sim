@@ -757,9 +757,13 @@
 
 - ADD: Length limit to data transmission in HAR according to `CRoutingProtocol::WINDOW_TRANS`;
 
-###### 2017-01-30 ¡¤ *< 3.6.6239.28044 >*
+###### [ 2017-01-30 ¡¤ *< 3.6.6239.28044 >* ]( 624aaa84a9effa5e0b839526f2fcbc71ac8a6249 )
 
 - [x] RFCT: Extract printing operations into `CPrintHelper`;
+
+###### 2017-01-31 ¡¤ *< 3.6.6239.29279 >*
+
+- FIX: Minor bug with hotspot statistics;
 
    
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

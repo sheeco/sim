@@ -794,24 +794,26 @@ void HAR::PrintInfo(int currentTime)
 			hotspot_statistics << INFO_HOTSPOT_STATISTICS;
 		}
 		//在 t 被时刻选出的热点，工作周期截至到 t + 900，在 t + 1800 时刻才被统计输出
-		int timeBeforeYesterday = currentTime - 2 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
 		vector<int> timesToPrint;
-		if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
-			timesToPrint.push_back(timeBeforeYesterday);
-		if( ! timesToPrint.empty()
-		   || currentTime == RUNTIME )
+		int timeBeforeYesterday = 0;
+		//运行结束，补充输出上一轮的热点统计
+		if( currentTime == RUNTIME )
 		{
-			//运行结束，补充输出上一轮的热点统计
- 			if( currentTime == RUNTIME )
-			{
-				timeBeforeYesterday = ( currentTime / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1 ) * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
-				int timeYesterday = timeBeforeYesterday + CHotspotSelect::SLOT_HOTSPOT_UPDATE;
-				if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
-					timesToPrint.push_back(timeBeforeYesterday);
-				if( timeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
-					timesToPrint.push_back(timeYesterday);
-			}
-
+			timeBeforeYesterday = ( currentTime / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1 ) * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+			int timeYesterday = timeBeforeYesterday + CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+			if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+				timesToPrint.push_back(timeBeforeYesterday);
+			if( timeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+				timesToPrint.push_back(timeYesterday);
+		}
+		else if( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 )
+		{
+			timeBeforeYesterday = currentTime - 2 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+			if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
+				timesToPrint.push_back(timeBeforeYesterday);
+		}
+		if( ! timesToPrint.empty() )
+		{
 			for( vector<int>::iterator itime = timesToPrint.begin(); itime != timesToPrint.end(); itime++ )
 			{
 				vector<CHotspot *> hotspotsToPrint = CHotspot::getSelectedHotspots(*itime);
