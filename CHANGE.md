@@ -761,9 +761,14 @@
 
 - [x] RFCT: Extract printing operations into `CPrintHelper`;
 
-###### 2017-01-31 ¡¤ *< 3.6.6239.29279 >*
+###### [ 2017-01-31 ¡¤ *< 3.6.6239.29279 >* ]( 2bc8ccd32cd2f91dfd3c4bd969114fb751757715 )
 
 - FIX: Minor bug with hotspot statistics;
+
+###### 2017-02-07 ¡¤ *< 3.6.6246.31032 >* ¡¤ *< v0.1.1 >* 
+
+- MNT: Fix the bug with version control. Version No. in `sim.version` had always been 1 commit behind between [*<3.6.6234.36098>*](127ce48e7a110837e898f575c672952cc6b70246) ~ [*<3.6.6239.29279>*](2bc8ccd32cd2f91dfd3c4bd969114fb751757715);
+- MNT: Product Version No. changed to `0.1.1`;
 
    
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»
