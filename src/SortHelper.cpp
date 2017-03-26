@@ -123,6 +123,42 @@ vector<CPosition *> CSortHelper::mergeSort(vector<CPosition *> v)
 	return merge(left, right);
 }
 
+vector<CPosition*> CSortHelper::merge(vector<CPosition*> left, vector<CPosition*> right, bool(*Comp)( CBasicEntity &, CBasicEntity & ))
+{
+	vector<CPosition *> result;
+	vector<CPosition *>::size_type li = 0;
+	vector<CPosition *>::size_type ri = 0;
+	while( li < left.size()
+		  && ri < right.size() )
+	{
+		if( Comp(*left[li], *right[ri]) )
+			result.push_back(right[ri++]);
+		else
+			result.push_back(left[li++]);
+	}
+	while( li < left.size() )
+		result.push_back(left[li++]);
+	while( ri < right.size() )
+		result.push_back(right[ri++]);
+	return result;
+}
+
+vector<CPosition*> CSortHelper::mergeSort(vector<CPosition*> v, bool(*Comp)( CBasicEntity &, CBasicEntity & ))
+{
+	if( v.size() == 0 )
+		return vector<CPosition *>();
+	if( v.size() == 1 )
+		return vector<CPosition *>(1, v[0]);
+
+	vector<CPosition *>::iterator mid = v.begin() + v.size() / 2;
+	vector<CPosition *> left(v.begin(), mid);
+	vector<CPosition *> right(mid, v.end());
+	left = mergeSort(left, Comp);
+	right = mergeSort(right, Comp);
+
+	return merge(left, right, Comp);
+}
+
 vector<CNode *> CSortHelper::merge(vector<CNode *> left, vector<CNode *> right)
 {
 	vector<CNode *> result;

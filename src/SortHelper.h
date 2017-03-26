@@ -34,6 +34,8 @@ public:
 	//CPosition类按照x坐标排序
 	static vector<CPosition *> merge(vector<CPosition *> left, vector<CPosition *> right);
 	static vector<CPosition *> mergeSort(vector<CPosition *> v);
+	static vector<CPosition *> merge(vector<CPosition *> left, vector<CPosition *> right, bool(*Comp)( CBasicEntity&, CBasicEntity& ));
+	static vector<CPosition *> mergeSort(vector<CPosition *> v, bool(*Comp)( CBasicEntity&, CBasicEntity& ));
 
 	//CNode类按照x坐标排序
 	static vector<CNode *> merge(vector<CNode *> left, vector<CNode *> right);
@@ -58,6 +60,7 @@ public:
 	static bool ascendByInt(int left, int right){	return left < right;	};
 	static bool ascendByTimeBirth(CData left, CData right){	return left < right; };
 	static bool descendByTimeBirth(CData left, CData right){ return left > right; };
+	static bool ascendByTime(CBasicEntity& left, CBasicEntity& right){	return left.getTime() < right.getTime(); };
 	static bool ascendByID(CNode *left, CNode *right){	return left->getID() < right->getID();	};
 
 	template <class E>

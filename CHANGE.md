@@ -770,10 +770,14 @@
 - MNT: Fix the bug with version control. Version No. in `sim.version` had always been 1 commit behind between [*<3.6.6234.36098>*](127ce48e7a110837e898f575c672952cc6b70246) ~ [*<3.6.6239.29279>*](2bc8ccd32cd2f91dfd3c4bd969114fb751757715);
 - MNT: Product Version No. changed to `0.1.1`;
 
-###### 2017-03-26 · *< 3.6.6294.23218 >*
+###### [ 2017-03-26 · *< 3.6.6294.23218 >* ]( 8645d174020e323ad0022a2e3a50f9994a160fb9 )
 
-- ADD: Implementation of **Trace Filter** from [On the Levy-walk Nature of Human Mobility](http://ieeexplore.ieee.org/document/4509740/).
+- ADD: Implementation of **Trace Filter** based on the Rectangle Model in [On the Levy-walk Nature of Human Mobility](http://ieeexplore.ieee.org/document/4509740/).
   Original snippets written by 李洁琼, incompatible with the project for now;
+
+###### 2017-03-26 · *< 3.6.6294.29782 >*
+
+- OPT: Rewrite `CTraceFilter` to be compatible with the project. Untested;
 
 
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
