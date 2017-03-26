@@ -151,6 +151,7 @@
     <ClCompile Include="..\src\Sink.cpp" />
     <ClCompile Include="..\src\SMac.cpp" />
     <ClCompile Include="..\src\SortHelper.cpp" />
+    <ClCompile Include="..\src\TraceFilter.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -192,6 +193,7 @@
     <ClInclude Include="..\src\Sink.h" />
     <ClInclude Include="..\src\SMac.h" />
     <ClInclude Include="..\src\SortHelper.h" />
+    <ClInclude Include="..\src\TraceFilter.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
