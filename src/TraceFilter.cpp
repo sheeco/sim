@@ -1,87 +1,167 @@
 #include "TraceFilter.h"
 #include "SortHelper.h"
 
-double CTraceFilter::R = 0.005;
-double CTraceFilter::W = 0.5;
+//double CTraceFilter::R = 0.005;
+double CTraceFilter::MIN_VELOCITY = 1.0;
+double CTraceFilter::MARGIN = 5;
+double CTraceFilter::THETA = 30;
 
 
-CTraceFilter::Line CTraceFilter::getLine(CPosition p1, CPosition p2)
+CTraceFilter::Line CTraceFilter::getLine(CPosition pLeft, CPosition pRight)
 {
 	/*
 	根据两点得到一条过这两点的直线，返回该直线
 	*/
 	Line line;
-	if( p1.getX() == p2.getY() )
+	if( pLeft.getX() == pRight.getY() )
 	{
 		line.a = 1;
 		line.b = 0;
-		line.c = -p1.getX();
+		line.c = -pLeft.getX();
 	}
-	else if( p1.getY() == p2.getY() )
+	else if( pLeft.getY() == pRight.getY() )
 	{
 		line.a = 0;
 		line.b = 1;
-		line.c = -p1.getY();
+		line.c = -pLeft.getY();
 	}
 	else
 	{
-		line.a = ( p2.getY() - p1.getY() ) / ( p2.getX() - p1.getX() );
+		line.a = ( pRight.getY() - pLeft.getY() ) / ( pRight.getX() - pLeft.getX() );
 		line.b = -1;
-		line.c = p1.getY() - line.a * p1.getX();
+		line.c = pLeft.getY() - line.a * pLeft.getX();
 	}
 	return line;
 }
 
 double CTraceFilter::getDistance(Line line, CPosition p)
 {
-	return fabsl(( line.a * p.getX() + line.b * p.getY() + line.c ) / ( sqrtl(powl(line.a, 2) + powl(line.b, 2)) ));
+	return fabs(( line.a * p.getX() + line.b * p.getY() + line.c ) / ( sqrt(pow(line.a, 2) + pow(line.b, 2)) ));
 }
 
-bool CTraceFilter::checkPause(CPosition a, CPosition b) {
-	/*
-	对需要满足的条件一 的判定
-	这里的r是自己定义的，记得自己改，
-	secondTerm中的w也同样也可以考虑改为全局变量
-	*/
-	return CBasicEntity::getDistance(a, b) > R;
-}
-
-bool CTraceFilter::checkDistance(vector<CPosition *> positions, CPosition newPoint) 
+double CTraceFilter::getAverageVelocity(CPosition pLeft, CPosition pRight)
 {
-	if( positions.size() < 2 )
+	return CBasicEntity::getDistance(pLeft, pRight) / fabs((double)(pRight.getTime() - pLeft.getTime()));
+}
+
+bool CTraceFilter::hasNoPause(CPosition pLeft, CPosition pRight) 
+{
+	return getAverageVelocity(pLeft, pRight) >= MIN_VELOCITY;
+}
+
+bool CTraceFilter::withinRectangle(vector<CPosition *> flight, CPosition newPoint) 
+{
+	if( flight.size() < 2 )
 		return true;
 
-	/*
-	根据新的flight的首尾计算出一条直线。
-	a*x + b*y + c = 0
-	直线数据结构 存的是 a, b, c
-	*/
-	Line lineFlight = getLine(*positions[0], newPoint);
+	Line lineFlight = getLine(*flight[0], newPoint);
 
 	/*
 	对中间点（也就是途经点）循环，计算点到线的距离
 	得到他们的和与 w 进行比较
 	*/
 
-	vector<CPosition *>::iterator ipos = positions.begin() + 1;
-	for( ; ipos != positions.end(); ++ipos )
+	vector<CPosition *>::iterator ipos = flight.begin() + 1;
+	for( ; ipos != flight.end(); ++ipos )
 	{
-		if( getDistance(lineFlight, **ipos) > W )
+		if( getDistance(lineFlight, **ipos) > MARGIN )
 			return false;
 	}
 
 	return true;
 }
 
+bool CTraceFilter::checkByRectangleModel(vector<CPosition*> flight, CPosition newPosition)
+{
+	return hasNoPause(**flight.rbegin(), newPosition)
+		&& withinRectangle(flight, newPosition);
+}
+
+bool CTraceFilter::withinAngle(vector<CPosition*> flight, CPosition newPosition)
+{
+	if( flight.size() < 2 )
+		return true;
+
+	//TODO:
+	return false;
+}
+
+bool CTraceFilter::checkByAngleModel(vector<CPosition*> flight, CPosition newPosition)
+{
+	return hasNoPause(**flight.rbegin(), newPosition)
+		&& withinAngle(flight, newPosition);
+}
+
+bool CTraceFilter::checkByPauseModel(vector<CPosition*> flight, CPosition newPosition)
+{
+	return hasNoPause(**flight.rbegin(), newPosition);
+}
+
+vector<CPosition*> CTraceFilter::saveFlight(vector<CPosition*> flight)
+{
+	if( flight.empty() )
+		return flight;
+
+	CPosition * head = flight[0];
+	CPosition * tail = nullptr;
+	if( flight.size() > 1 )
+		tail = *flight.rbegin();
+
+	// save the head as key point
+	// unless it's already saved
+	if( keyPoints.empty()
+	   || *keyPoints.rbegin() != head )
+		keyPoints.push_back(head);
+
+	// save middle points as noise points
+	if( flight.size() > 2 )
+	{
+		for( int i = 1; i < flight.size() - 1; ++i )
+		{
+			noisePoints.push_back(flight[i]);
+		}
+	}
+
+	flight.clear();
+
+	// head of new flight = old tail
+	if( tail != nullptr )
+	{
+		keyPoints.push_back(tail);
+		flight.push_back(tail);
+	}
+
+	// else if this is a 1-pos flight
+	// head of new flight is unknown
+	// just return empty flight
+
+	return flight;
+}
+
 CTraceFilter::CTraceFilter(vector<CPosition*> positions)
 {
 	//按照时间排序
-	this->positions = CSortHelper::mergeSort(positions, CSortHelper::ascendByTime);
+	this->inputs = CSortHelper::mergeSort(positions, CSortHelper::ascendByTime);
 
-	Filter();
+	vector<CPosition *> flights;
+	
+	//filter by rectangle model 
+	positions = filter(positions, checkByRectangleModel);
+
+	//filter again by angle model
+	positions = keyPoints;
+	keyPoints.clear();
+	positions = filter(positions, checkByAngleModel);
+
+	//filter again by pause-based model
+	positions = keyPoints;
+	keyPoints.clear();
+	positions = filter(positions, checkByPauseModel);
+
+	ASSERT(keyPoints.size() + noisePoints.size() == inputs.size());
 }
 
-vector<CPosition*> CTraceFilter::Filter()
+vector<CPosition*> CTraceFilter::filter(vector<CPosition *> positions, bool(*check)( vector<CPosition *>, CPosition ))
 {
 	if( positions.size() <= 2 )
 	{
@@ -89,59 +169,26 @@ vector<CPosition*> CTraceFilter::Filter()
 		return keyPoints;
 	}
 
-	vector<CPosition *> flight;
-	//bool withinFlight = true;
+	vector<CPosition *> current_flight;
 	for( vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos )
 	{
-		if( flight.empty() )
+		if( current_flight.empty() )
 		{
-			flight.push_back(*ipos);
+			current_flight.push_back(*ipos);
 			continue;
 		}
 
-		if( checkPause(*flight[flight.size() - 1], **ipos)
-		    && checkDistance(flight, **ipos) )
+		if( check(current_flight, **ipos) )
 		{
-			flight.push_back(*ipos);
+			current_flight.push_back(*ipos);
 		}
 		else
 		{
-
-			CPosition * head = flight[0];
-			keyPoints.push_back(head);
-
-			CPosition * tail = flight[flight.size() - 1];
-			CPosition * newHead = tail;
-
-			if( flight.size() > 1 )
-			{
-				//save middle points as noise points
-				for( int i = 1; i < flight.size() - 1; ++i )
-				{
-					noisePoints.push_back(flight[i]);
-				}
-				//newHead = tail;
-				//keyPoints.push_back(newHead);
-
-				flight.clear();
-				flight.push_back(newHead);
-			}
-			else
-			{
-				flight.clear();
-			}
-			flight.push_back(*ipos);
+			current_flight = saveFlight(current_flight);
 		}
 	}
-	keyPoints.push_back(flight[0]);
-	if( flight.size() > 1 )
-		keyPoints.push_back(flight[flight.size() - 1]);
-	for( int i = 1; i < flight.size() - 1; ++i )
-	{
-		noisePoints.push_back(flight[i]);
-	}
-
-	ASSERT( keyPoints.size() + noisePoints.size() == positions.size() );
+	if( ! current_flight.empty() )
+		saveFlight(current_flight);
 
 	return keyPoints;
 }

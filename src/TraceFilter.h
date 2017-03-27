@@ -17,12 +17,12 @@ private:
 		数据结构中存储 a, b, c
 	*/
 	typedef struct Line {
-		long double a;
-		long double b;
-		long double c;
+		double a;
+		double b;
+		double c;
 	}Line;
 
-	vector<CPosition *> positions;
+	vector<CPosition *> inputs;
 	vector<CPosition *> keyPoints;
 	vector<CPosition *> noisePoints;
 
@@ -32,21 +32,38 @@ private:
 	//double countDistance(CPosition a, CPosition b);
 	//计算点到直线的距离
 	static double getDistance(Line line, CPosition p);
+	//计算两点间平均速度
+	static double getAverageVelocity(CPosition a, CPosition b);
 
 	//判定条件一 d 与 r 的关系
-	static bool checkPause(CPosition a, CPosition b);
+	static bool hasNoPause(CPosition a, CPosition b);
 	//判定条件二 h 与 w 的关系
-	static bool checkDistance(vector<CPosition *> positions, CPosition newPosition);
+	static bool withinRectangle(vector<CPosition *> flight, CPosition newPosition);
+	//check if the new position is within this flight, based on the Rectangle Model
+	static bool checkByRectangleModel(vector<CPosition *> flight, CPosition newPosition);
+
+	//判定夹角是否在规定范围内
+	static bool withinAngle(vector<CPosition *> flight, CPosition newPosition);
+	//check if the new position is within this flight, based on the Angle Model
+	static bool checkByAngleModel(vector<CPosition *> flight, CPosition newPosition);
+
+	//check if the new position is within this flight, based on the Pause-based Model
+	static bool checkByPauseModel(vector<CPosition *> flight, CPosition newPosition);
+
+	//save a complete flight to keyPoints & noisePoints
+	vector<CPosition*> saveFlight(vector<CPosition *> flight);
 
 	//进行过滤，将得到的驻留点和途径点分别放入 keyPoints 和 noisePoints
-	vector<CPosition *> Filter();
+	vector<CPosition *> filter(vector<CPosition *> flight, bool (*check)( vector<CPosition *> , CPosition ));
 
 public:
 
-	static double R;
-	static double W;
+	//static double R;
+	static double MIN_VELOCITY;
+	static double MARGIN;
+	static double THETA;
 	
-	CTraceFilter(vector<CPosition *> positions);
+	CTraceFilter(vector<CPosition *> inputs);
 	~CTraceFilter() {};
 
 	inline vector<CPosition *> getKeyPoints() const

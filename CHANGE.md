@@ -775,9 +775,14 @@
 - ADD: Implementation of **Trace Filter** based on the Rectangle Model in [On the Levy-walk Nature of Human Mobility](http://ieeexplore.ieee.org/document/4509740/).
   Original snippets written by 李洁琼, incompatible with the project for now;
 
-###### 2017-03-26 · *< 3.6.6294.29782 >*
+###### [ 2017-03-26 · *< 3.6.6294.29782 >* ]( c8b5f837d26f239ebdb45c44dd857b8a34fa66c2 )
 
 - OPT: Rewrite `CTraceFilter` to be compatible with the project. Untested;
+
+###### 2017-03-27 · *< 3.6.6295.19305 >*
+
+- ADD: Implementation of Angle Model & Pause-based Model. **Untested**;
+- RFCT: for `CTraceFilter`;
 
 
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
