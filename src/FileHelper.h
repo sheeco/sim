@@ -6,7 +6,6 @@
 //#include "Hotspot.h"
 #include "Helper.h"
 #include "Coordinate.h"
-#include "Trace.h"
 
 //包含用于文件相关操作的函数的类
 class CFileHelper :
@@ -19,6 +18,12 @@ public:
 	static bool Rename(string oldname, string newname);
 	static bool SetHidden(string filename);
 	static bool UnsetHidden(string filename);
+
+	// Return empty vector if dir does not exist
+	static vector<string> ListDirectory(string pathDir);
+	static vector<string> FilterByExtension(vector<string> filenames, string extension);
+
+	static bool test();
 
 	//static CPosition* findPositionByID(vector<CPosition *> positions, int ID);
 

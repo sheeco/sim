@@ -1,5 +1,6 @@
 #include "Global.h"
 #include "FileHelper.h"
+#include <filesystem>
 
 
 bool CFileHelper::IfExists(string filename)
@@ -36,6 +37,38 @@ bool CFileHelper::SetHidden(string filename)
 bool CFileHelper::UnsetHidden(string filename)
 {
 	return false;
+}
+
+vector<string> CFileHelper::ListDirectory(string pathDir)
+{
+	using std::experimental::filesystem::directory_iterator;
+	using std::experimental::filesystem::directory_entry;
+	using std::experimental::filesystem::path;
+
+	vector<string> ret;
+
+	for( directory_entry it : directory_iterator(pathDir) )
+		ret.push_back(it.path().string());
+	// TODO: sort by node id ?
+	return ret;
+}
+
+vector<string> CFileHelper::FilterByExtension(vector<string> filenames, string extension)
+{
+	vector<string> ret;
+	for( string name : filenames )
+	{
+		if( name.rfind(extension) == name.length() - extension.length() )
+			ret.push_back(name);
+	}
+	return ret;
+}
+
+bool CFileHelper::test()
+{
+	vector<string> ls = ListDirectory(string("../res/NCSU"));
+	ls = FilterByExtension(ls, string(".trace"));
+	return true;
 }
 
 //CPosition* CFileHelper::findPositionByID(vector<CPosition *> positions, int ID)

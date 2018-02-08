@@ -905,6 +905,12 @@ void HAR::PrintFinal(int currentTime)
 //	}
 //}
 
+// UNDONE:
+bool HAR::Init()
+{
+	return false;
+}
+
 bool HAR::Operate(int currentTime)
 {
 	bool hasNodes = true;

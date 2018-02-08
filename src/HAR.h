@@ -102,6 +102,7 @@ public:
 	static void PrintInfo(int currentTime);
 	static void PrintFinal(int currentTime);
 
+	static bool Init();
 	static bool Operate(int currentTime);
 
 };

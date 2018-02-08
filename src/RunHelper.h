@@ -18,6 +18,7 @@ public:
 	static void InitLogPath();
 	static void Help();
 
+	// TODO: move into CConfiguration
 	static void InitConfiguration();
 	static void ValidateConfiguration();
 	static void PrintConfiguration();

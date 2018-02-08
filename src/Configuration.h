@@ -29,6 +29,10 @@ public:
 	} _TYPE_FIELD;
 
 
+	// TODO: define all the configs here as static attribute
+	static string PATH_TRACE;
+
+
 private:
 
 	typedef	struct _FIELD_CONFIGURATION
@@ -61,6 +65,7 @@ protected:
 	//检测该关键字是否存在
 	static bool ifExists(string keyword);
 	//最多允许带 2 个参数
+	// TODO: add default value ?
 	static bool AddConfiguration(string keyword, void * dstAttr, int value, string description);
 	static bool AddConfiguration(string keyword, _TYPE_FIELD type, void * dstAttr, string description);
 	static bool AddConfiguration(string keyword, _TYPE_FIELD type_1, void * dstAttr_1, _TYPE_FIELD type_2, void * dstAttr_2, string description);
@@ -68,6 +73,8 @@ protected:
 	static vector<string> getConfiguration(int argc, char * argv[]);
 	static bool ParseConfiguration(vector<string> args, string description);
 	static bool ParseConfiguration(string filename);
+
+	static bool ApplyConfigurations();
 };
 
 #endif // __CONFIGURATION_H__

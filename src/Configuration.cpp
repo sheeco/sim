@@ -2,9 +2,12 @@
 #include "FileHelper.h"
 #include "ParseHelper.h"
 #include "RunHelper.h"
+#include "Trace.h"
 
 map<string, pair<string, vector<CConfiguration::_FIELD_CONFIGURATION> > > CConfiguration::configurations;
 string CConfiguration::KEYWORD_HELP = "-help";
+// TODO: add to configs
+string CConfiguration::PATH_TRACE = "../res/NCSU/";
 
 //CConfiguration::CConfiguration(string keyword) : keyword(keyword)
 //{
@@ -253,4 +256,11 @@ bool CConfiguration::ParseConfiguration(string filename)
 	rtn = ParseConfiguration(args, filename);
 
 	return rtn;
+}
+
+// UNDONE:
+bool CConfiguration::ApplyConfigurations()
+{
+	CCTrace::PATH_TRACE = PATH_TRACE;
+	return true;
 }

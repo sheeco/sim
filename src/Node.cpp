@@ -9,6 +9,7 @@
 #include "MacProtocol.h"
 #include "Trace.h"
 #include "PrintHelper.h"
+#include "Configuration.h"
 
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
@@ -26,7 +27,6 @@ vector<CNode *> CNode::deletedNodes;
 
 int CNode::MIN_NUM_NODE = 0;
 int CNode::MAX_NUM_NODE = 0;
-int CNode::INIT_NUM_NODE = 0;
 
 int CNode::SLOT_TOTAL = 0;
 double CNode::DEFAULT_DUTY_CYCLE = 0;
@@ -108,19 +108,20 @@ CNode::~CNode()
 void CNode::initNodes() {
 	if( nodes.empty() && deadNodes.empty() )
 	{
-		for(int i = 0; i < INIT_NUM_NODE; ++i)
+		vector<string> filenames = CFileHelper::ListDirectory(CConfiguration::PATH_TRACE);
+		filenames = CFileHelper::FilterByExtension(filenames, CCTrace::EXTENSION_TRACE);
+
+		for(int i = 0; i < filenames.size(); ++i)
 		{
 			double dataRate = DEFAULT_DATA_RATE;
 			if(i % 5 == 0)
 				dataRate *= 5;
 			CNode* node = new CNode(dataRate);
 			node->generateID();
-			node->loadTrace();
+			node->loadTrace(filenames[i]);
 			CNode::nodes.push_back(node);
 			CNode::idNodes.push_back( node->getID() );
 		}
-		for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
-			CProphet::initDeliveryPreds(*inode);
 	}
 }
 
@@ -700,6 +701,9 @@ int CNode::getCapacityForward()
 
 int CNode::ChangeNodeNumber()
 {
+	if( MAX_NUM_NODE <= MIN_NUM_NODE || MIN_NUM_NODE <= 0 )
+		throw pair<int, string>(EARG, string("Min & max node number (" + STRING(MIN_NUM_NODE) + ", " + STRING(MAX_NUM_NODE) +") are not correctly configured."));
+
 	int delta = 0;
 	float bet = 0;
 	do

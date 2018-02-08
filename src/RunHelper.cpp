@@ -63,8 +63,6 @@ void CRunHelper::InitConfiguration()
 	CSink::SINK_Y = 0;
 	CSink::CAPACITY_BUFFER = 999999999;  //无限制
 
-	CNode::INIT_NUM_NODE = 0;
-
 	//CRoutingProtocol::SLOT_DATA_SEND = CCTrace::SLOT_TRACE;  //数据发送slot
 	CNode::DEFAULT_DATA_RATE = 0;
 	CNode::SIZE_DATA = 0;
@@ -87,7 +85,6 @@ void CRunHelper::InitConfiguration()
 	/********** Dynamic Node Number **********/
 	CMacProtocol::TEST_DYNAMIC_NUM_NODE = false;
 	CMacProtocol::SLOT_CHANGE_NUM_NODE = 5 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;  //动态节点个数测试时，节点个数发生变化的周期
-	CNode::INIT_NUM_NODE = 0;
 	CNode::MIN_NUM_NODE = 0;
 	CNode::MAX_NUM_NODE = 0;
 	/********** ------------------- **********/
@@ -160,9 +157,6 @@ void CRunHelper::InitConfiguration()
 	//CGeneralNode::RANGE_TRANS = 250;
 	CSink::SINK_X = -200;  //for KAIST
 	CSink::SINK_Y = 200;
-	CNode::INIT_NUM_NODE = 29;
-	CNode::MIN_NUM_NODE = int(CNode::INIT_NUM_NODE * 1.4);
-	CNode::MAX_NUM_NODE = int(CNode::INIT_NUM_NODE * 0.6);
 	/*********** ----------------- ***********/
 
 	/***************************  Node & Data  ***************************/
@@ -204,7 +198,9 @@ void CRunHelper::InitConfiguration()
 	CConfiguration::AddConfiguration("-time-data", CConfiguration::_int, &DATATIME, "");
 	CConfiguration::AddConfiguration("-time-run", CConfiguration::_int, &RUNTIME, "");
 	CConfiguration::AddConfiguration("-slot", CConfiguration::_int, &SLOT, "");
-	CConfiguration::AddConfiguration("-node", CConfiguration::_int, &CNode::INIT_NUM_NODE, "");
+	CConfiguration::AddConfiguration("-path-trace", CConfiguration::_string, &CCTrace::PATH_TRACE, "");
+	CConfiguration::AddConfiguration("-node-min", CConfiguration::_int, &CNode::MIN_NUM_NODE, "");
+	CConfiguration::AddConfiguration("-node-max", CConfiguration::_int, &CNode::MAX_NUM_NODE, "");
 	CConfiguration::AddConfiguration("-log-slot", CConfiguration::_int, &SLOT_LOG, "");
 	CConfiguration::AddConfiguration("-trans-range", CConfiguration::_int, &CGeneralNode::RANGE_TRANS, "");
 	CConfiguration::AddConfiguration("-trans-speed", CConfiguration::_int, &CNode::SPEED_TRANS, "");
@@ -422,6 +418,7 @@ bool CRunHelper::PrepareSimulation(vector<string> args)
 	/*****************************  检验和修整相互耦合的参数  *******************************/
 
 	ValidateConfiguration();
+	CConfiguration::ApplyConfigurations();
 
 	/*************************** 将 log 信息和参数信息写入文件 ******************************/
 
@@ -433,48 +430,61 @@ bool CRunHelper::PrepareSimulation(vector<string> args)
 bool CRunHelper::RunSimulation()
 {
 	int currentTime = 0;
-	while( currentTime <= RUNTIME )
-	{
-		bool dead = false;
-
-		switch( ROUTING_PROTOCOL )
-		{
-			case _prophet:
-				dead = !CProphet::Operate(currentTime);
-				break;
-
-				//			case _epidemic:
-				//				dead = ! CEpidemic::Operate(currentTime);
-				//				break;
-
-			case _xhar:
-				dead = !HAR::Operate(currentTime);
-				break;
-
-			default:
-				break;
-		}
-
-		if( dead )
-		{
-			RUNTIME = currentTime;
-			break;
-		}
-		currentTime += SLOT;
-	}
+	bool dead = false;
 
 	switch( ROUTING_PROTOCOL )
 	{
 		case _prophet:
+			
+			CProphet::Init();
+			while( currentTime <= RUNTIME )
+			{
+				dead = !CProphet::Operate(currentTime);
+
+				if( dead )
+				{
+					RUNTIME = currentTime;
+					break;
+				}
+				currentTime += SLOT;
+			}
 			CProphet::PrintFinal(currentTime);
+
 			break;
 
-			//		case _epidemic:
-			//			CEpidemic::PrintFinal(currentTime);
-			//			break;
+		//case _epidemic:
+		//	CEpidemic::Init();
+		//	while( currentTime <= RUNTIME )
+		//	{
+		//		dead = !CEpidemic::Operate(currentTime);
+
+		//		if( dead )
+		//		{
+		//			RUNTIME = currentTime;
+		//			break;
+		//		}
+		//		currentTime += SLOT;
+		//	}
+		//	CEpidemic::PrintFinal(currentTime);
+
+			//break;
 
 		case _xhar:
+
+			HAR::Init();
+			while( currentTime <= RUNTIME )
+			{
+				dead = !HAR::Operate(currentTime);
+
+				if( dead )
+				{
+					RUNTIME = currentTime;
+					break;
+				}
+				currentTime += SLOT;
+			}
 			HAR::PrintFinal(currentTime);
+
 			break;
 
 		default:
@@ -492,8 +502,6 @@ bool CRunHelper::Run(int argc, char* argv[])
 
 	try
 	{
-
-		//Debug();
 
 		vector<string> args = CConfiguration::getConfiguration(argc - 1, ( argv + 1 ));
 
@@ -523,9 +531,9 @@ bool CRunHelper::Run(int argc, char* argv[])
 
 bool CRunHelper::Debug()
 {
-	throw exception("test");
+	CFileHelper::test();
 
 	Exit(ESKIP);
-	return false;
+	return true;
 }
 

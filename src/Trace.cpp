@@ -3,6 +3,7 @@
 
 bool CCTrace::CONTINUOUS_TRACE = false;
 int CCTrace::SLOT_TRACE = 0;
+string CCTrace::PATH_TRACE;
 string CCTrace::EXTENSION_TRACE = ".trace";
 
 

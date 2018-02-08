@@ -22,6 +22,8 @@ class CNode :
 
 private:
 
+	// TODO: add identifiers for nodes
+	string identifier;
 	CCTrace* trace;
 	double dataRate;
 	double dutyCycle;
@@ -56,6 +58,7 @@ private:
 
 	static int COUNT_ID;
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
+	// TODO: remove ?
 	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
 	static vector<CNode *> deletedNodes;  //用于暂存Node个数动态变化时被暂时移出的节点
@@ -106,7 +109,6 @@ public:
 
 	static int MIN_NUM_NODE;
 	static int MAX_NUM_NODE;
-	static int INIT_NUM_NODE;
 
 	static int SLOT_TOTAL;
 	static double DEFAULT_DUTY_CYCLE;  //不使用HDC，或者HDC中不在热点区域内时的占空比
@@ -484,9 +486,9 @@ public:
 	{
 		return "Node " + NDigitIntString(this->ID, 2);
 	}
-	void loadTrace()
+	void loadTrace(string filename)
 	{
-		trace = CCTrace::getTraceFromFile(CCTrace::getTraceFilename(this->ID));
+		trace = CCTrace::getTraceFromFile(filename);
 	}
 
 	double getAverageSizeBuffer() const 

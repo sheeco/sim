@@ -566,6 +566,14 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 
 }
 
+bool CProphet::Init()
+{
+	vector<CNode*> nodes = CNode::getNodes();
+	for( vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
+		CProphet::initDeliveryPreds(*inode);
+	return true;
+}
+
 bool CProphet::Operate(int currentTime)
 {
 	bool hasNodes = true;

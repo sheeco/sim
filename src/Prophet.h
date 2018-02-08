@@ -49,6 +49,7 @@ public:
 	// Node <- Node 
 	static vector<CPacket*> receivePackets(CNode* node, CNode* fromNode, vector<CPacket*> packets, int time);
 
+	static bool Init();
 	static bool Operate(int currentTime);
 
 };

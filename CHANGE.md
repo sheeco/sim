@@ -765,10 +765,14 @@
 
 - FIX: Minor bug with hotspot statistics;
 
-###### 2017-02-07 ¡¤ *< 3.6.6246.31032 >* ¡¤ *< v0.1.1 >* 
+###### [2017-02-07 ¡¤ *< 3.6.6246.31032 >* ¡¤ *< v0.1.1 >* ](df7497ae40d9c932d3fe5ded76f1fc452d8aea14)
 
 - MNT: Fix the bug with version control. Version No. in `sim.version` had always been 1 commit behind between [*<3.6.6234.36098>*](127ce48e7a110837e898f575c672952cc6b70246) ~ [*<3.6.6239.29279>*](2bc8ccd32cd2f91dfd3c4bd969114fb751757715);
 - MNT: Product Version No. changed to `0.1.1`;
+
+###### 2018-02-07 ¡¤ *< 3.6.6611.15362 >*
+
+- MOD: Read nodes from files according to `CCTrace::PATH_TRACE` instead of `CNode::INIT_NUM_NODE`;
 
    
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

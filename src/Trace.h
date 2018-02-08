@@ -24,6 +24,7 @@ public:
 
 	static bool CONTINUOUS_TRACE;  //是否将从轨迹文件中得到的散点模拟成为连续的折线
 	static int SLOT_TRACE;  //移动模型中的 slot，由数据文件中得来（eg. NCSU模型中为30）；值为 0 时，表示未赋值；值为 -1 时，表示无固定的时槽；
+	static string PATH_TRACE;
 	static string EXTENSION_TRACE;
 
 	CCTrace();
@@ -86,14 +87,6 @@ public:
 		else
 			return fromLocation;
 
-	}
-
-	static string getTraceFilename(int nodeID)
-	{
-		char buffer[30] = { '\0' };
-		sprintf(buffer, "%d%s", nodeID, EXTENSION_TRACE.c_str());
-		string filename = DIR_RESOURCE + DATASET + "/" + buffer;  //.exe 文件必须在 bin/ 文件夹下
-		return filename;
 	}
 
 	//从文件中解析轨迹

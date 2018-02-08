@@ -22,6 +22,9 @@
       <Filter>资源文件</Filter>
     </None>
     <None Include="..\bin\default.config" />
+    <None Include="..\sim.version">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Data.cpp">

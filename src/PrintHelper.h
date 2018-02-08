@@ -44,6 +44,7 @@ private:
 		printToCout(CR + str, false);
 		LINE_END = CR;
 	}
+	// TODO: call printToFile() for logging in PrintInfo()
 	inline static void printToFile(string filepath, string str, bool newLine)
 	{
 		ofstream file(filepath, ios::app);
