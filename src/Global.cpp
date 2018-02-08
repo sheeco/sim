@@ -10,7 +10,6 @@ namespace global
 
 	int DATATIME = 0;
 	int RUNTIME = 0;
-	string DATASET;
 	int SLOT = 0;
 	int SLOT_LOG = 0;
 

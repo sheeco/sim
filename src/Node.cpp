@@ -108,8 +108,12 @@ CNode::~CNode()
 void CNode::initNodes() {
 	if( nodes.empty() && deadNodes.empty() )
 	{
-		vector<string> filenames = CFileHelper::ListDirectory(CConfiguration::PATH_TRACE);
+		vector<string> filenames = CFileHelper::ListDirectory(CCTrace::PATH_TRACE);
 		filenames = CFileHelper::FilterByExtension(filenames, CCTrace::EXTENSION_TRACE);
+
+		if( filenames.empty() )
+			throw string("CNode::initNodes(): Cannot find any trace files under \"" + CCTrace::PATH_TRACE
+						  + "\".");
 
 		for(int i = 0; i < filenames.size(); ++i)
 		{

@@ -23,22 +23,6 @@ bool CFileHelper::IsEmpty(string filename)
 	return false;
 }
 
-//UNDONE: 
-bool CFileHelper::Rename(string oldname, string newname)
-{
-	return false;
-}
-
-bool CFileHelper::SetHidden(string filename)
-{
-	return false;
-}
-
-bool CFileHelper::UnsetHidden(string filename)
-{
-	return false;
-}
-
 vector<string> CFileHelper::ListDirectory(string pathDir)
 {
 	using std::experimental::filesystem::directory_iterator;
@@ -64,11 +48,11 @@ vector<string> CFileHelper::FilterByExtension(vector<string> filenames, string e
 	return ret;
 }
 
-bool CFileHelper::test()
+void CFileHelper::test()
 {
 	vector<string> ls = ListDirectory(string("../res/NCSU"));
 	ls = FilterByExtension(ls, string(".trace"));
-	return true;
+	ASSERT(ls.size());
 }
 
 //CPosition* CFileHelper::findPositionByID(vector<CPosition *> positions, int ID)

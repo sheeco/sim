@@ -16,13 +16,7 @@ public:
 	~CRunHelper() {};
 
 	static void InitLogPath();
-	static void Help();
-
 	// TODO: move into CConfiguration
-	static void InitConfiguration();
-	static void ValidateConfiguration();
-	static void PrintConfiguration();
-
 	static bool Simulation(vector<string> args);
 	static bool PrepareSimulation(vector<string> args);
 	static bool RunSimulation();

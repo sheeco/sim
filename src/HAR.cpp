@@ -905,10 +905,9 @@ void HAR::PrintFinal(int currentTime)
 //	}
 //}
 
-// UNDONE:
 bool HAR::Init()
 {
-	return false;
+	return true;
 }
 
 bool HAR::Operate(int currentTime)

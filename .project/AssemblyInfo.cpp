@@ -69,7 +69,7 @@ using namespace System::Security::Permissions;
 // 如果设定为 “*”，则每次修改程序后版本号都会自动发生变更。
 // 
 // 主版本号和子版本号应当填写好，因为这部分是不会频繁变动的，而编译版本使用通配符 * 代替。
-[assembly: AssemblyVersionAttribute("3.6.6611.15362")];
+[assembly: AssemblyVersionAttribute("3.6.6613.23744")];
 //
 // 文件版本信息
 // 将文件版本信息注释掉，则文件版本号与程序集版本号相同。
@@ -86,14 +86,14 @@ using namespace System::Security::Permissions;
 [assembly: CLSCompliantAttribute(true)];
 //
 // 表明包含密钥对（作为参数传递至此属性的构造函数）的密钥容器。
-[assembly: AssemblyKeyName("")]
+//[assembly: AssemblyKeyName("")]
 //
 // 包含了公钥（如果使用延迟签名）或者既包含公钥也包含私钥的文件名。
 // 此公钥和私钥将作为参数传递至此属性的构造函数。
 // 文件名称与输出文件路径（.exe 或 .dll）相关，与源文件路径无关。
-[assembly: AssemblyKeyFile("")] 
+//[assembly: AssemblyKeyFile("")] 
 //
-[assembly: SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];
+//[assembly: SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];
 
 //
 // 读取文件信息：

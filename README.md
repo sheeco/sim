@@ -49,7 +49,7 @@ Log files in `/log`:
 - OS: Windows 10
 - IDE: Visual Studio Enterprise 2015 Update 2 ( 14.0.25123.00 )
 - C++ Standard: Microsoft Visual C++ 2015 ( 00322-90150-00888-AA891 )
-- Platform Toolset: Visual Studio 2012 (v110)
+- Platform Toolset: Visual Studio 2015 (v140)
 
 
 ### File List

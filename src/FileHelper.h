@@ -23,7 +23,7 @@ public:
 	static vector<string> ListDirectory(string pathDir);
 	static vector<string> FilterByExtension(vector<string> filenames, string extension);
 
-	static bool test();
+	static void test();
 
 	//static CPosition* findPositionByID(vector<CPosition *> positions, int ID);
 

@@ -770,11 +770,15 @@
 - MNT: Fix the bug with version control. Version No. in `sim.version` had always been 1 commit behind between [*<3.6.6234.36098>*](127ce48e7a110837e898f575c672952cc6b70246) ~ [*<3.6.6239.29279>*](2bc8ccd32cd2f91dfd3c4bd969114fb751757715);
 - MNT: Product Version No. changed to `0.1.1`;
 
-###### 2018-02-07 · *< 3.6.6611.15362 >*
+###### [2018-02-07 · *< 3.6.6611.15362 >*](ee1fd95323e4ea381300b56655c2d1496271ad2e)
 
 - MOD: Read nodes from files according to `CCTrace::PATH_TRACE` instead of `CNode::INIT_NUM_NODE`;
 
-   
+###### 2018-02-08 · *< 3.6.6613.23744 >*
+
+- RFCT: Move config related operations from `CRunHelper` into `CConfiguration`;
+
+
 - [ ] ADD：添加警告函数 `CRunHelper::Warn()`；
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
 - [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；

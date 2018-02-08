@@ -3,12 +3,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommandArguments>-time-run 10000 -trans-prob 1 -buffer 20 -buffer-ma 100 -data-rate 6.8 -cycle 1 -dc-default 1.0  --har</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>..\.debug\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>..\bin\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommandArguments>
     </LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>..\.debug\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>..\bin\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>

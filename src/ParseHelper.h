@@ -24,9 +24,11 @@ public:
 	static double ParseDouble(string str);
 	static bool ParseBool(const char * str);
 	static bool ParseBool(string str);
+	static string ParseString(string str);
 	static vector<string> ParseToken(const char * str, const char * delim);
 	static vector<string> ParseToken(string str, string delim);
 
+	static void test();
 };
 
 #endif // __PARSE_HELPER_H__

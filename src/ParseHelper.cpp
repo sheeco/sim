@@ -56,6 +56,20 @@ bool CParseHelper::ParseBool(string str)
 	return ParseBool(str.c_str());
 }
 
+string CParseHelper::ParseString(string str)
+{
+	if( str.size() >= 2 )
+	{
+		if( ( str[0] == '\'' && str[str.size() - 1] == '\'' )
+		   || ( str[0] == '"' && str[str.size() - 1] == '"' ) )
+		{
+			string ret = str.substr(1, str.size() - 2);
+			return ret;
+		}
+	}
+	return str;
+}
+
 //parse string into tokens
 vector<string> CParseHelper::ParseToken(const char * str, const char * delim)
 {
@@ -77,4 +91,13 @@ vector<string> CParseHelper::ParseToken(const char * str, const char * delim)
 vector<string> CParseHelper::ParseToken(string str, string delim)
 {
 	return ParseToken(str.c_str(), delim.c_str());
+}
+
+void CParseHelper::test()
+{
+	string str1 = "test string", str2 = "\'test string\'", str3 = "\"test string\"", str4 = "test string\"";
+	ASSERT(CParseHelper::ParseString(str1) == str1);
+	ASSERT(CParseHelper::ParseString(str2) == str1);
+	ASSERT(CParseHelper::ParseString(str3) == str1);
+	ASSERT(CParseHelper::ParseString(str4) == str4);
 }

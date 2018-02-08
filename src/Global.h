@@ -121,7 +121,6 @@ namespace global
 
 	extern int DATATIME;
 	extern int RUNTIME;
-	extern string DATASET;
 	extern int SLOT;  // ( s )
 	extern int SLOT_LOG;  //记录数据投递率和数据投递时延的slot
 

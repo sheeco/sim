@@ -30,7 +30,6 @@ public:
 
 
 	// TODO: define all the configs here as static attribute
-	static string PATH_TRACE;
 
 
 private:
@@ -39,7 +38,8 @@ private:
 	{
 		_TYPE_FIELD type;
 		void * dstAttr;  //解析结果将赋值到该地址指向的变量
-		int defaultValue;  //仅当 type == _none 时，允许显式指定此变量的值（一般为枚举型）；对于 _bool /_int / _double /string 不允许显式指定，默认为 0 或空串
+		void * value;  //value of this configuration
+		bool state;  //仅用于 _none 时，记录该选项的开/关
 	} _FIELD_CONFIGURATION;
 
 	//string keyword;  //关键字：带参数的关键字如 "-sink"，不带参数的关键字如 "--prophet"
@@ -53,28 +53,33 @@ private:
 	//CConfiguration(string keyword);
 	~CConfiguration() {};
 
-	//void addValue(_TYPE_VALUE type, void * dstAttr, int defaultValue);
-	static void setValue(void * pAttr, bool value);
-	static void setValue(void * pAttr, int value);
-	static void setValue(void * pAttr, double value);
-	static void setValue(void * pAttr, string value);
-
-
-protected:
 
 	//检测该关键字是否存在
 	static bool ifExists(string keyword);
+	static pair<string, vector<_FIELD_CONFIGURATION>> getConfiguration(string keyword);
 	//最多允许带 2 个参数
-	// TODO: add default value ?
-	static bool AddConfiguration(string keyword, void * dstAttr, int value, string description);
-	static bool AddConfiguration(string keyword, _TYPE_FIELD type, void * dstAttr, string description);
-	static bool AddConfiguration(string keyword, _TYPE_FIELD type_1, void * dstAttr_1, _TYPE_FIELD type_2, void * dstAttr_2, string description);
+	static void AddConfiguration(string keyword, string description, vector<_FIELD_CONFIGURATION> fields);
+	static bool AddConfiguration(string keyword, void *OnValue, bool defaultState, void *dstAttr, string description);
+	static bool AddConfiguration(string keyword, _TYPE_FIELD type, void *defaultValue, void * dstAttr, string description);
+	static bool AddConfiguration(string keyword, _TYPE_FIELD type_1, void *defaultValue_1, void * dstAttr_1, 
+								 _TYPE_FIELD type_2, void *defaultValue_2, void * dstAttr_2, string description);
+	
 
-	static vector<string> getConfiguration(int argc, char * argv[]);
-	static bool ParseConfiguration(vector<string> args, string description);
+protected:
+
+	static void UpdateConfiguration(string keyword, vector<string> argvs);
+
+	static vector<string> ConvertToConfiguration(int argc, char * argv[]);
+	static bool ParseConfiguration(vector<string> args);
 	static bool ParseConfiguration(string filename);
 
+	static void InitConfiguration();
+	static void ValidateConfiguration();
 	static bool ApplyConfigurations();
+	static void PrintConfiguration();
+
+	static void Help();
+
 };
 
 #endif // __CONFIGURATION_H__
