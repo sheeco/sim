@@ -1,5 +1,6 @@
 #include "Frame.h"
 #include "MacProtocol.h"
+#include "Configuration.h"
 
 
 CFrame::CFrame() : src(nullptr), dst(nullptr)
@@ -96,7 +97,7 @@ CFrame::~CFrame()
 
 void CFrame::init()
 {
-	this->headerMac = CMacProtocol::SIZE_HEADER_MAC;
+	this->headerMac = configs.data.SIZE_HEADER_MAC;
 }
 
 int CFrame::getSize() const

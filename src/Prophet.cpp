@@ -1,4 +1,5 @@
 #include "Global.h"
+#include "Configuration.h"
 #include "Node.h"
 #include "Sink.h"
 #include "SMac.h"
@@ -6,12 +7,6 @@
 #include "Prophet.h"
 #include "SortHelper.h"
 #include "PrintHelper.h"
-
-bool CProphet::TRANS_STRICT_BY_PRED = true;
-
-double CProphet::INIT_PRED = 0.75;  //参考值 0.75
-double CProphet::RATIO_PRED_DECAY = 0.98;  //参考值 0.98(/s)
-double CProphet::RATIO_PRED_TRANS = 0.25;  //参考值 0.25
 
 
 CProphet::CProphet()
@@ -34,7 +29,7 @@ void CProphet::initDeliveryPreds(CNode * node)
 	for( int id = 0; id <= nodes.size(); ++id )
 	{
 		if( id != node->getID() )
-			deliveryPreds[id] = CProphet::INIT_PRED;
+			deliveryPreds[id] = configs.prophet.INIT_PRED;
 	}
 	node->setDeliveryPreds(deliveryPreds);
 }
@@ -43,7 +38,7 @@ void CProphet::decayDeliveryPreds(CNode * node, int currentTime)
 {
 	map<int, double> deliveryPreds = node->getDeliveryPreds();
 	for( map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap )
-		deliveryPreds[imap->first] = imap->second * pow(CProphet::RATIO_PRED_DECAY, ( currentTime - node->getTime() ) / CCTrace::SLOT_TRACE);
+		deliveryPreds[imap->first] = imap->second * pow(configs.prophet.RATIO_PRED_DECAY, ( currentTime - node->getTime() ) / configs.trace.SLOT_TRACE);
 	node->setDeliveryPreds(deliveryPreds);
 }
 
@@ -52,10 +47,10 @@ void CProphet::updateDeliveryPredsWith(CNode * node, int fromNode, map<int, doub
 	map<int, double> deliveryPreds = node->getDeliveryPreds();
 	double oldPred = 0, transPred = 0, dstPred = 0;
 	if( deliveryPreds.find(fromNode) == deliveryPreds.end() )
-		deliveryPreds[fromNode] = CProphet::INIT_PRED;
+		deliveryPreds[fromNode] = configs.prophet.INIT_PRED;
 
 	oldPred = deliveryPreds[fromNode];
-	deliveryPreds[fromNode] = transPred = oldPred + ( 1 - oldPred ) * CProphet::INIT_PRED;
+	deliveryPreds[fromNode] = transPred = oldPred + ( 1 - oldPred ) * configs.prophet.INIT_PRED;
 
 	for( map<int, double>::iterator imap = preds.begin(); imap != preds.end(); ++imap )
 	{
@@ -63,11 +58,11 @@ void CProphet::updateDeliveryPredsWith(CNode * node, int fromNode, map<int, doub
 		if( dst == node->getID() )
 			continue;
 		if( deliveryPreds.find(fromNode) == deliveryPreds.end() )
-			deliveryPreds[fromNode] = CProphet::INIT_PRED;
+			deliveryPreds[fromNode] = configs.prophet.INIT_PRED;
 
 		oldPred = deliveryPreds[dst];
 		dstPred = imap->second;
-		deliveryPreds[dst] = oldPred + ( 1 - oldPred ) * transPred * dstPred * CProphet::RATIO_PRED_TRANS;
+		deliveryPreds[dst] = oldPred + ( 1 - oldPred ) * transPred * dstPred * configs.prophet.RATIO_PRED_TRANS;
 	}
 	node->setDeliveryPreds(deliveryPreds);
 }
@@ -76,7 +71,7 @@ void CProphet::updateDeliveryPredsWithSink(CNode * node, CSink * sink)
 {
 	map<int, double> deliveryPreds = node->getDeliveryPreds();
 	double oldPred = deliveryPreds[sink->getID()];
-	deliveryPreds[sink->getID()] = oldPred + ( 1 - oldPred ) * CProphet::INIT_PRED;
+	deliveryPreds[sink->getID()] = oldPred + ( 1 - oldPred ) * configs.prophet.INIT_PRED;
 	node->setDeliveryPreds(deliveryPreds);
 }
 
@@ -87,7 +82,7 @@ bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 
 	if( predNode == predDst )
 	{
-		if( TRANS_STRICT_BY_PRED )
+		if( configs.prophet.TRANS_STRICT_BY_PRED )
 			return false;
 		else
 			return Bet(0.5);
@@ -101,8 +96,8 @@ bool CProphet::shouldForward(CNode* node, map<int, double> dstPred)
 //{
 //	vector<CData> datas = node->getAllData();
 //
-//	if( WINDOW_TRANS > 0 )
-//		CNode::removeDataByCapacity(datas, WINDOW_TRANS, false);
+//	if( configs.trans.WINDOW_TRANS > 0 )
+//		CNode::removeDataByCapacity(datas, configs.trans.WINDOW_TRANS, false);
 //
 //	return datas;
 //}
@@ -196,12 +191,12 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 					return packetsToSend;
 				}
 				//CTS
-				ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+				ctrlToSend = new CCtrl(node->getID(), time, configs.data.SIZE_CTRL, CCtrl::_cts);
 				// + DATA
 				dataToSend = getDataForTrans(node, 0, true);
 
-				node->delayDiscovering(CRoutingProtocol::getTimeWindowTrans());
-				node->delaySleep(CRoutingProtocol::getTimeWindowTrans());
+				node->delayDiscovering(CRoutingProtocol::getTimeForTrans(dataToSend.size()));
+				node->delaySleep(CRoutingProtocol::getTimeForTrans(dataToSend.size()));
 
 				// TODO: mark skipRTS ?
 				// TODO: connection established ?
@@ -334,7 +329,7 @@ vector<CPacket*> CProphet::receivePackets(CSink* sink, CNode* fromNode, vector<C
 			vector<CData> ack = CSink::bufferData(time, datas);
 
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(CSink::SINK_ID, ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+			ctrlToSend = new CCtrl(configs.sink.SINK_ID, ack, time, configs.data.SIZE_CTRL, CCtrl::_ack);
 		}
 	}
 
@@ -388,15 +383,15 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 					updateDeliveryPredsWith(node, fromNode->getID(), ctrl->getPred());
 
 					//CTS
-					ctrlToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_cts);
+					ctrlToSend = new CCtrl(node->getID(), time, configs.data.SIZE_CTRL, CCtrl::_cts);
 
 					// + Capacity
-					if( CNode::MODE_RECEIVE == CNode::_RECEIVE::_selfish 
+					if( configs.node.SCHEME_RELAY == config::_selfish 
 						&& node->hasData() )
-						capacityToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), time, CGeneralNode::SIZE_CTRL, CCtrl::_index);
+						capacityToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), time, configs.data.SIZE_CTRL, CCtrl::_index);
 
 					// + Index
-					indexToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), time, CGeneralNode::SIZE_CTRL, CCtrl::_index);
+					indexToSend = new CCtrl(node->getID(), node->getDeliveryPreds(), time, configs.data.SIZE_CTRL, CCtrl::_index);
 					//node->skipRTS();  //（暂未使用）
 				}
 
@@ -438,7 +433,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 
 					//但缓存为空
 					if( dataToSend.empty() )
-						nodataToSend = new CCtrl(node->getID(), time, CGeneralNode::SIZE_CTRL, CCtrl::_no_data);
+						nodataToSend = new CCtrl(node->getID(), time, configs.data.SIZE_CTRL, CCtrl::_no_data);
 					else if( capacity > 0 )
 					{
 						CNode::removeDataByCapacity(dataToSend, capacity, false);
@@ -484,7 +479,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 
 				//收到NODATA，也将回复一个空的ACK，即，也将被认为数据传输成功
 				//空的ACK
-				ctrlToSend = new CCtrl(node->getID(), vector<CData>(), time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+				ctrlToSend = new CCtrl(node->getID(), vector<CData>(), time, configs.data.SIZE_CTRL, CCtrl::_ack);
 				//加入最近邻居列表
 				node->addToSpokenCache( fromNode, time );
 				node->startDiscovering();
@@ -530,7 +525,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 			vector<CData> ack;
 			ack = CProphet::bufferData(node, datas, time);
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(node->getID(), ack, time, CGeneralNode::SIZE_CTRL, CCtrl::_ack);
+			ctrlToSend = new CCtrl(node->getID(), ack, time, configs.data.SIZE_CTRL, CCtrl::_ack);
 			//加入最近邻居列表
 			node->addToSpokenCache( fromNode, time );
 			node->startDiscovering();
@@ -577,17 +572,17 @@ bool CProphet::Init()
 bool CProphet::Operate(int currentTime)
 {
 	bool hasNodes = true;
-	if( MAC_PROTOCOL == _hdc )
+	if( configs.MAC_PROTOCOL == config::_hdc )
 		hasNodes = CHDC::Prepare(currentTime);
-	else if( MAC_PROTOCOL == _smac )
+	else if( configs.MAC_PROTOCOL == config::_smac )
 		hasNodes = CSMac::Prepare(currentTime);
 
 	if( ! hasNodes )
 		return false;
 
-	if( MAC_PROTOCOL == _hdc )
+	if( configs.MAC_PROTOCOL == config::_hdc )
 		CHDC::Operate(currentTime);
-	else if( MAC_PROTOCOL == _smac )
+	else if( configs.MAC_PROTOCOL == config::_smac )
 		CSMac::Operate(currentTime);
 
 	PrintInfo(currentTime);

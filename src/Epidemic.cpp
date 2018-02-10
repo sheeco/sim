@@ -14,11 +14,11 @@
 ////		return;
 ////	cout << "####  < " << currentTime << " >  DATA DELIVERY" << endl ;
 ////
-////	ofstream sink( DIR_LOG + PATH_TIMESTAMP + FILE_SINK, ios::app);
+////	ofstream sink( config.log.DIR_LOG + config.log.PATH_TIMESTAMP + config.log.FILE_SINK, ios::app);
 ////	if(currentTime == 0)
 ////	{
-////		sink << endl << INFO_LOG << endl ;
-////		sink << INFO_SINK ;
+////		sink << endl << config.log.INFO_LOG << endl ;
+////		sink << config.log.INFO_SINK ;
 ////	}
 ////
 ////	int nEncounterAtSink = 0;
@@ -33,11 +33,11 @@
 ////		if( ! (*inode)->isListening() )
 ////			continue;
 ////
-////		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= CGeneralNode::RANGE_TRANS )
+////		if( CBasicEntity::getDistance( *CSink::getSink(), **inode ) <= configs.trans.RANGE_TRANS )
 ////		{
 ////			//deliver data to sink
 ////			flash_cout << "######  ( Node " << (*inode)->getID() << " deliver " << (*inode)->getSizeBuffer() << " data to Sink )                    " ;
-////			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData(CGeneralNode::_dump) );
+////			CSink::getSink()->receiveData( currentTime, (*inode)->sendAllData( configs.trans._dump) );
 ////			++nEncounterAtSink;
 ////		}
 ////
@@ -45,11 +45,11 @@
 ////		//inode < jnode，即任何节点对只有一次通信机会
 ////		for(vector<CNode *>::iterator jnode = inode + 1; jnode != nodes.end(); ++jnode)
 ////		{
-////			if( (*jnode)->getX() + CGeneralNode::RANGE_TRANS < (*inode)->getX() )
+////			if( (*jnode)->getX() + configs.trans.RANGE_TRANS < (*inode)->getX() )
 ////				continue;
-////			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*jnode)->getX() )
+////			if( (*inode)->getX() + configs.trans.RANGE_TRANS < (*jnode)->getX() )
 ////				break;
-////			if( CBasicEntity::getDistance( **inode, **jnode ) > CGeneralNode::RANGE_TRANS )
+////			if( CBasicEntity::getDistance( **inode, **jnode ) > configs.trans.RANGE_TRANS )
 ////				continue;
 ////
 ////			if( (*inode)->isAtHotspot() || (*jnode)->isAtHotspot() )
@@ -152,7 +152,7 @@
 //
 //bool CEpidemic::Operate(int currentTime)
 //{
-////	if( MAC_PROTOCOL == _hdc )
+////	if( config.MAC_PROTOCOL == config::_hdc )
 ////		CHDC::Operate(currentTime);	
 ////	else
 ////		CSMac::Operate(currentTime);

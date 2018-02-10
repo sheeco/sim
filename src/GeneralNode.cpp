@@ -2,22 +2,13 @@
 #include "Node.h"
 #include "MacProtocol.h"
 
-double CGeneralNode::CONSUMPTION_BYTE_SEND = 0.008;  //( mJ / Byte )
-double CGeneralNode::CONSUMPTION_BYTE_RECEIVE = 0.004;
-double CGeneralNode::CONSUMPTION_WAKE = 13.5;  // ( mJ / s )
-double CGeneralNode::CONSUMPTION_SLEEP = 0.015;
-
-int CGeneralNode::RANGE_TRANS = 0;  //transmission range
-double CGeneralNode::PROB_TRANS = 0;
-int CGeneralNode::SIZE_CTRL = 0;
-
 
 //vector<CData> CGeneralNode::sendAllData(_SEND mode)
 //{
 //	double bet = RandomFloat(0, 1);
 //	if( bet > PROB_TRANS )
 //	{
-//		energyConsumption += buffer.size() * CNode::SIZE_DATA * CONSUMPTION_BYTE_SEND;
+//		energyConsumption += buffer.size() * configs.data.SIZE_DATA * configs.trans.CONSUMPTION_BYTE_SEND;
 //		return vector<CData>();
 //	}
 //
@@ -26,7 +17,7 @@ int CGeneralNode::SIZE_CTRL = 0;
 //	else
 //	{
 //		vector<CData> data = buffer;
-//		energyConsumption += buffer.size() * CNode::SIZE_DATA * CONSUMPTION_BYTE_SEND;
+//		energyConsumption += buffer.size() * configs.data.SIZE_DATA * configs.trans.CONSUMPTION_BYTE_SEND;
 //		if(mode == _dump)
 //			buffer.clear();
 //		return data;
@@ -45,5 +36,5 @@ int CGeneralNode::SIZE_CTRL = 0;
 
 void CGeneralNode::Overhear()
 {
-	consumeEnergy(CONSUMPTION_BYTE_RECEIVE * CMacProtocol::SIZE_HEADER_MAC);
+	consumeEnergy(configs.trans.CONSUMPTION_BYTE_RECEIVE * configs.data.SIZE_HEADER_MAC);
 }

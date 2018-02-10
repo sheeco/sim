@@ -5,6 +5,7 @@
 
 #include "Coordinate.h"
 #include "Global.h"
+#include "Configuration.h"
 
 
 class CCTrace :
@@ -21,11 +22,6 @@ private:
 	}
 
 public:
-
-	static bool CONTINUOUS_TRACE;  //是否将从轨迹文件中得到的散点模拟成为连续的折线
-	static int SLOT_TRACE;  //移动模型中的 slot，由数据文件中得来（eg. NCSU模型中为30）；值为 0 时，表示未赋值；值为 -1 时，表示无固定的时槽；
-	static string PATH_TRACE;
-	static string EXTENSION_TRACE;
 
 	CCTrace();
 	~CCTrace();
@@ -55,16 +51,16 @@ public:
 		CCoordinate fromLocation, toLocation;
 		int fromTime = 0, toTime = 0;
 
-		if( SLOT_TRACE > 0 )
+		if( configs.trace.SLOT_TRACE > 0 )
 		{
 			try 
 			{ 
-				if( time % SLOT_TRACE == 0 )
+				if( time % configs.trace.SLOT_TRACE == 0 )
 					return trace[time];
 
-				fromTime = time - ( time % SLOT_TRACE );
+				fromTime = time - ( time % configs.trace.SLOT_TRACE );
 				fromLocation = trace[fromTime];
-				toTime = fromTime + SLOT_TRACE;
+				toTime = fromTime + configs.trace.SLOT_TRACE;
 				toLocation = trace[toTime];
 			}
 			catch(exception e)
@@ -76,10 +72,10 @@ public:
 		{
 			//TODO: add dynamic slot_trace
 
-			throw pair<int, string>(EPARSE, string("CCTrace::getLocation() : SLOT_TRACE = " + STRING(SLOT_TRACE) ) );
+			throw pair<int, string>(EPARSE, string("CCTrace::getLocation() : configs.trace.SLOT_TRACE = " + STRING(configs.trace.SLOT_TRACE) ) );
 		}
 
-		if( CONTINUOUS_TRACE )
+		if( configs.trace.CONTINUOUS_TRACE )
 		{
 			double ratio = double( time - fromTime ) / double( toTime - fromTime );
 			return fromLocation + ratio * ( toLocation - fromLocation );

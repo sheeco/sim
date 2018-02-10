@@ -27,10 +27,9 @@ public:
 	virtual ~CRoutingProtocol() = 0
 	{};
 
-	static int WINDOW_TRANS;
-	static int TIME_WINDOW_TRANS;
+	static int getTimeForTrans(int nData);
+	static int getMaxTimeForTrans();
 
-	static int getTimeWindowTrans();
 	//给定容量和 FIFO/FILO，返回合适的数据用于数据传输
 	//返回的队列不会超过传输窗口大小，如果c apacity 为 0 即默认上限即窗口大小
 	static vector<CData> getDataForTrans(CGeneralNode* node, int capacity, bool FIFO);

@@ -4,6 +4,7 @@
 #define __NODE_H__
 
 #include "Global.h"
+#include "Configuration.h"
 #include "GeneralNode.h"
 #include "Hotspot.h"
 #include "Frame.h"
@@ -30,8 +31,8 @@ private:
 
 	//  [ ----------SLEEP----------> | ----WAKE----> )
 
-	int SLOT_SLEEP;  //由SLOT_TOTAL和DC计算得到
-	int SLOT_WAKE;  //由SLOT_TOTAL和DC计算得到
+	int SLOT_SLEEP;  //由configs.mac.CYCLE_TOTAL和DC计算得到
+	int SLOT_WAKE;  //由configs.mac.CYCLE_TOTAL和DC计算得到
 
 	//计时器：UNVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
 	int timerSleep;
@@ -107,25 +108,6 @@ private:
 
 public:
 
-	static int MIN_NUM_NODE;
-	static int MAX_NUM_NODE;
-
-	static int SLOT_TOTAL;
-	static double DEFAULT_DUTY_CYCLE;  //不使用HDC，或者HDC中不在热点区域内时的占空比
-	static double HOTSPOT_DUTY_CYCLE;  //HDC中热点区域内的占空比
-	static int DEFAULT_SLOT_CARRIER_SENSE;  //发送RTS之前，载波侦听的时间
-
-	static double DEFAULT_DATA_RATE;  //( Byte / s )
-	static int SIZE_DATA;  //( Byte )
-
-	static int CAPACITY_BUFFER;
-	static int CAPACITY_ENERGY;
-	static int SPEED_TRANS;  // Byte / s
-	static int LIFETIME_SPOKEN_CACHE;  //在这个时间内交换过数据的节点暂时不再交换数据
-	static _RECEIVE MODE_RECEIVE;
-	static _SEND MODE_SEND;
-	static _QUEUE MODE_QUEUE;
-
 	/****************************************  MAC  ***************************************/
 
 	//在限定范围内随机增删一定数量的node
@@ -168,7 +150,7 @@ public:
 	static double calTimeForTrans(CFrame* frame)
 	{
 		return 0;
-		//return ROUND(double(frame->getSize()) / double(SPEED_TRANS));
+		//return ROUND(double(frame->getSize()) / double( configs.trans.SPEED_TRANS));
 	}
 
 	/*************************** DC相关 ***************************/
@@ -227,11 +209,11 @@ public:
 
 	inline bool useDefaultDutyCycle()
 	{
-		return EQUAL(dutyCycle, DEFAULT_DUTY_CYCLE);
+		return EQUAL(dutyCycle, configs.mac.DUTY_RATE);
 	}
 	inline bool useHotspotDutyCycle()
 	{
-		return EQUAL(dutyCycle, HOTSPOT_DUTY_CYCLE);
+		return EQUAL(dutyCycle, configs.hdc.HOTSPOT_DUTY_RATE);
 	}
 	//在热点处提高 dc
 	void raiseDutyCycle();
@@ -245,9 +227,9 @@ public:
 	//不设置能量值时，始终返回true
 	bool isAlive() const 
 	{
-		if( CAPACITY_ENERGY == 0 )
+		if( configs.node.CAPACITY_ENERGY == 0 )
 			return true;
-		else if( CAPACITY_ENERGY - energyConsumption <= 0 )
+		else if( configs.node.CAPACITY_ENERGY - energyConsumption <= 0 )
 			return false;
 		else
 			return true;
@@ -257,7 +239,7 @@ public:
 	{
 		if( ! isAlive() )
 			return 0;
-		return CAPACITY_ENERGY - energyConsumption;
+		return configs.node.CAPACITY_ENERGY - energyConsumption;
 	}
 
 	bool isRecyclable() const 
@@ -459,7 +441,7 @@ public:
 
 	double getDataCountRate() const
 	{
-		return dataRate / SIZE_DATA;
+		return dataRate / configs.data.SIZE_DATA;
 	}
 
 	CHotspot* getAtHotspot() const

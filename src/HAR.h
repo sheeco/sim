@@ -69,18 +69,6 @@ private:
 
 public:
 
-	static double BETA;  //ratio for true hotspot
-//	static double GAMMA;  //ratio for HotspotsAboveAverage
-	static double CO_HOTSPOT_HEAT_A1;
-	static double CO_HOTSPOT_HEAT_A2;
-
-	/********************************* merge-HAR ***********************************/
-
-	static int MIN_WAITING_TIME;  //add minimum waiting time to each hotspot
-	static bool TEST_BALANCED_RATIO;
-//	static bool TEST_LEARN;
-//	static double MIN_POSITION_WEIGHT;
-
 	HAR(){};
 	~HAR(){};
 

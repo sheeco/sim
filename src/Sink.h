@@ -32,21 +32,15 @@ private:
 
 	CSink()
 	{
-		this->ID = SINK_ID;
-		this->setLocation(SINK_X, SINK_Y);		
-		this->capacityBuffer = CAPACITY_BUFFER;
+		this->ID = configs.sink.SINK_ID;
+		this->setLocation( configs.sink.X, configs.sink.Y);		
+		this->capacityBuffer = configs.sink.CAPACITY_BUFFER;
 	}
 
 	~CSink(){};
 
 
 public:
-
-	// TODO: 参数统一读取 / 类内读取 ？
-	static int SINK_ID;
-	static double SINK_X;
-	static double SINK_Y;
-	static int CAPACITY_BUFFER;
 
 	//Sink为单例模式
 	static CSink* getSink()
@@ -119,7 +113,7 @@ public:
 //			sink->buffer.push_back(*idata);
 //		}
 //		//实际上无需统计sink的能耗
-//		sink->energyConsumption += CONSUMPTION_BYTE_RECEIVE * CNode::SIZE_DATA * data.size();
+//		sink->energyConsumption += configs.trans.CONSUMPTION_BYTE_RECEIVE * configs.data.SIZE_DATA * data.size();
 //		return true;
 //	}
 

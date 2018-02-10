@@ -38,4 +38,4 @@ public:
 
 };
 
-#endif // __FILE_HELPER_H__
+#endif // __config.log.FILE_HELPER_H__

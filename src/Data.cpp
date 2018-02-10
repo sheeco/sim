@@ -9,9 +9,6 @@ double CData::SUM_HOP = 0;
 int CData::COUNT_DELIVERY_AT_HOTSPOT = 0;
 int CData::COUNT_DELIVERY_ON_ROUTE = 0;
 
-int CData::MAX_HOP = 0;
-//int CData::MAX_TTL = 0;
-
 
 double CData::getAverageEnergyConsumption()
 {

@@ -774,9 +774,13 @@
 
 - MOD: Read nodes from files according to `CCTrace::PATH_TRACE` instead of `CNode::INIT_NUM_NODE`;
 
-###### 2018-02-08 ¡¤ *< 3.6.6613.23744 >*
+###### [2018-02-08 ¡¤ *< 3.6.6613.23744 >*](506371297c3c10249a8507d09e8b33ab90e2654b)
 
 - RFCT: Move config related operations from `CRunHelper` into `CConfiguration`;
+
+###### [2018-02-10 ¡¤ *< 3.6.6615.27508 >*
+
+- RFCT: Move all the configs from different classes together into `CConfiguration::CConfig`;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

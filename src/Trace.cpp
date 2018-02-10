@@ -1,11 +1,6 @@
 #include "Trace.h"
+#include "Configuration.h"
 #include "FileHelper.h"
-
-bool CCTrace::CONTINUOUS_TRACE = false;
-int CCTrace::SLOT_TRACE = 0;
-string CCTrace::PATH_TRACE;
-string CCTrace::EXTENSION_TRACE = "";
-
 
 CCTrace::CCTrace()
 {
@@ -39,7 +34,7 @@ CCTrace* CCTrace::getTraceFromFile(string filename)
 			double temp_y = 0;
 			fscanf(file, "%lf %lf %lf", &temp_time, &temp_x, &temp_y);
 
-			if( temp_time > RUNTIME + SLOT_TRACE )
+			if( temp_time > configs.simulation.RUNTIME + configs.trace.SLOT_TRACE )
 				break;
 
 			trace->addLocation(int(temp_time), CCoordinate(temp_x, temp_y) );

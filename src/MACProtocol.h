@@ -42,12 +42,6 @@ protected:
 
 public:
 
-	static int SIZE_HEADER_MAC;  //Mac Header Size
-
-	static bool SYNC_DC;  //是否同步所有节点的工作状态
-	static bool TEST_DYNAMIC_NUM_NODE;
-	static int SLOT_CHANGE_NUM_NODE;  //动态节点个数测试时，节点个数发生变化的周期
-
 	//数据传输计数：用于统计数据传输成功的百分比
 	//数据传输为双向计算，单方节点成功收到数据就记作一次
 	static void transmitTry()

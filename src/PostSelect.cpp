@@ -3,8 +3,6 @@
 #include "HotspotSelect.h"
 #include "PrintHelper.h"
 
-double CPostSelect::ALPHA = 0.03;  //ratio for post selection
-
 
 CPostSelect::CPostSelect(vector<CHotspot *> selectedHotspots, vector<CHotspot *> &unselectedHotspots) : hotspotCandidates(selectedHotspots), unselectedHotspots(unselectedHotspots)
 {
@@ -97,10 +95,10 @@ vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
 		(*ihotspot)->setFlag(false);
 		(*ihotspot)->updateStatus();
 	}
-	//选中所有ratio >= ALPHA的hotspot，按照 ratio 从大到小的顺序
+	//选中所有ratio >= configs.hs.ALPHA的hotspot，按照 ratio 从大到小的顺序
 	for(vector<CHotspot *>::reverse_iterator rihotspot = hotspotCandidates.rbegin(); rihotspot != hotspotCandidates.rend(); )
 	{
-		if(this->getRatioForHotspot(*rihotspot) >= ALPHA)
+		if(this->getRatioForHotspot(*rihotspot) >= configs.hs.ALPHA)
 		{
 			(*rihotspot)->setFlag(true);
 			this->includeHotspots( (*rihotspot) );

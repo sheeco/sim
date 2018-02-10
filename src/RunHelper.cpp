@@ -12,26 +12,26 @@ void CRunHelper::InitLogPath()
 	// Generate timestamp & output path
 
 	// Create root path (../test/) if doesn't exist
-	if( access(DIR_LOG.c_str(), 00) != 0 )
-		_mkdir(DIR_LOG.c_str());
+	if( access(configs.log.DIR_LOG.c_str(), 00) != 0 )
+		_mkdir(configs.log.DIR_LOG.c_str());
 
 	time_t seconds;  //秒时间  
 	char temp[65] = { '\0' };
 	seconds = time(nullptr); //获取目前秒时间  
 	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
-	TIMESTAMP = string(temp);
+	configs.log.TIMESTAMP = string(temp);
 	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
 	string timestring;
 	timestring = string(temp);
-	INFO_LOG = "@" + TIMESTAMP + TAB;
-	PATH_TIMESTAMP = "." + timestring + "/";
+	configs.log.INFO_LOG = "@" + configs.log.TIMESTAMP + TAB;
+	configs.log.PATH_TIMESTAMP = "." + timestring + "/";
 
 	// Create log path
-	if( access(( DIR_LOG + PATH_TIMESTAMP ).c_str(), 00) != 0 )
-		_mkdir(( DIR_LOG + PATH_TIMESTAMP ).c_str());
+	if( access(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str(), 00) != 0 )
+		_mkdir(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str());
 
 	// Hide folder
-	LPWSTR wstr = CString(( DIR_LOG + PATH_TIMESTAMP ).c_str()).AllocSysString();
+	LPWSTR wstr = CString(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str()).AllocSysString();
 	int attr = GetFileAttributes(wstr);
 	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
 	{
@@ -70,21 +70,21 @@ bool CRunHelper::RunSimulation()
 	int currentTime = 0;
 	bool dead = false;
 
-	switch( ROUTING_PROTOCOL )
+	switch( configs.ROUTING_PROTOCOL )
 	{
-		case _prophet:
+		case config::_prophet:
 			
 			CProphet::Init();
-			while( currentTime <= RUNTIME )
+			while( currentTime <= configs.simulation.RUNTIME )
 			{
 				dead = !CProphet::Operate(currentTime);
 
 				if( dead )
 				{
-					RUNTIME = currentTime;
+					configs.simulation.RUNTIME = currentTime;
 					break;
 				}
-				currentTime += SLOT;
+				currentTime += configs.simulation.SLOT;
 			}
 			CProphet::PrintFinal(currentTime);
 
@@ -92,34 +92,34 @@ bool CRunHelper::RunSimulation()
 
 		//case _epidemic:
 		//	CEpidemic::Init();
-		//	while( currentTime <= RUNTIME )
+		//	while( currentTime <= config.simulation.RUNTIME )
 		//	{
 		//		dead = !CEpidemic::Operate(currentTime);
 
 		//		if( dead )
 		//		{
-		//			RUNTIME = currentTime;
+		//			config.simulation.RUNTIME = currentTime;
 		//			break;
 		//		}
-		//		currentTime += SLOT;
+		//		currentTime += config.simulation.SLOT;
 		//	}
 		//	CEpidemic::PrintFinal(currentTime);
 
 			//break;
 
-		case _xhar:
+		case config::_xhar:
 
 			HAR::Init();
-			while( currentTime <= RUNTIME )
+			while( currentTime <= configs.simulation.RUNTIME )
 			{
 				dead = !HAR::Operate(currentTime);
 
 				if( dead )
 				{
-					RUNTIME = currentTime;
+					configs.simulation.RUNTIME = currentTime;
 					break;
 				}
-				currentTime += SLOT;
+				currentTime += configs.simulation.SLOT;
 			}
 			HAR::PrintFinal(currentTime);
 

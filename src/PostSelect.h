@@ -33,8 +33,6 @@ private:
 
 public:
 
-	static double ALPHA;  //ratio for post selection
-
 	CPostSelect(vector<CHotspot *> selectedHotspots, vector<CHotspot *> &unselectedHotspots);
 	~CPostSelect(){};
 

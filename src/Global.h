@@ -65,7 +65,7 @@ using std::setfill;
 #define LF "\n"
 #define ALERT "\a"
 #define _PAUSE_ system("pause")
-#define CURRENT_LOCATION string(__FILE__) + string(", ") + string(__FUNCTION__) + string(", ") + STRING(__LINE__)
+#define CURRENT_LOCATION string(__config.log.FILE__) + string(", ") + string(__FUNCTION__) + string(", ") + STRING(__LINE__)
 
 //#define __DEBUG__
 //#ifdef __DEBUG__
@@ -94,113 +94,6 @@ using std::setfill;
 
 namespace global
 {
-	/******************************** Config Const ********************************/
-
-	typedef enum _MAC_PROTOCOL { 
-		_smac, 
-		_hdc 
-	} _MAC_PROTOCOL;
-	typedef enum _ROUTING_PROTOCOL { 
-		_xhar, 
-		_prophet, 
-//		_epidemic 
-	} _ROUTING_PROTOCOL;
-	typedef enum _HOTSPOT_SELECT { 
-		_none, 
-		_original, 
-		_improved, 
-		_merge 
-	} _HOTSPOT_SELECT;
-
-
-	/********************************* Global Var *********************************/
-
-	extern _MAC_PROTOCOL MAC_PROTOCOL;
-	extern _ROUTING_PROTOCOL ROUTING_PROTOCOL;
-	extern _HOTSPOT_SELECT HOTSPOT_SELECT;
-
-	extern int DATATIME;
-	extern int RUNTIME;
-	extern int SLOT;  // ( s )
-	extern int SLOT_LOG;  //记录数据投递率和数据投递时延的slot
-
-	/********************************* Usage & Output ***********************************/
-
-	extern string DIR_ROOT;
-	extern string DIR_PROJECT;
-	extern string DIR_RUN;
-	extern string DIR_RESOURCE;
-	extern string DIR_LOG;
-	extern string TIMESTAMP;
-	extern string PATH_TIMESTAMP;
-
-	extern string INFO_LOG;
-	extern string FILE_DEFAULT_CONFIG;
-	extern string FILE_PARAMETES;
-	extern string FILE_VERSION;
-	extern string FILE_HELP;
-	//extern string INFO_HELP;
-	extern string FILE_ERROR;
-	extern string FILE_CONFIG;
-	extern string FILE_FINAL;
-	extern string INFO_FINAL;
-
-	extern string FILE_NODE;
-	extern string INFO_NODE;
-	extern string FILE_DEATH;
-	extern string INFO_DEATH;
-	extern string FILE_ENCOUNTER;
-	extern string INFO_ENCOUNTER;
-	extern string FILE_TRANSMIT;
-	extern string INFO_TRANSMIT;
-	extern string FILE_ACTIVATION;
-	extern string INFO_ACTIVATION;
-	extern string FILE_ENERGY_CONSUMPTION;
-	extern string INFO_ENERGY_CONSUMPTION;
-	extern string FILE_SINK;
-	extern string INFO_SINK;
-
-	extern string FILE_DELIVERY_RATIO_900;
-	extern string INFO_DELIVERY_RATIO_900;
-	extern string FILE_DELIVERY_RATIO_100;
-	extern string INFO_DELIVERY_RATIO_100;
-	extern string FILE_DELAY;
-	extern string INFO_DELAY;
-	extern string FILE_HOP;
-	extern string INFO_HOP;
-	extern string FILE_BUFFER;
-	extern string INFO_BUFFER;
-	extern string FILE_BUFFER_STATISTICS;
-	extern string INFO_BUFFER_STATISTICS;
-
-	extern string FILE_HOTSPOT;
-	extern string INFO_HOTSPOT;
-	extern string FILE_HOTSPOT_DETAILS;
-	extern string INFO_HOTSPOT_DETAILS;
-	extern string FILE_HOTSPOT_SIMILARITY;
-	extern string INFO_HOTSPOT_SIMILARITY;
-	extern string FILE_VISIT;
-	extern string INFO_VISIT;
-	extern string FILE_HOTSPOT_STATISTICS;
-	extern string INFO_HOTSPOT_STATISTICS;
-	extern string FILE_DELIVERY_HOTSPOT;
-	extern string INFO_DELIVERY_HOTSPOT;
-	extern string FILE_DELIVERY_STATISTICS;
-	extern string INFO_DELIVERY_STATISTICS;
-	extern string FILE_MERGE;
-	extern string INFO_MERGE;
-	extern string FILE_MERGE_DETAILS;
-	extern string INFO_MERGE_DETAILS;
-	extern string FILE_MA;
-	extern string INFO_MA;
-	extern string FILE_MA_ROUTE;
-	extern string INFO_MA_ROUTE;
-	extern string FILE_BUFFER_MA;
-	extern string INFO_BUFFER_MA;
-	extern string FILE_ED;
-	extern string INFO_ED;
-
-
 	/****************************** Global Func *******************************/
 
 	void Exit(int code);

@@ -25,50 +25,31 @@ vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
 vector<CNode *> CNode::deletedNodes;
 
-int CNode::MIN_NUM_NODE = 0;
-int CNode::MAX_NUM_NODE = 0;
-
-int CNode::SLOT_TOTAL = 0;
-double CNode::DEFAULT_DUTY_CYCLE = 0;
-double CNode::HOTSPOT_DUTY_CYCLE = 0; 
-int CNode::DEFAULT_SLOT_CARRIER_SENSE = 0;  //不使用占空比工作时，默认等于 0
-
-double CNode::DEFAULT_DATA_RATE = 0;
-int CNode::SIZE_DATA = 0;
-
-int CNode::CAPACITY_BUFFER = 0;
-int CNode::CAPACITY_ENERGY = 0;
-int CNode::SPEED_TRANS = 0;
-int CNode::LIFETIME_SPOKEN_CACHE = 0;
-CGeneralNode::_RECEIVE CNode::MODE_RECEIVE = _loose;
-CGeneralNode::_SEND CNode::MODE_SEND = _dump;
-CGeneralNode::_QUEUE CNode::MODE_QUEUE = _fifo;
-
 
 void CNode::init() 
 {
 	trace = nullptr;
 	dataRate = 0;
 	atHotspot = nullptr;
-	//timerCarrierSense = DEFAULT_SLOT_CARRIER_SENSE;
+	//timerCarrierSense = configs.mac.CYCLE_CARRIER_SENSE;
 	//discovering = false;
 	timeLastData = 0;
 	timeDeath = 0;
 	recyclable = true;
-	capacityBuffer = CAPACITY_BUFFER;
+	capacityBuffer = configs.node.CAPACITY_BUFFER;
 	sumTimeAwake = 0;
 	sumTimeAlive = 0;
 	sumBufferRecord = 0;
 	countBufferRecord = 0;
-	dutyCycle = DEFAULT_DUTY_CYCLE;
-	SLOT_WAKE = int( dutyCycle * SLOT_TOTAL );
-	SLOT_SLEEP = SLOT_TOTAL - SLOT_WAKE;
+	dutyCycle = configs.mac.DUTY_RATE;
+	SLOT_WAKE = int( dutyCycle * configs.mac.CYCLE_TOTAL );
+	SLOT_SLEEP = configs.mac.CYCLE_TOTAL - SLOT_WAKE;
 	timerCarrierSense = UNVALID;
 	if( SLOT_WAKE == 0 )
 	{
 		state = _asleep;
 		timerWake = UNVALID;
-		if( CMacProtocol::SYNC_DC )
+		if( configs.mac.SYNC_CYCLE )
 			timerSleep = SLOT_SLEEP;
 		else
 			timerSleep = RandomInt(1, SLOT_SLEEP);
@@ -77,11 +58,11 @@ void CNode::init()
 	{
 		state = _awake;
 		timerSleep = UNVALID;
-		if( CMacProtocol::SYNC_DC )
+		if( configs.mac.SYNC_CYCLE )
 			timerWake = SLOT_WAKE;
 		else
 			timerWake = RandomInt(1, SLOT_WAKE);
-		timerCarrierSense = RandomInt(0, CRoutingProtocol::getTimeWindowTrans());
+		timerCarrierSense = RandomInt(0, CRoutingProtocol::getMaxTimeForTrans());
 	}
 }
 
@@ -108,16 +89,16 @@ CNode::~CNode()
 void CNode::initNodes() {
 	if( nodes.empty() && deadNodes.empty() )
 	{
-		vector<string> filenames = CFileHelper::ListDirectory(CCTrace::PATH_TRACE);
-		filenames = CFileHelper::FilterByExtension(filenames, CCTrace::EXTENSION_TRACE);
+		vector<string> filenames = CFileHelper::ListDirectory(configs.trace.PATH_TRACE);
+		filenames = CFileHelper::FilterByExtension(filenames, configs.trace.EXTENSION_TRACE);
 
 		if( filenames.empty() )
-			throw string("CNode::initNodes(): Cannot find any trace files under \"" + CCTrace::PATH_TRACE
+			throw string("CNode::initNodes(): Cannot find any trace files under \"" + configs.trace.PATH_TRACE
 						  + "\".");
 
 		for(int i = 0; i < filenames.size(); ++i)
 		{
-			double dataRate = DEFAULT_DATA_RATE;
+			double dataRate = configs.node.DEFAULT_DATA_RATE;
 			if(i % 5 == 0)
 				dataRate *= 5;
 			CNode* node = new CNode(dataRate);
@@ -131,12 +112,12 @@ void CNode::initNodes() {
 
 void CNode::generateData(int currentTime) {
 	int timeDataIncre = currentTime - timeLastData;
-	int nData = int( timeDataIncre * dataRate / SIZE_DATA);
+	int nData = int( timeDataIncre * dataRate / configs.data.SIZE_DATA);
 	if(nData > 0)
 	{
 		for(int i = 0; i < nData; ++i)
 		{
-			CData data(ID, currentTime, SIZE_DATA);
+			CData data(ID, currentTime, configs.data.SIZE_DATA);
 			this->buffer = CSortHelper::insertIntoSortedList(this->buffer, data, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
 		}
 		timeLastData = currentTime;
@@ -147,9 +128,9 @@ void CNode::generateData(int currentTime) {
 
 vector<CNode*>& CNode::getNodes() 
 {
-	if( SLOT_TOTAL == 0 || ( ZERO( DEFAULT_DUTY_CYCLE ) && ZERO( HOTSPOT_DUTY_CYCLE ) ) )
+	if( configs.mac.CYCLE_TOTAL == 0 || ( ZERO( configs.mac.DUTY_RATE ) && ZERO( configs.hdc.HOTSPOT_DUTY_RATE ) ) )
 	{
-		throw string("CNode::getNodes() : SLOT_TOTAL || ( DEFAULT_DUTY_CYCLE && HOTSPOT_DUTY_CYCLE ) = 0");
+		throw string("CNode::getNodes() : configs.mac.CYCLE_TOTAL || ( configs.mac.DUTY_RATE && configs.hdc.HOTSPOT_DUTY_RATE ) = 0");
 	}
 
 	if( nodes.empty() && deadNodes.empty() )
@@ -181,7 +162,7 @@ vector<int>& CNode::getIdNodes()
 
 bool CNode::finiteEnergy() 
 {
-	return CAPACITY_ENERGY > 0;
+	return configs.node.CAPACITY_ENERGY > 0;
 }
 
 bool CNode::hasNodes(int currentTime) 
@@ -232,11 +213,11 @@ void CNode::ClearDeadNodes(int currentTime)
 
 	if( death )
 	{
-		ofstream death(DIR_LOG + PATH_TIMESTAMP + FILE_DEATH, ios::app);
+		ofstream death(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_DEATH, ios::app);
 		if( currentTime == 0 )
 		{
-			death << endl << INFO_LOG << endl;
-			death << INFO_DEATH;
+			death << endl << configs.log.INFO_LOG << endl;
+			death << configs.log.INFO_DEATH;
 		}
 		death << currentTime << TAB << CNode::getAllNodes(false).size() - CNode::getNNodes()
 			<< TAB << CData::getCountDelivery() << TAB << CData::getDeliveryRatio() << endl;
@@ -279,10 +260,10 @@ void CNode::raiseDutyCycle()
 	if( useHotspotDutyCycle() )
 		return;
 
-	dutyCycle = HOTSPOT_DUTY_CYCLE;
+	dutyCycle = configs.hdc.HOTSPOT_DUTY_RATE;
 	int oldSlotWake = SLOT_WAKE;
-	SLOT_WAKE = int( SLOT_TOTAL * dutyCycle );
-	SLOT_SLEEP = SLOT_TOTAL - SLOT_WAKE;
+	SLOT_WAKE = int( configs.mac.CYCLE_TOTAL * dutyCycle );
+	SLOT_SLEEP = configs.mac.CYCLE_TOTAL - SLOT_WAKE;
 	//唤醒状态下，延长唤醒时间
 	if( isAwake() )
 		timerWake += SLOT_WAKE - oldSlotWake;
@@ -296,15 +277,15 @@ void CNode::resetDutyCycle()
 	if( useDefaultDutyCycle() )
 		return;
 
-	dutyCycle = HOTSPOT_DUTY_CYCLE;
+	dutyCycle = configs.hdc.HOTSPOT_DUTY_RATE;
 	int oldSlotWake = SLOT_WAKE;
-	SLOT_WAKE = int(SLOT_TOTAL * dutyCycle);
-	SLOT_SLEEP = SLOT_TOTAL - SLOT_WAKE;
+	SLOT_WAKE = int(configs.mac.CYCLE_TOTAL * dutyCycle);
+	SLOT_SLEEP = configs.mac.CYCLE_TOTAL - SLOT_WAKE;
 }
 
 void CNode::checkDataByAck(vector<CData> ack)
 {
-	if( MODE_SEND == _dump )
+	if( configs.node.SCHEME_FORWARD == config::_dump )
 		RemoveFromList(buffer, ack);
 }
 
@@ -314,7 +295,7 @@ void CNode::Overhear()
 
 	//继续载波侦听
 	//时间窗内随机值 / 立即休眠？
-	delayDiscovering( CRoutingProtocol::getTimeWindowTrans() );
+	delayDiscovering( CRoutingProtocol::getMaxTimeForTrans() );
 }
 
 void CNode::Wake()
@@ -328,7 +309,7 @@ void CNode::Wake()
 	state = _awake;
 	timerSleep = UNVALID;
 	timerWake = SLOT_WAKE;
-	timerCarrierSense = RandomInt(0, CRoutingProtocol::getTimeWindowTrans());
+	timerCarrierSense = RandomInt(0, CRoutingProtocol::getMaxTimeForTrans());
 }
 
 void CNode::Sleep()
@@ -348,11 +329,11 @@ void CNode::Sleep()
 CFrame* CNode::sendRTSWithCapacityAndPred(int currentTime)
 {
 	vector<CPacket*> packets;
-	if( MODE_RECEIVE == _selfish 
+	if( configs.node.SCHEME_RELAY == config::_selfish
 		&& ( ! buffer.empty() ) )
-		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, SIZE_CTRL, CCtrl::_capacity) );
-	packets.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
-	packets.push_back( new CCtrl(ID, deliveryPreds, currentTime, SIZE_CTRL, CCtrl::_index) );
+		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, configs.data.SIZE_CTRL, CCtrl::_capacity) );
+	packets.push_back( new CCtrl(ID, currentTime, configs.data.SIZE_CTRL, CCtrl::_rts) );
+	packets.push_back( new CCtrl(ID, deliveryPreds, currentTime, configs.data.SIZE_CTRL, CCtrl::_index) );
 	CFrame* frame = new CFrame(*this, packets);
 
 	return frame;	
@@ -360,14 +341,14 @@ CFrame* CNode::sendRTSWithCapacityAndPred(int currentTime)
 
 bool CNode::hasSpokenRecently(CNode* node, int currentTime) 
 {
-	if( CNode::LIFETIME_SPOKEN_CACHE == 0 )
+	if( configs.node.LIFETIME_SPOKEN_CACHE == 0 )
 		return false;
 
 	map<CNode *, int>::iterator icache = spokenCache.find( node );
 	if( icache == spokenCache.end() )
 		return false;
 	else if( ( currentTime - icache->second ) == 0
-		|| ( currentTime - icache->second ) < CNode::LIFETIME_SPOKEN_CACHE )
+		|| ( currentTime - icache->second ) < configs.node.LIFETIME_SPOKEN_CACHE )
 		return true;
 	else
 		return false;
@@ -458,7 +439,7 @@ vector<CData> CNode::dropDataIfOverflow()
 //		if( myData.size() > capacityBuffer )
 //		{
 //			//flash_cout << "######  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                    " << endl;
-//			myData = vector<CData>( myData.end() - CAPACITY_BUFFER, myData.end() );
+//			myData = vector<CData>( myData.end() - configs.node.CAPACITY_BUFFER, myData.end() );
 //		}		
 //	}
 //	else :
@@ -480,7 +461,7 @@ vector<CData> CNode::updateBufferStatus(int currentTime)
 
 vector<int> CNode::updateSummaryVector() 
 {
-	if( buffer.size() > CAPACITY_BUFFER )
+	if( buffer.size() > configs.node.CAPACITY_BUFFER )
 	{
 		throw string("CNode::updateSummaryVector() : Buffer isn't clean !");
 	}
@@ -514,7 +495,7 @@ void CNode::newNodes(int n)
 	//如果仍不足数，构造新的节点
 	for(int i = nodes.size(); i < nodes.size() + n; ++i)
 	{
-		double dataRate = DEFAULT_DATA_RATE;
+		double dataRate = configs.node.DEFAULT_DATA_RATE;
 		if(i % 5 == 0)
 			dataRate *= 5;
 		CNode* node = new CNode(dataRate);
@@ -564,9 +545,9 @@ void CNode::updateStatus(int currentTime)
 	int newTime = this->time;
 
 	//计算能耗、更新工作状态
-	while( ( newTime + SLOT ) <= currentTime )
+	while( ( newTime + configs.simulation.SLOT ) <= currentTime )
 	{
-		newTime += SLOT;
+		newTime += configs.simulation.SLOT;
 
 		// 0 时间时初始化
 		if( newTime <= 0 )
@@ -585,12 +566,12 @@ void CNode::updateStatus(int currentTime)
 		switch( state )
 		{
 			case _awake:
-				consumeEnergy(CONSUMPTION_WAKE * SLOT);
+				consumeEnergy(configs.trans.CONSUMPTION_WAKE * configs.simulation.SLOT);
 				updateTimerWake(newTime);
 
 				break;
 			case _asleep:
-				consumeEnergy(CONSUMPTION_SLEEP * SLOT);
+				consumeEnergy(configs.trans.CONSUMPTION_SLEEP * configs.simulation.SLOT);
 				updateTimerSleep(newTime);
 
 				break;
@@ -610,13 +591,13 @@ void CNode::updateStatus(int currentTime)
 	sumTimeAlive += newTime - this->time;
 
 	//生成数据
-	if( currentTime <= DATATIME )
+	if( currentTime <= configs.simulation.DATATIME )
 		generateData(currentTime);
 
 
 	/**************************************  Prophet  *************************************/
-	if( ROUTING_PROTOCOL == _prophet 
-		 && (currentTime % CCTrace::SLOT_TRACE) == 0  )
+	if( configs.ROUTING_PROTOCOL == config::_prophet 
+		 && (currentTime % configs.trace.SLOT_TRACE) == 0  )
 		CProphet::decayDeliveryPreds(this, currentTime);
 
 	//更新坐标及时间戳
@@ -695,9 +676,9 @@ int CNode::getCapacityForward()
 	if( capacity < 0 )
 		capacity = 0;
 
-	if( MODE_RECEIVE == _selfish )
+	if( configs.node.SCHEME_RELAY == config::_selfish )
 		return capacity;
-	else if( MODE_RECEIVE == _loose )
+	else if( configs.node.SCHEME_RELAY == config::_loose )
 		return capacityBuffer;
 	else
 		return 0;
@@ -705,8 +686,8 @@ int CNode::getCapacityForward()
 
 int CNode::ChangeNodeNumber()
 {
-	if( MAX_NUM_NODE <= MIN_NUM_NODE || MIN_NUM_NODE <= 0 )
-		throw pair<int, string>(EARG, string("Min & max node number (" + STRING(MIN_NUM_NODE) + ", " + STRING(MAX_NUM_NODE) +") are not correctly configured."));
+	if( configs.dynamic.MAX_NUM_NODE <= configs.dynamic.MIN_NUM_NODE || configs.dynamic.MIN_NUM_NODE <= 0 )
+		throw pair<int, string>(EARG, string("Min & max node number (" + STRING(configs.dynamic.MIN_NUM_NODE) + ", " + STRING(configs.dynamic.MAX_NUM_NODE) +") are not correctly configured."));
 
 	int delta = 0;
 	float bet = 0;
@@ -717,17 +698,17 @@ int CNode::ChangeNodeNumber()
 			bet = 0.2 + bet / 2;  //更改比例至少 0.2
 		else
 			bet = -0.2 + bet / 2;
-		delta = ROUND( bet * (MAX_NUM_NODE - MIN_NUM_NODE) );
+		delta = ROUND( bet * (configs.dynamic.MAX_NUM_NODE - configs.dynamic.MIN_NUM_NODE) );
 	}while(delta != 0);
 
-	if(delta < MIN_NUM_NODE - nodes.size())
+	if(delta < configs.dynamic.MIN_NUM_NODE - nodes.size())
 	{
-		delta = nodes.size() - MIN_NUM_NODE;
+		delta = nodes.size() - configs.dynamic.MIN_NUM_NODE;
 		removeNodes(delta);
 	}
-	else if(delta > MAX_NUM_NODE - nodes.size())
+	else if(delta > configs.dynamic.MAX_NUM_NODE - nodes.size())
 	{
-		delta = MAX_NUM_NODE - nodes.size();
+		delta = configs.dynamic.MAX_NUM_NODE - nodes.size();
 		newNodes(delta);
 	}
 

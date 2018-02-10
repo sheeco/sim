@@ -3,39 +3,34 @@
 
 int CMANode::encounter = 0;
 //int CMANode::encounterActive = 0;
-int CMANode::COUNT_ID = 0;  //从START_COUNT_ID开始，差值等于当前实例总数
+int CMANode::COUNT_ID = 0;  //从configs.ma.START_COUNT_ID开始，差值等于当前实例总数
 vector<CMANode *> CMANode::MANodes;
 vector<CMANode *> CMANode::freeMANodes;
-
-int CMANode::START_COUNT_ID = 0;  //ID的起始值，用于和传感器节点相区分
-int CMANode::SPEED = 0;
-int CMANode::CAPACITY_BUFFER = 0;
-CGeneralNode::_RECEIVE CMANode::MODE_RECEIVE = _selfish;
 
 
 //bool CMANode::receiveData(int time, vector<CData> datas)
 //{
-//	if(buffer.size() > CAPACITY_BUFFER)
+//	if(buffer.size() > configs.ma.CAPACITY_BUFFER)
 //	{
 //		throw string("CMANode::receiveData() : buffer overflown");
 //	}
 //	int num = datas.size();
 //
 //	//不允许溢出，即仅在Buffer有空余时才接收数据
-//	if( MODE_RECEIVE == _selfish)
+//	if( MODE_RECEIVE == config::_selfish)
 //	{
-//		if(buffer.size() == CAPACITY_BUFFER)
+//		if(buffer.size() == configs.ma.CAPACITY_BUFFER)
 //			return false;
-//		if(datas.size() + buffer.size() > CAPACITY_BUFFER)
-//			num = CAPACITY_BUFFER - buffer.size();
+//		if(datas.size() + buffer.size() > configs.ma.CAPACITY_BUFFER)
+//			num = configs.ma.CAPACITY_BUFFER - buffer.size();
 //	}
 //	for(int i = 0; i < num; ++i)
 //	{
-//		if(buffer.size() == CAPACITY_BUFFER)
+//		if(buffer.size() == configs.ma.CAPACITY_BUFFER)
 //			buffer.erase(buffer.begin());  //如果buffer已满，删除最早的一个Data
 //		buffer.push_back(datas[i]);
 //	}
-//	energyConsumption += num * (CONSUMPTION_BYTE_SEND * 4 + CONSUMPTION_BYTE_RECEIVE * 3);
+//	energyConsumption += num * (configs.trans.CONSUMPTION_BYTE_SEND * 4 + configs.trans.CONSUMPTION_BYTE_RECEIVE * 3);
 //	return true;
 //}
 
@@ -51,7 +46,7 @@ void CMANode::updateStatus(int time)
 
 	//路线过期或缓存已满，立即返回sink
 	if( route.isOverdue()
-		|| ( MODE_RECEIVE == _selfish
+		|| ( configs.ma.SCHEME_RELAY == config::_selfish
 		&& buffer.size() >= capacityBuffer ) )
 	{
 		//记录一次未填满窗口的等待；可能录入(t, 0)，即说明由于路线过期而跳过等待
@@ -93,7 +88,7 @@ void CMANode::updateStatus(int time)
 	atHotspot = nullptr;  //离开热点
 
 	CBasicEntity *toPoint = route.getToPoint();
-	int timeLeftAfterArrival = this->moveTo(*toPoint , interval, SPEED);
+	int timeLeftAfterArrival = this->moveTo(*toPoint , interval, configs.ma.SPEED);
 
 	//如果已到达目的地
 	if( timeLeftAfterArrival >= 0 )
@@ -129,10 +124,10 @@ void CMANode::updateStatus(int time)
 CFrame* CMANode::sendRTSWithCapacity(int currentTime) 
 {
 	vector<CPacket*> packets;
-	packets.push_back( new CCtrl(ID, currentTime, SIZE_CTRL, CCtrl::_rts) );
-	if( MODE_RECEIVE == _selfish 
+	packets.push_back( new CCtrl(ID, currentTime, configs.data.SIZE_CTRL, CCtrl::_rts) );
+	if( configs.ma.SCHEME_RELAY == config::_selfish 
 		&& ( ! buffer.empty() ) )
-		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, SIZE_CTRL, CCtrl::_capacity) );
+		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, configs.data.SIZE_CTRL, CCtrl::_capacity) );
 
 	CFrame* frame = new CFrame(*this, packets);
 

@@ -4,6 +4,7 @@
 #define __HOTSPOT_H__
 
 #include <iostream>
+#include "Configuration.h"
 #include "Position.h"
 #include "GeoEntity.h"
 #include "GeneralNode.h"
@@ -22,7 +23,7 @@ class CHotspot :
 
 protected:
 
-	typedef enum _TYPE_HOTSPOT {_new_hotspot, _old_hotspot, _merge_hotspot } _TYPE_HOTSPOT;
+	typedef enum EnumHotspotType {_new_hotspot, _old_hotspot, _merge_hotspot } EnumHotspotType;
 
 	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
 	static vector<CHotspot *> hotspotCandidates;
@@ -46,7 +47,7 @@ private:
 	static int COUNT_ID;
 
 	//merge-HAR
-	_TYPE_HOTSPOT typeHotspotCandidate;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
+	EnumHotspotType typeHotspotCandidate;  //用于标记热点候选类型，将在贪婪选取（和热度计算）时使用：旧热点 / 新热点 / 归并热点
 	int age;  //用于标记旧热点或归并热点的年龄，即连任轮数
 
 	//检查某个position是否已在覆盖列表中
@@ -94,12 +95,12 @@ private:
 			{
 				if( CPosition::positions[i]->getFlag() )
 					continue;
-				if( CPosition::positions[i]->getX() + CGeneralNode::RANGE_TRANS < this->getX() )
+				if( CPosition::positions[i]->getX() + configs.trans.RANGE_TRANS < this->getX() )
 					continue;
 				//若水平距离已超出range，则可以直接停止搜索
-				if( this->getX() + CGeneralNode::RANGE_TRANS < CPosition::positions[i]->getX() )
+				if( this->getX() + configs.trans.RANGE_TRANS < CPosition::positions[i]->getX() )
 					break;
-				if( CBasicEntity::withinRange(*this, *CPosition::positions[i], CGeneralNode::RANGE_TRANS ) )
+				if( CBasicEntity::withinRange(*this, *CPosition::positions[i], configs.trans.RANGE_TRANS ) )
 				{
 					this->addPosition(CPosition::positions[i]);
 					CPosition::positions[i]->setFlag(true);
@@ -158,11 +159,11 @@ public:
 		this->heat = heat;
 	}
 	//merge_HAR
-	inline _TYPE_HOTSPOT getTypeHotspotCandidate() const
+	inline EnumHotspotType getTypeHotspotCandidate() const
 	{
 		return this->typeHotspotCandidate;
 	}
-	inline void setCandidateType(_TYPE_HOTSPOT typeHotspotCandidate)
+	inline void setCandidateType(EnumHotspotType typeHotspotCandidate)
 	{
 		this->typeHotspotCandidate = typeHotspotCandidate;
 	}

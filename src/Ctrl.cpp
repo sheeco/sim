@@ -14,7 +14,7 @@ void CCtrl::init()
 	this->capacity = 0;
 }
 
-CCtrl::CCtrl(int node, int timeBirth, int byte, _TYPE_CTRL type)
+CCtrl::CCtrl(int node, int timeBirth, int byte, EnumCtrlType type)
 {
 	CCtrl::init();
 	this->node = node;
@@ -23,7 +23,7 @@ CCtrl::CCtrl(int node, int timeBirth, int byte, _TYPE_CTRL type)
 	this->type = type;
 }
 
-CCtrl::CCtrl(int node, vector<CData> datas, int timeBirth, int byte, _TYPE_CTRL type)
+CCtrl::CCtrl(int node, vector<CData> datas, int timeBirth, int byte, EnumCtrlType type)
 {
 	CCtrl::init();
 	this->node = node;
@@ -36,7 +36,7 @@ CCtrl::CCtrl(int node, vector<CData> datas, int timeBirth, int byte, _TYPE_CTRL 
 	this->type = type;
 }
 
-CCtrl::CCtrl(int node, int capacity, int timeBirth, int byte, _TYPE_CTRL type)
+CCtrl::CCtrl(int node, int capacity, int timeBirth, int byte, EnumCtrlType type)
 {
 	CCtrl::init();
 	this->node = node;
@@ -49,7 +49,7 @@ CCtrl::CCtrl(int node, int capacity, int timeBirth, int byte, _TYPE_CTRL type)
 	this->type = type;
 }
 
-CCtrl::CCtrl(int node, map<int, double> pred, int timeBirth, int byte, _TYPE_CTRL type)
+CCtrl::CCtrl(int node, map<int, double> pred, int timeBirth, int byte, EnumCtrlType type)
 {
 	CCtrl::init();
 	this->node = node;

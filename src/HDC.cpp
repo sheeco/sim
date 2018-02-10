@@ -1,9 +1,9 @@
 #include "Global.h"
+#include "Configuration.h"
 #include "HDC.h"
 #include "HAR.h"
 #include "SortHelper.h"
 #include "HotspotSelect.h"
-#include "Trace.h"
 #include "PrintHelper.h"
 
 
@@ -19,7 +19,7 @@ CHDC::~CHDC()
 
 void CHDC::UpdateDutyCycleForNodes(int currentTime)
 {
-	if( ! ( currentTime % CCTrace::SLOT_TRACE == 0 ) )
+	if( ! ( currentTime % configs.trace.SLOT_TRACE == 0 ) )
 		return;
 
 	vector<CHotspot *> hotspots = CHotspot::getSelectedHotspots();
@@ -55,7 +55,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	}
 
 	//控制台输出时保留一位小数
-	if( ( currentTime + SLOT ) % SLOT_LOG == 0 )
+	if( ( currentTime + configs.simulation.SLOT ) % configs.log.SLOT_LOG == 0 )
 	{
 		CPrintHelper::PrintPercentage("Hotspot Encounter", CNode::getPercentEncounterAtHotspot());
 		print = true;
@@ -68,9 +68,9 @@ void CHDC::PrintInfo(int currentTime)
 {
 	CMacProtocol::PrintInfo(currentTime);
 
-	if( ! ( ( currentTime % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 
-		      && currentTime >= CHotspotSelect::STARTTIME_HOSPOT_SELECT )
-			|| currentTime == RUNTIME  ) )
+	if( ! ( ( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0 
+		      && currentTime >= configs.hs.STARTTIME_HOSPOT_SELECT )
+			|| currentTime == configs.simulation.RUNTIME  ) )
 		return;
 
 	CHotspotSelect::PrintInfo(currentTime);

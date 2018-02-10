@@ -40,13 +40,13 @@ private:
 	void init()
 	{
 		if( COUNT_ID == 0 )
-			COUNT_ID = START_COUNT_ID;
+			COUNT_ID = configs.ma.START_COUNT_ID;
 
 		setLocation( CSink::getSink()->getLocation() );  //初始化 MA 位置在 sink 处
 		atHotspot = nullptr;	
 		waitingWindow = 0;
 		waitingState = 0;
-		capacityBuffer = CAPACITY_BUFFER;
+		capacityBuffer = configs.ma.CAPACITY_BUFFER;
 	}
 
 	CMANode()
@@ -65,7 +65,7 @@ private:
 	{
 		init();
 		this->route = route;
-		this->setLocation(CSink::SINK_X, CSink::SINK_Y);
+		this->setLocation( configs.sink.X, configs.sink.Y);
 		atHotspot = nullptr;
 		this->time = time;
 		generateID();
@@ -74,11 +74,6 @@ private:
 
 
 public:
-
-	static int START_COUNT_ID;
-	static int SPEED;
-	static int CAPACITY_BUFFER;
-	static _RECEIVE MODE_RECEIVE;
 
 	static vector<CMANode *>& getMANodes()
 	{
@@ -109,12 +104,12 @@ public:
 
 	static int getCapacityBuffer()
 	{
-		return CAPACITY_BUFFER;
+		return configs.ma.CAPACITY_BUFFER;
 	}
 
 	static int getSpeed()
 	{
-		return SPEED;
+		return configs.ma.SPEED;
 	}
 
 	static inline double getSumEnergyConsumption()
@@ -224,7 +219,7 @@ public:
 	//判断Buffer是否已满
 	inline bool isFull() const
 	{
-		if(buffer.size() >= CAPACITY_BUFFER)
+		if(buffer.size() >= configs.ma.CAPACITY_BUFFER)
 			return true;
 		else
 			return false;
@@ -237,9 +232,9 @@ public:
 		if( capacity < 0 )
 			capacity = 0;
 
-		if( MODE_RECEIVE == _selfish )
+		if( configs.ma.SCHEME_RELAY == config::_selfish )
 			return capacity;
-		else if( MODE_RECEIVE == _loose )
+		else if( configs.ma.SCHEME_RELAY == config::_loose )
 			return capacityBuffer;
 		else
 			return 0;

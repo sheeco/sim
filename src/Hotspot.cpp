@@ -1,9 +1,9 @@
 #include "Hotspot.h"
+#include "Configuration.h"
 #include "SortHelper.h"
 #include "Node.h"
 #include "HAR.h"
 #include "HotspotSelect.h"
-#include "Trace.h"
 
 int CHotspot::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 vector<CHotspot *> CHotspot::hotspotCandidates;
@@ -106,7 +106,7 @@ void CHotspot::generateCoveredNodes()
 
 double CHotspot::calculateRatio()
 {
-	if( HAR::TEST_BALANCED_RATIO )
+	if( configs.mhs.TEST_BALANCED_RATIO )
 	{
 		ratio = coveredPositions.size() * double(CNode::getNNodes() - coveredNodes.size() + 1) / double(CNode::getNNodes());
 		return ratio;
@@ -131,11 +131,11 @@ double CHotspot::getRatioByTypeHotspotCandidate() const
 	switch( this->typeHotspotCandidate )
 	{
 	case _merge_hotspot: 
-		return CHotspotSelect::RATIO_MERGE_HOTSPOT;
+		return configs.mhs.RATIO_MERGE_HOTSPOT;
 	case _new_hotspot: 
-		return CHotspotSelect::RATIO_NEW_HOTSPOT;
+		return configs.mhs.RATIO_NEW_HOTSPOT;
 	case _old_hotspot: 
-		return CHotspotSelect::RATIO_OLD_HOTSPOT;
+		return configs.mhs.RATIO_OLD_HOTSPOT;
 	default:
 		return 1;
 	}
@@ -144,19 +144,19 @@ double CHotspot::getRatioByTypeHotspotCandidate() const
 double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 {
 	double distance = CBasicEntity::getDistance(*oldHotspot, *newHotspot);
-	double cos = ( distance / 2 ) / CGeneralNode::RANGE_TRANS;
+	double cos = ( distance / 2 ) / configs.trans.RANGE_TRANS;
 	double sin = sqrt( 1 - cos * cos );
 	double angle = acos(cos);
-	double sector = ( angle / 2 ) * CGeneralNode::RANGE_TRANS * CGeneralNode::RANGE_TRANS;
-	double triangle = ( CGeneralNode::RANGE_TRANS * ( distance / 2 ) ) * sin / 2;
+	double sector = ( angle / 2 ) * configs.trans.RANGE_TRANS * configs.trans.RANGE_TRANS;
+	double triangle = ( configs.trans.RANGE_TRANS * ( distance / 2 ) ) * sin / 2;
 
 	return ( sector - triangle ) * 4 ;
 }
 
 bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 {
-	if( ! ( CCTrace::CONTINUOUS_TRACE
-		    || currentTime % CCTrace::SLOT_TRACE == 0 ) )
+	if( ! ( configs.trace.CONTINUOUS_TRACE
+		    || currentTime % configs.trace.SLOT_TRACE == 0 ) )
 		return false;
 
 	vector<CHotspot *> hotspots = selectedHotspots;
@@ -174,11 +174,11 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 		{
-			if( (*ihotspot)->getX() + CGeneralNode::RANGE_TRANS < (*inode)->getX() )
+			if( (*ihotspot)->getX() + configs.trans.RANGE_TRANS < (*inode)->getX() )
 				continue;
-			if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*ihotspot)->getX() )
+			if( (*inode)->getX() + configs.trans.RANGE_TRANS < (*ihotspot)->getX() )
 				break;
-			if( CBasicEntity::withinRange( **inode, **ihotspot, CGeneralNode::RANGE_TRANS ) )		
+			if( CBasicEntity::withinRange( **inode, **ihotspot, configs.trans.RANGE_TRANS ) )		
 			{
 				atHotspot = *ihotspot;
 				break;
@@ -190,7 +190,7 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 		// visit 和 encounter 计数的统计
 		// 时槽仅由轨迹文件决定
-		if( currentTime % CCTrace::SLOT_TRACE == 0 )
+		if( currentTime % configs.trace.SLOT_TRACE == 0 )
 		{
 			CNode::visit();
 			if( ( *inode )->isAtHotspot() )
@@ -198,9 +198,9 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 			for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
 			{
-				if( (*inode)->getX() + CGeneralNode::RANGE_TRANS < (*jnode)->getX() )
+				if( (*inode)->getX() + configs.trans.RANGE_TRANS < (*jnode)->getX() )
 					break;
-				if( CBasicEntity::withinRange( **inode, **jnode, CGeneralNode::RANGE_TRANS ) )		
+				if( CBasicEntity::withinRange( **inode, **jnode, configs.trans.RANGE_TRANS ) )		
 				{
 					CNode::encount();
 
@@ -218,7 +218,7 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 //bool CHotspot::UpdateAtHotspotForMANodes(int currentTime)
 //{
-//	if( ! ( currentTime % SLOT_HOTSPOT_UPDATE == 0 ) )
+//	if( ! ( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0 ) )
 //		return false;
 //
 //	vector<CHotspot *> hotspots = selectedHotspots;
@@ -235,11 +235,11 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 //
 //		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 //		{
-//			if( (*ihotspot)->getX() + CGeneralNode::RANGE_TRANS < (*iMA)->getX() )
+//			if( (*ihotspot)->getX() + configs.trans.RANGE_TRANS < (*iMA)->getX() )
 //				continue;
-//			if( (*iMA)->getX() + CGeneralNode::RANGE_TRANS < (*ihotspot)->getX() )
+//			if( (*iMA)->getX() + configs.trans.RANGE_TRANS < (*ihotspot)->getX() )
 //				break;
-//			if( CBasicEntity::withinRange( **iMA, **ihotspot, CGeneralNode::RANGE_TRANS ) )		
+//			if( CBasicEntity::withinRange( **iMA, **ihotspot, configs.trans.RANGE_TRANS ) )		
 //			{
 //				atHotspot = *ihotspot;
 //				break;
@@ -272,16 +272,16 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 		{
 			if( (*iOld)->getID() == (*iNew)->getID() )
 			{
-				sumArea += AreaCircle(CGeneralNode::RANGE_TRANS);
+				sumArea += AreaCircle( configs.trans.RANGE_TRANS);
 				continue;
 			}
 
-			if( (*iNew)->getX() + 2 * CGeneralNode::RANGE_TRANS <= (*iOld)->getX() )
+			if( (*iNew)->getX() + 2 * configs.trans.RANGE_TRANS <= (*iOld)->getX() )
 				continue;
-			if( (*iOld)->getX() + 2 * CGeneralNode::RANGE_TRANS <= (*iNew)->getX() )
+			if( (*iOld)->getX() + 2 * configs.trans.RANGE_TRANS <= (*iNew)->getX() )
 				break;
 
-			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * CGeneralNode::RANGE_TRANS ) )
+			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * configs.trans.RANGE_TRANS ) )
 			{
 				sumArea += getOverlapArea(*iOld, *iNew);
 			}
@@ -293,5 +293,5 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 
 double CHotspot::getOverlapArea(vector<CHotspot *> hotspots)
 {
-	return getOverlapArea(hotspots, hotspots) - AreaCircle(CGeneralNode::RANGE_TRANS) * hotspots.size();
+	return getOverlapArea(hotspots, hotspots) - AreaCircle( configs.trans.RANGE_TRANS) * hotspots.size();
 }

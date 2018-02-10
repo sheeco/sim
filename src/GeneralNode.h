@@ -20,50 +20,23 @@ class CGeneralNode :
 {
 public:
 
-	typedef enum _STATE
+	typedef enum EnumTransmitterState
 	{
 		_awake,  //无线收发器唤醒状态
 		_asleep   //无线收发器休眠状态
-	} _STATE;
-
-	typedef enum _SEND
-	{
-		_copy,  //发送数据成功后，保留自身副本
-		_dump   //发送数据成功后，删除自身副本
-	} _SEND;
-
-	typedef enum _RECEIVE
-	{
-		_loose,   //MA buffer已满时，仍允许继续接收数据
-		_selfish   //MA buffer已满时，不再从其他节点接收数据
-	} _RECEIVE;
-
-	typedef enum _QUEUE
-	{
-		_fifo,   //可发送配额有限时，优先从头部发送
-		_lifo   //可发送配额有限时，优先从尾部发送
-	} _QUEUE;
+	} EnumTransmitterState;
 
 
 protected:
 
-	_STATE state;
+	EnumTransmitterState state;
 	vector<CData> buffer;
 	int capacityBuffer;
 	double energyConsumption;
 	int timerOccupied;
 
-	static double CONSUMPTION_WAKE;
-	static double CONSUMPTION_SLEEP;
-
 
 public:
-
-	static double CONSUMPTION_BYTE_SEND;
-	static double CONSUMPTION_BYTE_RECEIVE;
-	static int RANGE_TRANS;  //transmission range
-	static double PROB_TRANS;
-	static int SIZE_CTRL;
 
 	CGeneralNode()
 	{
