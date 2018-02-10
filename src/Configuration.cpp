@@ -747,6 +747,7 @@ void CConfiguration::PrintConfiguration()
 
 inline void CConfiguration::Help()
 {
+	return;
 	CPrintHelper::PrintFile(configs.log.DIR_RUN + configs.log.FILE_HELP, "");
 	_PAUSE_;
 }

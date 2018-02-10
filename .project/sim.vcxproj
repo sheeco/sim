@@ -116,9 +116,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ExcludedFromBuild>
     </None>
-    <None Include="..\bin\HELP.md" />
     <None Include="..\sim.version" />
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\BasicEntity.cpp" />

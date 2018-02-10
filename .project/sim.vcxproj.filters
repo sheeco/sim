@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram.cd">
-      <Filter>资源文件</Filter>
-    </None>
-    <None Include="..\bin\HELP.md">
-      <Filter>资源文件</Filter>
-    </None>
     <None Include="..\bin\default.config" />
     <None Include="..\sim.version">
       <Filter>资源文件</Filter>

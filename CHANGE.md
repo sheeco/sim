@@ -782,9 +782,13 @@
 
 - RFCT: Move all the configs from different classes together into `CConfiguration::CConfig`;
 
-###### 2018-02-10 ¡¤ *< 3.6.6615.28242 >*
+###### [2018-02-10 ¡¤ *< 3.6.6615.28242 >*](c88da03234111536f723b4f9f0e6bf25aa6666c0)
 
 - MNT: Remove assembly version. Only file version is left;
+
+###### 2018-02-10 ¡¤ *< 3,6,6615,28515 >*
+
+- MNT: Remove `HELP.md` & class diagram file;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»
