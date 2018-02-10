@@ -778,9 +778,13 @@
 
 - RFCT: Move config related operations from `CRunHelper` into `CConfiguration`;
 
-###### [2018-02-10 ¡¤ *< 3.6.6615.27508 >*
+###### [2018-02-10 ¡¤ *< 3.6.6615.27508 >*](90e94a83c150f66281178fe0bfeecf2aa1317cc6)
 
 - RFCT: Move all the configs from different classes together into `CConfiguration::CConfig`;
+
+###### 2018-02-10 ¡¤ *< 3.6.6615.28242 >*
+
+- MNT: Remove assembly version. Only file version is left;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

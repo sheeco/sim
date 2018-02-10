@@ -153,7 +153,6 @@
     <ClCompile Include="..\src\Sink.cpp" />
     <ClCompile Include="..\src\SMac.cpp" />
     <ClCompile Include="..\src\SortHelper.cpp" />
-    <ClCompile Include="AssemblyInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Algorithm.h" />
