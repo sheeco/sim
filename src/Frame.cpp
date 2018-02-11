@@ -102,10 +102,5 @@ void CFrame::init()
 
 int CFrame::getSize() const
 {
-	int size = headerMac;
-	for(auto ipacket = packets.begin(); ipacket != packets.end(); ++ipacket)
-	{
-		size += (*ipacket)->getSize();
-	}
-	return size;
+	return headerMac + CPacket::getSumSize(packets);
 }

@@ -13,12 +13,12 @@
 class CNode :
 	virtual public CGeneralNode
 {
-//protected:
+	//protected:
 
-//	int ID;  //node编号
-//	CCoordinate location;  //node现在的y坐标
-//	int time;  //更新node坐标、工作状态（、Prophet中的衰减）的时间戳
-//	bool flag;
+	//	int ID;  //node编号
+	//	CCoordinate location;  //node现在的y坐标
+	//	int time;  //更新node坐标、工作状态（、Prophet中的衰减）的时间戳
+	//	bool flag;
 
 
 private:
@@ -34,7 +34,7 @@ private:
 	int SLOT_SLEEP;  //由configs.mac.CYCLE_TOTAL和DC计算得到
 	int SLOT_WAKE;  //由configs.mac.CYCLE_TOTAL和DC计算得到
 
-	//计时器：UNVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
+					//计时器：UNVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
 	int timerSleep;
 	int timerWake;
 	int timerCarrierSense;  //距离载波侦听结束、邻居节点发现开始的剩余时间
@@ -42,7 +42,6 @@ private:
 
 	int timeLastData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
-	bool recyclable;  //在节点死亡之后，指示节点是否仍可被回收，默认为 true，直到 trace 信息终止赋 false（暂未使用，如果有充电行为则应该读取此参数）
 	CHotspot *atHotspot;
 
 	int sumTimeAwake;
@@ -51,16 +50,15 @@ private:
 	int sumBufferRecord;
 	int countBufferRecord;
 	static int encounterAtHotspot;
-//	static int encounterActiveAtHotspot;
-//	static int encounterActive;  //有效相遇
+	//	static int encounterActiveAtHotspot;
+	//	static int encounterActive;  //有效相遇
 	static int encounter;
 	static int visiterAtHotspot;
 	static int visiter;
 
 	static int COUNT_ID;
 	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
-	// TODO: remove ?
-	static vector<int> idNodes;  //用于储存所有传感器节点的ID，便于处理
+								   // TODO: remove ?
 	static vector<CNode *> deadNodes;  //能量耗尽的节点
 	static vector<CNode *> deletedNodes;  //用于暂存Node个数动态变化时被暂时移出的节点
 
@@ -80,14 +78,17 @@ private:
 
 	/****************************************  MAC  ***************************************/
 
-	//待测试
-	static void newNodes(int n);
+	//将死亡节点整理移出，返回是否有新的节点死亡
+	static bool ClearDeadNodes(int currentTime);
+
 	//待测试
 	static void removeNodes(int n);
+	//待测试
+	static void restoreNodes(int n);
 
-//	CFrame sendCTSWithIndex(CNode* dst, int currentTime);
-//	CFrame sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
-//	vector<CData> bufferData(int time, vector<CData> datas) override;
+	//	CFrame sendCTSWithIndex(CNode* dst, int currentTime);
+	//	CFrame sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
+	//	vector<CData> bufferData(int time, vector<CData> datas) override;
 
 
 
@@ -96,8 +97,8 @@ private:
 	vector<int> summaryVector;
 	map<CNode *, int> spokenCache;
 
-//	vector<CData> getDataBySV(vector<int> sv);
-//	vector<CData> getDataBySV(vector<int> sv, int max);
+	//	vector<CData> getDataBySV(vector<int> sv);
+	//	vector<CData> getDataBySV(vector<int> sv, int max);
 
 
 	/**************************************  Prophet  *************************************/
@@ -122,9 +123,9 @@ public:
 	void updateTimerWake(int time);
 	void updateTimerSleep(int time);
 
-//	void receiveRTS(CFrame frame);
+	//	void receiveRTS(CFrame frame);
 
-//	void receiveFrame(CFrame* frame, int currentTime) override;
+	//	void receiveFrame(CFrame* frame, int currentTime) override;
 
 	CFrame* sendRTSWithCapacityAndPred(int currentTime);
 
@@ -145,13 +146,7 @@ public:
 	//	return false;
 	//}
 
-	void Overhear() override;
-
-	static double calTimeForTrans(CFrame* frame)
-	{
-		return 0;
-		//return ROUND(double(frame->getSize()) / double( configs.trans.SPEED_TRANS));
-	}
+	void Overhear(int currentTime) override;
 
 	/*************************** DC相关 ***************************/
 
@@ -224,35 +219,38 @@ public:
 
 	/*************************** 能耗相关 ***************************/
 
-	//不设置能量值时，始终返回true
-	bool isAlive() const 
+	void consumeEnergy(double cons, int currentTime) override
 	{
-		if( configs.node.CAPACITY_ENERGY == 0 )
-			return true;
-		else if( configs.node.CAPACITY_ENERGY - energyConsumption <= 0 )
-			return false;
-		else
-			return true;
+		this->energyConsumption += cons;
+		if( configs.node.CAPACITY_ENERGY > 0
+		   && configs.node.CAPACITY_ENERGY - energyConsumption <= 0 )
+			this->die(currentTime);
 	}
 
-	double getEnergy() const 
+	//不设置能量值时，始终返回true
+	bool isAlive() const
 	{
-		if( ! isAlive() )
+		return this->timeDeath >= 0;
+	}
+
+	double getEnergy() const
+	{
+		if( !isAlive() )
 			return 0;
 		return configs.node.CAPACITY_ENERGY - energyConsumption;
 	}
 
-	bool isRecyclable() const 
+	//true if energy has ran out
+	//false if trace information has ran out
+	//the feature is not used for now
+	bool isRecyclable(int currentTime) const
 	{
-		return recyclable;
+		return this->trace->isValid(currentTime);
 	}
 
-	//如果 recycable 为 true，则可以在动态节点个数测试时被恢复
-	//注意：有节点死亡之后，必须调用ClearDeadNodes()
-	void die(int currentTime, bool recyclable) 
+	void die(int currentTime)
 	{
 		this->timeDeath = currentTime;
-		this->recyclable = recyclable;
 	}
 
 	static bool finiteEnergy();
@@ -272,10 +270,6 @@ public:
 			return 0;
 		return double(sumTimeAwake) / double(sumTimeAlive);
 	}
-
-	//将死亡节点整理移出
-	static void ClearDeadNodes(int currentTime);
-
 
 	/*************************** ------- ***************************/
 
@@ -297,8 +291,8 @@ public:
 	//注意：调用之前应该确保数据已排序
 	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity, bool fromLeft);
 
-//	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
-//	vector<CData> dropOverdueData(int currentTime);
+	//	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
+	//	vector<CData> dropOverdueData(int currentTime);
 
 	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
 	//超出MAX_DATA_RELAY时从前端丢弃数据，溢出时将从前端丢弃数据并返回
@@ -333,12 +327,12 @@ public:
 
 	static vector<CNode *>& getNodes();
 
-	static int getNNodes();
+	static int getNodeCount();
 
 	//包括已经失效的节点和删除的节点，按照ID排序
 	static vector<CNode *> getAllNodes(bool sort);
 
-	static vector<int>& getIdNodes();
+	static vector<int> getIdNodes();
 
 	static bool ifNodeExists(int id);
 
@@ -351,90 +345,90 @@ public:
 	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
 	//注意：暂时只支持Prophet路由，其他路由尚未添加相关代码
 	//所有可能的相遇（与MAC和路由协议无关，只与数据集和统计时槽有关）
-	static void encount() 
+	static void encount()
 	{
 		++encounter;
 	}
-//	//有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
-//	static void encountActive() 
-//	{
-//		++encounterActive;
-//	}
+	//	//有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
+	//	static void encountActive() 
+	//	{
+	//		++encounterActive;
+	//	}
 	//热点区域所有可能的相遇（只与数据集和热点选取有关）
-	static void encountAtHotspot() 
+	static void encountAtHotspot()
 	{
 		++encounterAtHotspot;
 	}
-//	//热点区域内的有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
-//	static void encountActiveAtHotspot() 
-//	{
-//		++encounterActiveAtHotspot;
-//	}
+	//	//热点区域内的有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
+	//	static void encountActiveAtHotspot() 
+	//	{
+	//		++encounterActiveAtHotspot;
+	//	}
 
-	static int getEncounter() 
+	static int getEncounter()
 	{
 		return encounter;
 	}
-//	static int getEncounterActive()
-//	{
-//		return encounterActive;
-//	}
-	static int getEncounterAtHotspot() 
+	//	static int getEncounterActive()
+	//	{
+	//		return encounterActive;
+	//	}
+	static int getEncounterAtHotspot()
 	{
 		return encounterAtHotspot;
 	}
-//	static int getEncounterActiveAtHotspot() 
-//	{
-//		return encounterActiveAtHotspot;
-//	}
-//	//所有有效相遇中，发生在热点区域的比例
-//	static double getPercentEncounterActiveAtHotspot() 
-//	{
-//		if(encounterActiveAtHotspot == 0)
-//			return 0.0;
-//		return double(encounterActiveAtHotspot) / double(encounterActive);
-//	}
-	static double getPercentEncounterAtHotspot() 
+	//	static int getEncounterActiveAtHotspot() 
+	//	{
+	//		return encounterActiveAtHotspot;
+	//	}
+	//	//所有有效相遇中，发生在热点区域的比例
+	//	static double getPercentEncounterActiveAtHotspot() 
+	//	{
+	//		if(encounterActiveAtHotspot == 0)
+	//			return 0.0;
+	//		return double(encounterActiveAtHotspot) / double(encounterActive);
+	//	}
+	static double getPercentEncounterAtHotspot()
 	{
-		if(encounterAtHotspot == 0)
+		if( encounterAtHotspot == 0 )
 			return 0.0;
 		return double(encounterAtHotspot) / double(encounter);
 	}
-//	static double getPercentEncounterActive() 
-//	{
-//		if(encounterActive == 0)
-//			return 0.0;
-//		return double(encounterActive) / double(encounter);
-//	}
+	//	static double getPercentEncounterActive() 
+	//	{
+	//		if(encounterActive == 0)
+	//			return 0.0;
+	//		return double(encounterActive) / double(encounter);
+	//	}
 
 	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
-	static void visitAtHotspot() 
+	static void visitAtHotspot()
 	{
 		++visiterAtHotspot;
 	}
-	static void visit() 
+	static void visit()
 	{
 		++visiter;
 	}
 
-	static double getPercentVisiterAtHotspot() 
+	static double getPercentVisiterAtHotspot()
 	{
-		if(visiterAtHotspot == 0)
+		if( visiterAtHotspot == 0 )
 			return 0.0;
 		return double(visiterAtHotspot) / double(visiter);
 	}
-	static int getVisiter() 
+	static int getVisiter()
 	{
 		return visiter;
 	}
-	static int getVisiterAtHotspot() 
+	static int getVisiterAtHotspot()
 	{
 		return visiterAtHotspot;
 	}
 
 	/*************************** ------- ***************************/
 
-	double getDataByteRate() const 
+	double getDataByteRate() const
 	{
 		return dataRate;
 	}
@@ -449,20 +443,20 @@ public:
 		return atHotspot;
 	}
 
-	void setAtHotspot(CHotspot* atHotspot) 
+	void setAtHotspot(CHotspot* atHotspot)
 	{
 		this->atHotspot = atHotspot;
 	}
 
-	bool isAtHotspot() const 
+	bool isAtHotspot() const
 	{
 		return atHotspot != nullptr;
 	}
 
-	void generateID() 
+	void generateID()
 	{
 		++COUNT_ID;
-		this->ID = COUNT_ID;		
+		this->ID = COUNT_ID;
 	}
 	string toString() const
 	{
@@ -473,9 +467,9 @@ public:
 		trace = CCTrace::getTraceFromFile(filename);
 	}
 
-	double getAverageSizeBuffer() const 
+	double getAverageSizeBuffer() const
 	{
-		if(sumBufferRecord == 0)
+		if( sumBufferRecord == 0 )
 			return 0;
 		else
 			return double(sumBufferRecord) / double(countBufferRecord);
@@ -484,31 +478,31 @@ public:
 	//更新buffer状态记录，以便计算buffer status
 	void recordBufferStatus();
 
-//	vector<CData> sendAllData(_SEND mode) override;
+	//	vector<CData> sendAllData(_SEND mode) override;
 
-//	vector<CData> sendData(int n);
+	//	vector<CData> sendData(int n);
 
-//	bool receiveData(int time, vector<CData> datas) override;
+	//	bool receiveData(int time, vector<CData> datas) override;
 
 	/*************************************  Epidemic  *************************************/
 
 	//FIXME: 如果不忽略传输延迟，则以下所有send和receive函数都必须加入传输延迟的计算
 
-//	vector<int> sendSummaryVector();
+	//	vector<int> sendSummaryVector();
 
-//	vector<int> receiveSummaryVector(vector<int> sv);
+	//	vector<int> receiveSummaryVector(vector<int> sv);
 
-//	//传入对方节点的SV，计算并返回请求传输的数据ID列表
-//	vector<int> sendRequestList(vector<int> sv);
+	//	//传入对方节点的SV，计算并返回请求传输的数据ID列表
+	//	vector<int> sendRequestList(vector<int> sv);
 
-//	vector<int> receiveRequestList(vector<int> req);
+	//	vector<int> receiveRequestList(vector<int> req);
 
 
 	/**************************************  Prophet  *************************************/
 
-//	map<int, double> sendDeliveryPreds();
-//
-//	map<int, double> receiveDeliveryPredsAndSV(map<int, double> preds, vector<int>& sv);
+	//	map<int, double> sendDeliveryPreds();
+	//
+	//	map<int, double> receiveDeliveryPredsAndSV(map<int, double> preds, vector<int>& sv);
 
 };
 

@@ -346,7 +346,7 @@ vector<string> CConfiguration::ConvertToConfiguration(int argc, char * argv[])
 bool CConfiguration::ParseConfiguration(vector<string> args)
 {
 	if( args.empty() )
-		throw string( "CConfiguration::ParseConfiguration() : Parameters are requested ! ");
+		return false;
 
 	vector<string>::iterator iarg = args.begin();
 

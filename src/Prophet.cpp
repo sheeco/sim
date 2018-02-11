@@ -168,6 +168,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 	CCtrl* indexToSend = nullptr;
 	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
 	vector<CData> dataToSend;  //空vector代表拒绝传输数据
+	bool wait = false;
 
 	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -195,9 +196,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 				// + DATA
 				dataToSend = getDataForTrans(node, 0, true);
 
-				node->delayDiscovering(CRoutingProtocol::getTimeForTrans(dataToSend.size()));
-				node->delaySleep(CRoutingProtocol::getTimeForTrans(dataToSend.size()));
-
+				wait = true;
 				// TODO: mark skipRTS ?
 				// TODO: connection established ?
 				break;
@@ -267,7 +266,12 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
 			packetsToSend.push_back(new CData(*idata));
 	}
-
+	if( wait )
+	{
+		int timeDelay = CMacProtocol::getTransmissionDelay(packetsToSend);
+		node->delayDiscovering(timeDelay);
+		node->delaySleep(timeDelay);
+	}
 	return packetsToSend;
 	
 }

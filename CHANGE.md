@@ -786,9 +786,13 @@
 
 - MNT: Remove assembly version. Only file version is left;
 
-###### 2018-02-10 ¡¤ *< 3,6,6615,28515 >*
+###### [2018-02-10 ¡¤ *< 3.6.6615.28515 >*](a20a98530bfc073c98cb448b160f52e643725ae3)
 
 - MNT: Remove `HELP.md` & class diagram file;
+
+###### 2018-02-11 ¡¤ *< 3.6.6616.22067 >*
+
+- RFCT: for `CMacProtocol::getTransmissionDelay()` & `CNode::ClearDeadNodes()`;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

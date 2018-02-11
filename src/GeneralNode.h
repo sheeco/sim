@@ -53,7 +53,7 @@ public:
 	{
 		return energyConsumption;
 	}
-	inline void consumeEnergy(double cons)
+	virtual void consumeEnergy(double cons, int currentTime)
 	{
 		this->energyConsumption += cons;
 	}
@@ -84,7 +84,7 @@ public:
 		return state == _awake;
 	}
 
-	virtual void Overhear();
+	virtual void Overhear(int currentTime);
 	//virtual void Occupy(int time)
 	//{
 	//	if( time <= 0 )

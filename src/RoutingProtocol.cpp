@@ -9,19 +9,6 @@
 
 CRoutingProtocol::CRoutingProtocol() {}
 
-int CRoutingProtocol::getTimeForTrans(int nData)
-{
-	if(configs.trans.CONSTANT_TRANS_DELAY >= 0 )
-		return int(configs.trans.CONSTANT_TRANS_DELAY);
-	else
-		return int( ceil( double( nData * configs.data.SIZE_DATA + configs.data.SIZE_HEADER_MAC ) / double( configs.trans.SPEED_TRANS) ) );
-}
-
-int CRoutingProtocol::getMaxTimeForTrans()
-{
-	return getTimeForTrans(configs.trans.WINDOW_TRANS);
-}
-
 vector<CData> CRoutingProtocol::getDataForTrans(CGeneralNode* node, int capacity, bool FIFO)
 {
 	if( capacity <= 0

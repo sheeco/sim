@@ -108,7 +108,7 @@ double CHotspot::calculateRatio()
 {
 	if( configs.mhs.TEST_BALANCED_RATIO )
 	{
-		ratio = coveredPositions.size() * double(CNode::getNNodes() - coveredNodes.size() + 1) / double(CNode::getNNodes());
+		ratio = coveredPositions.size() * double(CNode::getNodeCount() - coveredNodes.size() + 1) / double(CNode::getNodeCount());
 		return ratio;
 	}
 //	else if( HAR::TEST_LEARN )

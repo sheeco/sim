@@ -44,6 +44,7 @@ public:
 	{
 		return size;
 	}
+	static int getSumSize(vector<CPacket*> packets);
 
 	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
 	//注意：数据发送方应在发送之前检查剩余HOP大于1

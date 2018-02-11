@@ -11,6 +11,7 @@
 
 #include "Protocol.h"
 #include "GeneralNode.h"
+#include "Frame.h"
 
 class CMacProtocol :
 	virtual public CProtocol
@@ -68,6 +69,30 @@ public:
 			return 0.0;
 		return double(transmitSuccessful) / double(transmit);
 	}
+
+	static int getTransmissionDelay(int nByte)
+	{
+		if( configs.trans.CONSTANT_TRANS_DELAY >= 0 )
+			return int(configs.trans.CONSTANT_TRANS_DELAY);
+		else
+			return ROUND(double(nByte) / double(configs.trans.SPEED_TRANS));
+	}
+
+	static int getTransmissionDelay(CFrame* frame)
+	{
+		return getTransmissionDelay(frame->getSize());
+	}
+
+	static int getTransmissionDelay(vector<CPacket*> packets)
+	{
+		return getTransmissionDelay(configs.data.SIZE_HEADER_MAC + CPacket::getSumSize(packets));
+	}
+
+	static int getMaxTransmissionDelay()
+	{
+		return getTransmissionDelay(configs.data.SIZE_HEADER_MAC + configs.trans.WINDOW_TRANS * configs.data.SIZE_DATA + configs.data.SIZE_CTRL);
+	}
+
 
 	//更新节点数目、节点状态；收集位置点信息、选取热点、更新节点是否位于热点区域；
 	//如果无更多节点，返回 false

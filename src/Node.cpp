@@ -21,7 +21,6 @@ int CNode::visiterAtHotspot = 0;
 int CNode::visiter = 0;
 
 vector<CNode*> CNode::nodes;
-vector<int> CNode::idNodes;
 vector<CNode*> CNode::deadNodes;
 vector<CNode *> CNode::deletedNodes;
 
@@ -35,7 +34,6 @@ void CNode::init()
 	//discovering = false;
 	timeLastData = 0;
 	timeDeath = 0;
-	recyclable = true;
 	capacityBuffer = configs.node.CAPACITY_BUFFER;
 	sumTimeAwake = 0;
 	sumTimeAlive = 0;
@@ -62,13 +60,13 @@ void CNode::init()
 			timerWake = SLOT_WAKE;
 		else
 			timerWake = RandomInt(1, SLOT_WAKE);
-		timerCarrierSense = RandomInt(0, CRoutingProtocol::getMaxTimeForTrans());
+		timerCarrierSense = RandomInt(0, CMacProtocol::getMaxTransmissionDelay());
 	}
 }
 
 CNode::CNode() 
 {
-	init();
+	throw string("CNode::CNode() : Default constructor is disabled.");
 }
 
 CNode::CNode(double dataRate) 
@@ -105,7 +103,6 @@ void CNode::initNodes() {
 			node->generateID();
 			node->loadTrace(filenames[i]);
 			CNode::nodes.push_back(node);
-			CNode::idNodes.push_back( node->getID() );
 		}
 	}
 }
@@ -138,7 +135,7 @@ vector<CNode*>& CNode::getNodes()
 	return nodes;
 }
 
-int CNode::getNNodes() 
+int CNode::getNodeCount() 
 {
 	return nodes.size();
 }
@@ -153,11 +150,14 @@ vector<CNode *> CNode::getAllNodes(bool sort)
 	return allNodes;
 }
 
-vector<int>& CNode::getIdNodes() 
+vector<int> CNode::getIdNodes() 
 {
 	if( nodes.empty() && deadNodes.empty() )
 		initNodes();
-	return idNodes;
+	vector<int> ids;
+	for( CNode * inode : nodes )
+		ids.push_back(inode->getID());
+	return ids;
 }
 
 bool CNode::finiteEnergy() 
@@ -172,45 +172,30 @@ bool CNode::hasNodes(int currentTime)
 		initNodes();
 		return true;
 	}
-	else
-		idNodes.clear();
 		
-	bool death = false;
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
-	{
-		if( (*inode)->isAlive() )
-		{
-			idNodes.push_back( (*inode)->getID() );
-		}
-		else
-		{
-			(*inode)->die( currentTime, true );  //因节点能量耗尽而死亡的节点，仍可回收
-			death = true;
-		}
-		++inode;
-	}
-	ClearDeadNodes(currentTime);
+	bool death = ClearDeadNodes(currentTime);
 	if(death)
 		CPrintHelper::PrintAttribute("Node", CNode::getNodes().size());
 
 	return ( ! nodes.empty() );
 }
 
-void CNode::ClearDeadNodes(int currentTime) 
+bool CNode::ClearDeadNodes(int currentTime) 
 {
 	bool death = false;
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); )
+	for(vector<CNode *>::iterator ipNode = nodes.begin(); ipNode != nodes.end(); )
 	{
-		if((*inode)->timeDeath > 0)
+		if(! (*ipNode)->isAlive())
 		{
 			death = true;
-			deadNodes.push_back( *inode );
-			inode = nodes.erase( inode );
+			deadNodes.push_back( *ipNode );
+			ipNode = nodes.erase( ipNode );
 		}
 		else
-			++inode;
+			++ipNode;
 	}
 
+	// TODO: more detailed feedback
 	if( death )
 	{
 		ofstream death(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_DEATH, ios::app);
@@ -219,11 +204,11 @@ void CNode::ClearDeadNodes(int currentTime)
 			death << endl << configs.log.INFO_LOG << endl;
 			death << configs.log.INFO_DEATH;
 		}
-		death << currentTime << TAB << CNode::getAllNodes(false).size() - CNode::getNNodes()
+		death << currentTime << TAB << CNode::getAllNodes(false).size() - CNode::getNodeCount()
 			<< TAB << CData::getCountDelivery() << TAB << CData::getDeliveryRatio() << endl;
 		death.close();
 	}
-
+	return death;
 }
 
 bool CNode::ifNodeExists(int id) 
@@ -289,13 +274,13 @@ void CNode::checkDataByAck(vector<CData> ack)
 		RemoveFromList(buffer, ack);
 }
 
-void CNode::Overhear()
+void CNode::Overhear(int currentTime)
 {
-	CGeneralNode::Overhear();
+	CGeneralNode::Overhear(currentTime);
 
 	//继续载波侦听
 	//时间窗内随机值 / 立即休眠？
-	delayDiscovering( CRoutingProtocol::getMaxTimeForTrans() );
+	delayDiscovering( CMacProtocol::getMaxTransmissionDelay() );
 }
 
 void CNode::Wake()
@@ -309,7 +294,7 @@ void CNode::Wake()
 	state = _awake;
 	timerSleep = UNVALID;
 	timerWake = SLOT_WAKE;
-	timerCarrierSense = RandomInt(0, CRoutingProtocol::getMaxTimeForTrans());
+	timerCarrierSense = RandomInt(0, CMacProtocol::getMaxTransmissionDelay());
 }
 
 void CNode::Sleep()
@@ -479,9 +464,8 @@ vector<int> CNode::updateSummaryVector()
 	return summaryVector;
 }
 
-void CNode::newNodes(int n) 
+void CNode::restoreNodes(int n) 
 {
-	//优先恢复之前被删除的节点
 	// TODO: 恢复时重新充满能量？
 	for(int i = nodes.size(); i < nodes.size() + n; ++i)
 	{
@@ -489,22 +473,20 @@ void CNode::newNodes(int n)
 			break;
 
 		CNode::nodes.push_back(deletedNodes[0]);
-		CNode::idNodes.push_back( deletedNodes[0]->getID() );
 		--n;
 	}
 	//如果仍不足数，构造新的节点
-	for(int i = nodes.size(); i < nodes.size() + n; ++i)
+	for( int i = nodes.size(); i < nodes.size() + n; ++i )
 	{
 		double dataRate = configs.node.DEFAULT_DATA_RATE;
-		if(i % 5 == 0)
+		if( i % 5 == 0 )
 			dataRate *= 5;
 		CNode* node = new CNode(dataRate);
 		node->generateID();
 		CProphet::initDeliveryPreds(node);
 		CNode::nodes.push_back(node);
-		CNode::idNodes.push_back( node->getID() );
 		--n;
-	}			
+	}
 }
 
 void CNode::removeNodes(int n) 
@@ -531,9 +513,6 @@ void CNode::removeNodes(int n)
 	}
 
 	nodes = leftNodes;
-	idNodes.clear();
-	for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
-		idNodes.push_back( (*inode)->getID() );
 	CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
 }
 
@@ -566,12 +545,12 @@ void CNode::updateStatus(int currentTime)
 		switch( state )
 		{
 			case _awake:
-				consumeEnergy(configs.trans.CONSUMPTION_WAKE * configs.simulation.SLOT);
+				consumeEnergy(configs.trans.CONSUMPTION_WAKE * configs.simulation.SLOT, currentTime);
 				updateTimerWake(newTime);
 
 				break;
 			case _asleep:
-				consumeEnergy(configs.trans.CONSUMPTION_SLEEP * configs.simulation.SLOT);
+				consumeEnergy(configs.trans.CONSUMPTION_SLEEP * configs.simulation.SLOT, currentTime);
 				updateTimerSleep(newTime);
 
 				break;
@@ -584,10 +563,8 @@ void CNode::updateStatus(int currentTime)
 	}
 
 	if( !isAlive() )
-	{
-		die(currentTime, false);
 		return;
-	}
+
 	sumTimeAlive += newTime - this->time;
 
 	//生成数据
@@ -603,7 +580,7 @@ void CNode::updateStatus(int currentTime)
 	//更新坐标及时间戳
 	if( ! trace->isValid(currentTime) )
 	{
-		die(currentTime, false);  //因 trace 信息终止而死亡的节点，无法回收
+		die(currentTime);  //因 trace 信息终止而死亡的节点，无法回收
 		return;
 	}
 	setLocation(trace->getLocation(currentTime));
@@ -709,7 +686,7 @@ int CNode::ChangeNodeNumber()
 	else if(delta > configs.dynamic.MAX_NUM_NODE - nodes.size())
 	{
 		delta = configs.dynamic.MAX_NUM_NODE - nodes.size();
-		newNodes(delta);
+		restoreNodes(delta);
 	}
 
 	return delta;

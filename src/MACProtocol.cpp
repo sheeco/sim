@@ -23,7 +23,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 	bool rcv = false;
 	vector<CGeneralNode*> neighbors;
 
-	src.consumeEnergy(frame->getSize() * configs.trans.CONSUMPTION_BYTE_SEND);
+	src.consumeEnergy(frame->getSize() * configs.trans.CONSUMPTION_BYTE_SEND, currentTime);
 	CMacProtocol::transmitTry();
 
 	/************************************************ Sensor Node *******************************************************/
@@ -85,7 +85,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 	}
 
 	int timeTrans = 0;
-	timeTrans = int( CNode::calTimeForTrans(frame) );
+	timeTrans = int( getTransmissionDelay(frame) );
 	int timeArrival = currentTime + timeTrans;
 	vector< pair<CFrame*, vector< CGeneralNode* > > > currentArrivals;
 
@@ -149,7 +149,7 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentT
 	//	return false;
 
 	int timeTrans = 0;
-	timeTrans = int( CNode::calTimeForTrans(frame) );
+	timeTrans = int( getTransmissionDelay(frame) );
 	//gnode.Occupy(timeTrans);    
 	//if( timeTrans > 0 )
 	//	gnode.updateStatus(currentTime + timeTrans);
@@ -158,11 +158,11 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentT
 	if( gToNode != nullptr
 	    && gToNode->getID() != gnode.getID() )
 	{
-		gnode.Overhear();
+		gnode.Overhear(currentTime);
 		return false;
 	}
 	
-	gnode.consumeEnergy(frame->getSize() * configs.trans.CONSUMPTION_BYTE_RECEIVE);
+	gnode.consumeEnergy(frame->getSize() * configs.trans.CONSUMPTION_BYTE_RECEIVE, currentTime);
 	
 	vector<CPacket*> packets = frame->getPackets();
 	vector<CPacket*> packetsToSend;
@@ -221,20 +221,12 @@ void CMacProtocol::ChangeNodeNumber(int currentTime)
 
 bool CMacProtocol::UpdateNodeStatus(int currentTime)
 {
-	bool death = false;
 	vector<CNode *> nodes = CNode::getNodes();
-	for( vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
-	{
-		(*inode)->updateStatus(currentTime);
-		death = death || ( ! ( *inode )->isAlive() );
-	}
-	if( death )
-	{
-		CNode::ClearDeadNodes(currentTime);
-	}
+	for( CNode * inode : nodes )
+		inode->updateStatus(currentTime);
 
 	//按照轨迹文件的时槽统计节点相遇计数
-	if( nodes.empty() )
+	if( ! CNode::hasNodes(currentTime) )
 		return false;
 
 	nodes = CSortHelper::mergeSort(nodes);
@@ -366,7 +358,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 			node << endl << configs.log.INFO_LOG << endl;
 			node << configs.log.INFO_NODE;
 		}
-		node << currentTime << TAB << CNode::getNNodes() << endl;
+		node << currentTime << TAB << CNode::getNodeCount() << endl;
 		node.close();
 
 		//MA和节点 / 节点间的相遇次数

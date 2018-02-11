@@ -34,7 +34,7 @@
 //	return vector<CData>();
 //}
 
-void CGeneralNode::Overhear()
+void CGeneralNode::Overhear(int currentTime)
 {
-	consumeEnergy(configs.trans.CONSUMPTION_BYTE_RECEIVE * configs.data.SIZE_HEADER_MAC);
+	consumeEnergy(configs.trans.CONSUMPTION_BYTE_RECEIVE * configs.data.SIZE_HEADER_MAC, currentTime);
 }

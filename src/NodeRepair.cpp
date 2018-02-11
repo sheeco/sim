@@ -18,7 +18,8 @@ CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *>
 	//}
 
 	// 初始化为所有node
-	poorNodes.insert( poorNodes.begin(), CNode::getIdNodes().begin(), CNode::getIdNodes().end() );
+	vector<int> idNodes = CNode::getIdNodes();
+	poorNodes.insert( poorNodes.begin(), idNodes.begin(), idNodes.end() );
 }
 
 int CNodeRepair::countForNode(vector<CHotspot *> hotspots, int n) const

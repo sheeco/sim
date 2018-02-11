@@ -6,6 +6,16 @@ CPacket::CPacket()
 	CPacket::init();
 }
 
+int CPacket::getSumSize(vector<CPacket*> packets)
+{
+	int size = 0;
+	for( auto ipacket = packets.begin(); ipacket != packets.end(); ++ipacket )
+	{
+		size += ( *ipacket )->getSize();
+	}
+	return size;
+}
+
 void CPacket::init()
 {
 	this->node = -1;
