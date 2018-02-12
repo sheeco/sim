@@ -475,18 +475,6 @@ void CNode::restoreNodes(int n)
 		CNode::nodes.push_back(deletedNodes[0]);
 		--n;
 	}
-	//如果仍不足数，构造新的节点
-	for( int i = nodes.size(); i < nodes.size() + n; ++i )
-	{
-		double dataRate = configs.node.DEFAULT_DATA_RATE;
-		if( i % 5 == 0 )
-			dataRate *= 5;
-		CNode* node = new CNode(dataRate);
-		node->generateID();
-		CProphet::initDeliveryPreds(node);
-		CNode::nodes.push_back(node);
-		--n;
-	}
 }
 
 void CNode::removeNodes(int n) 
@@ -659,35 +647,4 @@ int CNode::getCapacityForward()
 		return capacityBuffer;
 	else
 		return 0;
-}
-
-int CNode::ChangeNodeNumber()
-{
-	if( configs.dynamic.MAX_NUM_NODE <= configs.dynamic.MIN_NUM_NODE || configs.dynamic.MIN_NUM_NODE <= 0 )
-		throw pair<int, string>(EARG, string("Min & max node number (" + STRING(configs.dynamic.MIN_NUM_NODE) + ", " + STRING(configs.dynamic.MAX_NUM_NODE) +") are not correctly configured."));
-
-	int delta = 0;
-	float bet = 0;
-	do
-	{
-		bet = RandomFloat(-1, 1);
-		if(bet > 0)
-			bet = 0.2 + bet / 2;  //更改比例至少 0.2
-		else
-			bet = -0.2 + bet / 2;
-		delta = ROUND( bet * (configs.dynamic.MAX_NUM_NODE - configs.dynamic.MIN_NUM_NODE) );
-	}while(delta != 0);
-
-	if(delta < configs.dynamic.MIN_NUM_NODE - nodes.size())
-	{
-		delta = nodes.size() - configs.dynamic.MIN_NUM_NODE;
-		removeNodes(delta);
-	}
-	else if(delta > configs.dynamic.MAX_NUM_NODE - nodes.size())
-	{
-		delta = configs.dynamic.MAX_NUM_NODE - nodes.size();
-		restoreNodes(delta);
-	}
-
-	return delta;
 }

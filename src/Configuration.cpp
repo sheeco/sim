@@ -110,11 +110,6 @@ bool CConfiguration::CMacConfig::SYNC_CYCLE = true;
 
 double CConfiguration::CHDCConfig::HOTSPOT_DUTY_RATE = 1.0;
 
-bool CConfiguration::CDynamicNodeNumberConfig::TEST_DYNAMIC_NODE_NUM = false;
-int CConfiguration::CDynamicNodeNumberConfig::SLOT_CHANGE_NODE_NUM = 0;  //动态节点个数测试时，节点个数发生变化的周期
-int CConfiguration::CDynamicNodeNumberConfig::MIN_NUM_NODE = 0;
-int CConfiguration::CDynamicNodeNumberConfig::MAX_NUM_NODE = 0;
-
 int CConfiguration::CTransConfig::SPEED_TRANS = 2500;  // Byte / s
 int CConfiguration::CTransConfig::RANGE_TRANS = 100;  //transmission range
 double CConfiguration::CTransConfig::PROB_TRANS = 1.0;
@@ -436,7 +431,6 @@ void CConfiguration::InitConfiguration()
 	//bool/int 参数
 	AddConfiguration("-continuous-trace", _bool, new bool(true), &configs.trace.CONTINUOUS_TRACE, "");
 	AddConfiguration("-dc-sync", _bool, new bool(true), &configs.mac.SYNC_CYCLE, "");
-	AddConfiguration("-dynamic-node-number", _bool, new bool(false), &configs.dynamic.TEST_DYNAMIC_NODE_NUM, "");
 	AddConfiguration("-pred-strict", _bool, new bool(true), &configs.prophet.TRANS_STRICT_BY_PRED, "");
 	AddConfiguration("-hotspot-similarity", _bool, new bool(true), &configs.hs.TEST_HOTSPOT_SIMILARITY, "");
 	AddConfiguration("-balanced-ratio", _bool, new bool(false), &configs.mhs.TEST_BALANCED_RATIO, "");
@@ -444,8 +438,6 @@ void CConfiguration::InitConfiguration()
 	AddConfiguration("-time-run", _int, new int(15000), &configs.simulation.RUNTIME, "");
 	AddConfiguration("-slot", _int, new int(1), &configs.simulation.SLOT, "");
 	AddConfiguration("-slot-trace", _int, new int(30), &configs.trace.SLOT_TRACE, "");
-	AddConfiguration("-node-min", _int, new int(0), &configs.dynamic.MIN_NUM_NODE, "");
-	AddConfiguration("-node-max", _int, new int(0), &configs.dynamic.MAX_NUM_NODE, "");
 	AddConfiguration("-log-slot", _int, new int(100), &configs.log.SLOT_LOG, "");
 	AddConfiguration("-trans-range", _int, new int(100), & configs.trans.RANGE_TRANS, "");
 	AddConfiguration("-trans-speed", _int, new int(2500), & configs.trans.SPEED_TRANS, "");
@@ -716,12 +708,6 @@ void CConfiguration::PrintConfiguration()
 		parameters << "HEAT_CO_1" << TAB << configs.har.CO_HOTSPOT_HEAT_A1 << endl;
 		parameters << "HEAT_CO_2" << TAB << configs.har.CO_HOTSPOT_HEAT_A2 << endl;
 		//final << configs.har.BETA << TAB;
-	}
-
-	if( configs.dynamic.TEST_DYNAMIC_NODE_NUM )
-	{
-		configs.log.INFO_LOG += "#DYNAMIC_NODE_NUMBER";
-		parameters << endl << "#DYNAMIC_NODE_NUMBER" << endl;
 	}
 
 	parameters << endl;

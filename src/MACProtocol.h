@@ -25,8 +25,6 @@ private:
 	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime);
 	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int currentTime);
 
-	//在限定范围内随机增删一定数量的node
-	static void ChangeNodeNumber(int currentTime);
 	//更新所有 node 的坐标、占空比和工作状态，生成数据，返回是否仍有节点
 	static bool UpdateNodeStatus(int currentTime);
 

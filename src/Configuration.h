@@ -203,14 +203,6 @@ public:
 		static double HOTSPOT_DUTY_RATE;  //HDC中热点区域内的占空比
 	} CHDCConfig;
 
-	typedef struct CDynamicNodeNumberConfig
-	{
-		static bool TEST_DYNAMIC_NODE_NUM;
-		static int SLOT_CHANGE_NODE_NUM;  //动态节点个数测试时，节点个数发生变化的周期
-		static int MIN_NUM_NODE;
-		static int MAX_NUM_NODE;
-	} CDynamicNodeNumberConfig;
-
 	typedef struct CSinkConfig
 	{
 		static double X;
@@ -300,7 +292,6 @@ public:
 		static CLogConfig log;
 		static CMacConfig mac;
 		static CHDCConfig hdc;
-		static CDynamicNodeNumberConfig dynamic;
 		static CDataConfig data;
 		static CTransConfig trans;
 		static CSinkConfig sink;

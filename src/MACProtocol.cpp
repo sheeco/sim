@@ -200,25 +200,6 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentT
 	return true;
 }
 
-void CMacProtocol::ChangeNodeNumber(int currentTime)
-{
-	if( ! ( currentTime % configs.dynamic.SLOT_CHANGE_NODE_NUM == 0 ) )
-		return;
-
-	CPrintHelper::PrintHeading(currentTime, "NODE NUMBER CHANGE");
-	
-	int delta = CNode::ChangeNodeNumber();
-
-	if(delta >= 0)
-	{
-		CPrintHelper::PrintAttribute("Node", "+" + STRING(delta));
-	}
-	else
-	{
-		CPrintHelper::PrintAttribute("Node", "-" + STRING(delta));
-	}
-}
-
 bool CMacProtocol::UpdateNodeStatus(int currentTime)
 {
 	vector<CNode *> nodes = CNode::getNodes();
@@ -258,10 +239,6 @@ void CMacProtocol::UpdateMANodeStatus(int currentTime)
 
 bool CMacProtocol::Prepare(int currentTime)
 {
-	//Node Number Test:
-	if( configs.dynamic.TEST_DYNAMIC_NODE_NUM )
-		CMacProtocol::ChangeNodeNumber(currentTime);
-
 	CSink::getSink()->updateStatus(currentTime);
 
 	if( ! CMacProtocol::UpdateNodeStatus(currentTime) )

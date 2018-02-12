@@ -790,9 +790,13 @@
 
 - MNT: Remove `HELP.md` & class diagram file;
 
-###### 2018-02-11 ¡¤ *< 3.6.6616.22067 >*
+###### [2018-02-11 ¡¤ *< 3.6.6616.22067 >*](978ce8ef8ef3a707e0e41774e46618d58059185a)
 
 - RFCT: for `CMacProtocol::getTransmissionDelay()` & `CNode::ClearDeadNodes()`;
+
+###### 2018-02-12 ¡¤ *< 3.6.6617.8665 >*
+
+- REM: entire feature of dynamic node number test;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

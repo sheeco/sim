@@ -111,9 +111,6 @@ public:
 
 	/****************************************  MAC  ***************************************/
 
-	//在限定范围内随机增删一定数量的node
-	static int ChangeNodeNumber();
-
 	// TODO: trigger operations here ?
 	// *TODO: move even between 2 locations ?
 	// TODO: how to trigger RTS ?
