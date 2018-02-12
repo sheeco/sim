@@ -90,23 +90,6 @@ bool CRunHelper::RunSimulation()
 
 			break;
 
-		//case _epidemic:
-		//	CEpidemic::Init();
-		//	while( currentTime <= config.simulation.RUNTIME )
-		//	{
-		//		dead = !CEpidemic::Operate(currentTime);
-
-		//		if( dead )
-		//		{
-		//			config.simulation.RUNTIME = currentTime;
-		//			break;
-		//		}
-		//		currentTime += config.simulation.SLOT;
-		//	}
-		//	CEpidemic::PrintFinal(currentTime);
-
-			//break;
-
 		case config::_xhar:
 
 			HAR::Init();

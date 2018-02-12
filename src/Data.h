@@ -25,8 +25,6 @@ class CData :
 private:
 
 	int timeArrival;  //到达sink的时间
-//	//跳数或TTL倒计数，在Epidemic中选择一种使用
-//	int TTL;
 
 //	static int ID_MASK;
 

@@ -643,13 +643,6 @@ void CConfiguration::PrintConfiguration()
 
 	final << configs.mac.CYCLE_TOTAL << TAB << configs.mac.DUTY_RATE << TAB;
 
-	//	if( config.ROUTING_PROTOCOL == _epidemic )
-	//	{
-	//		config.log.INFO_LOG += "$Epidemic ";
-	//		parameters << "$Epidemic " << endl << endl;
-	//	}
-	//	else 
-
 	if( configs.ROUTING_PROTOCOL == config::_prophet )
 	{
 		configs.log.INFO_LOG += "$Prophet ";

@@ -129,7 +129,6 @@
     <ClCompile Include="..\src\Trace.cpp" />
     <ClCompile Include="..\src\Ctrl.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
-    <ClCompile Include="..\src\Epidemic.cpp" />
     <ClCompile Include="..\src\FileHelper.cpp" />
     <ClCompile Include="..\src\GeneralNode.cpp" />
     <ClCompile Include="..\src\Global.cpp" />
@@ -165,7 +164,6 @@
     <ClInclude Include="..\src\Ctrl.h" />
     <ClInclude Include="..\src\Data.h" />
     <ClInclude Include="..\src\Entity.h" />
-    <ClInclude Include="..\src\Epidemic.h" />
     <ClInclude Include="..\src\FileHelper.h" />
     <ClInclude Include="..\src\GeneralData.h" />
     <ClInclude Include="..\src\GeneralNode.h" />

@@ -96,9 +96,6 @@ private:
 	vector<int> summaryVector;
 	map<CNode *, int> spokenCache;
 
-	//	vector<CData> getDataBySV(vector<int> sv);
-	//	vector<CData> getDataBySV(vector<int> sv, int max);
-
 
 	/**************************************  Prophet  *************************************/
 
@@ -270,8 +267,6 @@ public:
 	/*************************** ------- ***************************/
 
 
-	/**************************************  Epidemic  *************************************/
-
 	/*************************** 队列管理 ***************************/
 
 	bool isFull()
@@ -286,9 +281,6 @@ public:
 	//返回溢出的数据
 	//注意：调用之前应该确保数据已排序
 	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity, bool fromLeft);
-
-	//	//将删除过期的消息（仅当使用TTL时），返回移出的数据分组
-	//	vector<CData> dropOverdueData(int currentTime);
 
 	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
 	//超出MAX_DATA_RELAY时从前端丢弃数据，溢出时将从前端丢弃数据并返回
@@ -478,19 +470,6 @@ public:
 	//	vector<CData> sendData(int n);
 
 	//	bool receiveData(int time, vector<CData> datas) override;
-
-	/*************************************  Epidemic  *************************************/
-
-	//FIXME: 如果不忽略传输延迟，则以下所有send和receive函数都必须加入传输延迟的计算
-
-	//	vector<int> sendSummaryVector();
-
-	//	vector<int> receiveSummaryVector(vector<int> sv);
-
-	//	//传入对方节点的SV，计算并返回请求传输的数据ID列表
-	//	vector<int> sendRequestList(vector<int> sv);
-
-	//	vector<int> receiveRequestList(vector<int> req);
 
 
 	/**************************************  Prophet  *************************************/

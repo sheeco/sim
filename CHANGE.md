@@ -798,9 +798,13 @@
 
 - REM: entire feature of dynamic node number test;
 
-###### 2018-02-12 ¡¤ *< 3.6.6617.28533 >*
+###### [2018-02-12 ¡¤ *< 3.6.6617.28533 >*](4f92ab1d54cfdb1629947fd31b06390f73dbc095)
 
 - ADD: `CGeneralNode::name`;
+
+###### 2018-02-13 ¡¤ *< 3.6.6617.28982 >*
+
+- RFCT: abandoned code for Epidemic Routing;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

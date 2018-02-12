@@ -1,7 +1,6 @@
 #include "Node.h"
 #include "Sink.h"
 #include "Ctrl.h"
-//#include "Epidemic.h"
 #include "SortHelper.h"
 #include "FileHelper.h"
 #include <typeinfo.h>
@@ -403,31 +402,6 @@ vector<CData> CNode::dropDataIfOverflow()
 
 	vector<CData> myData;
 	vector<CData> overflow;
-
-//	if( CEpidemic::MAX_DATA_RELAY > 0 )
-//	{
-//		vector<CData> otherData;
-//		for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); ++idata)
-//		{
-//			if( idata->getNode() == this->ID )
-//				myData.push_back( *idata );
-//			else
-//				otherData.push_back( *idata );
-//		}
-//		otherData = CSortHelper::mergeSort(otherData, CSortHelper::ascendByTimeBirth);
-//		myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
-//		//如果超出MAX_DATA_RELAY
-//		if(otherData.size() > CEpidemic::MAX_DATA_RELAY)
-//			otherData = vector<CData>( otherData.end() - CEpidemic::MAX_DATA_RELAY, otherData.end() );
-//		myData.insert( myData.begin(), otherData.begin(), otherData.end() );
-//		//如果总长度溢出
-//		if( myData.size() > capacityBuffer )
-//		{
-//			//flash_cout << "######  ( Node " << this->ID << " drops " << myData.size() - capacityBuffer << " data )                    " << endl;
-//			myData = vector<CData>( myData.end() - configs.node.CAPACITY_BUFFER, myData.end() );
-//		}		
-//	}
-//	else :
 
 	myData = buffer;
 	//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);

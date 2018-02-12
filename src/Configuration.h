@@ -44,7 +44,6 @@ public:
 	{
 		_xhar,
 		_prophet,
-		//		_epidemic 
 	} EnumRoutingProtocolScheme;
 	
 	typedef enum EnumHotspotSelectScheme
@@ -168,10 +167,8 @@ public:
 		static int SIZE_CTRL;
 		static int SIZE_HEADER_MAC;  //Mac Header Size
 
-		//跳数或 TTL 倒计数的初始值，在 Epidemic 中选择一种使用，默认值都是 0，必须在 main 函数中或通过命令行参数赋值
-		//注意：两者不能同时取非零值，因为该值也用于该选项的所有判断
+		//跳数倒计数的初始值
 		static int MAX_HOP;
-		//	static int MAX_TTL;
 	} CDataConfig;
 
 	typedef struct CTransConfig
