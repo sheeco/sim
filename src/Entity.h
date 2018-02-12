@@ -18,6 +18,15 @@ public:
 	virtual ~CEntity() = 0
 	{};
 
+	virtual string toString()
+	{
+		return toString(true);
+	};
+	virtual string toString(bool brief)
+	{
+		return "";
+	};
+
 };
 
 #endif // __ENTITY_H__

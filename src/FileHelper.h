@@ -22,7 +22,10 @@ public:
 	// Return empty vector if dir does not exist
 	static vector<string> ListDirectory(string pathDir);
 	static vector<string> FilterByExtension(vector<string> filenames, string extension);
-
+	// Return <dir, filename>
+	static pair<string, string> SplitPath(string path);
+	// Return <name, extension>
+	static pair<string, string> SplitFilename(string filename);
 	static void test();
 
 	//static CPosition* findPositionByID(vector<CPosition *> positions, int ID);

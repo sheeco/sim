@@ -11,7 +11,7 @@ CCTrace::~CCTrace()
 {
 }
 
-CCTrace* CCTrace::getTraceFromFile(string filename)
+CCTrace* CCTrace::readTraceFromFile(string filename)
 {
 	CCTrace* trace = nullptr;
 

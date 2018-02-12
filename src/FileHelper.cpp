@@ -48,6 +48,27 @@ vector<string> CFileHelper::FilterByExtension(vector<string> filenames, string e
 	return ret;
 }
 
+pair<string, string> CFileHelper::SplitPath(string path)
+{
+	size_t pos = path.rfind('\\');
+	if( pos == path.npos )
+		pos = path.rfind('/');
+	if( pos == path.npos )
+		return pair<string, string>("", path);
+
+	string dir = string(path.begin(), path.begin() + pos + 1);
+	string filename = string(path.begin() + pos + 1, path.end());
+	return pair<string, string>(dir, filename);
+}
+
+pair<string, string> CFileHelper::SplitFilename(string filename)
+{
+	size_t pos = filename.rfind('.');
+	string name = string(filename.begin(), filename.begin() + pos);
+	string extension = string(filename.begin() + pos, filename.end());
+	return pair<string, string>(name, extension);
+}
+
 void CFileHelper::test()
 {
 	vector<string> ls = ListDirectory(string("../res/NCSU"));

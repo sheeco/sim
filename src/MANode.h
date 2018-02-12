@@ -51,7 +51,7 @@ private:
 
 	CMANode()
 	{
-		init();
+		throw string("CMANode::CMANode() : Default constructor is disabled.");
 	}
 
 	//自动生成ID，需手动调用
@@ -69,6 +69,7 @@ private:
 		atHotspot = nullptr;
 		this->time = time;
 		generateID();
+		this->setName("MA #" + STRING(this->getID()));
 	}
 	~CMANode(){};
 
@@ -147,11 +148,6 @@ public:
 //			return 0.0;
 //		return double(encounterActive) / double(encounter);
 //	}
-
-	string toString() const
-	{
-		return "MA " + NDigitIntString(this->ID, 3);
-	}
 
 	//暂时闲置
 	void turnFree()

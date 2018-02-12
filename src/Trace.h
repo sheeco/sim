@@ -86,7 +86,7 @@ public:
 	}
 
 	//从文件中解析轨迹
-	static CCTrace* getTraceFromFile(string filename);
+	static CCTrace* readTraceFromFile(string filename);
 
 };
 

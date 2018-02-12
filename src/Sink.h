@@ -33,6 +33,7 @@ private:
 	CSink()
 	{
 		this->ID = configs.sink.SINK_ID;
+		this->setName("Sink");
 		this->setLocation( configs.sink.X, configs.sink.Y);		
 		this->capacityBuffer = configs.sink.CAPACITY_BUFFER;
 	}
@@ -50,10 +51,6 @@ public:
 		return sink;
 	}
 
-	string toString() const
-	{
-		return "Sink";
-	}
 	bool isAwake() const
 	{
 		return true;

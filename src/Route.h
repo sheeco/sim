@@ -119,7 +119,7 @@ public:
 	//计算路径长度，应该在路径更改或更新之后手动后调用
 	void updateLength();
 
-	string toString() const
+	string toString() override
 	{
 		stringstream sstr;
 		for( vector<CBasicEntity *>::const_iterator iwaypoint = waypoints.begin(); iwaypoint != waypoints.end(); iwaypoint++ )

@@ -794,9 +794,13 @@
 
 - RFCT: for `CMacProtocol::getTransmissionDelay()` & `CNode::ClearDeadNodes()`;
 
-###### 2018-02-12 ¡¤ *< 3.6.6617.8665 >*
+###### [2018-02-12 ¡¤ *< 3.6.6617.8665 >*](e5cd2f73b5c72acb9a503948af5173484b007a43)
 
 - REM: entire feature of dynamic node number test;
+
+###### 2018-02-12 ¡¤ *< 3.6.6617.28533 >*
+
+- ADD: `CGeneralNode::name`;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

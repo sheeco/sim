@@ -9,6 +9,7 @@
 #include "Hotspot.h"
 #include "Frame.h"
 #include "Trace.h"
+#include "FileHelper.h"
 
 class CNode :
 	virtual public CGeneralNode
@@ -23,8 +24,6 @@ class CNode :
 
 private:
 
-	// TODO: add identifiers for nodes
-	string identifier;
 	CCTrace* trace;
 	double dataRate;
 	double dutyCycle;
@@ -455,13 +454,12 @@ public:
 		++COUNT_ID;
 		this->ID = COUNT_ID;
 	}
-	string toString() const
+	void loadTrace(string filepath)
 	{
-		return "Node " + NDigitIntString(this->ID, 2);
-	}
-	void loadTrace(string filename)
-	{
-		trace = CCTrace::getTraceFromFile(filename);
+		this->trace = CCTrace::readTraceFromFile(filepath);
+		string filename = CFileHelper::SplitPath(filepath).second;
+		string nodename = CFileHelper::SplitFilename(filename).first;
+		this->setName("Node #" + nodename);
 	}
 
 	double getAverageSizeBuffer() const

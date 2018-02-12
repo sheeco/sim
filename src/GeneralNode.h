@@ -18,7 +18,25 @@ class CFrame;
 class CGeneralNode :
 	virtual public CBasicEntity
 {
+protected:
+	string name;
+
 public:
+
+	void setName(string name)
+	{
+		this->name = name;
+	}
+
+	string getName() const
+	{
+		return this->name;
+	}
+
+	string toString() override
+	{
+		return this->getName();
+	}
 
 	typedef enum EnumTransmitterState
 	{
