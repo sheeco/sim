@@ -34,7 +34,7 @@ CCTrace* CCTrace::readTraceFromFile(string filename)
 			double temp_y = 0;
 			fscanf(file, "%lf %lf %lf", &temp_time, &temp_x, &temp_y);
 
-			if( temp_time > configs.simulation.RUNTIME + configs.trace.SLOT_TRACE )
+			if( temp_time > getConfig<int>("simulation", "runtime") + getConfig<int>("trace", "interval") )
 				break;
 
 			trace->addLocation(int(temp_time), CCoordinate(temp_x, temp_y) );

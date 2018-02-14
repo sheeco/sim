@@ -29,24 +29,24 @@ void CNode::init()
 	trace = nullptr;
 	dataRate = 0;
 	atHotspot = nullptr;
-	//timerCarrierSense = configs.mac.CYCLE_CARRIER_SENSE;
+	//timerCarrierSense = getConfig<int>("mac", "cycle_carrier_sense");
 	//discovering = false;
 	timeLastData = 0;
 	timeDeath = 0;
-	capacityBuffer = configs.node.CAPACITY_BUFFER;
+	capacityBuffer = getConfig<int>("node", "buffer");
 	sumTimeAwake = 0;
 	sumTimeAlive = 0;
 	sumBufferRecord = 0;
 	countBufferRecord = 0;
-	dutyCycle = configs.mac.DUTY_RATE;
-	SLOT_WAKE = int( dutyCycle * configs.mac.CYCLE_TOTAL );
-	SLOT_SLEEP = configs.mac.CYCLE_TOTAL - SLOT_WAKE;
+	dutyCycle = getConfig<double>("mac", "duty_rate");
+	SLOT_WAKE = int( dutyCycle * getConfig<int>("mac", "cycle") );
+	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
 	timerCarrierSense = UNVALID;
 	if( SLOT_WAKE == 0 )
 	{
 		state = _asleep;
 		timerWake = UNVALID;
-		if( configs.mac.SYNC_CYCLE )
+		if( getConfig<bool>("mac", "sync_cycle") )
 			timerSleep = SLOT_SLEEP;
 		else
 			timerSleep = RandomInt(1, SLOT_SLEEP);
@@ -55,7 +55,7 @@ void CNode::init()
 	{
 		state = _awake;
 		timerSleep = UNVALID;
-		if( configs.mac.SYNC_CYCLE )
+		if( getConfig<bool>("mac", "sync_cycle") )
 			timerWake = SLOT_WAKE;
 		else
 			timerWake = RandomInt(1, SLOT_WAKE);
@@ -86,16 +86,16 @@ CNode::~CNode()
 void CNode::initNodes() {
 	if( nodes.empty() && deadNodes.empty() )
 	{
-		vector<string> filenames = CFileHelper::ListDirectory(configs.trace.PATH_TRACE);
-		filenames = CFileHelper::FilterByExtension(filenames, configs.trace.EXTENSION_TRACE);
+		vector<string> filenames = CFileHelper::ListDirectory(getConfig<string>("trace", "path"));
+		filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
 
 		if( filenames.empty() )
-			throw string("CNode::initNodes(): Cannot find any trace files under \"" + configs.trace.PATH_TRACE
+			throw string("CNode::initNodes(): Cannot find any trace files under \"" + getConfig<string>("trace", "path")
 						  + "\".");
 
 		for(int i = 0; i < filenames.size(); ++i)
 		{
-			double dataRate = configs.node.DEFAULT_DATA_RATE;
+			double dataRate = getConfig<double>("node", "default_data_rate");
 			if(i % 5 == 0)
 				dataRate *= 5;
 			CNode* node = new CNode(dataRate);
@@ -108,12 +108,12 @@ void CNode::initNodes() {
 
 void CNode::generateData(int currentTime) {
 	int timeDataIncre = currentTime - timeLastData;
-	int nData = int( timeDataIncre * dataRate / configs.data.SIZE_DATA);
+	int nData = int( timeDataIncre * dataRate / getConfig<int>("data", "size_data"));
 	if(nData > 0)
 	{
 		for(int i = 0; i < nData; ++i)
 		{
-			CData data(ID, currentTime, configs.data.SIZE_DATA);
+			CData data(ID, currentTime, getConfig<int>("data", "size_data"));
 			this->buffer = CSortHelper::insertIntoSortedList(this->buffer, data, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
 		}
 		timeLastData = currentTime;
@@ -124,9 +124,9 @@ void CNode::generateData(int currentTime) {
 
 vector<CNode*>& CNode::getNodes() 
 {
-	if( configs.mac.CYCLE_TOTAL == 0 || ( ZERO( configs.mac.DUTY_RATE ) && ZERO( configs.hdc.HOTSPOT_DUTY_RATE ) ) )
+	if( getConfig<int>("mac", "cycle") == 0 || ( ZERO( getConfig<double>("mac", "duty_rate") ) && ZERO( getConfig<double>("hdc", "hotspot_duty_rate") ) ) )
 	{
-		throw string("CNode::getNodes() : configs.mac.CYCLE_TOTAL || ( configs.mac.DUTY_RATE && configs.hdc.HOTSPOT_DUTY_RATE ) = 0");
+		throw string("CNode::getNodes() : cycle_total = " + STRING(getConfig<int>("mac", "cycle")) + ", duty_rate = " + STRING(getConfig<double>("mac", "duty_rate")) + ", hotspot_duty_rate = " + STRING(getConfig<double>("hdc", "hotspot_duty_rate")) + ".");
 	}
 
 	if( nodes.empty() && deadNodes.empty() )
@@ -161,7 +161,7 @@ vector<int> CNode::getIdNodes()
 
 bool CNode::finiteEnergy() 
 {
-	return configs.node.CAPACITY_ENERGY > 0;
+	return getConfig<int>("node", "energy") > 0;
 }
 
 bool CNode::hasNodes(int currentTime) 
@@ -197,11 +197,11 @@ bool CNode::ClearDeadNodes(int currentTime)
 	// TODO: more detailed feedback
 	if( death )
 	{
-		ofstream death(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_DEATH, ios::app);
+		ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
 		if( currentTime == 0 )
 		{
-			death << endl << configs.log.INFO_LOG << endl;
-			death << configs.log.INFO_DEATH;
+			death << endl << getConfig<string>("log", "info_log") << endl;
+			death << getConfig<string>("log", "info_death") << endl;
 		}
 		death << currentTime << TAB << CNode::getAllNodes(false).size() - CNode::getNodeCount()
 			<< TAB << CData::getCountDelivery() << TAB << CData::getDeliveryRatio() << endl;
@@ -244,10 +244,10 @@ void CNode::raiseDutyCycle()
 	if( useHotspotDutyCycle() )
 		return;
 
-	dutyCycle = configs.hdc.HOTSPOT_DUTY_RATE;
+	dutyCycle = getConfig<double>("hdc", "hotspot_duty_rate");
 	int oldSlotWake = SLOT_WAKE;
-	SLOT_WAKE = int( configs.mac.CYCLE_TOTAL * dutyCycle );
-	SLOT_SLEEP = configs.mac.CYCLE_TOTAL - SLOT_WAKE;
+	SLOT_WAKE = int( getConfig<int>("mac", "cycle") * dutyCycle );
+	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
 	//唤醒状态下，延长唤醒时间
 	if( isAwake() )
 		timerWake += SLOT_WAKE - oldSlotWake;
@@ -261,15 +261,15 @@ void CNode::resetDutyCycle()
 	if( useDefaultDutyCycle() )
 		return;
 
-	dutyCycle = configs.hdc.HOTSPOT_DUTY_RATE;
+	dutyCycle = getConfig<double>("hdc", "hotspot_duty_rate");
 	int oldSlotWake = SLOT_WAKE;
-	SLOT_WAKE = int(configs.mac.CYCLE_TOTAL * dutyCycle);
-	SLOT_SLEEP = configs.mac.CYCLE_TOTAL - SLOT_WAKE;
+	SLOT_WAKE = int(getConfig<int>("mac", "cycle") * dutyCycle);
+	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
 }
 
 void CNode::checkDataByAck(vector<CData> ack)
 {
-	if( configs.node.SCHEME_FORWARD == config::_dump )
+	if( getConfig<CConfiguration::EnumForwardScheme>("node", "scheme_forward") == config::_dump )
 		RemoveFromList(buffer, ack);
 }
 
@@ -313,11 +313,11 @@ void CNode::Sleep()
 CFrame* CNode::sendRTSWithCapacityAndPred(int currentTime)
 {
 	vector<CPacket*> packets;
-	if( configs.node.SCHEME_RELAY == config::_selfish
+	if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_selfish
 		&& ( ! buffer.empty() ) )
-		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, configs.data.SIZE_CTRL, CCtrl::_capacity) );
-	packets.push_back( new CCtrl(ID, currentTime, configs.data.SIZE_CTRL, CCtrl::_rts) );
-	packets.push_back( new CCtrl(ID, deliveryPreds, currentTime, configs.data.SIZE_CTRL, CCtrl::_index) );
+		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity) );
+	packets.push_back( new CCtrl(ID, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_rts) );
+	packets.push_back( new CCtrl(ID, deliveryPreds, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_index) );
 	CFrame* frame = new CFrame(*this, packets);
 
 	return frame;	
@@ -325,14 +325,14 @@ CFrame* CNode::sendRTSWithCapacityAndPred(int currentTime)
 
 bool CNode::hasSpokenRecently(CNode* node, int currentTime) 
 {
-	if( configs.node.LIFETIME_SPOKEN_CACHE == 0 )
+	if( getConfig<int>("node", "lifetime_spoken_cache") == 0 )
 		return false;
 
 	map<CNode *, int>::iterator icache = spokenCache.find( node );
 	if( icache == spokenCache.end() )
 		return false;
 	else if( ( currentTime - icache->second ) == 0
-		|| ( currentTime - icache->second ) < configs.node.LIFETIME_SPOKEN_CACHE )
+		|| ( currentTime - icache->second ) < getConfig<int>("node", "lifetime_spoken_cache") )
 		return true;
 	else
 		return false;
@@ -420,7 +420,7 @@ vector<CData> CNode::updateBufferStatus(int currentTime)
 
 vector<int> CNode::updateSummaryVector() 
 {
-	if( buffer.size() > configs.node.CAPACITY_BUFFER )
+	if( buffer.size() > getConfig<int>("node", "buffer") )
 	{
 		throw string("CNode::updateSummaryVector() : Buffer isn't clean !");
 	}
@@ -486,9 +486,9 @@ void CNode::updateStatus(int currentTime)
 	int newTime = this->time;
 
 	//计算能耗、更新工作状态
-	while( ( newTime + configs.simulation.SLOT ) <= currentTime )
+	while( ( newTime + getConfig<int>("simulation", "slot") ) <= currentTime )
 	{
-		newTime += configs.simulation.SLOT;
+		newTime += getConfig<int>("simulation", "slot");
 
 		// 0 时间时初始化
 		if( newTime <= 0 )
@@ -507,12 +507,12 @@ void CNode::updateStatus(int currentTime)
 		switch( state )
 		{
 			case _awake:
-				consumeEnergy(configs.trans.CONSUMPTION_WAKE * configs.simulation.SLOT, currentTime);
+				consumeEnergy(getConfig<double>("trans", "consumption_wake") * getConfig<int>("simulation", "slot"), currentTime);
 				updateTimerWake(newTime);
 
 				break;
 			case _asleep:
-				consumeEnergy(configs.trans.CONSUMPTION_SLEEP * configs.simulation.SLOT, currentTime);
+				consumeEnergy(getConfig<double>("trans", "consumption_sleep") * getConfig<int>("simulation", "slot"), currentTime);
 				updateTimerSleep(newTime);
 
 				break;
@@ -530,13 +530,13 @@ void CNode::updateStatus(int currentTime)
 	sumTimeAlive += newTime - this->time;
 
 	//生成数据
-	if( currentTime <= configs.simulation.DATATIME )
+	if( currentTime <= getConfig<int>("simulation", "datatime") )
 		generateData(currentTime);
 
 
 	/**************************************  Prophet  *************************************/
-	if( configs.ROUTING_PROTOCOL == config::_prophet 
-		 && (currentTime % configs.trace.SLOT_TRACE) == 0  )
+	if( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_prophet 
+		 && (currentTime % getConfig<int>("trace", "interval")) == 0  )
 		CProphet::decayDeliveryPreds(this, currentTime);
 
 	//更新坐标及时间戳
@@ -615,9 +615,9 @@ int CNode::getCapacityForward()
 	if( capacity < 0 )
 		capacity = 0;
 
-	if( configs.node.SCHEME_RELAY == config::_selfish )
+	if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_selfish )
 		return capacity;
-	else if( configs.node.SCHEME_RELAY == config::_loose )
+	else if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_loose )
 		return capacityBuffer;
 	else
 		return 0;

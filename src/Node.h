@@ -30,8 +30,8 @@ private:
 
 	//  [ ----------SLEEP----------> | ----WAKE----> )
 
-	int SLOT_SLEEP;  //由configs.mac.CYCLE_TOTAL和DC计算得到
-	int SLOT_WAKE;  //由configs.mac.CYCLE_TOTAL和DC计算得到
+	int SLOT_SLEEP;  //由getConfig<int>("mac", "cycle")和DC计算得到
+	int SLOT_WAKE;  //由getConfig<int>("mac", "cycle")和DC计算得到
 
 					//计时器：UNVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
 	int timerSleep;
@@ -197,11 +197,11 @@ public:
 
 	inline bool useDefaultDutyCycle()
 	{
-		return EQUAL(dutyCycle, configs.mac.DUTY_RATE);
+		return EQUAL(dutyCycle, getConfig<double>("mac", "duty_rate"));
 	}
 	inline bool useHotspotDutyCycle()
 	{
-		return EQUAL(dutyCycle, configs.hdc.HOTSPOT_DUTY_RATE);
+		return EQUAL(dutyCycle, getConfig<double>("hdc", "hotspot_duty_rate"));
 	}
 	//在热点处提高 dc
 	void raiseDutyCycle();
@@ -215,8 +215,8 @@ public:
 	void consumeEnergy(double cons, int currentTime) override
 	{
 		this->energyConsumption += cons;
-		if( configs.node.CAPACITY_ENERGY > 0
-		   && configs.node.CAPACITY_ENERGY - energyConsumption <= 0 )
+		if( getConfig<int>("node", "energy") > 0
+		   && getConfig<int>("node", "energy") - energyConsumption <= 0 )
 			this->die(currentTime);
 	}
 
@@ -230,7 +230,7 @@ public:
 	{
 		if( !isAlive() )
 			return 0;
-		return configs.node.CAPACITY_ENERGY - energyConsumption;
+		return getConfig<int>("node", "energy") - energyConsumption;
 	}
 
 	//true if energy has ran out
@@ -423,7 +423,7 @@ public:
 
 	double getDataCountRate() const
 	{
-		return dataRate / configs.data.SIZE_DATA;
+		return dataRate / getConfig<int>("data", "size_data");
 	}
 
 	CHotspot* getAtHotspot() const

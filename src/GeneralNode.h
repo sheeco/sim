@@ -33,7 +33,7 @@ public:
 		return this->name;
 	}
 
-	string toString() override
+	string format() override
 	{
 		return this->getName();
 	}

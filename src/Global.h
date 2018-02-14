@@ -57,6 +57,7 @@ using std::setfill;
 #define _STRING(x) #x
 
 #define UNVALID -1
+#define INFINITE_INT 0xfffffff
 
 /********************************** Output & Debug **********************************/
 
@@ -94,6 +95,66 @@ using std::setfill;
 
 namespace global
 {
+	typedef enum EnumKnownType
+	{
+		bool_type,
+		int_type,
+		double_type,
+		string_type
+	} EnumKnownType;
+	typedef struct EnumType
+	{
+		EnumKnownType which;
+		EnumType()
+		{
+		}
+		EnumType(EnumKnownType type) : which(type)
+		{
+		}
+
+		EnumType(const type_info& id)
+		{
+			if( id == typeid( bool ) )
+			{
+				which = bool_type;
+			}
+			else if( id == typeid( int ) )
+			{
+				which = int_type;
+			}
+			else if( id == typeid( double ) )
+			{
+				which = double_type;
+			}
+			else if( id == typeid( string ) )
+			{
+				which = string_type;
+			}
+			else
+			{
+				throw string("unknown type");
+
+			}
+		}
+
+		string name()
+		{
+			switch( which )
+			{
+				case bool_type:
+					return "bool";
+				case int_type:
+					return "int";
+				case double_type:
+					return "double";
+				case string_type:
+					return "string";
+				default:
+					throw string("Unknown type.");
+			}
+		}
+	} EnumType;
+
 	/****************************** Global Func *******************************/
 
 	void Exit(int code);

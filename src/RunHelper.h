@@ -16,9 +16,7 @@ public:
 	~CRunHelper() {};
 
 	static void InitLogPath();
-	// TODO: move into CConfiguration
-	static bool Simulation(vector<string> args);
-	static bool PrepareSimulation(vector<string> args);
+	static bool PrepareSimulation(int argc, char* argv[]);
 	static bool RunSimulation();
 
 	static bool Run(int argc, char * argv[]);

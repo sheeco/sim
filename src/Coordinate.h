@@ -45,7 +45,7 @@ public:
 	{
 		this->y = y;
 	}
-	inline string toString() const
+	inline string format() const
 	{
 		string xstr = STRING(this->x);
 		string ystr = STRING(this->y);

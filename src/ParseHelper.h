@@ -18,6 +18,21 @@ public:
 	CParseHelper() {};
 	~CParseHelper() {};
 
+	template <class T>
+	static T* TryCast(void *pVoid)
+	{
+		T *pT = nullptr;
+		try
+		{
+			pT = static_cast< T* >( pVoid );
+		}
+		catch( exception error )
+		{
+			throw string("CParseHelper::TryCast(): ") + string(error.what());
+		}
+		return pT;
+	}
+
 	static int ParseInt(const char * str);
 	static int ParseInt(string str);
 	static double ParseDouble(const char * str);

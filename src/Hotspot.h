@@ -95,12 +95,12 @@ private:
 			{
 				if( CPosition::positions[i]->getFlag() )
 					continue;
-				if( CPosition::positions[i]->getX() + configs.trans.RANGE_TRANS < this->getX() )
+				if( CPosition::positions[i]->getX() + getConfig<int>("trans", "range_trans") < this->getX() )
 					continue;
 				//若水平距离已超出range，则可以直接停止搜索
-				if( this->getX() + configs.trans.RANGE_TRANS < CPosition::positions[i]->getX() )
+				if( this->getX() + getConfig<int>("trans", "range_trans") < CPosition::positions[i]->getX() )
 					break;
-				if( CBasicEntity::withinRange(*this, *CPosition::positions[i], configs.trans.RANGE_TRANS ) )
+				if( CBasicEntity::withinRange(*this, *CPosition::positions[i], getConfig<int>("trans", "range_trans") ) )
 				{
 					this->addPosition(CPosition::positions[i]);
 					CPosition::positions[i]->setFlag(true);
@@ -280,7 +280,7 @@ public:
 		++COUNT_ID;
 		this->ID = COUNT_ID;
 	}
-	string toString() const
+	string format() const
 	{
 		return "Hotspot " + STRING(this->ID);
 	}

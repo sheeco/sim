@@ -15,9 +15,9 @@ public:
 
 	static bool IfExists(string filename);
 	static bool IsEmpty(string filename);
-	static bool Rename(string oldname, string newname);
-	static bool SetHidden(string filename);
-	static bool UnsetHidden(string filename);
+	//static bool Rename(string oldname, string newname);
+	//static bool SetHidden(string filename);
+	//static bool UnsetHidden(string filename);
 
 	// Return empty vector if dir does not exist
 	static vector<string> ListDirectory(string pathDir);

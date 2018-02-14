@@ -23,7 +23,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 	bool rcv = false;
 	vector<CGeneralNode*> neighbors;
 
-	src.consumeEnergy(frame->getSize() * configs.trans.CONSUMPTION_BYTE_SEND, currentTime);
+	src.consumeEnergy(frame->getSize() * getConfig<double>("trans", "consumption_byte_send"), currentTime);
 	CMacProtocol::transmitTry();
 
 	/************************************************ Sensor Node *******************************************************/
@@ -36,7 +36,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 		if( ( dstNode )->getID() == src.getID() )
 			continue;
 
-		if( CBasicEntity::withinRange(src, *dstNode, configs.trans.RANGE_TRANS) )
+		if( CBasicEntity::withinRange(src, *dstNode, getConfig<int>("trans", "range_trans")) )
 		{
 			//统计sink节点的相遇计数
 			if( typeid( src ) == typeid( CSink ) )
@@ -48,7 +48,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 				if( typeid( src ) == typeid( CSink ) )
 					CSink::encountActive();
 
-				if( Bet( configs.trans.PROB_TRANS) )
+				if( Bet( getConfig<double>("trans", "prob_trans")) )
 					neighbors.push_back(dstNode);
 			}
 		}
@@ -57,8 +57,8 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 	/*************************************************** Sink **********************************************************/
 
 	CSink* sink = CSink::getSink();
-	if( CBasicEntity::withinRange(src, *sink, configs.trans.RANGE_TRANS)
-	   && Bet( configs.trans.PROB_TRANS)
+	if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range_trans"))
+	   && Bet( getConfig<double>("trans", "prob_trans"))
 	   && sink->getID() != src.getID() )
 	{
 		neighbors.push_back(sink);
@@ -76,8 +76,8 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 		if( ( *iMA )->getID() == src.getID() )
 			continue;
 
-		if( CBasicEntity::withinRange(src, **iMA, configs.trans.RANGE_TRANS)
-		   && Bet( configs.trans.PROB_TRANS)
+		if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
+		   && Bet( getConfig<double>("trans", "prob_trans"))
 		   && ( *iMA )->isAwake() )
 		{
 			neighbors.push_back(*iMA);
@@ -162,13 +162,13 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentT
 		return false;
 	}
 	
-	gnode.consumeEnergy(frame->getSize() * configs.trans.CONSUMPTION_BYTE_RECEIVE, currentTime);
+	gnode.consumeEnergy(frame->getSize() * getConfig<double>("trans", "consumption_byte_receive"), currentTime);
 	
 	vector<CPacket*> packets = frame->getPackets();
 	vector<CPacket*> packetsToSend;
 	CFrame* frameToSend = nullptr;
 
-	switch( configs.ROUTING_PROTOCOL )
+	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
 		case config::_prophet:
 
@@ -212,15 +212,15 @@ bool CMacProtocol::UpdateNodeStatus(int currentTime)
 
 	nodes = CSortHelper::mergeSort(nodes);
 
-	if( currentTime % configs.trace.SLOT_TRACE == 0 )
+	if( currentTime % getConfig<int>("trace", "interval") == 0 )
 	{
 		for( vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
 		{
 			for( vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode )
 			{
-				if( ( *inode )->getX() + configs.trans.RANGE_TRANS < ( *jnode )->getX() )
+				if( ( *inode )->getX() + getConfig<int>("trans", "range_trans") < ( *jnode )->getX() )
 					break;
-				if( CBasicEntity::withinRange(**inode, **jnode, configs.trans.RANGE_TRANS) )
+				if( CBasicEntity::withinRange(**inode, **jnode, getConfig<int>("trans", "range_trans")) )
 					CNode::encount();
 			}
 		}
@@ -245,7 +245,7 @@ bool CMacProtocol::Prepare(int currentTime)
 		return false;
 
 	//热点选取
-	if( configs.HOTSPOT_SELECT != config::_skip )
+	if( getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") != config::_skip )
 	{
 		CHotspotSelect::CollectNewPositions(currentTime);
 		CHotspotSelect::HotspotSelect(currentTime);
@@ -277,7 +277,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	vector<CNode*> nodes = CNode::getNodes();
 	vector<CMANode*> MAs = CMANode::getMANodes();
 
-	switch( configs.ROUTING_PROTOCOL )
+	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
 	case config::_prophet:
 
@@ -310,7 +310,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 				
 	}
 
-	if( ( currentTime + configs.simulation.SLOT ) % configs.log.SLOT_LOG == 0 )
+	if( ( currentTime + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
 	{
 		CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
 		CPrintHelper::PrintNewLine();
@@ -320,33 +320,33 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 
 void CMacProtocol::PrintInfo(int currentTime)
 {
-	if( ! ( currentTime % configs.log.SLOT_LOG == 0
-			|| currentTime == configs.simulation.RUNTIME ) )
+	if( ! ( currentTime % getConfig<int>("log", "slot_log") == 0
+			|| currentTime == getConfig<int>("simulation", "runtime") ) )
 		return;
 
 	//节点相遇、数据传输、能耗
-	if( currentTime % configs.log.SLOT_LOG == 0
-	   || currentTime == configs.simulation.RUNTIME )
+	if( currentTime % getConfig<int>("log", "slot_log") == 0
+	   || currentTime == getConfig<int>("simulation", "runtime") )
 	{
 		//节点个数
-		ofstream node(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_NODE, ios::app);
+		ofstream node(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_node"), ios::app);
 		if( currentTime == 0 )
 		{
-			node << endl << configs.log.INFO_LOG << endl;
-			node << configs.log.INFO_NODE;
+			node << endl << getConfig<string>("log", "info_log") << endl;
+			node << getConfig<string>("log", "info_node") << endl;
 		}
 		node << currentTime << TAB << CNode::getNodeCount() << endl;
 		node.close();
 
 		//MA和节点 / 节点间的相遇次数
-		ofstream encounter( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_ENCOUNTER, ios::app);
+		ofstream encounter( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_encounter"), ios::app);
 		if(currentTime == 0)
 		{
-			encounter <<  endl << configs.log.INFO_LOG << endl ;
-			encounter << configs.log.INFO_ENCOUNTER ;
+			encounter <<  endl << getConfig<string>("log", "info_log") << endl ;
+			encounter << getConfig<string>("log", "info_encounter") << endl;
 		}
 		encounter << currentTime << TAB;
-		if( configs.MAC_PROTOCOL == config::_hdc || configs.ROUTING_PROTOCOL == config::_xhar )
+		if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc || getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar )
 		{
 			//encounter << CNode::getPercentEncounterActiveAtHotspot() << TAB << CNode::getEncounterActiveAtHotspot() << TAB;
 			encounter << CNode::getPercentEncounterAtHotspot() << TAB << CNode::getEncounterAtHotspot() << TAB;
@@ -357,11 +357,11 @@ void CMacProtocol::PrintInfo(int currentTime)
 		encounter.close();
 
 		//sink和节点的相遇次数
-		ofstream sink( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_SINK, ios::app);
+		ofstream sink( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_sink"), ios::app);
 		if(currentTime == 0)
 		{
-			sink <<  endl << configs.log.INFO_LOG << endl ;
-			sink << configs.log.INFO_SINK ;
+			sink <<  endl << getConfig<string>("log", "info_log") << endl ;
+			sink << getConfig<string>("log", "info_sink") << endl;
 		}
 		sink << currentTime << TAB;
 		sink << CSink::getPercentEncounterActive() << TAB << CSink::getEncounterActive() << TAB << CSink::getEncounter() << TAB;
@@ -370,26 +370,26 @@ void CMacProtocol::PrintInfo(int currentTime)
 
 	}
 
-	if( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0
-	   || currentTime == configs.simulation.RUNTIME )
+	if( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0
+	   || currentTime == getConfig<int>("simulation", "runtime") )
 	{
 		//数据传输
-		ofstream transmit( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_TRANSMIT, ios::app);
+		ofstream transmit( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_transmit"), ios::app);
 		if(currentTime == 0)
 		{
-			transmit << endl << configs.log.INFO_LOG << endl ;
-			transmit << configs.log.INFO_TRANSMIT ;
+			transmit << endl << getConfig<string>("log", "info_log") << endl ;
+			transmit << getConfig<string>("log", "info_transmit") << endl;
 		}
 		transmit << currentTime << TAB << CMacProtocol::getPercentTransmitSuccessful() << TAB << CMacProtocol::getTransmitSuccessful() << TAB << CMacProtocol::getTransmit() << TAB;
 		transmit << endl;
 		transmit.close();
 
 		//节点唤醒时间
-		ofstream activation(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_ACTIVATION, ios::app);
+		ofstream activation(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_activation"), ios::app);
 		if( currentTime == 0 )
 		{
-			activation << endl << configs.log.INFO_LOG << endl;
-			activation << configs.log.INFO_ACTIVATION;
+			activation << endl << getConfig<string>("log", "info_log") << endl;
+			activation << getConfig<string>("log", "info_activation") << endl;
 		}
 		activation << currentTime << TAB;
 		vector<CNode *> allNodes = CNode::getAllNodes(true);
@@ -404,11 +404,11 @@ void CMacProtocol::PrintInfo(int currentTime)
 		activation.close();
 
 		//平均能耗
-		ofstream energy_consumption( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_ENERGY_CONSUMPTION, ios::app);
+		ofstream energy_consumption( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_energy_consumption"), ios::app);
 		if(currentTime == 0)
 		{
-			energy_consumption <<  endl << configs.log.INFO_LOG << endl ; 
-			energy_consumption << configs.log.INFO_ENERGY_CONSUMPTION ;
+			energy_consumption <<  endl << getConfig<string>("log", "info_log") << endl ; 
+			energy_consumption << getConfig<string>("log", "info_energy_consumption") << endl;
 		}
 		energy_consumption << currentTime << TAB << CData::getAverageEnergyConsumption() ;
 		if( CNode::finiteEnergy() )
@@ -428,7 +428,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 
 void CMacProtocol::PrintFinal(int currentTime)
 {
-	ofstream final( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_FINAL, ios::app);
+	ofstream final( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
 	final << CData::getAverageEnergyConsumption() << TAB << CMacProtocol::getPercentTransmitSuccessful() << TAB;
 	//final << CNode::getPercentEncounterActive() << TAB ;
 	if( CNode::finiteEnergy() )

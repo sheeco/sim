@@ -92,9 +92,13 @@ public:
 	{
 		printToCout("", true);
 	}
+	inline static void PrintHeading(string str)
+	{
+		printToCout(toHeading(str), true);
+	}
 	inline static void PrintHeading(int time, string str)
 	{
-		printToCout(toHeading(toTime(time) + str), true);
+		PrintHeading(toTime(time) + str);
 	}
 	inline static void PrintSubHeading(string str)
 	{
@@ -139,6 +143,14 @@ public:
 	inline static void PrintError(exception ex)
 	{
 		PrintError("Uncaught Error : " + string(ex.what()));
+	}
+	inline static void PrintTestError(string error)
+	{
+		printToCout("Error caught correctly @ " + error, true);
+	}
+	inline static void PrintDetail(string str)
+	{
+		flashToCout(toDetail(str));
 	}
 	inline static void PrintDetail(int time, string str)
 	{

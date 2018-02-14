@@ -18,11 +18,11 @@ public:
 	virtual ~CEntity() = 0
 	{};
 
-	virtual string toString()
+	virtual string format()
 	{
-		return toString(true);
+		return format(true);
 	};
-	virtual string toString(bool brief)
+	virtual string format(bool brief)
 	{
 		return "";
 	};

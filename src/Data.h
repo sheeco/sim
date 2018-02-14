@@ -71,7 +71,7 @@ public:
 		this->time = this->timeBirth = timeBirth;
 		this->size = byte;
 		this->generateID();
-		this->HOP = configs.data.MAX_HOP;
+		this->HOP = getConfig<int>("data", "max_hop");
 //		this->TTL = MAX_TTL;
 	}
 
@@ -158,7 +158,7 @@ public:
 
 	static bool useHOP()
 	{
-		return configs.data.MAX_HOP > 0;
+		return getConfig<int>("data", "max_hop") > 0;
 	}
 //	static bool useTTL()
 //	{

@@ -19,7 +19,7 @@ CHDC::~CHDC()
 
 void CHDC::UpdateDutyCycleForNodes(int currentTime)
 {
-	if( ! ( currentTime % configs.trace.SLOT_TRACE == 0 ) )
+	if( ! ( currentTime % getConfig<int>("trace", "interval") == 0 ) )
 		return;
 
 	vector<CHotspot *> hotspots = CHotspot::getSelectedHotspots();
@@ -43,19 +43,19 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 		if( (*inode)->useHotspotDutyCycle()
 			&& ( ! (*inode)->isAtHotspot() ) )
 		{
-			CPrintHelper::PrintDetail(currentTime, (*inode)->toString() + " leaves hotspot");
+			CPrintHelper::PrintDetail(currentTime, (*inode)->format() + " leaves hotspot");
 			(*inode)->resetDutyCycle();
 		}
 		else if( (*inode)->useDefaultDutyCycle()
 				 && (*inode)->isAtHotspot() )
 		{
-			CPrintHelper::PrintDetail(currentTime, ( *inode )->toString() + " enters " + ( *inode )->getAtHotspot()->toString());
+			CPrintHelper::PrintDetail(currentTime, ( *inode )->format() + " enters " + ( *inode )->getAtHotspot()->format());
 			(*inode)->raiseDutyCycle();
 		}
 	}
 
 	//控制台输出时保留一位小数
-	if( ( currentTime + configs.simulation.SLOT ) % configs.log.SLOT_LOG == 0 )
+	if( ( currentTime + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
 	{
 		CPrintHelper::PrintPercentage("Hotspot Encounter", CNode::getPercentEncounterAtHotspot());
 		print = true;
@@ -68,9 +68,9 @@ void CHDC::PrintInfo(int currentTime)
 {
 	CMacProtocol::PrintInfo(currentTime);
 
-	if( ! ( ( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0 
-		      && currentTime >= configs.hs.STARTTIME_HOSPOT_SELECT )
-			|| currentTime == configs.simulation.RUNTIME  ) )
+	if( ! ( ( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 
+		      && currentTime >= getConfig<int>("hs", "starttime_hospot_select") )
+			|| currentTime == getConfig<int>("simulation", "runtime")  ) )
 		return;
 
 	CHotspotSelect::PrintInfo(currentTime);

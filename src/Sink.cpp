@@ -9,7 +9,7 @@ int CSink::encounter = 0;
 CFrame* CSink::sendRTS(int currentTime) 
 {
 	vector<CPacket*> packets;
-	packets.push_back( new CCtrl(ID, currentTime, configs.data.SIZE_CTRL, CCtrl::_rts) );
+	packets.push_back( new CCtrl(ID, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_rts) );
 	CFrame* frame = new CFrame(*this, packets);
 
 	return frame;

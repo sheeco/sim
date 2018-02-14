@@ -9,29 +9,31 @@
 
 void CRunHelper::InitLogPath()
 {
-	// Generate timestamp & output path
+	CPrintHelper::PrintNewLine();
+	CPrintHelper::PrintHeading("Initializing Log Path ...");
 
 	// Create root path (../test/) if doesn't exist
-	if( access(configs.log.DIR_LOG.c_str(), 00) != 0 )
-		_mkdir(configs.log.DIR_LOG.c_str());
+	if( access(getConfig<string>("log", "dir_log").c_str(), 00) != 0 )
+		_mkdir(getConfig<string>("log", "dir_log").c_str());
 
+	// Generate timestamp & output path
 	time_t seconds;  //秒时间  
 	char temp[65] = { '\0' };
 	seconds = time(nullptr); //获取目前秒时间  
 	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
-	configs.log.TIMESTAMP = string(temp);
+	updateConfig<string>("log", "timestamp", string(temp));
 	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
 	string timestring;
 	timestring = string(temp);
-	configs.log.INFO_LOG = "@" + configs.log.TIMESTAMP + TAB;
-	configs.log.PATH_TIMESTAMP = "." + timestring + "/";
+	updateConfig<string>("log", "info_log", string("@" + getConfig<string>("log", "timestamp") + TAB));
+	updateConfig<string>("log", "path_timestamp", string("." + timestring + "/"));
 
 	// Create log path
-	if( access(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str(), 00) != 0 )
-		_mkdir(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str());
+	if( access(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str(), 00) != 0 )
+		_mkdir(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str());
 
 	// Hide folder
-	LPWSTR wstr = CString(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str()).AllocSysString();
+	LPWSTR wstr = CString(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str()).AllocSysString();
 	int attr = GetFileAttributes(wstr);
 	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
 	{
@@ -40,28 +42,20 @@ void CRunHelper::InitLogPath()
 
 }
 
-bool CRunHelper::Simulation(vector<string> args)
+bool CRunHelper::PrepareSimulation(int argc, char* argv[])
 {
-	PrepareSimulation(args);
-	RunSimulation();
-
-	return true;
-}
-
-bool CRunHelper::PrepareSimulation(vector<string> args)
-{
-	InitLogPath();
-
 	CConfiguration::InitConfiguration();
 
-	CConfiguration::ParseConfiguration(args);
+	vector<string> args = CConfiguration::ConvertToConfiguration(argc - 1, ( argv + 1 ));
+	CConfiguration::ParseConfiguration(args, "Command Line Args");
 
 	CConfiguration::ValidateConfiguration();
 
-	CConfiguration::ApplyConfigurations();
+	InitLogPath();
 
 	CConfiguration::PrintConfiguration();
 
+	CPrintHelper::PrintNewLine();
 	return true;
 }
 
@@ -70,21 +64,21 @@ bool CRunHelper::RunSimulation()
 	int currentTime = 0;
 	bool dead = false;
 
-	switch( configs.ROUTING_PROTOCOL )
+	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
 		case config::_prophet:
 			
 			CProphet::Init();
-			while( currentTime <= configs.simulation.RUNTIME )
+			while( currentTime <= getConfig<int>("simulation", "runtime") )
 			{
 				dead = !CProphet::Operate(currentTime);
 
 				if( dead )
 				{
-					configs.simulation.RUNTIME = currentTime;
+					updateConfig<int>("simulation", "runtime", currentTime);
 					break;
 				}
-				currentTime += configs.simulation.SLOT;
+				currentTime += getConfig<int>("simulation", "slot");
 			}
 			CProphet::PrintFinal(currentTime);
 
@@ -93,16 +87,16 @@ bool CRunHelper::RunSimulation()
 		case config::_xhar:
 
 			HAR::Init();
-			while( currentTime <= configs.simulation.RUNTIME )
+			while( currentTime <= getConfig<int>("simulation", "runtime") )
 			{
 				dead = !HAR::Operate(currentTime);
 
 				if( dead )
 				{
-					configs.simulation.RUNTIME = currentTime;
+					updateConfig<int>("simulation", "runtime", currentTime);
 					break;
 				}
-				currentTime += configs.simulation.SLOT;
+				currentTime += getConfig<int>("simulation", "slot");
 			}
 			HAR::PrintFinal(currentTime);
 
@@ -117,17 +111,12 @@ bool CRunHelper::RunSimulation()
 
 bool CRunHelper::Run(int argc, char* argv[])
 {
-	// TODO: release 版本中应改为 while(1) 循环
-
 	srand(static_cast<unsigned>( time(nullptr) ));
 
 	try
 	{
-
-		vector<string> args = CConfiguration::ConvertToConfiguration(argc - 1, ( argv + 1 ));
-
-		Simulation(args);
-
+		PrepareSimulation(argc, argv);
+		RunSimulation();
 	}
 	catch(string error)
 	{
@@ -152,10 +141,13 @@ bool CRunHelper::Run(int argc, char* argv[])
 
 bool CRunHelper::Debug()
 {
+	return false;
+
 	CFileHelper::test();
 	CParseHelper::test();
 
+	CConfiguration::test();
+
 	Exit(ESKIP);
-	return true;
 }
 

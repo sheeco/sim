@@ -10,7 +10,7 @@ bool CSortHelper::ascendByRatio(CHotspot *left, CHotspot *right)
 {
 	//将执行强制类型转换，只能传入CHotspot类
 	//包括ratio的计算
-	return ( static_cast<CHotspot *>(left)->calculateRatio() ) > ( static_cast<CHotspot *>(right)->calculateRatio() );
+	return ( left->calculateRatio() ) > ( right->calculateRatio() );
 }
 
 //template <class E>

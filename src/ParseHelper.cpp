@@ -1,7 +1,7 @@
 #include "ParseHelper.h"
 
-string CParseHelper::KEYWORD_TRUE = "on";
-string CParseHelper::KEYWORD_FALSE = "off";
+string CParseHelper::KEYWORD_TRUE = "true";
+string CParseHelper::KEYWORD_FALSE = "false";
 
 
 int CParseHelper::ParseInt(const char * str)

@@ -51,16 +51,16 @@ public:
 		CCoordinate fromLocation, toLocation;
 		int fromTime = 0, toTime = 0;
 
-		if( configs.trace.SLOT_TRACE > 0 )
+		if( getConfig<int>("trace", "interval") > 0 )
 		{
 			try 
 			{ 
-				if( time % configs.trace.SLOT_TRACE == 0 )
+				if( time % getConfig<int>("trace", "interval") == 0 )
 					return trace[time];
 
-				fromTime = time - ( time % configs.trace.SLOT_TRACE );
+				fromTime = time - ( time % getConfig<int>("trace", "interval") );
 				fromLocation = trace[fromTime];
-				toTime = fromTime + configs.trace.SLOT_TRACE;
+				toTime = fromTime + getConfig<int>("trace", "interval");
 				toLocation = trace[toTime];
 			}
 			catch(exception e)
@@ -72,10 +72,10 @@ public:
 		{
 			//TODO: add dynamic slot_trace
 
-			throw pair<int, string>(EPARSE, string("CCTrace::getLocation() : configs.trace.SLOT_TRACE = " + STRING(configs.trace.SLOT_TRACE) ) );
+			throw pair<int, string>(EPARSE, string("CCTrace::getLocation() : trace.interval = " + STRING(getConfig<int>("trace", "interval")) ) );
 		}
 
-		if( configs.trace.CONTINUOUS_TRACE )
+		if( getConfig<bool>("trace", "continuous_trace") )
 		{
 			double ratio = double( time - fromTime ) / double( toTime - fromTime );
 			return fromLocation + ratio * ( toLocation - fromLocation );

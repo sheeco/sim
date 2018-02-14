@@ -106,7 +106,7 @@ void CHotspot::generateCoveredNodes()
 
 double CHotspot::calculateRatio()
 {
-	if( configs.mhs.TEST_BALANCED_RATIO )
+	if( getConfig<bool>("mhs", "test_balanced_ratio") )
 	{
 		ratio = coveredPositions.size() * double(CNode::getNodeCount() - coveredNodes.size() + 1) / double(CNode::getNodeCount());
 		return ratio;
@@ -131,11 +131,11 @@ double CHotspot::getRatioByTypeHotspotCandidate() const
 	switch( this->typeHotspotCandidate )
 	{
 	case _merge_hotspot: 
-		return configs.mhs.RATIO_MERGE_HOTSPOT;
+		return getConfig<double>("mhs", "ratio_merge_hotspot");
 	case _new_hotspot: 
-		return configs.mhs.RATIO_NEW_HOTSPOT;
+		return getConfig<double>("mhs", "ratio_new_hotspot");
 	case _old_hotspot: 
-		return configs.mhs.RATIO_OLD_HOTSPOT;
+		return getConfig<double>("mhs", "ratio_old_hotspot");
 	default:
 		return 1;
 	}
@@ -144,19 +144,19 @@ double CHotspot::getRatioByTypeHotspotCandidate() const
 double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 {
 	double distance = CBasicEntity::getDistance(*oldHotspot, *newHotspot);
-	double cos = ( distance / 2 ) / configs.trans.RANGE_TRANS;
+	double cos = ( distance / 2 ) / getConfig<int>("trans", "range_trans");
 	double sin = sqrt( 1 - cos * cos );
 	double angle = acos(cos);
-	double sector = ( angle / 2 ) * configs.trans.RANGE_TRANS * configs.trans.RANGE_TRANS;
-	double triangle = ( configs.trans.RANGE_TRANS * ( distance / 2 ) ) * sin / 2;
+	double sector = ( angle / 2 ) * getConfig<int>("trans", "range_trans") * getConfig<int>("trans", "range_trans");
+	double triangle = ( getConfig<int>("trans", "range_trans") * ( distance / 2 ) ) * sin / 2;
 
 	return ( sector - triangle ) * 4 ;
 }
 
 bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 {
-	if( ! ( configs.trace.CONTINUOUS_TRACE
-		    || currentTime % configs.trace.SLOT_TRACE == 0 ) )
+	if( ! ( getConfig<bool>("trace", "continuous_trace")
+		    || currentTime % getConfig<int>("trace", "interval") == 0 ) )
 		return false;
 
 	vector<CHotspot *> hotspots = selectedHotspots;
@@ -174,11 +174,11 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 		{
-			if( (*ihotspot)->getX() + configs.trans.RANGE_TRANS < (*inode)->getX() )
+			if( (*ihotspot)->getX() + getConfig<int>("trans", "range_trans") < (*inode)->getX() )
 				continue;
-			if( (*inode)->getX() + configs.trans.RANGE_TRANS < (*ihotspot)->getX() )
+			if( (*inode)->getX() + getConfig<int>("trans", "range_trans") < (*ihotspot)->getX() )
 				break;
-			if( CBasicEntity::withinRange( **inode, **ihotspot, configs.trans.RANGE_TRANS ) )		
+			if( CBasicEntity::withinRange( **inode, **ihotspot, getConfig<int>("trans", "range_trans") ) )		
 			{
 				atHotspot = *ihotspot;
 				break;
@@ -190,7 +190,7 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 		// visit 和 encounter 计数的统计
 		// 时槽仅由轨迹文件决定
-		if( currentTime % configs.trace.SLOT_TRACE == 0 )
+		if( currentTime % getConfig<int>("trace", "interval") == 0 )
 		{
 			CNode::visit();
 			if( ( *inode )->isAtHotspot() )
@@ -198,9 +198,9 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 			for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
 			{
-				if( (*inode)->getX() + configs.trans.RANGE_TRANS < (*jnode)->getX() )
+				if( (*inode)->getX() + getConfig<int>("trans", "range_trans") < (*jnode)->getX() )
 					break;
-				if( CBasicEntity::withinRange( **inode, **jnode, configs.trans.RANGE_TRANS ) )		
+				if( CBasicEntity::withinRange( **inode, **jnode, getConfig<int>("trans", "range_trans") ) )		
 				{
 					CNode::encount();
 
@@ -218,7 +218,7 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 //bool CHotspot::UpdateAtHotspotForMANodes(int currentTime)
 //{
-//	if( ! ( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0 ) )
+//	if( ! ( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 ) )
 //		return false;
 //
 //	vector<CHotspot *> hotspots = selectedHotspots;
@@ -235,11 +235,11 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 //
 //		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 //		{
-//			if( (*ihotspot)->getX() + configs.trans.RANGE_TRANS < (*iMA)->getX() )
+//			if( (*ihotspot)->getX() + getConfig<int>("trans", "range_trans") < (*iMA)->getX() )
 //				continue;
-//			if( (*iMA)->getX() + configs.trans.RANGE_TRANS < (*ihotspot)->getX() )
+//			if( (*iMA)->getX() + getConfig<int>("trans", "range_trans") < (*ihotspot)->getX() )
 //				break;
-//			if( CBasicEntity::withinRange( **iMA, **ihotspot, configs.trans.RANGE_TRANS ) )		
+//			if( CBasicEntity::withinRange( **iMA, **ihotspot, getConfig<int>("trans", "range_trans") ) )		
 //			{
 //				atHotspot = *ihotspot;
 //				break;
@@ -272,16 +272,16 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 		{
 			if( (*iOld)->getID() == (*iNew)->getID() )
 			{
-				sumArea += AreaCircle( configs.trans.RANGE_TRANS);
+				sumArea += AreaCircle( getConfig<int>("trans", "range_trans"));
 				continue;
 			}
 
-			if( (*iNew)->getX() + 2 * configs.trans.RANGE_TRANS <= (*iOld)->getX() )
+			if( (*iNew)->getX() + 2 * getConfig<int>("trans", "range_trans") <= (*iOld)->getX() )
 				continue;
-			if( (*iOld)->getX() + 2 * configs.trans.RANGE_TRANS <= (*iNew)->getX() )
+			if( (*iOld)->getX() + 2 * getConfig<int>("trans", "range_trans") <= (*iNew)->getX() )
 				break;
 
-			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * configs.trans.RANGE_TRANS ) )
+			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * getConfig<int>("trans", "range_trans") ) )
 			{
 				sumArea += getOverlapArea(*iOld, *iNew);
 			}
@@ -293,5 +293,5 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 
 double CHotspot::getOverlapArea(vector<CHotspot *> hotspots)
 {
-	return getOverlapArea(hotspots, hotspots) - AreaCircle( configs.trans.RANGE_TRANS) * hotspots.size();
+	return getOverlapArea(hotspots, hotspots) - AreaCircle( getConfig<int>("trans", "range_trans")) * hotspots.size();
 }

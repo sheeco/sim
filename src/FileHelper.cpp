@@ -56,16 +56,16 @@ pair<string, string> CFileHelper::SplitPath(string path)
 	if( pos == path.npos )
 		return pair<string, string>("", path);
 
-	string dir = string(path.begin(), path.begin() + pos + 1);
-	string filename = string(path.begin() + pos + 1, path.end());
+	string dir = path.substr(0, pos + 1);
+	string filename = path.substr(pos + 1, path.npos);
 	return pair<string, string>(dir, filename);
 }
 
 pair<string, string> CFileHelper::SplitFilename(string filename)
 {
 	size_t pos = filename.rfind('.');
-	string name = string(filename.begin(), filename.begin() + pos);
-	string extension = string(filename.begin() + pos, filename.end());
+	string name = filename.substr(0, pos);
+	string extension = filename.substr(pos, filename.npos);
 	return pair<string, string>(name, extension);
 }
 

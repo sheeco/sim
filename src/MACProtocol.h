@@ -70,10 +70,10 @@ public:
 
 	static int getTransmissionDelay(int nByte)
 	{
-		if( configs.trans.CONSTANT_TRANS_DELAY >= 0 )
-			return int(configs.trans.CONSTANT_TRANS_DELAY);
+		if( getConfig<double>("trans", "constant_trans_delay") >= 0 )
+			return int(getConfig<double>("trans", "constant_trans_delay"));
 		else
-			return ROUND(double(nByte) / double(configs.trans.SPEED_TRANS));
+			return ROUND(double(nByte) / double(getConfig<int>("trans", "speed_trans")));
 	}
 
 	static int getTransmissionDelay(CFrame* frame)
@@ -83,12 +83,12 @@ public:
 
 	static int getTransmissionDelay(vector<CPacket*> packets)
 	{
-		return getTransmissionDelay(configs.data.SIZE_HEADER_MAC + CPacket::getSumSize(packets));
+		return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + CPacket::getSumSize(packets));
 	}
 
 	static int getMaxTransmissionDelay()
 	{
-		return getTransmissionDelay(configs.data.SIZE_HEADER_MAC + configs.trans.WINDOW_TRANS * configs.data.SIZE_DATA + configs.data.SIZE_CTRL);
+		return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + getConfig<int>("trans", "window_trans") * getConfig<int>("data", "size_data") + getConfig<int>("data", "size_ctrl"));
 	}
 
 

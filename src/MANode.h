@@ -40,13 +40,13 @@ private:
 	void init()
 	{
 		if( COUNT_ID == 0 )
-			COUNT_ID = configs.ma.START_COUNT_ID;
+			COUNT_ID = getConfig<int>("ma", "base_id");
 
 		setLocation( CSink::getSink()->getLocation() );  //初始化 MA 位置在 sink 处
 		atHotspot = nullptr;	
 		waitingWindow = 0;
 		waitingState = 0;
-		capacityBuffer = configs.ma.CAPACITY_BUFFER;
+		capacityBuffer = getConfig<int>("ma", "buffer");
 	}
 
 	CMANode()
@@ -65,7 +65,7 @@ private:
 	{
 		init();
 		this->route = route;
-		this->setLocation( configs.sink.X, configs.sink.Y);
+		this->setLocation( getConfig<double>("sink", "x"), getConfig<double>("sink", "y"));
 		atHotspot = nullptr;
 		this->time = time;
 		generateID();
@@ -105,12 +105,12 @@ public:
 
 	static int getCapacityBuffer()
 	{
-		return configs.ma.CAPACITY_BUFFER;
+		return getConfig<int>("ma", "buffer");
 	}
 
 	static int getSpeed()
 	{
-		return configs.ma.SPEED;
+		return getConfig<int>("ma", "speed");
 	}
 
 	static inline double getSumEnergyConsumption()
@@ -215,7 +215,7 @@ public:
 	//判断Buffer是否已满
 	inline bool isFull() const
 	{
-		if(buffer.size() >= configs.ma.CAPACITY_BUFFER)
+		if(buffer.size() >= getConfig<int>("ma", "buffer"))
 			return true;
 		else
 			return false;
@@ -228,9 +228,9 @@ public:
 		if( capacity < 0 )
 			capacity = 0;
 
-		if( configs.ma.SCHEME_RELAY == config::_selfish )
+		if( getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_selfish )
 			return capacity;
-		else if( configs.ma.SCHEME_RELAY == config::_loose )
+		else if( getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_loose )
 			return capacityBuffer;
 		else
 			return 0;

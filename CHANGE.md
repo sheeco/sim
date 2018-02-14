@@ -770,41 +770,46 @@
 - MNT: Fix the bug with version control. Version No. in `sim.version` had always been 1 commit behind between [*<3.6.6234.36098>*](127ce48e7a110837e898f575c672952cc6b70246) ~ [*<3.6.6239.29279>*](2bc8ccd32cd2f91dfd3c4bd969114fb751757715);
 - MNT: Product Version No. changed to `0.1.1`;
 
-###### [2018-02-07 ¡¤ *< 3.6.6611.15362 >*](ee1fd95323e4ea381300b56655c2d1496271ad2e)
+###### [2018-02-07 ¡¤ *< 3.7.6611.15362 >*](ee1fd95323e4ea381300b56655c2d1496271ad2e)
 
 - MOD: Read nodes from files according to `CCTrace::PATH_TRACE` instead of `CNode::INIT_NUM_NODE`;
 
-###### [2018-02-08 ¡¤ *< 3.6.6613.23744 >*](506371297c3c10249a8507d09e8b33ab90e2654b)
+###### [2018-02-08 ¡¤ *< 3.7.6613.23744 >*](506371297c3c10249a8507d09e8b33ab90e2654b)
 
 - RFCT: Move config related operations from `CRunHelper` into `CConfiguration`;
 
-###### [2018-02-10 ¡¤ *< 3.6.6615.27508 >*](90e94a83c150f66281178fe0bfeecf2aa1317cc6)
+###### [2018-02-10 ¡¤ *< 3.7.6615.27508 >*](90e94a83c150f66281178fe0bfeecf2aa1317cc6)
 
 - RFCT: Move all the configs from different classes together into `CConfiguration::CConfig`;
 
-###### [2018-02-10 ¡¤ *< 3.6.6615.28242 >*](c88da03234111536f723b4f9f0e6bf25aa6666c0)
+###### [2018-02-10 ¡¤ *< 3.7.6615.28242 >*](c88da03234111536f723b4f9f0e6bf25aa6666c0)
 
 - MNT: Remove assembly version. Only file version is left;
 
-###### [2018-02-10 ¡¤ *< 3.6.6615.28515 >*](a20a98530bfc073c98cb448b160f52e643725ae3)
+###### [2018-02-10 ¡¤ *< 3.7.6615.28515 >*](a20a98530bfc073c98cb448b160f52e643725ae3)
 
 - MNT: Remove `HELP.md` & class diagram file;
 
-###### [2018-02-11 ¡¤ *< 3.6.6616.22067 >*](978ce8ef8ef3a707e0e41774e46618d58059185a)
+###### [2018-02-11 ¡¤ *< 3.7.6616.22067 >*](978ce8ef8ef3a707e0e41774e46618d58059185a)
 
 - RFCT: for `CMacProtocol::getTransmissionDelay()` & `CNode::ClearDeadNodes()`;
 
-###### [2018-02-12 ¡¤ *< 3.6.6617.8665 >*](e5cd2f73b5c72acb9a503948af5173484b007a43)
+###### [2018-02-12 ¡¤ *< 3.7.6617.8665 >*](e5cd2f73b5c72acb9a503948af5173484b007a43)
 
 - REM: entire feature of dynamic node number test;
 
-###### [2018-02-12 ¡¤ *< 3.6.6617.28533 >*](4f92ab1d54cfdb1629947fd31b06390f73dbc095)
+###### [2018-02-12 ¡¤ *< 3.7.6617.28533 >*](4f92ab1d54cfdb1629947fd31b06390f73dbc095)
 
 - ADD: `CGeneralNode::name`;
 
-###### 2018-02-13 ¡¤ *< 3.6.6617.28982 >*
+###### [2018-02-13 ¡¤ *< 3.7.6617.28982 >*](7f22c17028e376ab6e9e19a8bfcaf5bdc1b37f7c)
 
 - RFCT: abandoned code for Epidemic Routing;
+
+###### 2018-02-14 ¡¤ *< 3.7.6619.22852 >*
+
+- RFCT: Change to use `map<string, map<string, pair<void*, EnumType>>>` to store & access all the configs;
+- MNT: Modify recent commits as 3.7.*;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

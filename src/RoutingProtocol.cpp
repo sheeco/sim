@@ -12,8 +12,8 @@ CRoutingProtocol::CRoutingProtocol() {}
 vector<CData> CRoutingProtocol::getDataForTrans(CGeneralNode* node, int capacity, bool FIFO)
 {
 	if( capacity <= 0
-	   || capacity > configs.trans.WINDOW_TRANS )
-		capacity = configs.trans.WINDOW_TRANS;
+	   || capacity > getConfig<int>("trans", "window_trans") )
+		capacity = getConfig<int>("trans", "window_trans");
 	vector<CData> datas = node->getAllData();
 	CNode::removeDataByCapacity(datas, capacity, ! FIFO);
 	return datas;
@@ -21,7 +21,7 @@ vector<CData> CRoutingProtocol::getDataForTrans(CGeneralNode* node, int capacity
 
 void CRoutingProtocol::PrintInfo(int currentTime)
 {
-	switch( configs.MAC_PROTOCOL )
+	switch( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") )
 	{
 		case config::_smac:
 			CSMac::PrintInfo(currentTime);
@@ -33,50 +33,50 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			break;
 	}
 
-	if( ! ( currentTime % configs.log.SLOT_LOG == 0
-			|| currentTime == configs.simulation.RUNTIME ) )
+	if( ! ( currentTime % getConfig<int>("log", "slot_log") == 0
+			|| currentTime == getConfig<int>("simulation", "runtime") ) )
 		return;
 
 	//投递率、延迟、节点buffer状态统计 ...
-	if( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE  == 0
-		|| currentTime == configs.simulation.RUNTIME )
+	if( currentTime % getConfig<int>("hs", "slot_hotspot_update")  == 0
+		|| currentTime == getConfig<int>("simulation", "runtime") )
 	{
-		//数据投递率-900（用于debug）
-		ofstream delivery_ratio( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_DELIVERY_RATIO_900, ios::app);
+		//数据投递率（用于debug）
+		ofstream delivery_ratio( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_delivery_ratio_brief"), ios::app);
 		if(currentTime == 0)
 		{
-			delivery_ratio << endl << configs.log.INFO_LOG << endl ;
-			delivery_ratio << configs.log.INFO_DELIVERY_RATIO_900 ;
+			delivery_ratio << endl << getConfig<string>("log", "info_log") << endl ;
+			delivery_ratio << getConfig<string>("log", "info_delivery_ratio_brief") << endl;
 		}
 		delivery_ratio << currentTime << TAB << CData::getCountDelivery() << TAB << CData::getCountData() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		//数据投递延迟
-		ofstream delay( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_DELAY, ios::app);
+		ofstream delay( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_delay"), ios::app);
 		if(currentTime == 0)
 		{
-			delay << endl << configs.log.INFO_LOG << endl ;
-			delay << configs.log.INFO_DELAY ;
+			delay << endl << getConfig<string>("log", "info_log") << endl ;
+			delay << getConfig<string>("log", "info_delay") << endl;
 		}
 		delay << currentTime << TAB << CData::getAverageDelay() << endl;
 		delay.close();
 
 		//数据投递跳数
-		ofstream hop( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_HOP, ios::app);
+		ofstream hop( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hop"), ios::app);
 		if(currentTime == 0)
 		{
-			hop << endl << configs.log.INFO_LOG << endl ;
-			hop << configs.log.INFO_HOP ;
+			hop << endl << getConfig<string>("log", "info_log") << endl ;
+			hop << getConfig<string>("log", "info_hop") << endl;
 		}
 		hop << currentTime << TAB << CData::getAverageHOP() << endl;
 		hop.close();
 
 		//每个节点buffer状态的历史平均值
-		ofstream buffer( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_BUFFER_STATISTICS, ios::app);
+		ofstream buffer( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_statistics"), ios::app);
 		if(currentTime == 0)
 		{
-			buffer << endl << configs.log.INFO_LOG << endl ;
-			buffer << configs.log.INFO_BUFFER_STATISTICS ;
+			buffer << endl << getConfig<string>("log", "info_log") << endl ;
+			buffer << getConfig<string>("log", "info_buffer_statistics") << endl;
 		}
 		buffer << currentTime << TAB;
 		vector<CNode *> allNodes = CNode::getAllNodes(true);
@@ -93,25 +93,25 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 	}
 
 	//数据投递率、节点buffer状态
-	if(currentTime % configs.log.SLOT_LOG == 0
-		|| currentTime == configs.simulation.RUNTIME)
+	if(currentTime % getConfig<int>("log", "slot_log") == 0
+		|| currentTime == getConfig<int>("simulation", "runtime"))
 	{
-		//数据投递率-100（用于绘制曲线）
-		ofstream delivery_ratio( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_DELIVERY_RATIO_100, ios::app);
+		//数据投递率（用于绘制曲线）
+		ofstream delivery_ratio( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_delivery_ratio_detail"), ios::app);
 		if(currentTime == 0)
 		{
-			delivery_ratio << endl << configs.log.INFO_LOG << endl ;
-			delivery_ratio << configs.log.INFO_DELIVERY_RATIO_100 ;
+			delivery_ratio << endl << getConfig<string>("log", "info_log") << endl ;
+			delivery_ratio << getConfig<string>("log", "info_delivery_ratio_detail") << endl;
 		}
 		delivery_ratio << currentTime << TAB << CData::getCountDelivery() << TAB << CData::getCountData() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
 		//每个节点的当前buffer状态
-		ofstream buffer( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_BUFFER, ios::app);
+		ofstream buffer( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer"), ios::app);
 		if(currentTime == 0)
 		{
-			buffer << endl << configs.log.INFO_LOG << endl ;
-			buffer << configs.log.INFO_BUFFER ;
+			buffer << endl << getConfig<string>("log", "info_log") << endl ;
+			buffer << getConfig<string>("log", "info_buffer") << endl;
 		}
 		buffer << currentTime << TAB;
 		vector<CNode *> allNodes = CNode::getAllNodes(true);
@@ -133,7 +133,7 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 
 void CRoutingProtocol::PrintFinal(int currentTime)
 {
-	ofstream final( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_FINAL, ios::app);
+	ofstream final( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
 	if( CNode::finiteEnergy() )
 		final << CData::getCountDelivery() << TAB ;
 	else
@@ -141,7 +141,7 @@ void CRoutingProtocol::PrintFinal(int currentTime)
 	final << CData::getAverageDelay() << TAB << CData::getAverageHOP() << TAB ;
 	final.close();
 
-	switch( configs.MAC_PROTOCOL )
+	switch( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") )
 	{
 		case config::_smac:
 			CSMac::PrintFinal(currentTime);

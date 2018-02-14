@@ -36,7 +36,7 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 
 	double ratio = 1;
 
-	return ratio * ( configs.har.CO_HOTSPOT_HEAT_A1 * nCoveredNodes + configs.har.CO_HOTSPOT_HEAT_A2 * sum_generationRate ) ;
+	return ratio * ( getConfig<double>("har", "heat_1") * nCoveredNodes + getConfig<double>("har", "heat_2") * sum_generationRate ) ;
 }
 
 double HAR::calculateWaitingTime(int currentTime, CHotspot *hotspot)
@@ -52,18 +52,18 @@ double HAR::calculateWaitingTime(int currentTime, CHotspot *hotspot)
 		double temp;
 
 		//IHAR: Reduce Memory currentTime
-		if( configs.HOTSPOT_SELECT == config::_improved )
+		if( getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved )
 		{
-			temp_time = min(currentTime, configs.ihs.LIFETIME_POSITION);
+			temp_time = min(currentTime, getConfig<int>("ihs", "lifetime_position"));
 		}
 
 		nCoveredPositionsForNode.push_back( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) );
-		temp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( temp_time + configs.hs.SLOT_HOTSPOT_UPDATE );
+		temp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( temp_time + getConfig<int>("hs", "slot_hotspot_update") );
 
 		//merge-HAR: ratio
 		temp *= pow( hotspot->getRatioByTypeHotspotCandidate(), hotspot->getAge() );
 
-		if(temp >= configs.har.BETA)
+		if(temp >= getConfig<double>("har", "beta"))
 		{
 			result *= temp;
 			++count_trueHotspot;
@@ -71,12 +71,12 @@ double HAR::calculateWaitingTime(int currentTime, CHotspot *hotspot)
 	}
 	//FIXME: 如果不是true hotspot，waiting time为0
 	if(count_trueHotspot == 0)
-		return configs.har.MIN_WAITING_TIME;
+		return getConfig<int>("har", "min_waiting_time");
 	double prob = exp( -1 / hotspot->getHeat() );
 	result = prob / result;
 	result = pow(result, ( 1 / double( count_trueHotspot ) ) );
 
-	return result + configs.har.MIN_WAITING_TIME;
+	return result + getConfig<int>("har", "min_waiting_time");
 }
 
 double HAR::getSumDataRate(vector<int> nodes)
@@ -136,7 +136,7 @@ double HAR::calculateEDTime(int currentTime)
 	pmh = sum_waitingTime / (sum_length / CMANode::getSpeed() + sum_waitingTime);
 	EM = (1 - pmh) * ( ( (1 - avg_pw) / avg_pw) * avg_u + (avg_length / (2 * CMANode::getSpeed()) + avg_waitingTime) ) + pmh * ( ( (1 - avg_pw) / avg_pw) * avg_u + avg_waitingTime);
 	EIM = avg_u / avg_pw;
-	ED = EM + ( (1 - configs.trans.PROB_TRANS) / configs.trans.PROB_TRANS ) * EIM + ( double( m_hotspots.size() ) / (2 * m_routes.size()) ) * avg_u;
+	ED = EM + ( (1 - getConfig<double>("trans", "prob_trans")) / getConfig<double>("trans", "prob_trans") ) * EIM + ( double( m_hotspots.size() ) / (2 * m_routes.size()) ) * avg_u;
 
 	return ED;
 }
@@ -172,8 +172,8 @@ void HAR::OptimizeRoute(CRoute &route)
 
 void HAR::HotspotClassification(int currentTime)
 {
-	if( ! ( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0 
-		&& currentTime >= configs.hs.STARTTIME_HOSPOT_SELECT ) )
+	if( ! ( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 
+		&& currentTime >= getConfig<int>("hs", "starttime_hospot_select") ) )
 		return;
 
 	vector<CHotspot *> temp_hotspots = CHotspot::getSelectedHotspots();
@@ -268,8 +268,8 @@ void HAR::HotspotClassification(int currentTime)
 
 void HAR::MANodeRouteDesign(int currentTime)
 {
-	if( !( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0
-		  && currentTime >= configs.hs.STARTTIME_HOSPOT_SELECT ) )
+	if( !( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0
+		  && currentTime >= getConfig<int>("hs", "starttime_hospot_select") ) )
 		return;
 
 	vector<CRoute> routes = CSink::getSink()->getNewRoutes();
@@ -371,7 +371,7 @@ vector<CPacket*> HAR::receivePackets(CSink* sink, CMANode* fromMA, vector<CPacke
 			case CCtrl::_rts:
 
 				//CTS
-				ctrlToSend = new CCtrl(sink->getID(), time, configs.data.SIZE_CTRL, CCtrl::_cts);
+				ctrlToSend = new CCtrl(sink->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 
 				break;
 
@@ -416,7 +416,7 @@ vector<CPacket*> HAR::receivePackets(CSink* sink, CMANode* fromMA, vector<CPacke
 			vector<CData> ack = CSink::bufferData(time, datas);
 
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(configs.sink.SINK_ID, ack, time, configs.data.SIZE_CTRL, CCtrl::_ack);
+			ctrlToSend = new CCtrl(CSink::getSink()->getID(), ack, time, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
 		}
 	}
 
@@ -456,7 +456,7 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacke
 					return packetsToSend;
 				}
 				//CTS
-				ctrlToSend = new CCtrl(ma->getID(), time, configs.data.SIZE_CTRL, CCtrl::_cts);
+				ctrlToSend = new CCtrl(ma->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 				// + DATA
 				dataToSend = getDataForTrans(ma, 0, true);
 
@@ -498,7 +498,7 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CSink* fromSink, vector<CPacke
 				else
 					ma->checkDataByAck( ctrl->getACK() );
 
-				CPrintHelper::PrintCommunication(time, ma->toString(), fromSink->toString(), ctrl->getACK().size());
+				CPrintHelper::PrintCommunication(time, ma->format(), fromSink->format(), ctrl->getACK().size());
 
 				return packetsToSend;
 
@@ -558,7 +558,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacke
 					return packetsToSend;
 				}
 				//CTS
-				ctrlToSend = new CCtrl(node->getID(), time, configs.data.SIZE_CTRL, CCtrl::_cts);
+				ctrlToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 
 				// + DATA
 				dataToSend = getDataForTrans(node, 0, true);
@@ -581,7 +581,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacke
 				if( capacity == 0 )
 					return packetsToSend;
 				else if( capacity > 0
-						 && capacity < configs.node.CAPACITY_BUFFER 
+						 && capacity < getConfig<int>("node", "buffer") 
 						 && capacity < dataToSend.size() )
 					CNode::removeDataByCapacity(dataToSend, capacity, false);
 
@@ -606,7 +606,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CMANode* fromMA, vector<CPacke
 				else
 					node->checkDataByAck( ctrl->getACK() );
 
-				CPrintHelper::PrintCommunication(time, node->toString(), fromMA->toString(), ctrl->getACK().size());
+				CPrintHelper::PrintCommunication(time, node->format(), fromMA->format(), ctrl->getACK().size());
 
 				return packetsToSend;
 
@@ -696,7 +696,7 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CNode* fromNode, vector<CPacke
 			vector<CData> ack = ma->bufferData(time, datas);
 
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(ma->getID(), ack, time, configs.data.SIZE_CTRL, CCtrl::_ack);
+			ctrlToSend = new CCtrl(ma->getID(), ack, time, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
 		}
 	}
 
@@ -712,8 +712,8 @@ vector<CPacket*> HAR::receivePackets(CMANode* ma, CNode* fromNode, vector<CPacke
 
 void HAR::PrintInfo(int currentTime)
 {
-	if( ! ( currentTime % configs.log.SLOT_LOG == 0 
-			|| currentTime == configs.simulation.RUNTIME  ) )
+	if( ! ( currentTime % getConfig<int>("log", "slot_log") == 0 
+			|| currentTime == getConfig<int>("simulation", "runtime")  ) )
 		return;
 
 
@@ -725,36 +725,36 @@ void HAR::PrintInfo(int currentTime)
 
 	CHotspotSelect::PrintInfo(currentTime);
 
-	if( ! ( currentTime >= configs.hs.STARTTIME_HOSPOT_SELECT ) )
+	if( ! ( currentTime >= getConfig<int>("hs", "starttime_hospot_select") ) )
 		return;
 
 	/**************************************** HAR 路由的补充输出 *********************************************/
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、MA节点buffer状态 ...
 
-	if( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0
-	    || currentTime == configs.simulation.RUNTIME )
+	if( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0
+	    || currentTime == getConfig<int>("simulation", "runtime") )
 	{
 		//MA节点个数
-		ofstream ma(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_MA, ios::app);
-		if( currentTime == configs.hs.STARTTIME_HOSPOT_SELECT )
+		ofstream ma(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ma"), ios::app);
+		if( currentTime == getConfig<int>("hs", "starttime_hospot_select") )
 		{
-			ma << endl << configs.log.INFO_LOG << endl;
-			ma << configs.log.INFO_MA;
+			ma << endl << getConfig<string>("log", "info_log") << endl;
+			ma << getConfig<string>("log", "info_ma") << endl;
 		}
 		ma << currentTime << TAB << m_routes.size() << TAB << ( double(m_hotspots.size()) / double(m_routes.size()) ) << endl;
 		ma.close();
 
 		//
-		ofstream ma_route(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_MA_ROUTE, ios::app);
-		if( currentTime == configs.hs.STARTTIME_HOSPOT_SELECT )
+		ofstream ma_route(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ma_route"), ios::app);
+		if( currentTime == getConfig<int>("hs", "starttime_hospot_select") )
 		{
-			ma_route << endl << configs.log.INFO_LOG << endl;
-			ma_route << configs.log.INFO_MA_ROUTE;
+			ma_route << endl << getConfig<string>("log", "info_log") << endl;
+			ma_route << getConfig<string>("log", "info_ma_route") << endl;
 		}
 		for( vector<CRoute>::iterator iroute = m_routes.begin(); iroute != m_routes.end(); iroute++ )
 		{
-			ma_route << currentTime << TAB << iroute->toString() << endl;
+			ma_route << currentTime << TAB << iroute->format() << endl;
 		}
 		ma_route.close();			
 
@@ -766,39 +766,39 @@ void HAR::PrintInfo(int currentTime)
 		++COUNT_WAYPOINT_PER_MA;
 
 		//ED即平均投递延迟的理论值
-		ofstream ed(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_ED, ios::app);
-		if( currentTime == configs.hs.STARTTIME_HOSPOT_SELECT )
+		ofstream ed(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ed"), ios::app);
+		if( currentTime == getConfig<int>("hs", "starttime_hospot_select") )
 		{
-			ed << endl << configs.log.INFO_LOG << endl;
-			ed << configs.log.INFO_ED;
+			ed << endl << getConfig<string>("log", "info_log") << endl;
+			ed << getConfig<string>("log", "info_ed") << endl;
 		}
 		ed << currentTime << TAB << calculateEDTime(currentTime) << endl;
 		ed.close();
 
 		//热点质量、投递计数等统计信息
-		ofstream hotspot_statistics(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_HOTSPOT_STATISTICS, ios::app);
-		if( currentTime == configs.hs.STARTTIME_HOSPOT_SELECT )
+		ofstream hotspot_statistics(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hotspot_statistics"), ios::app);
+		if( currentTime == getConfig<int>("hs", "starttime_hospot_select") )
 		{
-			hotspot_statistics << endl << configs.log.INFO_LOG << endl;
-			hotspot_statistics << configs.log.INFO_HOTSPOT_STATISTICS;
+			hotspot_statistics << endl << getConfig<string>("log", "info_log") << endl;
+			hotspot_statistics << getConfig<string>("log", "info_hotspot_statistics") << endl;
 		}
 		//在 t 被时刻选出的热点，工作周期截至到 t + 900，在 t + 1800 时刻才被统计输出
 		vector<int> timesToPrint;
 		int timeBeforeYesterday = 0;
 		//运行结束，补充输出上一轮的热点统计
-		if( currentTime == configs.simulation.RUNTIME )
+		if( currentTime == getConfig<int>("simulation", "runtime") )
 		{
-			timeBeforeYesterday = ( currentTime / configs.hs.SLOT_HOTSPOT_UPDATE - 1 ) * configs.hs.SLOT_HOTSPOT_UPDATE;
-			int timeYesterday = timeBeforeYesterday + configs.hs.SLOT_HOTSPOT_UPDATE;
-			if( timeBeforeYesterday >= configs.hs.STARTTIME_HOSPOT_SELECT )
+			timeBeforeYesterday = ( currentTime / getConfig<int>("hs", "slot_hotspot_update") - 1 ) * getConfig<int>("hs", "slot_hotspot_update");
+			int timeYesterday = timeBeforeYesterday + getConfig<int>("hs", "slot_hotspot_update");
+			if( timeBeforeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
 				timesToPrint.push_back(timeBeforeYesterday);
-			if( timeYesterday >= configs.hs.STARTTIME_HOSPOT_SELECT )
+			if( timeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
 				timesToPrint.push_back(timeYesterday);
 		}
-		else if( currentTime % configs.hs.SLOT_HOTSPOT_UPDATE == 0 )
+		else if( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 )
 		{
-			timeBeforeYesterday = currentTime - 2 * configs.hs.SLOT_HOTSPOT_UPDATE;
-			if( timeBeforeYesterday >= configs.hs.STARTTIME_HOSPOT_SELECT )
+			timeBeforeYesterday = currentTime - 2 * getConfig<int>("hs", "slot_hotspot_update");
+			if( timeBeforeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
 				timesToPrint.push_back(timeBeforeYesterday);
 		}
 		if( ! timesToPrint.empty() )
@@ -808,8 +808,8 @@ void HAR::PrintInfo(int currentTime)
 				vector<CHotspot *> hotspotsToPrint = CHotspot::getSelectedHotspots(*itime);
 				hotspotsToPrint = CSortHelper::mergeSort(hotspotsToPrint, CSortHelper::descendByCountDelivery);
 				for( vector<CHotspot *>::iterator it = hotspotsToPrint.begin(); it != hotspotsToPrint.end(); ++it )
-					hotspot_statistics << *itime << '-' << *itime + configs.hs.SLOT_HOTSPOT_UPDATE << TAB
-					<< ( *it )->getID() << TAB << ( *it )->getLocation().toString() << TAB << ( *it )->getNCoveredPosition() << "," << ( *it )->getNCoveredNodes() << TAB
+					hotspot_statistics << *itime << '-' << *itime + getConfig<int>("hs", "slot_hotspot_update") << TAB
+					<< ( *it )->getID() << TAB << ( *it )->getLocation().format() << TAB << ( *it )->getNCoveredPosition() << "," << ( *it )->getNCoveredNodes() << TAB
 					<< ( *it )->getRatio() << TAB << ( *it )->getWaitingTimesString(true) << TAB << ( *it )->getCountDelivery(*itime) << endl;
 			}
 		}
@@ -817,15 +817,15 @@ void HAR::PrintInfo(int currentTime)
 	}
 
 	//MA Buffer
-	if( currentTime % configs.log.SLOT_LOG == 0
-	    || currentTime == configs.simulation.RUNTIME )
+	if( currentTime % getConfig<int>("log", "slot_log") == 0
+	    || currentTime == getConfig<int>("simulation", "runtime") )
 	{
 		//每个MA的当前buffer状态
-		ofstream buffer_ma( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_BUFFER_MA, ios::app);
-		if(currentTime == configs.hs.STARTTIME_HOSPOT_SELECT)
+		ofstream buffer_ma( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_ma"), ios::app);
+		if(currentTime == getConfig<int>("hs", "starttime_hospot_select"))
 		{
-			buffer_ma << endl << configs.log.INFO_LOG << endl ;
-			buffer_ma << configs.log.INFO_BUFFER_MA ;
+			buffer_ma << endl << getConfig<string>("log", "info_log") << endl ;
+			buffer_ma << getConfig<string>("log", "info_buffer_ma") << endl;
 		}
 		buffer_ma << currentTime << TAB;
 		for(auto iMA = CMANode::getMANodes().begin(); iMA != CMANode::getMANodes().end(); ++iMA)
@@ -842,7 +842,7 @@ void HAR::PrintFinal(int currentTime)
 	CRoutingProtocol::PrintFinal(currentTime);
 
 	//最终final输出（补充）
-	ofstream final( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_FINAL, ios::app);
+	ofstream final( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
 	final << getAverageMACost() << TAB ;
 	final << CData::getPercentDeliveryAtHotspot() << TAB ;
 	final.close();
@@ -906,7 +906,7 @@ bool HAR::Operate(int currentTime)
 	//if( config.MAC_PROTOCOL == config::_hdc )
 	//	hasNodes = CHDC::Prepare(currentTime);
 	//else 
-	if( configs.MAC_PROTOCOL == config::_smac )
+	if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
 		hasNodes = CSMac::Prepare(currentTime);
 
 	if( ! hasNodes )
@@ -922,7 +922,7 @@ bool HAR::Operate(int currentTime)
 	//if( config.MAC_PROTOCOL == config::_hdc )
 	//	CHDC::Operate(currentTime);
 	//else 
-	if( configs.MAC_PROTOCOL == config::_smac )
+	if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
 		CSMac::Operate(currentTime);
 
 	PrintInfo(currentTime);

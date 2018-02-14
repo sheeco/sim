@@ -8,7 +8,7 @@
 //	double bet = RandomFloat(0, 1);
 //	if( bet > PROB_TRANS )
 //	{
-//		energyConsumption += buffer.size() * configs.data.SIZE_DATA * configs.trans.CONSUMPTION_BYTE_SEND;
+//		energyConsumption += buffer.size() * getConfig<int>("data", "size_data") * getConfig<double>("trans", "consumption_byte_send");
 //		return vector<CData>();
 //	}
 //
@@ -17,7 +17,7 @@
 //	else
 //	{
 //		vector<CData> data = buffer;
-//		energyConsumption += buffer.size() * configs.data.SIZE_DATA * configs.trans.CONSUMPTION_BYTE_SEND;
+//		energyConsumption += buffer.size() * getConfig<int>("data", "size_data") * getConfig<double>("trans", "consumption_byte_send");
 //		if(mode == _dump)
 //			buffer.clear();
 //		return data;
@@ -36,5 +36,5 @@
 
 void CGeneralNode::Overhear(int currentTime)
 {
-	consumeEnergy(configs.trans.CONSUMPTION_BYTE_RECEIVE * configs.data.SIZE_HEADER_MAC, currentTime);
+	consumeEnergy(getConfig<double>("trans", "consumption_byte_receive") * getConfig<int>("data", "size_header_mac"), currentTime);
 }

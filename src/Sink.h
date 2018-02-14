@@ -32,10 +32,10 @@ private:
 
 	CSink()
 	{
-		this->ID = configs.sink.SINK_ID;
+		this->ID = getConfig<int>("sink", "id");
 		this->setName("Sink");
-		this->setLocation( configs.sink.X, configs.sink.Y);		
-		this->capacityBuffer = configs.sink.CAPACITY_BUFFER;
+		this->setLocation( getConfig<double>("sink", "x"), getConfig<double>("sink", "y"));		
+		this->capacityBuffer = getConfig<int>("sink", "buffer");
 	}
 
 	~CSink(){};
@@ -110,7 +110,7 @@ public:
 //			sink->buffer.push_back(*idata);
 //		}
 //		//实际上无需统计sink的能耗
-//		sink->energyConsumption += configs.trans.CONSUMPTION_BYTE_RECEIVE * configs.data.SIZE_DATA * data.size();
+//		sink->energyConsumption += getConfig<double>("trans", "consumption_byte_receive") * getConfig<int>("data", "size_data") * data.size();
 //		return true;
 //	}
 

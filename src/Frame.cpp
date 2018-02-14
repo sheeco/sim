@@ -97,7 +97,7 @@ CFrame::~CFrame()
 
 void CFrame::init()
 {
-	this->headerMac = configs.data.SIZE_HEADER_MAC;
+	this->headerMac = getConfig<int>("data", "size_header_mac");
 }
 
 int CFrame::getSize() const

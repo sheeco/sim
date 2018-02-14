@@ -35,22 +35,22 @@ void global::Exit(int code)
 
 	if( code == EFINISH )
 	{
-		ifstream finalInput(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_FINAL, ios::in);
+		ifstream finalInput(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::in);
 		if( finalInput.is_open()
 		   && ( !finalInput.eof() ) )
 		{
 
-			ofstream copy(configs.log.DIR_LOG + configs.log.FILE_FINAL, ios::app);
+			ofstream copy(getConfig<string>("log", "dir_log") + getConfig<string>("log", "file_final"), ios::app);
 			char temp[310] = { '\0' };
 			copy.seekp(0, ios::end);
 			if( !copy.tellp() )
 			{
-				copy << configs.log.INFO_FINAL;
+				copy << getConfig<string>("log", "info_final") << endl;
 			}
 			finalInput.getline(temp, 300);  //skip head line
 			finalInput.getline(temp, 300);
 			string finalInfo(temp);
-			copy << finalInfo << configs.log.INFO_LOG << TAB << "@" << finalTime << endl;
+			copy << finalInfo << getConfig<string>("log", "info_log") << TAB << "@" << finalTime << endl;
 			copy.close();
 		}
 	}
@@ -59,8 +59,8 @@ void global::Exit(int code)
 
 	if( code >= EFINISH )
 	{
-		fstream final(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_FINAL, ios::app | ios::in);
-		final << configs.log.INFO_LOG << TAB << "@" << finalTime << endl;
+		fstream final(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app | ios::in);
+		final << getConfig<string>("log", "info_log") << TAB << "@" << finalTime << endl;
 		final.close();
 	}
 
@@ -69,19 +69,19 @@ void global::Exit(int code)
 	if( code == EFINISH )
 	{
 
-		if( _access(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str(), 02) == 0
-		   && ( configs.log.PATH_TIMESTAMP.find(".") != configs.log.PATH_TIMESTAMP.npos ) )   //if writeable & '.' found in filename
+		if( _access(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str(), 02) == 0
+		   && ( getConfig<string>("log", "path_timestamp").find(".") != getConfig<string>("log", "path_timestamp").npos ) )   //if writeable & '.' found in filename
 		{
-			string newPathLog = configs.log.PATH_TIMESTAMP.substr(1, configs.log.PATH_TIMESTAMP.npos);
-			if( _access(( configs.log.DIR_LOG + newPathLog ).c_str(), 00) != 0 )  //if no collision
+			string newPathLog = getConfig<string>("log", "path_timestamp").substr(1, getConfig<string>("log", "path_timestamp").npos);
+			if( _access(( getConfig<string>("log", "dir_log") + newPathLog ).c_str(), 00) != 0 )  //if no collision
 			{
-				rename(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str(), ( configs.log.DIR_LOG + newPathLog ).c_str());
-				configs.log.PATH_TIMESTAMP = newPathLog;
+				rename(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str(), ( getConfig<string>("log", "dir_log") + newPathLog ).c_str());
+				updateConfig<string>("log", "path_timestamp", newPathLog);
 			}
 		}
 
 		// Unhide folder
-		LPWSTR wstr = CString(( configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP ).c_str()).AllocSysString();
+		LPWSTR wstr = CString(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str()).AllocSysString();
 		int attr = GetFileAttributes(wstr);
 		if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == FILE_ATTRIBUTE_HIDDEN )
 		{
@@ -101,7 +101,7 @@ void global::Exit(int code)
 
 void global::Exit(int code, string error)
 {
-	ofstream errorFile(configs.log.DIR_LOG + configs.log.PATH_TIMESTAMP + configs.log.FILE_ERROR, ios::app);
+	ofstream errorFile(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_error"), ios::app);
 	errorFile << error << endl << endl;
 	errorFile.close();
 
