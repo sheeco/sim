@@ -806,10 +806,14 @@
 
 - RFCT: abandoned code for Epidemic Routing;
 
-###### 2018-02-14 ¡¤ *< 3.7.6619.22852 >*
+###### [2018-02-14 ¡¤ *< 3.7.6619.22852 >*](b8236ad5f21018a7ff4f55287a8b609af4d79540)
 
 - RFCT: Change to use `map<string, map<string, pair<void*, EnumType>>>` to store & access all the configs;
 - MNT: Modify recent commits as 3.7.*;
+
+###### 2018-02-14 ¡¤ *< 3.7.6619.23046 >*
+
+- MNT: Changes to version Numbering & rc attributes;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»
