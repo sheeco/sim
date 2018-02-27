@@ -10,7 +10,7 @@
 #define __ROUTING_PROTOCOL_H__
 
 #include "Protocol.h"
-#include "GeneralNode.h"
+#include "Node.h"
 
 
 class CRoutingProtocol :
@@ -33,6 +33,7 @@ public:
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);
+	static void PrintInfo(vector<CNode*> allNodes, int currentTime);
 	//最终final输出
 	static void PrintFinal(int currentTime);
 

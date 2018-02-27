@@ -3,6 +3,7 @@
 #include "Prophet.h"
 #include "HAR.h"
 #include "HDC.h"
+#include "PFerry.h"
 #include "PrintHelper.h"
 #include "ParseHelper.h"
 
@@ -46,12 +47,17 @@ bool CRunHelper::PrepareSimulation(int argc, char* argv[])
 {
 	CConfiguration::InitConfiguration();
 
+	InitLogPath();
+
+	/*********************************************  按照命令格式解析参数配置  *********************************************/
+
+	CConfiguration::ParseConfiguration(getConfig<string>("log", "dir_run") + getConfig<string>("log", "file_default_config"));
+
 	vector<string> args = CConfiguration::ConvertToConfiguration(argc - 1, ( argv + 1 ));
 	CConfiguration::ParseConfiguration(args, "Command Line Args");
 
 	CConfiguration::ValidateConfiguration();
 
-	InitLogPath();
 
 	CConfiguration::PrintConfiguration();
 
@@ -102,6 +108,24 @@ bool CRunHelper::RunSimulation()
 
 			break;
 
+		case config::_pferry:
+
+			CPFerry::Init();
+			while( currentTime <= getConfig<int>("simulation", "runtime") )
+			{
+				dead = !CPFerry::Operate(currentTime);
+
+				if( dead )
+				{
+					updateConfig<int>("simulation", "runtime", currentTime);
+					break;
+				}
+				currentTime += getConfig<int>("simulation", "slot");
+			}
+			CPFerry::PrintFinal(currentTime);
+
+			break;
+
 		default:
 			break;
 	}
@@ -149,5 +173,6 @@ bool CRunHelper::Debug()
 	CConfiguration::test();
 
 	Exit(ESKIP);
+	return true;
 }
 

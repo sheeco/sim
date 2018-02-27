@@ -67,6 +67,9 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalOptions>/EHa %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +129,7 @@
     <ClCompile Include="..\src\Coordinate.cpp" />
     <ClCompile Include="..\src\Packet.cpp" />
     <ClCompile Include="..\src\ParseHelper.cpp" />
+    <ClCompile Include="..\src\PFerry.cpp" />
     <ClCompile Include="..\src\PrintHelper.cpp" />
     <ClCompile Include="..\src\RunHelper.cpp" />
     <ClCompile Include="..\src\Trace.cpp" />
@@ -152,6 +156,7 @@
     <ClCompile Include="..\src\Sink.cpp" />
     <ClCompile Include="..\src\SMac.cpp" />
     <ClCompile Include="..\src\SortHelper.cpp" />
+    <ClCompile Include="..\src\TracePrediction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Algorithm.h" />
@@ -160,6 +165,7 @@
     <ClInclude Include="..\src\Coordinate.h" />
     <ClInclude Include="..\src\Packet.h" />
     <ClInclude Include="..\src\ParseHelper.h" />
+    <ClInclude Include="..\src\PFerry.h" />
     <ClInclude Include="..\src\PrintHelper.h" />
     <ClInclude Include="..\src\RunHelper.h" />
     <ClInclude Include="..\src\Trace.h" />
@@ -191,6 +197,7 @@
     <ClInclude Include="..\src\Sink.h" />
     <ClInclude Include="..\src\SMac.h" />
     <ClInclude Include="..\src\SortHelper.h" />
+    <ClInclude Include="..\src\TracePrediction.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>

@@ -28,6 +28,7 @@ using std::vector;
 using std::iterator;
 #include <map>
 using std::map;
+using std::multimap;
 using std::pair;
 #include <sstream>
 using std::stringstream;
@@ -56,7 +57,7 @@ using std::setfill;
 #define STRING(x) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str()
 #define _STRING(x) #x
 
-#define UNVALID -1
+#define INVALID -1
 #define INFINITE_INT 0xfffffff
 
 /********************************** Output & Debug **********************************/
@@ -132,7 +133,7 @@ namespace global
 			}
 			else
 			{
-				throw string("unknown type");
+				throw string("EnumKnownType::EnumKnownType(): Unknown type.");
 
 			}
 		}
@@ -150,7 +151,7 @@ namespace global
 				case string_type:
 					return "string";
 				default:
-					throw string("Unknown type.");
+					throw string("EnumKnownType::name(): Unknown type.");
 			}
 		}
 	} EnumType;
@@ -393,6 +394,14 @@ namespace global
 //		}
 //		return result;
 //	}
+
+	template <class E>
+	void FreePointer(E * &p)
+	{
+		if( p != nullptr )
+			delete p;
+		p = nullptr;
+	}
 
 	// Õ∑≈÷∏’Îvector
 	template <class E>

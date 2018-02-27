@@ -41,15 +41,15 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	{
 		//update duty cycle
 		if( (*inode)->useHotspotDutyCycle()
-			&& ( ! (*inode)->isAtHotspot() ) )
+			&& ( ! (*inode)->isAtWaypoint() ) )
 		{
-			CPrintHelper::PrintDetail(currentTime, (*inode)->format() + " leaves hotspot");
+			CPrintHelper::FlashDetail(currentTime, (*inode)->format() + " leaves hotspot");
 			(*inode)->resetDutyCycle();
 		}
 		else if( (*inode)->useDefaultDutyCycle()
-				 && (*inode)->isAtHotspot() )
+				 && (*inode)->isAtWaypoint() )
 		{
-			CPrintHelper::PrintDetail(currentTime, ( *inode )->format() + " enters " + ( *inode )->getAtHotspot()->format());
+			CPrintHelper::FlashDetail(currentTime, ( *inode )->format() + " enters " + ( *inode )->getAtHotspot()->format());
 			(*inode)->raiseDutyCycle();
 		}
 	}
@@ -57,7 +57,7 @@ void CHDC::UpdateDutyCycleForNodes(int currentTime)
 	//控制台输出时保留一位小数
 	if( ( currentTime + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
 	{
-		CPrintHelper::PrintPercentage("Hotspot Encounter", CNode::getPercentEncounterAtHotspot());
+		CPrintHelper::PrintPercentage("Hotspot Encounter", CNode::getPercentEncounterAtWaypoint());
 		print = true;
 	}
 	CPrintHelper::PrintPercentage("Hot-Node", atHotspotCount);

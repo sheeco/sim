@@ -10,7 +10,9 @@
 #define __MAC_PROTOCOL_H__
 
 #include "Protocol.h"
+#include "Node.h"
 #include "GeneralNode.h"
+
 #include "Frame.h"
 
 class CMacProtocol :
@@ -21,22 +23,11 @@ private:
 	static int transmitSuccessful;  //成功的数据传输
 	static int transmit;
 	
-	//过听时返回 false；否则返回 true
-	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime);
-	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int currentTime);
-
-	//更新所有 node 的坐标、占空比和工作状态，生成数据，返回是否仍有节点
-	static bool UpdateNodeStatus(int currentTime);
-
-
 protected:
 
 	CMacProtocol();
 	virtual ~CMacProtocol() = 0
 	{};
-
-	//注意：必须在 Prepare() 之后调用
-	static void CommunicateWithNeighbor(int currentTime);
 
 
 public:
@@ -91,6 +82,20 @@ public:
 		return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + getConfig<int>("trans", "window_trans") * getConfig<int>("data", "size_data") + getConfig<int>("data", "size_ctrl"));
 	}
 
+	//过听时返回 false；否则返回 true
+	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime);
+	//TODO: change to below
+	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime, vector<CGeneralNode*> (*findNeighbors)(CGeneralNode&), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
+	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int currentTime);
+	//TODO: change to below
+	static bool receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentTime, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
+
+	//更新所有 node 的坐标、占空比和工作状态，生成数据，返回是否仍有节点
+	static bool UpdateNodeStatus(int currentTime);
+
+	//注意：必须在 Prepare() 之后调用
+	static void CommunicateWithNeighbor(int currentTime);
+
 
 	//更新节点数目、节点状态；收集位置点信息、选取热点、更新节点是否位于热点区域；
 	//如果无更多节点，返回 false
@@ -101,6 +106,7 @@ public:
 
 	//打印相关信息到文件
 	static void PrintInfo(int currentTime);
+	static void PrintInfo(vector<CNode*> allNodes, int currentTime);
 	static void PrintFinal(int currentTime);
 
 };

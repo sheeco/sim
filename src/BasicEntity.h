@@ -101,12 +101,7 @@ public:
 	//返回两点间距离
 	inline static double getDistance(CBasicEntity &m, CBasicEntity &n)
 	{
-		double mx, my, nx, ny;
-		mx = m.getX();
-		my = m.getY();
-		nx = n.getX();
-		ny = n.getY();
-		return sqrt((mx - nx) * (mx - nx) + (my - ny) * (my - ny));
+		return CCoordinate::getDistance(m.getLocation(), n.getLocation());
 	}
 
 	inline static bool withinRange(CBasicEntity &m, CBasicEntity &n, double range)
@@ -126,8 +121,8 @@ public:
 	friend bool operator < (const CBasicEntity &lt, const CBasicEntity &rt);
 	friend bool operator > (const CBasicEntity &lt, const CBasicEntity &rt);
 	
-	virtual void updateStatus() {};
-	virtual void updateStatus(int currentTime) {};
+	//virtual void updateStatus() {};
+	//virtual void updateStatus(int currentTime) {};
 
 };
 	

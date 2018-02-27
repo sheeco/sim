@@ -62,28 +62,25 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 	   && sink->getID() != src.getID() )
 	{
 		neighbors.push_back(sink);
-		CSink::encount();
-		CSink::encountActive();
 	}
 
 
 	/**************************************************** MA ***********************************************************/
 
-	vector<CMANode*> MAs = CMANode::getMANodes();
-	for( vector<CMANode*>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA )
+	vector<CHARMANode*> MAs = CHARMANode::getBusyMANodes();
+	for( vector<CHARMANode*>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA )
 	{
 		//skip itself
 		if( ( *iMA )->getID() == src.getID() )
 			continue;
 
 		if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
-		   && Bet( getConfig<double>("trans", "prob_trans"))
+		   && Bet(getConfig<double>("trans", "prob_trans"))
 		   && ( *iMA )->isAwake() )
 		{
 			neighbors.push_back(*iMA);
 		}
 	}
-
 	int timeTrans = 0;
 	timeTrans = int( getTransmissionDelay(frame) );
 	int timeArrival = currentTime + timeTrans;
@@ -133,6 +130,114 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTi
 	return rcv;
 
 	// TODO: sort by distance with src node ?
+}
+
+bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentTime, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ))
+{
+	// Make local copy
+	frame = new CFrame(*frame);
+	CGeneralNode* gFromNode = frame->getSrcNode();
+	CGeneralNode* gToNode = frame->getDstNode();
+
+	//if( gnode.getTime() > currentTime )
+	//	return false;
+
+	//if( gnode.isOccupied() )
+	//	return false;
+
+	int timeTrans = 0;
+	timeTrans = int(getTransmissionDelay(frame));
+	//gnode.Occupy(timeTrans);    
+	//if( timeTrans > 0 )
+	//	gnode.updateStatus(currentTime + timeTrans);
+
+	//非广播且目标节点非本节点，即过听
+	if( gToNode != nullptr
+	   && gToNode->getID() != gnode.getID() )
+	{
+		gnode.Overhear(currentTime);
+		return false;
+	}
+
+	gnode.consumeEnergy(frame->getSize() * getConfig<double>("trans", "consumption_byte_receive"), currentTime);
+
+	vector<CPacket*> packets = frame->getPackets();
+	vector<CPacket*> packetsToSend;
+	CFrame* frameToSend = nullptr;
+
+	packetsToSend = receivePackets(gnode, *gFromNode, packets, currentTime);
+
+
+	/*********************************************** send reply *******************************************************/
+
+	if( !packetsToSend.empty() )
+	{
+		frameToSend = new CFrame(gnode, *gFromNode, packetsToSend);
+		transmitFrame(gnode, frameToSend, currentTime + timeTrans, findNeighbors, receivePackets);
+	}
+	else
+	{
+		CMacProtocol::transmitSucceed();
+	}
+	return true;
+}
+
+bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ))
+{
+	static map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > > frameArrivals;
+
+	CMacProtocol::transmitTry();
+	src.consumeEnergy(frame->getSize() * getConfig<double>("trans", "consumption_byte_send"), currentTime);
+
+	int timeTrans = 0;
+	timeTrans = int(CMacProtocol::getTransmissionDelay(frame));
+	int timeArrival = currentTime + timeTrans;
+	vector< pair<CFrame*, vector< CGeneralNode* > > > currentArrivals;
+
+	vector<CGeneralNode*> neighbors = findNeighbors(src);
+	//压入将来的到达队列
+	if( timeArrival > currentTime )
+	{
+		vector< pair<CFrame*, vector< CGeneralNode* > > > futureArrivals;
+		map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > >::iterator iArrivals = frameArrivals.find(timeArrival);
+		if( iArrivals != frameArrivals.end() )
+			futureArrivals = ( *iArrivals ).second;
+
+		futureArrivals.push_back(pair<CFrame*, vector< CGeneralNode* > >(frame, neighbors));
+		frameArrivals[timeArrival] = futureArrivals;
+	}
+	//压入当前的到达队列
+	else
+		currentArrivals.push_back(pair<CFrame*, vector< CGeneralNode* > >(frame, neighbors));
+
+	//取出之前存入的当前时间的到达队列
+	map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > >::iterator iMoreArrivals = frameArrivals.find(currentTime);
+	if( iMoreArrivals != frameArrivals.end() )
+	{
+		vector< pair<CFrame*, vector< CGeneralNode* > > > moreCurrentArrivals = ( *iMoreArrivals ).second;
+		currentArrivals.insert(currentArrivals.end(), moreCurrentArrivals.begin(), moreCurrentArrivals.end());
+
+		//从队列中移除
+		frameArrivals.erase(iMoreArrivals);
+	}
+
+	bool rcv = false;
+	//投递队列中的数据
+	for( vector< pair<CFrame*, vector< CGeneralNode* > > >::iterator iArrival = currentArrivals.begin();
+		iArrival != currentArrivals.end(); ++iArrival )
+	{
+		CFrame* currentFrame = iArrival->first;
+		vector<CGeneralNode*> currentNeighbors = iArrival->second;
+		for( vector<CGeneralNode*>::iterator ineighbor = currentNeighbors.begin(); ineighbor != currentNeighbors.end(); ++ineighbor )
+		{
+			bool new_rcv = receiveFrame(**ineighbor, currentFrame, currentTime, findNeighbors, receivePackets);
+			rcv = rcv || new_rcv;
+		}
+
+		free(currentFrame);
+	}
+
+	return rcv;
 }
 
 bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentTime)
@@ -206,6 +311,8 @@ bool CMacProtocol::UpdateNodeStatus(int currentTime)
 	for( CNode * inode : nodes )
 		inode->updateStatus(currentTime);
 
+	CNode::ClearDeadNodes(currentTime);
+
 	//按照轨迹文件的时槽统计节点相遇计数
 	if( ! CNode::hasNodes(currentTime) )
 		return false;
@@ -231,9 +338,9 @@ bool CMacProtocol::UpdateNodeStatus(int currentTime)
 
 void CMacProtocol::UpdateMANodeStatus(int currentTime)
 {
-	vector<CMANode *> MAs = CMANode::getMANodes();
+	vector<CHARMANode *> MAs = CHARMANode::getBusyMANodes();
 
-	for( vector<CMANode *>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA )
+	for( vector<CHARMANode *>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA )
 		( *iMA )->updateStatus(currentTime);
 }
 
@@ -275,7 +382,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	transmitFrame( *sink, sink->sendRTS(currentTime) , currentTime );
 
 	vector<CNode*> nodes = CNode::getNodes();
-	vector<CMANode*> MAs = CMANode::getMANodes();
+	vector<CHARMANode*> MAs = CHARMANode::getBusyMANodes();
 
 	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
@@ -295,7 +402,7 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 	case config::_xhar:
 		
 		// xHAR: MAs => nodes
-		for(vector<CMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
+		for(vector<CHARMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
 		{
 			// skip discover if buffer is full && _selfish is used
 			if( (*srcMA)->getCapacityForward() > 0 )
@@ -320,6 +427,11 @@ void CMacProtocol::CommunicateWithNeighbor(int currentTime)
 
 void CMacProtocol::PrintInfo(int currentTime)
 {
+	PrintInfo(CNode::getAllNodes(true), currentTime);
+}
+
+void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int currentTime)
+{
 	if( ! ( currentTime % getConfig<int>("log", "slot_log") == 0
 			|| currentTime == getConfig<int>("simulation", "runtime") ) )
 		return;
@@ -335,7 +447,13 @@ void CMacProtocol::PrintInfo(int currentTime)
 			node << endl << getConfig<string>("log", "info_log") << endl;
 			node << getConfig<string>("log", "info_node") << endl;
 		}
-		node << currentTime << TAB << CNode::getNodeCount() << endl;
+		int nAlive = 0;
+		for( auto node : allNodes )
+		{
+			if( node->isAlive() )
+				++nAlive;
+		}
+		node << currentTime << TAB << nAlive << endl;
 		node.close();
 
 		//MA和节点 / 节点间的相遇次数
@@ -349,7 +467,7 @@ void CMacProtocol::PrintInfo(int currentTime)
 		if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc || getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar )
 		{
 			//encounter << CNode::getPercentEncounterActiveAtHotspot() << TAB << CNode::getEncounterActiveAtHotspot() << TAB;
-			encounter << CNode::getPercentEncounterAtHotspot() << TAB << CNode::getEncounterAtHotspot() << TAB;
+			encounter << CNode::getPercentEncounterAtWaypoint() << TAB << CNode::getEncounterAtWaypoint() << TAB;
 		}
 		//encounter << CNode::getPercentEncounterActive() << TAB << CNode::getEncounterActive() << TAB;
 		encounter << CNode::getEncounter() << TAB;
@@ -392,7 +510,6 @@ void CMacProtocol::PrintInfo(int currentTime)
 			activation << getConfig<string>("log", "info_activation") << endl;
 		}
 		activation << currentTime << TAB;
-		vector<CNode *> allNodes = CNode::getAllNodes(true);
 		for( auto inode = allNodes.begin(); inode != allNodes.end(); ++inode )
 		{
 			if( !( *inode )->isAlive() )
@@ -415,7 +532,6 @@ void CMacProtocol::PrintInfo(int currentTime)
 		{			
 			//节点剩余能量
 			energy_consumption << TAB << CNode::getSumEnergyConsumption() << TAB << CNode::getNodes().size() << TAB;
-			vector<CNode *> allNodes = CNode::getAllNodes(true);
 			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 				energy_consumption << (*inode)->getEnergy() << TAB;
 		}

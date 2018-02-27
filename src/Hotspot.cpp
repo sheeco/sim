@@ -155,7 +155,7 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 
 bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 {
-	if( ! ( getConfig<bool>("trace", "continuous_trace")
+	if( ! ( getConfig<bool>("trace", "continuous")
 		    || currentTime % getConfig<int>("trace", "interval") == 0 ) )
 		return false;
 
@@ -186,14 +186,14 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 		}
 
 		//update atHotspot
-		(*inode)->setAtHotspot(atHotspot);
+		(*inode)->setAtWaypoint(atHotspot);
 
 		// visit 和 encounter 计数的统计
 		// 时槽仅由轨迹文件决定
 		if( currentTime % getConfig<int>("trace", "interval") == 0 )
 		{
 			CNode::visit();
-			if( ( *inode )->isAtHotspot() )
+			if( ( *inode )->isAtWaypoint() )
 				CNode::visitAtHotspot();
 
 			for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
@@ -205,8 +205,8 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 					CNode::encount();
 
 					if( atHotspot != nullptr
-						|| (*jnode)->isAtHotspot() )
-						CNode::encountAtHotspot();
+						|| (*jnode)->isAtWaypoint() )
+						CNode::encountAtWaypoint();
 				}
 			}
 		}

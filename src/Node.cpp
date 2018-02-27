@@ -12,11 +12,11 @@
 
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
-int CNode::encounterAtHotspot = 0;
+int CNode::encounterAtWaypoint = 0;
 //int CNode::encounterActiveAtHotspot = 0;
 //int CNode::encounterActive = 0;
 int CNode::encounter = 0;
-int CNode::visiterAtHotspot = 0;
+int CNode::visiterAtWaypoint = 0;
 int CNode::visiter = 0;
 
 vector<CNode*> CNode::nodes;
@@ -41,11 +41,12 @@ void CNode::init()
 	dutyCycle = getConfig<double>("mac", "duty_rate");
 	SLOT_WAKE = int( dutyCycle * getConfig<int>("mac", "cycle") );
 	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
-	timerCarrierSense = UNVALID;
+	timerCarrierSense = INVALID;
+	discovering = false;
 	if( SLOT_WAKE == 0 )
 	{
 		state = _asleep;
-		timerWake = UNVALID;
+		timerWake = INVALID;
 		if( getConfig<bool>("mac", "sync_cycle") )
 			timerSleep = SLOT_SLEEP;
 		else
@@ -54,7 +55,7 @@ void CNode::init()
 	else
 	{
 		state = _awake;
-		timerSleep = UNVALID;
+		timerSleep = INVALID;
 		if( getConfig<bool>("mac", "sync_cycle") )
 			timerWake = SLOT_WAKE;
 		else
@@ -65,13 +66,13 @@ void CNode::init()
 
 CNode::CNode() 
 {
-	throw string("CNode::CNode() : Default constructor is disabled.");
+	init();
 }
 
 CNode::CNode(double dataRate) 
 {
 	init();
-	this->dataRate = dataRate;
+	this->setDataByteRate(dataRate);
 }
 
 CNode::~CNode()
@@ -86,21 +87,21 @@ CNode::~CNode()
 void CNode::initNodes() {
 	if( nodes.empty() && deadNodes.empty() )
 	{
-		vector<string> filenames = CFileHelper::ListDirectory(getConfig<string>("trace", "path"));
-		filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
+		vector<string> filepaths = CFileHelper::ListDirectory(getConfig<string>("trace", "path"));
+		filepaths = CFileHelper::FilterByExtension(filepaths, getConfig<string>("trace", "extension_trace_file"));
 
-		if( filenames.empty() )
+		if( filepaths.empty() )
 			throw string("CNode::initNodes(): Cannot find any trace files under \"" + getConfig<string>("trace", "path")
 						  + "\".");
 
-		for(int i = 0; i < filenames.size(); ++i)
+		for(int i = 0; i < filepaths.size(); ++i)
 		{
 			double dataRate = getConfig<double>("node", "default_data_rate");
 			if(i % 5 == 0)
 				dataRate *= 5;
 			CNode* node = new CNode(dataRate);
 			node->generateID();
-			node->loadTrace(filenames[i]);
+			node->loadTrace(filepaths[i]);
 			CNode::nodes.push_back(node);
 		}
 	}
@@ -172,23 +173,26 @@ bool CNode::hasNodes(int currentTime)
 		return true;
 	}
 		
-	bool death = ClearDeadNodes(currentTime);
-	if(death)
-		CPrintHelper::PrintAttribute("Node", CNode::getNodes().size());
-
 	return ( ! nodes.empty() );
 }
 
 bool CNode::ClearDeadNodes(int currentTime) 
 {
+	return ClearDeadNodes(nodes, deadNodes, currentTime);
+}
+
+// TODO: change to the new implementation below
+
+inline bool CNode::ClearDeadNodes(vector<CNode*>& aliveList, vector<CNode*>& deadList, int now)
+{
 	bool death = false;
-	for(vector<CNode *>::iterator ipNode = nodes.begin(); ipNode != nodes.end(); )
+	for( vector<CNode *>::iterator ipNode = aliveList.begin(); ipNode != aliveList.end(); )
 	{
-		if(! (*ipNode)->isAlive())
+		if( !( *ipNode )->isAlive() )
 		{
 			death = true;
-			deadNodes.push_back( *ipNode );
-			ipNode = nodes.erase( ipNode );
+			deadNodes.push_back(*ipNode);
+			ipNode = aliveList.erase(ipNode);
 		}
 		else
 			++ipNode;
@@ -198,14 +202,16 @@ bool CNode::ClearDeadNodes(int currentTime)
 	if( death )
 	{
 		ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
-		if( currentTime == 0 )
+		if( now == 0 )
 		{
 			death << endl << getConfig<string>("log", "info_log") << endl;
 			death << getConfig<string>("log", "info_death") << endl;
 		}
-		death << currentTime << TAB << CNode::getAllNodes(false).size() - CNode::getNodeCount()
-			<< TAB << CData::getCountDelivery() << TAB << CData::getDeliveryRatio() << endl;
+		death << now << TAB << aliveList.size() << TAB << CData::getCountDelivery()
+			<< TAB << CData::getDeliveryRatio() << endl;
 		death.close();
+
+		CPrintHelper::PrintAttribute("Node Count", aliveList.size());
 	}
 	return death;
 }
@@ -291,7 +297,7 @@ void CNode::Wake()
 		return;
 	}
 	state = _awake;
-	timerSleep = UNVALID;
+	timerSleep = INVALID;
 	timerWake = SLOT_WAKE;
 	timerCarrierSense = RandomInt(0, CMacProtocol::getMaxTransmissionDelay());
 }
@@ -305,8 +311,8 @@ void CNode::Sleep()
 		return;
 	}
 	state = _asleep;
-	timerWake = UNVALID;
-	timerCarrierSense = UNVALID;
+	timerWake = INVALID;
+	timerCarrierSense = INVALID;
 	timerSleep = SLOT_SLEEP;
 }
 
@@ -542,7 +548,8 @@ void CNode::updateStatus(int currentTime)
 	//更新坐标及时间戳
 	if( ! trace->isValid(currentTime) )
 	{
-		die(currentTime);  //因 trace 信息终止而死亡的节点，无法回收
+		die(currentTime);
+		CPrintHelper::PrintDetail(currentTime, this->getName() + " dies of trace exhaustion.");
 		return;
 	}
 	setLocation(trace->getLocation(currentTime));

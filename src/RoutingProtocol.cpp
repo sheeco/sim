@@ -18,8 +18,12 @@ vector<CData> CRoutingProtocol::getDataForTrans(CGeneralNode* node, int capacity
 	CNode::removeDataByCapacity(datas, capacity, ! FIFO);
 	return datas;
 }
-
 void CRoutingProtocol::PrintInfo(int currentTime)
+{
+	PrintInfo(CNode::getAllNodes(true), currentTime);
+}
+
+void CRoutingProtocol::PrintInfo(vector<CNode*> allNodes, int currentTime)
 {
 	switch( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") )
 	{
@@ -79,7 +83,6 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			buffer << getConfig<string>("log", "info_buffer_statistics") << endl;
 		}
 		buffer << currentTime << TAB;
-		vector<CNode *> allNodes = CNode::getAllNodes(true);
 		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 		{
 			if( ! (*inode)->isAlive() )
@@ -114,13 +117,12 @@ void CRoutingProtocol::PrintInfo(int currentTime)
 			buffer << getConfig<string>("log", "info_buffer") << endl;
 		}
 		buffer << currentTime << TAB;
-		vector<CNode *> allNodes = CNode::getAllNodes(true);
 		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 		{
 			if( ! (*inode)->isAlive() )
 				buffer << "-" << TAB ;
 			else
-				buffer << (*inode)->getSizeBuffer() << "  " ;
+				buffer << (*inode)->getBufferSize() << "  " ;
 
 			(*inode)->recordBufferStatus();
 		}

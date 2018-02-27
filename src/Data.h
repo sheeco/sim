@@ -34,7 +34,7 @@ private:
 	static double SUM_DELAY;  //时延加和，用于计算平均时延
 	static double SUM_HOP;  //跳数加和，用于计算平均跳数
 
-	static int COUNT_DELIVERY_AT_HOTSPOT;  //在热点处得到投递的数据计数
+	static int COUNT_DELIVERY_AT_WAYPOINT;  //在热点处得到投递的数据计数
 	static int COUNT_DELIVERY_ON_ROUTE;  //在路径上得到投递的数据计数
 
 	CData()
@@ -77,9 +77,9 @@ public:
 
 	~CData(){};
 
-	static void deliverAtHotspot(int n)
+	static void deliverAtWaypoint(int n)
 	{
-		COUNT_DELIVERY_AT_HOTSPOT += n;
+		COUNT_DELIVERY_AT_WAYPOINT += n;
 	}
 	static void deliverOnRoute(int n)
 	{
@@ -87,21 +87,21 @@ public:
 	}
 	//该函数应当在MA的路径更新时调用输出统计结果
 	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于COUNT_ARRIVAL的，仅作测试用途
-	static int getCountDeliveryAtHotspot()
+	static int getCountDeliveryAtWaypoint()
 	{
-		return COUNT_DELIVERY_AT_HOTSPOT;
+		return COUNT_DELIVERY_AT_WAYPOINT;
 	}
 	//该函数应当在MA的路径更新时调用输出统计结果
 	//注意：由于这个计数的统计发生在MA，因此这两个值的加和总是大于等于COUNT_ARRIVAL的，仅作测试用途
 	static int getCountDeliveryTotal()
 	{
-		return COUNT_DELIVERY_AT_HOTSPOT + COUNT_DELIVERY_ON_ROUTE;
+		return COUNT_DELIVERY_AT_WAYPOINT + COUNT_DELIVERY_ON_ROUTE;
 	}
-	static double getPercentDeliveryAtHotspot()
+	static double getPercentDeliveryAtWaypoint()
 	{
-		if(COUNT_DELIVERY_AT_HOTSPOT == 0)
+		if(COUNT_DELIVERY_AT_WAYPOINT == 0)
 			return 0.0;
-		return double(COUNT_DELIVERY_AT_HOTSPOT) / double( COUNT_DELIVERY_AT_HOTSPOT + COUNT_DELIVERY_ON_ROUTE );
+		return double(COUNT_DELIVERY_AT_WAYPOINT) / double( COUNT_DELIVERY_AT_WAYPOINT + COUNT_DELIVERY_ON_ROUTE );
 	}
 
 	//setters & getters
@@ -111,7 +111,7 @@ public:
 	}
 
 	//实际上只更新TTL
-	inline void updateStatus(int currentTime)
+	void updateStatus(int currentTime)
 	{
 //		this->TTL -= ( currentTime - time );
 		this->time = currentTime;

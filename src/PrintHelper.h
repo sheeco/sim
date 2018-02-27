@@ -28,17 +28,8 @@ private:
 
 	static string LINE_END;
 
-	inline static void printToCout(string str, bool newLine)
-	{
-		cout << LINE_END;
-		if( LINE_END == CR )
-			cout << BLANK_LINE << CR;
-		cout << str;
-		if( newLine )
-			LINE_END = LF;
-		else
-			LINE_END = "";
-	}
+	static void printToCout(string str, bool newLine);
+
 	inline static void flashToCout(string str)
 	{
 		printToCout(CR + str, false);
@@ -150,9 +141,17 @@ public:
 	}
 	inline static void PrintDetail(string str)
 	{
-		flashToCout(toDetail(str));
+		printToCout(toDetail(str), true);
 	}
 	inline static void PrintDetail(int time, string str)
+	{
+		printToCout(toDetail(toTime(time) + str), true);
+	}
+	inline static void FlashDetail(string str)
+	{
+		flashToCout(toDetail(str));
+	}
+	inline static void FlashDetail(int time, string str)
 	{
 		flashToCout(toDetail( toTime(time) + str ));
 	}

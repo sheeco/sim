@@ -10,6 +10,7 @@
 #include "Frame.h"
 #include "Trace.h"
 #include "FileHelper.h"
+#include "PrintHelper.h"
 
 class CNode :
 	virtual public CGeneralNode
@@ -22,8 +23,9 @@ class CNode :
 	//	bool flag;
 
 
-private:
+protected:
 
+	string nodeIdentifier;  //node identifier read from trace file
 	CCTrace* trace;
 	double dataRate;
 	double dutyCycle;
@@ -33,7 +35,7 @@ private:
 	int SLOT_SLEEP;  //由getConfig<int>("mac", "cycle")和DC计算得到
 	int SLOT_WAKE;  //由getConfig<int>("mac", "cycle")和DC计算得到
 
-					//计时器：UNVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
+					//计时器：INVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
 	int timerSleep;
 	int timerWake;
 	int timerCarrierSense;  //距离载波侦听结束、邻居节点发现开始的剩余时间
@@ -48,11 +50,11 @@ private:
 	//用于统计输出节点的buffer状态信息
 	int sumBufferRecord;
 	int countBufferRecord;
-	static int encounterAtHotspot;
+	static int encounterAtWaypoint;
 	//	static int encounterActiveAtHotspot;
 	//	static int encounterActive;  //有效相遇
 	static int encounter;
-	static int visiterAtHotspot;
+	static int visiterAtWaypoint;
 	static int visiter;
 
 	static int COUNT_ID;
@@ -76,9 +78,6 @@ private:
 
 
 	/****************************************  MAC  ***************************************/
-
-	//将死亡节点整理移出，返回是否有新的节点死亡
-	static bool ClearDeadNodes(int currentTime);
 
 	//待测试
 	static void removeNodes(int n);
@@ -104,6 +103,11 @@ private:
 
 
 public:
+
+	CCTrace getTrace() const
+	{
+		return *(this->trace);
+	}
 
 	/****************************************  MAC  ***************************************/
 
@@ -163,7 +167,7 @@ public:
 	void startDiscovering()
 	{
 		this->discovering = true;
-		this->timerCarrierSense = UNVALID;
+		this->timerCarrierSense = INVALID;
 	}
 
 	//标记本次邻居节点发现已经完成
@@ -217,7 +221,10 @@ public:
 		this->energyConsumption += cons;
 		if( getConfig<int>("node", "energy") > 0
 		   && getConfig<int>("node", "energy") - energyConsumption <= 0 )
+		{
 			this->die(currentTime);
+			CPrintHelper::PrintDetail(currentTime, this->getName() + " dies of energy exhaustion.");
+		}
 	}
 
 	//不设置能量值时，始终返回true
@@ -245,6 +252,11 @@ public:
 	{
 		this->timeDeath = currentTime;
 	}
+
+	//将死亡节点整理移出，返回是否有新的节点死亡
+	static bool ClearDeadNodes(int currentTime);
+	// TODO: change to the new implementation below
+	static bool ClearDeadNodes(vector<CNode*> &aliveList, vector<CNode*> &deadList, int now);
 
 	static bool finiteEnergy();
 
@@ -343,9 +355,9 @@ public:
 	//		++encounterActive;
 	//	}
 	//热点区域所有可能的相遇（只与数据集和热点选取有关）
-	static void encountAtHotspot()
+	static void encountAtWaypoint()
 	{
-		++encounterAtHotspot;
+		++encounterAtWaypoint;
 	}
 	//	//热点区域内的有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
 	//	static void encountActiveAtHotspot() 
@@ -361,9 +373,9 @@ public:
 	//	{
 	//		return encounterActive;
 	//	}
-	static int getEncounterAtHotspot()
+	static int getEncounterAtWaypoint()
 	{
-		return encounterAtHotspot;
+		return encounterAtWaypoint;
 	}
 	//	static int getEncounterActiveAtHotspot() 
 	//	{
@@ -376,11 +388,11 @@ public:
 	//			return 0.0;
 	//		return double(encounterActiveAtHotspot) / double(encounterActive);
 	//	}
-	static double getPercentEncounterAtHotspot()
+	static double getPercentEncounterAtWaypoint()
 	{
-		if( encounterAtHotspot == 0 )
+		if( encounterAtWaypoint == 0 )
 			return 0.0;
-		return double(encounterAtHotspot) / double(encounter);
+		return double(encounterAtWaypoint) / double(encounter);
 	}
 	//	static double getPercentEncounterActive() 
 	//	{
@@ -392,7 +404,7 @@ public:
 	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
 	static void visitAtHotspot()
 	{
-		++visiterAtHotspot;
+		++visiterAtWaypoint;
 	}
 	static void visit()
 	{
@@ -401,9 +413,9 @@ public:
 
 	static double getPercentVisiterAtHotspot()
 	{
-		if( visiterAtHotspot == 0 )
+		if( visiterAtWaypoint == 0 )
 			return 0.0;
-		return double(visiterAtHotspot) / double(visiter);
+		return double(visiterAtWaypoint) / double(visiter);
 	}
 	static int getVisiter()
 	{
@@ -411,16 +423,19 @@ public:
 	}
 	static int getVisiterAtHotspot()
 	{
-		return visiterAtHotspot;
+		return visiterAtWaypoint;
 	}
 
 	/*************************** ------- ***************************/
 
+	void setDataByteRate(double dataRate)
+	{
+		this->dataRate = dataRate;
+	}
 	double getDataByteRate() const
 	{
 		return dataRate;
 	}
-
 	double getDataCountRate() const
 	{
 		return dataRate / getConfig<int>("data", "size_data");
@@ -431,12 +446,12 @@ public:
 		return atHotspot;
 	}
 
-	void setAtHotspot(CHotspot* atHotspot)
+	void setAtWaypoint(CHotspot* atHotspot)
 	{
 		this->atHotspot = atHotspot;
 	}
 
-	bool isAtHotspot() const
+	bool isAtWaypoint() const
 	{
 		return atHotspot != nullptr;
 	}
@@ -446,11 +461,20 @@ public:
 		++COUNT_ID;
 		this->ID = COUNT_ID;
 	}
+	void setIdentifier(string nodeIdentifier)
+	{
+		this->nodeIdentifier = nodeIdentifier;
+	}
+	string getIdentifier()
+	{
+		return this->nodeIdentifier;
+	}
 	void loadTrace(string filepath)
 	{
-		this->trace = CCTrace::readTraceFromFile(filepath);
+		this->trace = CCTrace::readTraceFromFile(filepath, getConfig<bool>("trace", "continuous"));
 		string filename = CFileHelper::SplitPath(filepath).second;
 		string nodename = CFileHelper::SplitFilename(filename).first;
+		this->setIdentifier(nodename);
 		this->setName("Node #" + nodename);
 	}
 

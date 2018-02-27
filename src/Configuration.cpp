@@ -186,8 +186,9 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("log", "info_log", typeid(string), new string(""));
 	addConfiguration("log", "file_default_config", typeid(string), new string("default.config"));
 	addConfiguration("log", "file_help", typeid(string), new string("help.md"));
-	addConfiguration("log", "file_version", typeid(string), new string("sim.version"));
+	addConfiguration("log", "file_version", typeid( string ), new string("sim.version"));
 
+	addConfiguration("log", "file_console", typeid(string), new string("console.log"));
 	addConfiguration("log", "file_error", typeid(string), new string("error.log"));
 	addConfiguration("log", "file_config", typeid(string), new string("config.log"));
 	addConfiguration("log", "file_final", typeid(string), new string("final.log"));
@@ -247,6 +248,8 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("log", "info_buffer_ma", typeid(string), new string("#Time	#BufferStateOfEachMA "));
 	addConfiguration("log", "file_ed", typeid(string), new string("ed.log"));
 	addConfiguration("log", "info_ed", typeid(string), new string("#Time	#EstimatedDelay "));
+	addConfiguration("log", "file_task", typeid( string ), new string("task.log"));
+	addConfiguration("log", "info_task", typeid( string ), new string("#Time	#PercentTaskMet	#CountTaskMet	#CountTask"));
 
 
 	addGroup("data");
@@ -305,7 +308,7 @@ void CConfiguration::InitConfiguration()
 
 
 	addGroup("trace");
-	addConfiguration("trace", "continuous_trace", typeid(bool), new bool(true));
+	addConfiguration("trace", "continuous", typeid(bool), new bool(true));
 	addConfiguration("trace", "extension_trace_file", typeid(string), new string(".trace"));
 	addConfiguration("trace", "path", typeid(string), new string("../res/NCSU"));
 	addConfiguration("trace", "interval", typeid(int), new int(30));
@@ -344,10 +347,12 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("prophet", "trans_pred", typeid(double), new double(0.25));  //参考值 0.25
 	addConfiguration("prophet", "trans_strict_by_pred", typeid(bool), new bool(true));
 
-
-	/*********************************************  按照命令格式解析参数配置  *********************************************/
-
-	ParseConfiguration(getConfig<string>("log", "dir_run") + getConfig<string>("log", "file_default_config"));
+	addGroup("pferry");
+	addConfiguration("pferry", "path_predict", typeid( string ), new string(""));  //e.g. ../res/predict
+	addConfiguration("pferry", "keyword_predict", typeid( string ), new string(""));
+	addConfiguration("pferry", "extension_pan_file", typeid( string ), new string(".pan"));
+	addConfiguration("pferry", "init_num_ma", typeid( int ), new int(0));
+	addConfiguration("pferry", "max_num_ma", typeid( int ), new int(0));
 
 }
 

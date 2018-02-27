@@ -2,13 +2,6 @@
 #include "Sink.h"
 
 
-CRoute::CRoute(CBasicEntity *sink)
-{
-	init();
-	waypoints.push_back( sink );
-	toPoint = CSink::getSink()->getID();  //初始化为sink
-}
-
 void CRoute::updateLength()
 {
 	if(waypoints.size() < 2)
@@ -17,7 +10,7 @@ void CRoute::updateLength()
 	}
 	length = 0;
 	for(int i = 0, j = 1; i < waypoints.size(); ++i, j = (j + 1) % waypoints.size())
-		length += CBasicEntity::getDistance(*waypoints[i], *waypoints[j]);
+		length += CBasicEntity::getDistance(*waypoints[i].first, *waypoints[j].first);
 	toPoint = 1;  //toPoint指向sink之后的第一个点
 }
 

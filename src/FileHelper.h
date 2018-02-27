@@ -19,6 +19,8 @@ public:
 	//static bool SetHidden(string filename);
 	//static bool UnsetHidden(string filename);
 
+	static bool IsDirectory(string strPath);
+	static bool IsFile(string strPath);
 	// Return empty vector if dir does not exist
 	static vector<string> ListDirectory(string pathDir);
 	static vector<string> FilterByExtension(vector<string> filenames, string extension);

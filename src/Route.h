@@ -20,49 +20,44 @@ class CRoute :
 
 private:
 
-	vector<CBasicEntity *> waypoints;  //路线经过的点，包括sink和一些hotspot，必须保证第0个元素是sink
-	vector<int> coveredNodes;
+	vector<pair<CBasicEntity *, int>> waypoints;  //路线经过的点，包括sink和一些hotspot，必须保证第0个元素是sink
 	double length;
 	//MANode正在向toPoint移动的路上
 	//vector<CBasicEntity *>::iterator fromPoint;
 	int toPoint;  //前往的点再数组waypoints中下标
-	bool overdue;  //是否过期
 
 	void init()
 	{
 		length = 0;
 		toPoint = -1;
-		overdue = false;		
+	}
+
+protected:
+
+	void setStartPoint(CBasicEntity *startPoint)
+	{
+		this->AddWaypoint(startPoint, 0);
+		this->toPoint = startPoint->getID();
+	}
+	CRoute()
+	{
+		this->init();
 	}
 
 
 public:
 
-	CRoute()
+	CRoute(CBasicEntity *startPoint)
 	{
-		init();
+		this->init();
+		this->setStartPoint(startPoint);
 	}
-
-	CRoute(CBasicEntity *sink);
 
 	~CRoute(){};
 
-	inline vector<CBasicEntity *> getWayPoints() const
+	inline vector<pair<CBasicEntity *, int>> getWayPoints() const
 	{
 		return waypoints;
-	}
-	inline vector<int> getCoveredNodes() const
-	{
-		return coveredNodes;
-	}
-
-	inline bool isOverdue() const
-	{
-		return overdue;
-	}
-	inline void setOverdue(bool overdue)
-	{
-		this->overdue = overdue;
 	}
 	inline int getNWayPoints() const
 	{
@@ -80,7 +75,16 @@ public:
 		{
 			throw string("CBasicEntity::getToPoint() : toPoint exceeds the index range of waypoints ");
 		}
-		return waypoints[toPoint];
+		return waypoints[toPoint].first;
+	}
+	inline int getWaitingTime()
+	{
+		if( toPoint > waypoints.size() - 1
+		   || toPoint < 0 )
+		{
+			throw string("CBasicEntity::getToPoint() : toPoint exceeds the index range of waypoints ");
+		}
+		return waypoints[toPoint].second;
 	}
 	//将toPoint后移一个
 	inline void updateToPoint()
@@ -94,25 +98,23 @@ public:
 	}
 
 	//将给定的元素放到waypoint列表的最后
-	void AddHotspot(CBasicEntity *hotspot)
+	void AddWaypoint(CBasicEntity *waypoint, int waitingTime)
 	{
-		waypoints.push_back(hotspot);
-		AddToListUniquely(coveredNodes, dynamic_cast<CHotspot *>(hotspot)->getCoveredNodes());
+		waypoints.push_back(pair<CBasicEntity*, int>(waypoint, waitingTime));
 	}
-	//将给定hotspot插入到路径中给定的位置
-	void AddHotspot(int front, CBasicEntity *hotspot)
+	//插入到路径中给定的位置
+	void AddWaypoint(int front, CBasicEntity *waypoint, int waitingTime)
 	{
-		vector<CBasicEntity *>::iterator ipoint = waypoints.begin() + front + 1;
-		waypoints.insert(ipoint, hotspot);
-		AddToListUniquely(coveredNodes, dynamic_cast<CHotspot *>(hotspot)->getCoveredNodes());
+		vector<pair<CBasicEntity *, int>>::iterator ipoint = waypoints.begin() + front + 1;
+		waypoints.insert(ipoint, pair<CBasicEntity*, int>(waypoint, waitingTime));
 	}
 
 	//对给定插入计算路径增量
 	double getIncreDistance(int front, CHotspot *hotspot)
 	{
 		int back = ( front + 1 ) % waypoints.size();
-		double oldDistance =  CBasicEntity::getDistance( *waypoints[front], *waypoints[back] );
-		double newDistance = CBasicEntity::getDistance( *waypoints[front], *hotspot) + CBasicEntity::getDistance(*hotspot, *waypoints[back] );
+		double oldDistance =  CBasicEntity::getDistance( *waypoints[front].first, *waypoints[back].first);
+		double newDistance = CBasicEntity::getDistance( *waypoints[front].first, *hotspot) + CBasicEntity::getDistance(*hotspot, *waypoints[back].first);
 		return ( newDistance - oldDistance );
 	}
 
@@ -122,9 +124,9 @@ public:
 	string format() override
 	{
 		stringstream sstr;
-		for( vector<CBasicEntity *>::const_iterator iwaypoint = waypoints.begin(); iwaypoint != waypoints.end(); iwaypoint++ )
+		for( vector<pair<CBasicEntity *, int>>::const_iterator iwaypoint = waypoints.begin(); iwaypoint != waypoints.end(); iwaypoint++ )
 		{
-			sstr << ( *iwaypoint )->getLocation().format() << TAB;
+			sstr << iwaypoint->first->getLocation().format() << TAB;
 		}
 		// e.g "0.0, 1.234	234.5, 345.6 ..."
 		return sstr.str();

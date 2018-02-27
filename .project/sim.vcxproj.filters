@@ -114,6 +114,12 @@
     <ClCompile Include="..\src\PrintHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\PFerry.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\TracePrediction.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Algorithm.h">
@@ -228,6 +234,12 @@
       <Filter>资源文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\PrintHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PFerry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\TracePrediction.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

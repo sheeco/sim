@@ -20,17 +20,14 @@ class CMANode :
 //	bool flag;
 
 
-private:
+protected:
 
-	CRoute route;
-	vector<CRoute> oldRoutes;
-	CHotspot *atHotspot;  //MA到达的hotspot
+	CRoute *route;
+	vector<CRoute*> routeHistory;
+	CBasicEntity *atPoint;
 	int waitingWindow;  //当前规定的waiting时间窗大小
 	int waitingState;  //当前处于waiting时间窗的位置（值为0说明还未开始等待，值等于最大值说明等待时间结束）
-
-//	static double energyConsumption;
-	static vector<CMANode *> MANodes;
-	static vector<CMANode *> freeMANodes;
+	bool returnAtOnce;
 
 //	static int encounterActive;  //有效相遇
 	static int encounter;
@@ -43,15 +40,16 @@ private:
 			COUNT_ID = getConfig<int>("ma", "base_id");
 
 		setLocation( CSink::getSink()->getLocation() );  //初始化 MA 位置在 sink 处
-		atHotspot = nullptr;	
+		atPoint = nullptr;	
 		waitingWindow = 0;
 		waitingState = 0;
 		capacityBuffer = getConfig<int>("ma", "buffer");
-	}
-
-	CMANode()
-	{
-		throw string("CMANode::CMANode() : Default constructor is disabled.");
+		returnAtOnce = false;
+		route = nullptr;
+		atPoint = nullptr;
+		time = time;
+		generateID();
+		setName("MA #" + STRING(this->getID()));
 	}
 
 	//自动生成ID，需手动调用
@@ -61,47 +59,45 @@ private:
 		this->ID = COUNT_ID;
 	}
 
+	inline bool ifReturnAtOnce()
+	{
+		return this->returnAtOnce;
+	}
+	inline void setReturnAtOnce(bool returnAtOnce)
+	{
+		this->returnAtOnce = returnAtOnce;
+		this->waitingWindow = this->waitingState = 0;
+	}
+
+protected:
+	
+	void setRoute(CRoute* route)
+	{
+		FreePointer(this->route);
+		this->route = route;
+	}
+	CMANode()
+	{
+		init();
+	}
 	CMANode(CRoute route, int time)
 	{
 		init();
-		this->route = route;
-		this->setLocation( getConfig<double>("sink", "x"), getConfig<double>("sink", "y"));
-		atHotspot = nullptr;
-		this->time = time;
+		FreePointer(this->route);
+		this->setRoute(new CRoute(route));
+		this->setTime(time);
 		generateID();
 		this->setName("MA #" + STRING(this->getID()));
 	}
-	~CMANode(){};
+	virtual ~CMANode() = 0
+	{
+		FreePointer(this->route);
+		FreePointerVector(this->routeHistory);
+	};
 
 
 public:
 
-	static vector<CMANode *>& getMANodes()
-	{
-		return MANodes;
-	}
-
-
-	//当前活动MA个数不足时调用，将激活闲置的MA或构造新的MA
-	static CMANode* newMANode(CRoute route, int time)
-	{
-		CMANode *result = nullptr;
-
-		//构造新的MA
-		if( freeMANodes.empty() )
-		{
-			result = new CMANode(route, time);
-		}
-		//使用闲置的MA
-		else
-		{
-			result = freeMANodes[0];
-			freeMANodes.erase( freeMANodes.begin() );
-			result->updateRoute(route);
-		}
-		MANodes.push_back(result);
-		return result;
-	}
 
 	static int getCapacityBuffer()
 	{
@@ -113,16 +109,6 @@ public:
 		return getConfig<int>("ma", "speed");
 	}
 
-	static inline double getSumEnergyConsumption()
-	{
-		double sumEnergyConsumption = 0;
-		for(auto iMANode = MANodes.begin(); iMANode != MANodes.end(); ++iMANode)
-			sumEnergyConsumption += (*iMANode)->getEnergyConsumption();
-		for(auto iMANode = freeMANodes.begin(); iMANode != freeMANodes.end(); ++iMANode)
-			sumEnergyConsumption += (*iMANode)->getEnergyConsumption();
-
-		return sumEnergyConsumption;
-	}
 
 	//相遇计数：统计 MA 和节点的相遇
 	static void encount() 
@@ -149,59 +135,48 @@ public:
 //		return double(encounterActive) / double(encounter);
 //	}
 
-	//暂时闲置
-	void turnFree()
-	{
-		for(auto iMANode = MANodes.begin(); iMANode != MANodes.end(); ++iMANode)
-		{
-			if( (*iMANode) == this )
-			{
-				MANodes.erase(iMANode);
-				break;
-			}
-		}
-		freeMANodes.push_back(this);
-	}
-
 	inline CRoute* getRoute()
 	{
-		return &route;
+		return route;
+	}
+	inline void endRoute()
+	{
+		this->routeHistory.push_back(this->route);
+		this->route = nullptr;
+		atPoint = nullptr;
+		waitingWindow = 0;
+		waitingState = 0;
+		this->setReturnAtOnce(false);
+	}
+	inline void assignRoute(CRoute route)
+	{
+		this->route = new CRoute(route);
 	}
 	inline void updateRoute(CRoute route)
 	{
-		if( this->route.getToPoint() != nullptr )
-			oldRoutes.push_back(this->route);
-
-		this->route = route;
-	}
-	inline bool routeIsOverdue() const
-	{
-		return route.isOverdue();
-	}
-	inline void setRouteOverdue(bool overdue)
-	{
-		this->route.setOverdue(overdue);
+		this->endRoute();
+		this->assignRoute(route);
 	}
 	//inline void setAtSink(bool atSink)
 	//{
 	//	this->atSink = atSink;
 	//}
-	inline void setAtHotspot(CHotspot *atHotspot)
+	inline void setAtWaypoint(CBasicEntity *wayPoint)
 	{
-		this->atHotspot = atHotspot;
+		this->atPoint = wayPoint;
 	}
 
 	//TODO: include when im still in range of the hotspot after leaving the center, maybe introducing m_lastAtHotspot
-	inline bool isAtHotspot() const
+	inline bool isAtWaypoint() const
 	{
-		if(atHotspot == nullptr)
+		if(atPoint == nullptr)
 			return false;
 		else
 			return true;
 	}
-	inline CHotspot* getAtHotspot() const
+	inline CBasicEntity* getAtWaypoint() const
 	{
-		return atHotspot;
+		return atPoint;
 	}
 //	inline void setWaitingTime(int waitingTime)
 //	{
@@ -242,15 +217,29 @@ public:
 		return true;
 	}
 
+	//NOTE: 虚函数定义导致VS调试器无法正确显示this指针
 	//MA移动，更新等待时间、位置、时间戳、等待时间
 	//如果路线过期或缓存已满，立即返回sink
-	void updateStatus(int time);
+	//virtual void updateStatus(int time) = 0;
 
-	CFrame* sendRTSWithCapacity(int currentTime);
+	//TODO: ?
+	CFrame* sendRTSWithCapacity(int currentTime)
+	{
+		vector<CPacket*> packets;
+		packets.push_back(new CCtrl(ID, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_rts));
+		if( getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_selfish
+		   && ( !buffer.empty() ) )
+			packets.push_back(new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity));
 
-	vector<CData> bufferData(int time, vector<CData> datas);
+		CFrame* frame = new CFrame(*this, packets);
 
-	void checkDataByAck(vector<CData> ack);
+		return frame;
+	}
+
+	void checkDataByAck(vector<CData> ack)
+	{
+		RemoveFromList(buffer, ack);
+	}
 
 };
 

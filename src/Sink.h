@@ -25,8 +25,6 @@ class CSink :
 private:
 
 	static CSink* sink;
-	vector<CRoute> newRoutes;
-
 	static int encounterActive;  //有效相遇
 	static int encounter;
 
@@ -63,7 +61,7 @@ public:
 	//	return;
 	//}
 
-	void updateStatus(int time) override
+	void updateStatus(int time)
 	{
 		//updateTimerOccupied(time);
 
@@ -120,34 +118,6 @@ public:
 //		_PAUSE_;
 //		return vector<CData>();
 //	}
-
-
-	/********************************************* HAR路由 ***********************************************/
-
-	//取得新的路线集合
-	static inline void setNewRoutes(vector<CRoute> newRoutes)
-	{
-		sink->newRoutes = newRoutes;
-	}
-	static inline vector<CRoute> getNewRoutes()
-	{
-		return sink->newRoutes;
-	}
-	//判断是否还有未分配出去的新路线
-	static inline bool hasMoreNewRoutes()
-	{
-		if( sink->newRoutes.empty() )
-			return false;
-		else 
-			return true;
-	}
-	//必须先调用hasMoreNewRoutes判断
-	static inline CRoute popRoute()
-	{
-		CRoute result = sink->newRoutes[0];
-		sink->newRoutes.erase(sink->newRoutes.begin());
-		return result;
-	}
 
 };
 

@@ -60,7 +60,7 @@ public:
 	{
 		this->capacityBuffer = 0;
 		this->energyConsumption = 0;
-		this->timerOccupied = UNVALID;
+		this->timerOccupied = INVALID;
 		state = _awake;
 	}
 
@@ -79,9 +79,13 @@ public:
 	{
 		return ( ! this->buffer.empty() );
 	}
-	inline int getSizeBuffer() const
+	inline int getBufferSize() const
 	{
 		return this->buffer.size();
+	}
+	inline int getBufferVacancy() const
+	{
+		return this->capacityBuffer - this->getBufferSize();
 	}
 	inline vector<CData> getAllData() const
 	{
@@ -120,7 +124,7 @@ public:
 	//		timerOccupied -= time - this->time;
 	//	//±£Áô timerOccupied µÄÏÂÑØ
 	//	if( timerOccupied < 0 )
-	//		timerOccupied = UNVALID;
+	//		timerOccupied = INVALID;
 	//}
 
 //	virtual void receiveFrame(CFrame* frame, int currentTime);

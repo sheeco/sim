@@ -7,25 +7,29 @@ CCTrace::CCTrace()
 	init();
 }
 
+CCTrace::CCTrace(bool continuous)
+{
+	init();
+	this->continuous = continuous;
+}
+
 CCTrace::~CCTrace()
 {
 }
 
-CCTrace* CCTrace::readTraceFromFile(string filename)
+CCTrace* CCTrace::readTraceFromFile(string filename, bool continuous)
 {
 	CCTrace* trace = nullptr;
 
 	try
 	{
-		// TODO: 文件第一行读取 SLOT_MOBILITY
-
 		if( ! CFileHelper::IfExists(filename) )
 		{
-			throw pair<int, string>(EFILE, string("CCTrace::getTraceFromFile() : Cannot find file \"" + filename + "\" ! ") );
+			throw pair<int, string>(EFILE, string("CCTrace::readTraceFromFile() : Cannot find file \"" + filename + "\" ! ") );
 		}
 		FILE *file;
 		file = fopen(filename.c_str(), "rb");
-		trace = new CCTrace();
+		trace = new CCTrace(continuous);
 
 		while( !feof(file) )
 		{
@@ -45,6 +49,6 @@ CCTrace* CCTrace::readTraceFromFile(string filename)
 	}
 	catch( exception e )
 	{
-		throw string("CCTrace::getTraceFromFile() : Unknown error without assertion");
+		throw string("CCTrace::readTraceFromFile() : ") + e.what();
 	}
 }

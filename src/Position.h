@@ -29,11 +29,21 @@ public:
 //	//保存从候选position集合中删除的position，测试用
 //	static vector<CPosition *> deletedPositions;
 
+	void init()
+	{
+		node = INVALID;
+		weight = 1;
+	}
 	CPosition()
 	{
-		node = -1;
-		//isCovered = false;
-		weight = 1;
+		init();
+	}
+
+	CPosition(int node, CCoordinate location, int time)
+	{
+		init();
+		this->setNode(node);
+		this->setLocation(location, time);
 	}
 
 	//setters & getters

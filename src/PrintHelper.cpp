@@ -1,5 +1,6 @@
 #include "PrintHelper.h"
 #include "Global.h"
+#include "Configuration.h"
 
 string CPrintHelper::BLANK_LINE = NDigitString("", 60);
 string CPrintHelper::HEADER_H_1 = "# ";
@@ -18,3 +19,22 @@ string CPrintHelper::TAIL_DOING = " ...";
 
 string CPrintHelper::LINE_END = "";
 
+void CPrintHelper::printToCout(string str, bool newLine)
+{
+	ofstream console(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_console"), ios::app);
+	cout << LINE_END;
+	console << LINE_END;
+	if( LINE_END == CR )
+	{
+		cout << BLANK_LINE << CR;
+		console << BLANK_LINE << endl;
+	}
+	cout << str;
+	console << str;
+	console.close();
+
+	if( newLine )
+		LINE_END = LF;
+	else
+		LINE_END = "";
+}
