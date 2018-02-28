@@ -305,6 +305,8 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("ma", "buffer", typeid(int), new int(100));
 	addConfiguration("ma", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
 	addConfiguration("ma", "base_id", typeid(int), new int(100));  //ID的起始值，用于和传感器节点相区分
+	addConfiguration("ma", "init_num_ma", typeid( int ), new int(0));
+	addConfiguration("ma", "max_num_ma", typeid( int ), new int(0));
 
 
 	addGroup("trace");
@@ -351,8 +353,6 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("pferry", "path_predict", typeid( string ), new string(""));  //e.g. ../res/predict
 	addConfiguration("pferry", "keyword_predict", typeid( string ), new string(""));
 	addConfiguration("pferry", "extension_pan_file", typeid( string ), new string(".pan"));
-	addConfiguration("pferry", "init_num_ma", typeid( int ), new int(0));
-	addConfiguration("pferry", "max_num_ma", typeid( int ), new int(0));
 
 }
 

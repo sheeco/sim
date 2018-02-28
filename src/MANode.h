@@ -23,7 +23,7 @@ class CMANode :
 protected:
 
 	CRoute *route;
-	vector<CRoute*> routeHistory;
+	vector<CRoute> routeHistory;
 	CBasicEntity *atPoint;
 	int waitingWindow;  //当前规定的waiting时间窗大小
 	int waitingState;  //当前处于waiting时间窗的位置（值为0说明还未开始等待，值等于最大值说明等待时间结束）
@@ -91,7 +91,6 @@ protected:
 	virtual ~CMANode() = 0
 	{
 		FreePointer(this->route);
-		FreePointerVector(this->routeHistory);
 	};
 
 
@@ -140,8 +139,12 @@ public:
 	}
 	inline void endRoute()
 	{
-		this->routeHistory.push_back(this->route);
-		this->route = nullptr;
+		if( this->route != nullptr )
+		{
+			this->routeHistory.push_back(*this->route);
+			FreePointer(this->route);
+			this->route = nullptr;
+		}
 		atPoint = nullptr;
 		waitingWindow = 0;
 		waitingState = 0;

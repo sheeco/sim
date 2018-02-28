@@ -74,9 +74,10 @@ protected:
 	friend class HAR;
 	friend class CMacProtocol;
 
-	CHARMANode(CHARRoute *route, int now)
+	CHARMANode(int now)
 	{
-		this->updateRoute(route, now);
+		init();
+		setTime(now);
 	}
 
 	inline CHARRoute* getHARRoute() const
@@ -137,9 +138,10 @@ class HAR :
 private:
 
 	static vector<CHotspot *> m_hotspots;
-	static vector<CHARRoute> m_routes;  //即hotspot class
+	static vector<CHARRoute *> m_routes;  //即hotspot class
+	static int indexRoute;
 	//vector<CHARMANode> m_MANodes;
-	static vector<CHARRoute> m_newRoutes;
+	//static vector<CHARRoute> m_newRoutes;
 
 	//TODO:
 	//static vector<CHARNode*> allNodes;
@@ -149,6 +151,9 @@ private:
 	static vector<CHARMANode *> allMAs;
 	static vector<CHARMANode *> busyMAs;
 	static vector<CHARMANode *> freeMAs;
+
+	static int INIT_NUM_MA;
+	static int MAX_NUM_MA;
 
 	static void turnFree(CHARMANode * ma)
 	{
@@ -160,34 +165,46 @@ private:
 		RemoveFromList(freeMAs, ma);
 		AddToListUniquely(busyMAs, ma);
 	}
-	//当前活动MA个数不足时调用，将激活闲置的MA或构造新的MA
-	static CHARMANode* newMANode(CHARRoute *route, int now)
+	static bool newMANode(int now)
 	{
-		CHARMANode *result = nullptr;
-
-		//构造新的MA
-		if( freeMAs.empty() )
-		{
-			result = new CHARMANode(route, now);
-			AddToListUniquely(allMAs, result);
-		}
-		//使用闲置的MA
+		if( allMAs.size() >= MAX_NUM_MA )
+			return false;
 		else
 		{
-			result = freeMAs[0];
-			result->updateRoute(route, now);
+			CHARMANode* ma = new CHARMANode(now);
+			allMAs.push_back(ma);
+			freeMAs.push_back(ma);
+			CPrintHelper::PrintDetail(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
+			return true;
 		}
-		turnBusy(result);
-		return result;
+	}
+	static bool newMANode(int n, int now)
+	{
+		for( int i = 0; i < n; ++i )
+		{
+			if( !newMANode(now) )
+				return false;
+		}
+		return true;
+	}
+	static void initMANodes(int now)
+	{
+		INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
+		MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
+		newMANode(INIT_NUM_MA, now);
+
+		freeMAs = allMAs;
 	}
 	//取得新的路线集合
-	static inline void setNewRoutes(vector<CHARRoute> newRoutes)
+	static inline void setRoutes(vector<CHARRoute*> newRoutes)
 	{
-		m_newRoutes = newRoutes;
+		FreePointerVector(m_routes);
+		m_routes = newRoutes;
+		indexRoute = 0;
 	}
-	static inline vector<CHARRoute> getNewRoutes()
+	static inline vector<CHARRoute*> getRoutes()
 	{
-		return m_newRoutes;
+		return m_routes;
 	}
 
 	//用于计算所需MA个数的历史平均值
@@ -204,7 +221,7 @@ private:
 	static double getTimeIncreForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot);
 	static double calculateRatioForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot);
 	//对一条route进行优化（TSP 最近邻居算法）
-	static void OptimizeRoute(CHARRoute &route);
+	static void OptimizeRoute(CHARRoute *route);
 	//计算相关统计数据
 	static double calculateEDTime(int now);
 
@@ -240,25 +257,21 @@ public:
 	HAR(){};
 	~HAR(){};
 
-	//判断是否还有未分配出去的新路线
-	static inline bool hasMoreNewRoutes()
+	static inline bool hasRoutes()
 	{
-		if( m_newRoutes.empty() )
-			return false;
-		else
-			return true;
+		return ! m_routes.empty();
 	}
-	//必须先调用hasMoreNewRoutes判断
+	//必须先调用hasRoutes判断
 	static inline CHARRoute* popRoute()
 	{
-		CHARRoute result = m_newRoutes[0];
-		m_newRoutes.erase(m_newRoutes.begin());
-		return new CHARRoute(result);
+		CHARRoute* result = m_routes[indexRoute];
+		indexRoute = ( indexRoute + 1 ) % m_routes.size();
+		return new CHARRoute(*result);
 	}
 
 	static void atMAReturn(CHARMANode* ma, int now)
 	{
-		if( hasMoreNewRoutes() )
+		if( hasRoutes() )
 			ma->updateRoute(HAR::popRoute(), now);
 		else
 		{
@@ -284,11 +297,11 @@ public:
 	//注意：必须在新一轮热点选取之后调用
 	static void UpdateMANodeStatus(int now)
 	{
-			//将新增的路线分配给新的MA
+		//将新增的路线分配给新的MA
 		while( !freeMAs.empty() )
 		{
 			CHARMANode *ma = freeMAs.front();
-			if( !hasMoreNewRoutes() )
+			if( !hasRoutes() )
 				break;
 			ma->updateRoute(popRoute(), now);
 			turnBusy(ma);

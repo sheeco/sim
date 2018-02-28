@@ -271,6 +271,9 @@ protected:
 			//若目的地的类型是 sink
 			else if( ( psink = dynamic_cast< CSink * >( toPoint ) ) != nullptr )
 			{
+#ifdef DEBUG
+				CPrintHelper::PrintDetail(time, this->getName() + " arrives at sink.");
+#endif // DEBUG
 				//route->updateToPoint();
 			}
 		}
@@ -341,8 +344,8 @@ private:
 	}
 	static void initMANodes()
 	{
-		INIT_NUM_MA = getConfig<int>("pferry", "init_num_ma");
-		MAX_NUM_MA = getConfig<int>("pferry", "max_num_ma");
+		INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
+		MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
 		newMANode(INIT_NUM_MA);
 		
 		freeMAs = allMAs;
