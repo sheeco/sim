@@ -616,28 +616,32 @@ private:
 	static double calculateMetric(CPFerryNode* node, CPosition prediction, int now)
 	{
 		double timePrediction = prediction.getTime();
-		double timeOverflow = collectionRecords[node].timeCollect + collectionRecords[node].bufferVacancy / node->getDataCountRate() - now;
+		double timeOverflow = collectionRecords[node].timeCollect + collectionRecords[node].bufferVacancy / node->getDataCountRate();
 		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CPFerryMANode::getSpeed();
 
 		if( timeArrival + now > timePrediction )
-			return INVALID;  // TODO: what to do?
+			return -timeOverflow;  // TODO: what to do?
 		else
 		{
-			if( timeOverflow >= 0 )
-				return timeArrival / max(1, timeOverflow);
+			if( timeOverflow >= now )
+			//if( timeOverflow >= timePrediction )
+				return timeArrival / max(1, timeOverflow - now);
+				//return 1 / timeArrival + 1 / max(1, timeOverflow - now);
 			else
-				return -timeOverflow * node->getDataCountRate();
+				return (now - timeOverflow) * node->getDataCountRate();
+				//return (timePrediction - timeOverflow) * node->getDataCountRate();
 		}
 	}
 
 	static pair<vector<pair<CPFerryNode*, CPosition>>, vector<pair<CPFerryNode*, CPosition>>> sortByPriority(vector<CPFerryNode*> nodes, int now)
 	{
-		multimap<double, pair<CPFerryNode*, CPosition>> pri;
-		vector<pair<CPFerryNode*, CPosition>> unreachableNodes;
+		multimap<double, pair<CPFerryNode*, CPosition>> priNormal;
+		multimap<double, pair<CPFerryNode*, CPosition>> priUnreachable;
 		for( CPFerryNode* node : nodes )
 		{
 			CPosition prediction;
 			bool unreachable = true;
+			double metric;
 			for( int stride : strides )
 			{
 				if( !hasPrediction(node, now, stride) )
@@ -646,23 +650,42 @@ private:
 					break;
 				}
 				prediction = getNextPrediction(node, now, stride);
-				double metric = calculateMetric(node, prediction, now);
+				metric = calculateMetric(node, prediction, now);
 				if( metric > 0 )
 				{
-					pri.insert(pair<double, pair<CPFerryNode*, CPosition>>(metric, pair<CPFerryNode*, CPosition>(node, prediction)));
+					priNormal.insert(pair<double, pair<CPFerryNode*, CPosition>>(metric, pair<CPFerryNode*, CPosition>(node, prediction)));
 					unreachable = false;
 					break;
 				}
 			}
 			if( unreachable )
-				unreachableNodes.push_back(pair<CPFerryNode*, CPosition>(node, prediction));
+				priUnreachable.insert(pair<double, pair<CPFerryNode*, CPosition>>(-metric, pair<CPFerryNode*, CPosition>(node, prediction)));
+				//priUnreachable.insert(pair<double, pair<CPFerryNode*, CPosition>>(priUnreachable.size(), pair<CPFerryNode*, CPosition>(node, prediction)));
 		}
-		vector<pair<CPFerryNode*, CPosition>> res;
-		for( pair<double, pair<CPFerryNode*, CPosition>> p : pri )
+		vector<pair<CPFerryNode*, CPosition>> normal;
+		////least pri first
+		//for( map<double, pair<CPFerryNode*, CPosition>>::iterator i = priNormal.begin(); i != priNormal.end(); ++i )
+		//{
+		//	normal.push_back(i->second);
+		//}
+		//largest pri first
+		for( map<double, pair<CPFerryNode*, CPosition>>::reverse_iterator i = priNormal.rbegin(); i != priNormal.rend(); ++i )
 		{
-			res.push_back(p.second);
+			normal.push_back(i->second);
 		}
-		return pair<vector<pair<CPFerryNode*, CPosition>>, vector<pair<CPFerryNode*, CPosition>>>(res, unreachableNodes);
+
+		vector<pair<CPFerryNode*, CPosition>> unreachable;
+		//least pri first
+		for( map<double, pair<CPFerryNode*, CPosition>>::iterator i = priUnreachable.begin(); i != priUnreachable.end(); ++i )
+		{
+			unreachable.push_back(i->second);
+		}
+		////largest pri first
+		//for( map<double, pair<CPFerryNode*, CPosition>>::reverse_iterator i = priUnreachable.rbegin(); i != priUnreachable.rend(); ++i )
+		//{
+		//	unreachable.push_back(i->second);
+		//}
+		return pair<vector<pair<CPFerryNode*, CPosition>>, vector<pair<CPFerryNode*, CPosition>>>(normal, unreachable);
 	}
 	static bool newMANode()
 	{
