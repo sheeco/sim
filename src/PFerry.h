@@ -620,7 +620,7 @@ private:
 		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CPFerryMANode::getSpeed();
 
 		if( timeArrival + now > timePrediction )
-			return -timeOverflow;  // TODO: what to do?
+			return -timeOverflow;
 		else
 		{
 			if( timeOverflow >= now )
