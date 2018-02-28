@@ -10,13 +10,13 @@
 //{
 //}
 
-//void CSMac::DetectNeighborNode(CNode* node, int currentTime)
+//void CSMac::DetectNeighborNode(CNode* node, int now)
 //{
 //	if( node->skipRTS() )
 //		return;
 //
 //	vector<CNode*> dstNodes;
-//	CFrame rts = node->sendRTS(currentTime);
+//	CFrame rts = node->sendRTS(now);
 //	dstNodes = CNode::broadcastFrame( rts );
 //	for(vector<CNode*>::iterator idst = dstNodes.begin(); idst != dstNodes.end(); ++idst)
 //	{
@@ -24,9 +24,9 @@
 //	}
 //}
 
-bool CSMac::Operate(int currentTime)
+bool CSMac::Operate(int now)
 {
-	CMacProtocol::CommunicateWithNeighbor(currentTime);
+	CMacProtocol::CommunicateWithNeighbor(now);
 
 	return true;
 }

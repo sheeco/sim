@@ -15,8 +15,6 @@ class CPFerryNode :
 	virtual public CNode
 {
 private:
-	int timeCollection;
-
 public:
 	~CPFerryNode()
 	{
@@ -25,17 +23,9 @@ public:
 protected:
 	friend class CPFerry;
 
-	CPFerryNode(): timeCollection(0)
+	CPFerryNode()
 	{
 	};
-	inline int getTimeCollection() const
-	{
-		return this->timeCollection;
-	}
-	inline void setTimeCollection(int time)
-	{
-		this->timeCollection = time;
-	}
 };
 
 class CPFerryTask: 
@@ -586,7 +576,7 @@ private:
 									  + " around " + pos.getLocation().format()
 									  + " at " + STRING(pos.getTime()) + "s.");
 
-			freeMAs.erase(freeMAs.begin());
+			RemoveFromList(freeMAs, ma);
 			busyMAs.push_back(ma);
 			RemoveFromList(urgentNodes, node);
 			RemoveFromList(candidateNodes, node);
@@ -599,13 +589,12 @@ private:
 
 	static void atDataCollection(CPFerryMANode* ma, CPFerryNode* node, CCoordinate location, int time)
 	{
-		node->setTimeCollection(time);
 		ma->recordCollection(node, location, time);
 	}
 
 	static void turnFree(CPFerryMANode* ma)
 	{
-		freeMAs.push_back(ma);
+		AddToListUniquely(freeMAs, ma);
 		RemoveFromList(busyMAs, ma);
 	}
 	static void recordCollection(CPFerryMANode* ma)
@@ -764,7 +753,7 @@ private:
 		return CMacProtocol::transmitFrame(src, frame, now, findNeighbors, receivePackets);
 	}
 	//UNDONE:
-	static vector<CPacket*> receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int currentTime)
+	static vector<CPacket*> receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int now)
 	{
 		vector<CPacket*> packetsToSend;
 
@@ -777,7 +766,7 @@ private:
 			if( typeid( gFromNode ) == typeid( CPFerryMANode ) )
 			{
 				CPFerryMANode* fromMA = dynamic_cast<CPFerryMANode*>( &gFromNode );
-				packetsToSend = receivePackets(toSink, fromMA, packets, currentTime);
+				packetsToSend = receivePackets(toSink, fromMA, packets, now);
 			}
 		}
 
@@ -790,7 +779,7 @@ private:
 			if( typeid( gFromNode ) == typeid( CSink ) )
 			{
 				CSink* fromSink = dynamic_cast< CSink* >( &gFromNode );
-				packetsToSend = receivePackets(toMA, fromSink, packets, currentTime);
+				packetsToSend = receivePackets(toMA, fromSink, packets, now);
 			}
 
 			/************************************************ MA <- node *******************************************************/
@@ -798,7 +787,7 @@ private:
 			else if( typeid( gFromNode ) == typeid( CPFerryNode ) )
 			{
 				CPFerryNode* fromNode = dynamic_cast<CPFerryNode*>( &gFromNode );
-				packetsToSend = receivePackets(toMA, fromNode, packets, currentTime);
+				packetsToSend = receivePackets(toMA, fromNode, packets, now);
 			}
 		}
 
@@ -811,7 +800,7 @@ private:
 			if( typeid( gFromNode ) == typeid( CPFerryMANode ) )
 			{
 				CPFerryMANode* fromMA = dynamic_cast<CPFerryMANode*>( &gFromNode );
-				packetsToSend = receivePackets(node, fromMA, packets, currentTime);
+				packetsToSend = receivePackets(node, fromMA, packets, now);
 			}
 		}
 
@@ -1250,7 +1239,7 @@ private:
 										  + " around " + pos.getLocation().format() 
 										  + " at " + STRING(pos.getTime()) + "s.");
 
-				freeMAs.erase(freeMAs.begin());
+				RemoveFromList(freeMAs, ma);
 				busyMAs.push_back(ma);
 				RemoveFromList(urgentNodes, node);
 				RemoveFromList(candidateNodes, node);
@@ -1327,43 +1316,43 @@ public:
 		return true;
 	}
 	
-	static void PrintInfo(int currentTime)
+	static void PrintInfo(int now)
 	{
-		if( !( currentTime % getConfig<int>("log", "slot_log") == 0
-			  || currentTime == getConfig<int>("simulation", "runtime") ) )
+		if( !( now % getConfig<int>("log", "slot_log") == 0
+			  || now == getConfig<int>("simulation", "runtime") ) )
 			return;
 
 
 		/***************************************** 路由协议的通用输出 *********************************************/
 
-		CRoutingProtocol::PrintInfo(cast(allNodes), currentTime);
+		CRoutingProtocol::PrintInfo(cast(allNodes), now);
 
 		/**************************************** 补充输出 *********************************************/
 
 
 
-		if( currentTime % getConfig<int>("log", "slot_log") == 0
-		   || currentTime == getConfig<int>("simulation", "runtime") )
+		if( now % getConfig<int>("log", "slot_log") == 0
+		   || now == getConfig<int>("simulation", "runtime") )
 		{
 			//Task Met
 			ofstream task(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_task"), ios::app);
-			if( currentTime == 0 )
+			if( now == 0 )
 			{
 				task << endl << getConfig<string>("log", "info_log") << endl;
 				task << getConfig<string>("log", "info_task") << endl;
 			}
-			task << currentTime << TAB << CPFerryTask::getPercentTaskMet() << TAB << CPFerryTask::getCountTaskMet() 
+			task << now << TAB << CPFerryTask::getPercentTaskMet() << TAB << CPFerryTask::getCountTaskMet() 
 				<< TAB << CPFerryTask::getCountTask() << endl;
 			task.close();
 
 			//MA Buffer
 			ofstream buffer_ma(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_ma"), ios::app);
-			if( currentTime == 0 )
+			if( now == 0 )
 			{
 				buffer_ma << endl << getConfig<string>("log", "info_log") << endl;
 				buffer_ma << getConfig<string>("log", "info_buffer_ma") << endl;
 			}
-			buffer_ma << currentTime << TAB;
+			buffer_ma << now << TAB;
 			for( auto iMA = allMAs.begin(); iMA != allMAs.end(); ++iMA )
 				buffer_ma << ( *iMA )->getBufferSize() << TAB;
 			buffer_ma << endl;
@@ -1373,9 +1362,9 @@ public:
 
 	}
 
-	static void PrintFinal(int currentTime)
+	static void PrintFinal(int now)
 	{
-		CRoutingProtocol::PrintFinal(currentTime);
+		CRoutingProtocol::PrintFinal(now);
 
 		//最终final输出（补充）
 		ofstream final(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);

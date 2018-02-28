@@ -37,7 +37,7 @@ public:
 	~CPostSelect(){};
 
 	//执行hotspot选取，返回得到的hotspot集合
-	vector<CHotspot *> PostSelect(int currentTime);
+	vector<CHotspot *> PostSelect(int now);
 	//int getNCoveredPositions() const;
 	
 };

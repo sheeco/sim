@@ -111,10 +111,10 @@ public:
 	}
 
 	//实际上只更新TTL
-	void updateStatus(int currentTime)
+	void updateStatus(int now)
 	{
-//		this->TTL -= ( currentTime - time );
-		this->time = currentTime;
+//		this->TTL -= ( now - time );
+		this->time = now;
 	}
 	inline void arriveSink(int timeArrival)
 	{
@@ -129,13 +129,13 @@ public:
 	// TODO: call this func when receiving anything
 	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
 	//注意：数据发送方应在发送之前检查剩余HOP大于1
-	inline void arriveAnotherNode(int currentTime) override
+	inline void arriveAnotherNode(int now) override
 	{
 		this->HOP--;
 
-//		this->TTL -= ( currentTime - time );
-		//this->timeArrival = currentTime;
-		//this->time = currentTime;
+//		this->TTL -= ( now - time );
+		//this->timeArrival = now;
+		//this->time = now;
 	}
 
 //	//判断是否已经超过生存期(TTL <= 0)，超出应丢弃

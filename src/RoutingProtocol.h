@@ -32,10 +32,10 @@ public:
 	static vector<CData> getDataForTrans(CGeneralNode* node, int capacity, bool FIFO);
 
 	//打印相关信息到文件
-	static void PrintInfo(int currentTime);
-	static void PrintInfo(vector<CNode*> allNodes, int currentTime);
+	static void PrintInfo(int now);
+	static void PrintInfo(vector<CNode*> allNodes, int now);
 	//最终final输出
-	static void PrintFinal(int currentTime);
+	static void PrintFinal(int now);
 
 };
 

@@ -74,53 +74,20 @@ protected:
 	friend class HAR;
 	friend class CMacProtocol;
 
-	//	static double energyConsumption;
-	static vector<CHARMANode *> allMANodes;
-	static vector<CHARMANode *> busyMANodes;
-	static vector<CHARMANode *> freeMANodes;
-
-
-	CHARMANode(CHARRoute route, int time)
+	CHARMANode(CHARRoute *route, int now)
 	{
-		this->setRoute(new CHARRoute(route));
-	}
-	//暂时闲置
-	void turnFree()
-	{
-		for( auto iMANode = busyMANodes.begin(); iMANode != busyMANodes.end(); ++iMANode )
-		{
-			if( ( *iMANode ) == this )
-			{
-				busyMANodes.erase(iMANode);
-				break;
-			}
-		}
-		freeMANodes.push_back(this);
+		this->updateRoute(route, now);
 	}
 
-	static vector<CHARMANode *>& getBusyMANodes()
-	{
-		return busyMANodes;
-	}
-
-	static vector<CHARMANode *>& getAllMANodes()
-	{
-		return allMANodes;
-	}
-
-	static inline double getSumEnergyConsumption()
-	{
-		double sumEnergyConsumption = 0;
-		for( auto iMANode = busyMANodes.begin(); iMANode != busyMANodes.end(); ++iMANode )
-			sumEnergyConsumption += ( *iMANode )->getEnergyConsumption();
-		for( auto iMANode = freeMANodes.begin(); iMANode != freeMANodes.end(); ++iMANode )
-			sumEnergyConsumption += ( *iMANode )->getEnergyConsumption();
-
-		return sumEnergyConsumption;
-	}
 	inline CHARRoute* getHARRoute() const
 	{
-		return dynamic_cast< CHARRoute* >( this->route );
+		CHARRoute* res = dynamic_cast< CHARRoute* >( this->route );
+		return res;
+	}
+	inline void updateRoute(CHARRoute *route, int now)
+	{
+		CMANode::updateRoute(route);
+		CPrintHelper::PrintDetail(now, this->getName() + " is assigned with route " + route->format() + ".");
 	}
 	inline CHotspot* getAtHotspot() const
 	{
@@ -161,27 +128,6 @@ protected:
 		return ack;
 	}
 
-	//当前活动MA个数不足时调用，将激活闲置的MA或构造新的MA
-	static CHARMANode* newMANode(CHARRoute route, int time)
-	{
-		CHARMANode *result = nullptr;
-
-		//构造新的MA
-		if( freeMANodes.empty() )
-		{
-			result = new CHARMANode(route, time);
-		}
-		//使用闲置的MA
-		else
-		{
-			result = freeMANodes[0];
-			freeMANodes.erase(freeMANodes.begin());
-			result->updateRoute(route);
-		}
-		busyMANodes.push_back(result);
-		allMANodes.push_back(result);
-		return result;
-	}
 
 };
 
@@ -195,6 +141,45 @@ private:
 	//vector<CHARMANode> m_MANodes;
 	static vector<CHARRoute> m_newRoutes;
 
+	//TODO:
+	//static vector<CHARNode*> allNodes;
+	//static vector<CHARNode*> aliveNodes;
+	//static vector<CHARNode*> deadNodes;
+
+	static vector<CHARMANode *> allMAs;
+	static vector<CHARMANode *> busyMAs;
+	static vector<CHARMANode *> freeMAs;
+
+	static void turnFree(CHARMANode * ma)
+	{
+		AddToListUniquely(freeMAs, ma);
+		RemoveFromList(busyMAs, ma);
+	}
+	static void turnBusy(CHARMANode * ma)
+	{
+		RemoveFromList(freeMAs, ma);
+		AddToListUniquely(busyMAs, ma);
+	}
+	//当前活动MA个数不足时调用，将激活闲置的MA或构造新的MA
+	static CHARMANode* newMANode(CHARRoute *route, int now)
+	{
+		CHARMANode *result = nullptr;
+
+		//构造新的MA
+		if( freeMAs.empty() )
+		{
+			result = new CHARMANode(route, now);
+			AddToListUniquely(allMAs, result);
+		}
+		//使用闲置的MA
+		else
+		{
+			result = freeMAs[0];
+			result->updateRoute(route, now);
+		}
+		turnBusy(result);
+		return result;
+	}
 	//取得新的路线集合
 	static inline void setNewRoutes(vector<CHARRoute> newRoutes)
 	{
@@ -216,12 +201,12 @@ private:
 	//用于hotspot classification
 	static double getHotspotHeat(CHotspot *hotspot);
 	static double getSumDataRate(vector<int> nodes);  //计算ge的sum，同一个node不应重复计算
-	static double getTimeIncreForInsertion(int currentTime, CHARRoute route, int front, CHotspot *hotspot);
-	static double calculateRatioForInsertion(int currentTime, CHARRoute route, int front, CHotspot *hotspot);
+	static double getTimeIncreForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot);
+	static double calculateRatioForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot);
 	//对一条route进行优化（TSP 最近邻居算法）
 	static void OptimizeRoute(CHARRoute &route);
 	//计算相关统计数据
-	static double calculateEDTime(int currentTime);
+	static double calculateEDTime(int now);
 
 	static inline double getAverageMACost()
 	{
@@ -230,7 +215,6 @@ private:
 		else
 			return double(SUM_MA_COST) / double(COUNT_MA_COST);
 	}
-
 	static inline double getAverageMAWaypoint()
 	{
 		if( COUNT_WAYPOINT_PER_MA == 0 )
@@ -239,17 +223,16 @@ private:
 			return SUM_WAYPOINT_PER_MA / COUNT_WAYPOINT_PER_MA;
 	}
 
-
 	//根据选取出的hotspot集合得到hotspot class的集合
-	static void HotspotClassification(int currentTime);
+	static void HotspotClassification(int now);
 	//对初步得到的hotspot class进行路径优化（TSP 最近邻居算法）
-	static void MANodeRouteDesign(int currentTime);
+	static void MANodeRouteDesign(int now);
 //	//在特定时槽上发送数据
-//	static void SendData(int currentTime);
+//	static void SendData(int now);
 
 //	//在每一次贪婪选择之前调用，将从CHotspot::oldSelectedHotspots中寻找投递计数为0的热点删除放入CHotspot::deletedHotspots
 //	//并删除其对应的所有position放入CPosition::deletedPositions
-//	static void DecayPositionsWithoutDeliveryCount(int currentTime);
+//	static void DecayPositionsWithoutDeliveryCount(int now);
 
 
 public:
@@ -266,16 +249,120 @@ public:
 			return true;
 	}
 	//必须先调用hasMoreNewRoutes判断
-	static inline CHARRoute popRoute()
+	static inline CHARRoute* popRoute()
 	{
 		CHARRoute result = m_newRoutes[0];
 		m_newRoutes.erase(m_newRoutes.begin());
-		return result;
+		return new CHARRoute(result);
 	}
 
-	//根据时间和热点，计算等待时间
-	static double calculateWaitingTime(int currentTime, CHotspot *hotspot);
+	static void atMAReturn(CHARMANode* ma, int now)
+	{
+		if( hasMoreNewRoutes() )
+			ma->updateRoute(HAR::popRoute(), now);
+		else
+		{
+			ma->endRoute();
+			turnFree(ma);
+		}
+	}
 
+	static inline double getSumEnergyConsumption()
+	{
+		double sumEnergyConsumption = 0;
+		for( auto iMANode = busyMAs.begin(); iMANode != busyMAs.end(); ++iMANode )
+			sumEnergyConsumption += ( *iMANode )->getEnergyConsumption();
+		for( auto iMANode = freeMAs.begin(); iMANode != freeMAs.end(); ++iMANode )
+			sumEnergyConsumption += ( *iMANode )->getEnergyConsumption();
+
+		return sumEnergyConsumption;
+	}
+	//根据时间和热点，计算等待时间
+	static double calculateWaitingTime(int now, CHotspot *hotspot);
+
+	//更新所有 MA 的坐标、等待时间
+	//注意：必须在新一轮热点选取之后调用
+	static void UpdateMANodeStatus(int now)
+	{
+			//将新增的路线分配给新的MA
+		while( !freeMAs.empty() )
+		{
+			CHARMANode *ma = freeMAs.front();
+			if( !hasMoreNewRoutes() )
+				break;
+			ma->updateRoute(popRoute(), now);
+			turnBusy(ma);
+		}
+
+		auto MAs = busyMAs;  //local copy to avoid iterator problem after erasing
+		for( vector<CHARMANode *>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA )
+			( *iMA )->updateStatus(now);
+	}
+
+	static vector<CGeneralNode*> findNeighbors(CGeneralNode& src)
+	{
+		vector<CGeneralNode*> neighbors;
+
+		/************************************************ Sensor Node *******************************************************/
+
+		vector<CNode*> nodes = CNode::getNodes();
+		for( vector<CNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
+		{
+			CNode* dstNode = *idstNode;
+			//skip itself
+			if( ( dstNode )->getID() == src.getID() )
+				continue;
+
+			if( CBasicEntity::withinRange(src, *dstNode, getConfig<int>("trans", "range_trans")) )
+			{
+				//统计sink节点的相遇计数
+				if( typeid( src ) == typeid( CSink ) )
+					CSink::encount();
+
+				if( dstNode->isAwake() )
+				{
+					//统计sink节点的相遇计数
+					if( typeid( src ) == typeid( CSink ) )
+						CSink::encountActive();
+
+					if( Bet(getConfig<double>("trans", "prob_trans")) )
+						neighbors.push_back(dstNode);
+				}
+			}
+		}
+
+		/*************************************************** Sink **********************************************************/
+
+		CSink* sink = CSink::getSink();
+		if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range_trans"))
+		   && Bet(getConfig<double>("trans", "prob_trans"))
+		   && sink->getID() != src.getID() )
+		{
+			neighbors.push_back(sink);
+			CSink::encount();
+			CSink::encountActive();
+		}
+
+
+		/**************************************************** MA ***********************************************************/
+
+		for( vector<CHARMANode*>::iterator iMA = busyMAs.begin(); iMA != busyMAs.end(); ++iMA )
+		{
+			//skip itself
+			if( ( *iMA )->getID() == src.getID() )
+				continue;
+
+			if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
+			   && Bet(getConfig<double>("trans", "prob_trans"))
+			   && ( *iMA )->isAwake() )
+			{
+				neighbors.push_back(*iMA);
+			}
+		}
+		return neighbors;
+		// TODO: sort by distance with src node ?
+	}
+	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now);
 	//从下层协议传入的控制/数据包
 	static vector<CPacket*> receivePackets(CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time);
 	// sink <- MA 
@@ -287,12 +374,47 @@ public:
 	// MA <- Node 
 	static vector<CPacket*> receivePackets(CHARMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time);
 
+	static void CommunicateWithNeighbor(int now)
+	{
+		static bool print = false;
+		if( now == 0
+		   || print )
+		{
+			CPrintHelper::PrintHeading(now, "DATA DELIVERY");
+			print = false;
+		}
+
+		// TODO: sink receive RTS / send by slot ?
+		// xHAR: sink => MAs
+		CSink* sink = CSink::getSink();
+		transmitFrame(*sink, sink->sendRTS(now), now);
+
+		vector<CNode*> nodes = CNode::getNodes();
+		vector<CHARMANode*> MAs = busyMAs;
+
+		// xHAR: MAs => nodes
+		for( vector<CHARMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
+		{
+			// skip discover if buffer is full && _selfish is used
+			if( ( *srcMA )->getCapacityForward() > 0 )
+				transmitFrame(**srcMA, ( *srcMA )->sendRTSWithCapacity(now), now);
+		}
+		// xHAR: no forward between nodes
+
+		if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
+		{
+			CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
+			CPrintHelper::PrintNewLine();
+			print = true;
+		}
+	}
+
 	//打印相关信息到文件
-	static void PrintInfo(int currentTime);
-	static void PrintFinal(int currentTime);
+	static void PrintInfo(int now);
+	static void PrintFinal(int now);
 
 	static bool Init();
-	static bool Operate(int currentTime);
+	static bool Operate(int now);
 
 };
 

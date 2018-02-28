@@ -153,10 +153,10 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 	return ( sector - triangle ) * 4 ;
 }
 
-bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
+bool CHotspot::UpdateAtHotspotForNodes(int now)
 {
 	if( ! ( getConfig<bool>("trace", "continuous")
-		    || currentTime % getConfig<int>("trace", "interval") == 0 ) )
+		    || now % getConfig<int>("trace", "interval") == 0 ) )
 		return false;
 
 	vector<CHotspot *> hotspots = selectedHotspots;
@@ -190,7 +190,7 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 
 		// visit 和 encounter 计数的统计
 		// 时槽仅由轨迹文件决定
-		if( currentTime % getConfig<int>("trace", "interval") == 0 )
+		if( now % getConfig<int>("trace", "interval") == 0 )
 		{
 			CNode::visit();
 			if( ( *inode )->isAtWaypoint() )
@@ -216,9 +216,9 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 	return true;
 }
 
-//bool CHotspot::UpdateAtHotspotForMANodes(int currentTime)
+//bool CHotspot::UpdateAtHotspotForMANodes(int now)
 //{
-//	if( ! ( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 ) )
+//	if( ! ( now % getConfig<int>("hs", "slot_hotspot_update") == 0 ) )
 //		return false;
 //
 //	vector<CHotspot *> hotspots = selectedHotspots;
@@ -251,7 +251,7 @@ bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
 //			&& atHotspot != nullptr )
 //		{
 //			(*iMA)->setAtHotspot(atHotspot);
-//			(*iMA)->setWaitingTime( HAR::calculateWaitingTime(currentTime, atHotspot) );
+//			(*iMA)->setWaitingTime( HAR::calculateWaitingTime(now, atHotspot) );
 //		}
 //	}
 //

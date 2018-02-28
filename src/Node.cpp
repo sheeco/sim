@@ -107,19 +107,19 @@ void CNode::initNodes() {
 	}
 }
 
-void CNode::generateData(int currentTime) {
-	int timeDataIncre = currentTime - timeLastData;
+void CNode::generateData(int now) {
+	int timeDataIncre = now - timeLastData;
 	int nData = int( timeDataIncre * dataRate / getConfig<int>("data", "size_data"));
 	if(nData > 0)
 	{
 		for(int i = 0; i < nData; ++i)
 		{
-			CData data(ID, currentTime, getConfig<int>("data", "size_data"));
+			CData data(ID, now, getConfig<int>("data", "size_data"));
 			this->buffer = CSortHelper::insertIntoSortedList(this->buffer, data, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
 		}
-		timeLastData = currentTime;
+		timeLastData = now;
 	}
-	updateBufferStatus(currentTime);
+	updateBufferStatus(now);
 }
 
 
@@ -165,7 +165,7 @@ bool CNode::finiteEnergy()
 	return getConfig<int>("node", "energy") > 0;
 }
 
-bool CNode::hasNodes(int currentTime) 
+bool CNode::hasNodes(int now) 
 {
 	if( nodes.empty() && deadNodes.empty() )
 	{
@@ -176,9 +176,9 @@ bool CNode::hasNodes(int currentTime)
 	return ( ! nodes.empty() );
 }
 
-bool CNode::ClearDeadNodes(int currentTime) 
+bool CNode::ClearDeadNodes(int now) 
 {
-	return ClearDeadNodes(nodes, deadNodes, currentTime);
+	return ClearDeadNodes(nodes, deadNodes, now);
 }
 
 // TODO: change to the new implementation below
@@ -279,9 +279,9 @@ void CNode::checkDataByAck(vector<CData> ack)
 		RemoveFromList(buffer, ack);
 }
 
-void CNode::Overhear(int currentTime)
+void CNode::Overhear(int now)
 {
-	CGeneralNode::Overhear(currentTime);
+	CGeneralNode::Overhear(now);
 
 	//继续载波侦听
 	//时间窗内随机值 / 立即休眠？
@@ -316,20 +316,20 @@ void CNode::Sleep()
 	timerSleep = SLOT_SLEEP;
 }
 
-CFrame* CNode::sendRTSWithCapacityAndPred(int currentTime)
+CFrame* CNode::sendRTSWithCapacityAndPred(int now)
 {
 	vector<CPacket*> packets;
 	if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_selfish
 		&& ( ! buffer.empty() ) )
-		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity) );
-	packets.push_back( new CCtrl(ID, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_rts) );
-	packets.push_back( new CCtrl(ID, deliveryPreds, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_index) );
+		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity) );
+	packets.push_back( new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_rts) );
+	packets.push_back( new CCtrl(ID, deliveryPreds, now, getConfig<int>("data", "size_ctrl"), CCtrl::_index) );
 	CFrame* frame = new CFrame(*this, packets);
 
 	return frame;	
 }
 
-bool CNode::hasSpokenRecently(CNode* node, int currentTime) 
+bool CNode::hasSpokenRecently(CNode* node, int now) 
 {
 	if( getConfig<int>("node", "lifetime_spoken_cache") == 0 )
 		return false;
@@ -337,19 +337,19 @@ bool CNode::hasSpokenRecently(CNode* node, int currentTime)
 	map<CNode *, int>::iterator icache = spokenCache.find( node );
 	if( icache == spokenCache.end() )
 		return false;
-	else if( ( currentTime - icache->second ) == 0
-		|| ( currentTime - icache->second ) < getConfig<int>("node", "lifetime_spoken_cache") )
+	else if( ( now - icache->second ) == 0
+		|| ( now - icache->second ) < getConfig<int>("node", "lifetime_spoken_cache") )
 		return true;
 	else
 		return false;
 }
 
-void CNode::addToSpokenCache(CNode* node, int currentTime) 
+void CNode::addToSpokenCache(CNode* node, int now) 
 {
-	spokenCache.insert( pair<CNode*, int>(node, currentTime) );
+	spokenCache.insert( pair<CNode*, int>(node, now) );
 }
 
-//vector<CData> CNode::dropOverdueData(int currentTime) {
+//vector<CData> CNode::dropOverdueData(int now) {
 //	if( buffer.empty() )
 //		return vector<CData>();
 ////	if( ! CData::useTTL() )
@@ -358,7 +358,7 @@ void CNode::addToSpokenCache(CNode* node, int currentTime)
 //	vector<CData> overflow;
 //	for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); )
 //	{
-//		idata->updateStatus(currentTime);
+//		idata->updateStatus(now);
 //		//如果TTL过期，丢弃
 //		if( idata->isOverdue() )
 //		{
@@ -417,7 +417,7 @@ vector<CData> CNode::dropDataIfOverflow()
 	return overflow;
 }
 
-vector<CData> CNode::updateBufferStatus(int currentTime) 
+vector<CData> CNode::updateBufferStatus(int now) 
 {
 	vector<CData> overflow = dropDataIfOverflow();
 
@@ -484,15 +484,15 @@ void CNode::removeNodes(int n)
 	CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
 }
 
-void CNode::updateStatus(int currentTime)
+void CNode::updateStatus(int now)
 {
-	if( this->time == currentTime )
+	if( this->time == now )
 		return;
 
 	int newTime = this->time;
 
 	//计算能耗、更新工作状态
-	while( ( newTime + getConfig<int>("simulation", "slot") ) <= currentTime )
+	while( ( newTime + getConfig<int>("simulation", "slot") ) <= now )
 	{
 		newTime += getConfig<int>("simulation", "slot");
 
@@ -513,12 +513,12 @@ void CNode::updateStatus(int currentTime)
 		switch( state )
 		{
 			case _awake:
-				consumeEnergy(getConfig<double>("trans", "consumption_wake") * getConfig<int>("simulation", "slot"), currentTime);
+				consumeEnergy(getConfig<double>("trans", "consumption_wake") * getConfig<int>("simulation", "slot"), now);
 				updateTimerWake(newTime);
 
 				break;
 			case _asleep:
-				consumeEnergy(getConfig<double>("trans", "consumption_sleep") * getConfig<int>("simulation", "slot"), currentTime);
+				consumeEnergy(getConfig<double>("trans", "consumption_sleep") * getConfig<int>("simulation", "slot"), now);
 				updateTimerSleep(newTime);
 
 				break;
@@ -536,24 +536,24 @@ void CNode::updateStatus(int currentTime)
 	sumTimeAlive += newTime - this->time;
 
 	//生成数据
-	if( currentTime <= getConfig<int>("simulation", "datatime") )
-		generateData(currentTime);
+	if( now <= getConfig<int>("simulation", "datatime") )
+		generateData(now);
 
 
 	/**************************************  Prophet  *************************************/
 	if( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_prophet 
-		 && (currentTime % getConfig<int>("trace", "interval")) == 0  )
-		CProphet::decayDeliveryPreds(this, currentTime);
+		 && (now % getConfig<int>("trace", "interval")) == 0  )
+		CProphet::decayDeliveryPreds(this, now);
 
 	//更新坐标及时间戳
-	if( ! trace->isValid(currentTime) )
+	if( ! trace->isValid(now) )
 	{
-		die(currentTime);
-		CPrintHelper::PrintDetail(currentTime, this->getName() + " dies of trace exhaustion.");
+		die(now);
+		CPrintHelper::PrintDetail(now, this->getName() + " dies of trace exhaustion.");
 		return;
 	}
-	setLocation(trace->getLocation(currentTime));
-	setTime(currentTime);
+	setLocation(trace->getLocation(now));
+	setTime(now);
 
 }
 

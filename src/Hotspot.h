@@ -321,9 +321,9 @@ public:
 
 	//为所有节点检查是否位于热点区域内，并统计visiter和encounter的热点区域计数
 	//visit 和 encounter 计数的统计时槽仅由轨迹文件决定
-	static bool UpdateAtHotspotForNodes(int currentTime);
+	static bool UpdateAtHotspotForNodes(int now);
 //	//为所有MA节点检查是否位于热点区域内（用于xHAR）
-//	static bool UpdateAtHotspotForMANodes(int currentTime);
+//	static bool UpdateAtHotspotForMANodes(int now);
 		
 	/****************************************   merge-HAR   ****************************************/ 
 

@@ -24,7 +24,7 @@
 //	}
 //}
 
-//void CGeneralNode::receiveFrame(CFrame* frame, int currentTime)
+//void CGeneralNode::receiveFrame(CFrame* frame, int now)
 //{
 //	
 //}
@@ -34,7 +34,7 @@
 //	return vector<CData>();
 //}
 
-void CGeneralNode::Overhear(int currentTime)
+void CGeneralNode::Overhear(int now)
 {
-	consumeEnergy(getConfig<double>("trans", "consumption_byte_receive") * getConfig<int>("data", "size_header_mac"), currentTime);
+	consumeEnergy(getConfig<double>("trans", "consumption_byte_receive") * getConfig<int>("data", "size_header_mac"), now);
 }

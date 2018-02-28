@@ -71,7 +71,7 @@ public:
 	{
 		return energyConsumption;
 	}
-	virtual void consumeEnergy(double cons, int currentTime)
+	virtual void consumeEnergy(double cons, int now)
 	{
 		this->energyConsumption += cons;
 	}
@@ -106,7 +106,7 @@ public:
 		return state == _awake;
 	}
 
-	virtual void Overhear(int currentTime);
+	virtual void Overhear(int now);
 	//virtual void Occupy(int time)
 	//{
 	//	if( time <= 0 )
@@ -127,7 +127,7 @@ public:
 	//		timerOccupied = INVALID;
 	//}
 
-//	virtual void receiveFrame(CFrame* frame, int currentTime);
+//	virtual void receiveFrame(CFrame* frame, int now);
 
 //	virtual vector<CData> bufferData(int time, vector<CData> datas);
 

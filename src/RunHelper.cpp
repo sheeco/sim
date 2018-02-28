@@ -67,7 +67,7 @@ bool CRunHelper::PrepareSimulation(int argc, char* argv[])
 
 bool CRunHelper::RunSimulation()
 {
-	int currentTime = 0;
+	int now = 0;
 	bool dead = false;
 
 	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
@@ -75,54 +75,54 @@ bool CRunHelper::RunSimulation()
 		case config::_prophet:
 			
 			CProphet::Init();
-			while( currentTime <= getConfig<int>("simulation", "runtime") )
+			while( now <= getConfig<int>("simulation", "runtime") )
 			{
-				dead = !CProphet::Operate(currentTime);
+				dead = !CProphet::Operate(now);
 
 				if( dead )
 				{
-					updateConfig<int>("simulation", "runtime", currentTime);
+					updateConfig<int>("simulation", "runtime", now);
 					break;
 				}
-				currentTime += getConfig<int>("simulation", "slot");
+				now += getConfig<int>("simulation", "slot");
 			}
-			CProphet::PrintFinal(currentTime);
+			CProphet::PrintFinal(now);
 
 			break;
 
 		case config::_xhar:
 
 			HAR::Init();
-			while( currentTime <= getConfig<int>("simulation", "runtime") )
+			while( now <= getConfig<int>("simulation", "runtime") )
 			{
-				dead = !HAR::Operate(currentTime);
+				dead = !HAR::Operate(now);
 
 				if( dead )
 				{
-					updateConfig<int>("simulation", "runtime", currentTime);
+					updateConfig<int>("simulation", "runtime", now);
 					break;
 				}
-				currentTime += getConfig<int>("simulation", "slot");
+				now += getConfig<int>("simulation", "slot");
 			}
-			HAR::PrintFinal(currentTime);
+			HAR::PrintFinal(now);
 
 			break;
 
 		case config::_pferry:
 
 			CPFerry::Init();
-			while( currentTime <= getConfig<int>("simulation", "runtime") )
+			while( now <= getConfig<int>("simulation", "runtime") )
 			{
-				dead = !CPFerry::Operate(currentTime);
+				dead = !CPFerry::Operate(now);
 
 				if( dead )
 				{
-					updateConfig<int>("simulation", "runtime", currentTime);
+					updateConfig<int>("simulation", "runtime", now);
 					break;
 				}
-				currentTime += getConfig<int>("simulation", "slot");
+				now += getConfig<int>("simulation", "slot");
 			}
-			CPFerry::PrintFinal(currentTime);
+			CPFerry::PrintFinal(now);
 
 			break;
 

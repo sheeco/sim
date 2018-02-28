@@ -11,9 +11,9 @@
 #include "SMac.h"
 #include "PrintHelper.h"
 
-vector<CHARMANode *> CHARMANode::allMANodes;
-vector<CHARMANode *> CHARMANode::busyMANodes;
-vector<CHARMANode *> CHARMANode::freeMANodes;
+vector<CHARMANode *> HAR::allMAs;
+vector<CHARMANode *> HAR::busyMAs;
+vector<CHARMANode *> HAR::freeMAs;
 
 void CHARMANode::updateStatus(int time)
 {
@@ -92,10 +92,7 @@ void CHARMANode::updateStatus(int time)
 		{
 			if( routeIsOverdue() )
 			{
-				if( HAR::hasMoreNewRoutes() )
-					this->route = new CHARRoute(HAR::popRoute());
-				else
-					this->turnFree();
+				HAR::atMAReturn(this, time);
 			}
 			else
 				route->updateToPoint();
@@ -136,7 +133,7 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 	return ratio * ( getConfig<double>("har", "heat_1") * nCoveredNodes + getConfig<double>("har", "heat_2") * sum_generationRate ) ;
 }
 
-double HAR::calculateWaitingTime(int currentTime, CHotspot *hotspot)
+double HAR::calculateWaitingTime(int now, CHotspot *hotspot)
 {
 	double result = 1;
 	int count_trueHotspot = 0;
@@ -145,13 +142,13 @@ double HAR::calculateWaitingTime(int currentTime, CHotspot *hotspot)
 
 	for(int i = 0; i < coveredNodes.size(); ++i)
 	{
-		int temp_time = currentTime;
+		int temp_time = now;
 		double temp;
 
-		//IHAR: Reduce Memory currentTime
+		//IHAR: Reduce Memory now
 		if( getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved )
 		{
-			temp_time = min(currentTime, getConfig<int>("ihs", "lifetime_position"));
+			temp_time = min(now, getConfig<int>("ihs", "lifetime_position"));
 		}
 
 		nCoveredPositionsForNode.push_back( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) );
@@ -188,15 +185,15 @@ double HAR::getSumDataRate(vector<int> nodes)
 	return sum;
 }
 
-double HAR::getTimeIncreForInsertion(int currentTime, CHARRoute route, int front, CHotspot *hotspot)
+double HAR::getTimeIncreForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot)
 {
-	double result = calculateWaitingTime(currentTime, hotspot) + ( route.getIncreDistance(front, hotspot) / CHARMANode::getSpeed() );
+	double result = calculateWaitingTime(now, hotspot) + ( route.getIncreDistance(front, hotspot) / CHARMANode::getSpeed() );
 	return result;
 }
 
-double HAR::calculateRatioForInsertion(int currentTime, CHARRoute route, int front, CHotspot *hotspot)
+double HAR::calculateRatioForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot)
 {
-	double time_incr = getTimeIncreForInsertion(currentTime, route, front, hotspot);
+	double time_incr = getTimeIncreForInsertion(now, route, front, hotspot);
 	vector<int> temp_nodes = route.getCoveredNodes();
 	AddToListUniquely(temp_nodes, hotspot->getCoveredNodes());
 
@@ -204,7 +201,7 @@ double HAR::calculateRatioForInsertion(int currentTime, CHARRoute route, int fro
 	return ( time_incr * sumGenerationRate );
 }
 
-double HAR::calculateEDTime(int currentTime)
+double HAR::calculateEDTime(int now)
 {
 	double sum_length = 0;
 	double avg_length = 0;
@@ -224,7 +221,7 @@ double HAR::calculateEDTime(int currentTime)
 	avg_length = sum_length / m_hotspots.size() + 1;
 	for(vector<CHotspot *>::iterator ihotspot = m_hotspots.begin(); ihotspot != m_hotspots.end(); ++ihotspot)
 	{
-		sum_waitingTime += calculateWaitingTime(currentTime, *ihotspot);
+		sum_waitingTime += calculateWaitingTime(now, *ihotspot);
 		sum_pm += exp( -1 / (*ihotspot)->getHeat() );
 	}
 	avg_waitingTime = sum_waitingTime / m_hotspots.size();
@@ -267,10 +264,10 @@ void HAR::OptimizeRoute(CHARRoute &route)
 	route = result;
 }
 
-void HAR::HotspotClassification(int currentTime)
+void HAR::HotspotClassification(int now)
 {
-	if( ! ( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 
-		&& currentTime >= getConfig<int>("hs", "starttime_hospot_select") ) )
+	if( ! ( now % getConfig<int>("hs", "slot_hotspot_update") == 0 
+		&& now >= getConfig<int>("hs", "starttime_hospot_select") ) )
 		return;
 
 	vector<CHotspot *> temp_hotspots = CHotspot::getSelectedHotspots();
@@ -317,7 +314,7 @@ void HAR::HotspotClassification(int currentTime)
 					}
 				}
 
-				time_increment = getTimeIncreForInsertion(currentTime, route, best_front, temp_hotspots[ihotspot]);
+				time_increment = getTimeIncreForInsertion(now, route, best_front, temp_hotspots[ihotspot]);
 				vector<int> temp_nodes = route.getCoveredNodes();
 				AddToListUniquely(temp_nodes, temp_hotspots[ihotspot]->getCoveredNodes());
 				sum_generationRate = getSumDataRate(temp_nodes);
@@ -363,10 +360,10 @@ void HAR::HotspotClassification(int currentTime)
 }
 
 
-void HAR::MANodeRouteDesign(int currentTime)
+void HAR::MANodeRouteDesign(int now)
 {
-	if( !( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0
-		  && currentTime >= getConfig<int>("hs", "starttime_hospot_select") ) )
+	if( !( now % getConfig<int>("hs", "slot_hotspot_update") == 0
+		  && now >= getConfig<int>("hs", "starttime_hospot_select") ) )
 		return;
 
 	vector<CHARRoute> routes = getNewRoutes();
@@ -379,26 +376,31 @@ void HAR::MANodeRouteDesign(int currentTime)
 	setNewRoutes(routes);
 
 	//通知当前的所有MA路线已过期，立即返回
-	for(auto iMANode = CHARMANode::getBusyMANodes().begin(); iMANode != CHARMANode::getBusyMANodes().end(); ++iMANode)
+	for(auto iMANode = busyMAs.begin(); iMANode != busyMAs.end(); ++iMANode)
 	{
 		(*iMANode)->setRouteOverdue(true);
 		( *iMANode )->setReturnAtOnce(true);
 	}
 
-	//将新增的路线分配给新的MA
-	if(CHARMANode::getBusyMANodes().size() < routes.size())
+	if( allMAs.size() < m_routes.size() )
 	{
-		int num_newMANodes = routes.size() - CHARMANode::getBusyMANodes().size();
-		for(int i = 0; i < num_newMANodes; ++i)
+		int num_newMANodes = m_routes.size() - allMAs.size();
+		for( int i = 0; i < num_newMANodes; ++i )
 		{
-			CHARMANode::newMANode(popRoute(), currentTime);
+			newMANode(popRoute(), now);
 		}
 	}
 
-	CPrintHelper::PrintAttribute("MA", CHARMANode::getBusyMANodes().size());
+	CPrintHelper::PrintAttribute("MA", busyMAs.size());
 }
 
-vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int currentTime)
+inline bool HAR::transmitFrame(CGeneralNode & src, CFrame * frame, int now)
+{
+	vector<CGeneralNode*> neighbors = findNeighbors(src);
+	return CMacProtocol::transmitFrame(src, frame, now, findNeighbors, receivePackets);
+}
+
+vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int now)
 {
 	vector<CPacket*> packetsToSend;
 
@@ -411,7 +413,7 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 		if( typeid( gFromNode ) == typeid( CHARMANode ) )
 		{
 			CHARMANode* fromMA = dynamic_cast<CHARMANode*>( &gFromNode );
-			packetsToSend = HAR::receivePackets(toSink, fromMA, packets, currentTime);
+			packetsToSend = HAR::receivePackets(toSink, fromMA, packets, now);
 		}
 	}
 
@@ -424,7 +426,7 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 		if( typeid( gFromNode ) == typeid( CSink ) )
 		{
 			CSink* fromSink = dynamic_cast< CSink* >( &gFromNode );
-			packetsToSend = HAR::receivePackets(toMA, fromSink, packets, currentTime);
+			packetsToSend = HAR::receivePackets(toMA, fromSink, packets, now);
 		}
 
 		/************************************************ MA <- node *******************************************************/
@@ -432,7 +434,7 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 		else if( typeid( gFromNode ) == typeid( CNode ) )
 		{
 			CNode* fromNode = dynamic_cast<CNode*>( &gFromNode );
-			packetsToSend = HAR::receivePackets(toMA, fromNode, packets, currentTime);
+			packetsToSend = HAR::receivePackets(toMA, fromNode, packets, now);
 		}
 	}
 
@@ -445,7 +447,7 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 		if( typeid( gFromNode ) == typeid( CHARMANode ) )
 		{
 			CHARMANode* fromMA = dynamic_cast<CHARMANode*>( &gFromNode );
-			packetsToSend = HAR::receivePackets(node, fromMA, packets, currentTime);
+			packetsToSend = HAR::receivePackets(node, fromMA, packets, now);
 		}
 	}
 
@@ -588,6 +590,9 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 				/*************************************** rcv ACK **************************************/
 
 			case CCtrl::_ack:
+
+				if( ma->ifReturnAtOnce() )
+					atMAReturn(ma, time);
 
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
@@ -808,51 +813,51 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CNode* fromNode, vector<CPa
 
 }
 
-void HAR::PrintInfo(int currentTime)
+void HAR::PrintInfo(int now)
 {
-	if( ! ( currentTime % getConfig<int>("log", "slot_log") == 0 
-			|| currentTime == getConfig<int>("simulation", "runtime")  ) )
+	if( ! ( now % getConfig<int>("log", "slot_log") == 0 
+			|| now == getConfig<int>("simulation", "runtime")  ) )
 		return;
 
 
 	/***************************************** 路由协议的通用输出 *********************************************/
 
-	CRoutingProtocol::PrintInfo(currentTime);
+	CRoutingProtocol::PrintInfo(now);
 
 	/***************************************** 热点选取的相关输出 *********************************************/
 
-	CHotspotSelect::PrintInfo(currentTime);
+	CHotspotSelect::PrintInfo(now);
 
-	if( ! ( currentTime >= getConfig<int>("hs", "starttime_hospot_select") ) )
+	if( ! ( now >= getConfig<int>("hs", "starttime_hospot_select") ) )
 		return;
 
 	/**************************************** HAR 路由的补充输出 *********************************************/
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、MA节点buffer状态 ...
 
-	if( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0
-	    || currentTime == getConfig<int>("simulation", "runtime") )
+	if( now % getConfig<int>("hs", "slot_hotspot_update") == 0
+	    || now == getConfig<int>("simulation", "runtime") )
 	{
 		//MA节点个数
 		ofstream ma(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ma"), ios::app);
-		if( currentTime == getConfig<int>("hs", "starttime_hospot_select") )
+		if( now == getConfig<int>("hs", "starttime_hospot_select") )
 		{
 			ma << endl << getConfig<string>("log", "info_log") << endl;
 			ma << getConfig<string>("log", "info_ma") << endl;
 		}
-		ma << currentTime << TAB << m_routes.size() << TAB << ( double(m_hotspots.size()) / double(m_routes.size()) ) << endl;
+		ma << now << TAB << m_routes.size() << TAB << ( double(m_hotspots.size()) / double(m_routes.size()) ) << endl;
 		ma.close();
 
 		//
 		ofstream ma_route(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ma_route"), ios::app);
-		if( currentTime == getConfig<int>("hs", "starttime_hospot_select") )
+		if( now == getConfig<int>("hs", "starttime_hospot_select") )
 		{
 			ma_route << endl << getConfig<string>("log", "info_log") << endl;
 			ma_route << getConfig<string>("log", "info_ma_route") << endl;
 		}
 		for( vector<CHARRoute>::iterator iroute = m_routes.begin(); iroute != m_routes.end(); iroute++ )
 		{
-			ma_route << currentTime << TAB << iroute->format() << endl;
+			ma_route << now << TAB << iroute->format() << endl;
 		}
 		ma_route.close();			
 
@@ -865,17 +870,17 @@ void HAR::PrintInfo(int currentTime)
 
 		//ED即平均投递延迟的理论值
 		ofstream ed(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ed"), ios::app);
-		if( currentTime == getConfig<int>("hs", "starttime_hospot_select") )
+		if( now == getConfig<int>("hs", "starttime_hospot_select") )
 		{
 			ed << endl << getConfig<string>("log", "info_log") << endl;
 			ed << getConfig<string>("log", "info_ed") << endl;
 		}
-		ed << currentTime << TAB << calculateEDTime(currentTime) << endl;
+		ed << now << TAB << calculateEDTime(now) << endl;
 		ed.close();
 
 		//热点质量、投递计数等统计信息
 		ofstream hotspot_statistics(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hotspot_statistics"), ios::app);
-		if( currentTime == getConfig<int>("hs", "starttime_hospot_select") )
+		if( now == getConfig<int>("hs", "starttime_hospot_select") )
 		{
 			hotspot_statistics << endl << getConfig<string>("log", "info_log") << endl;
 			hotspot_statistics << getConfig<string>("log", "info_hotspot_statistics") << endl;
@@ -884,18 +889,18 @@ void HAR::PrintInfo(int currentTime)
 		vector<int> timesToPrint;
 		int timeBeforeYesterday = 0;
 		//运行结束，补充输出上一轮的热点统计
-		if( currentTime == getConfig<int>("simulation", "runtime") )
+		if( now == getConfig<int>("simulation", "runtime") )
 		{
-			timeBeforeYesterday = ( currentTime / getConfig<int>("hs", "slot_hotspot_update") - 1 ) * getConfig<int>("hs", "slot_hotspot_update");
+			timeBeforeYesterday = ( now / getConfig<int>("hs", "slot_hotspot_update") - 1 ) * getConfig<int>("hs", "slot_hotspot_update");
 			int timeYesterday = timeBeforeYesterday + getConfig<int>("hs", "slot_hotspot_update");
 			if( timeBeforeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
 				timesToPrint.push_back(timeBeforeYesterday);
 			if( timeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
 				timesToPrint.push_back(timeYesterday);
 		}
-		else if( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 )
+		else if( now % getConfig<int>("hs", "slot_hotspot_update") == 0 )
 		{
-			timeBeforeYesterday = currentTime - 2 * getConfig<int>("hs", "slot_hotspot_update");
+			timeBeforeYesterday = now - 2 * getConfig<int>("hs", "slot_hotspot_update");
 			if( timeBeforeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
 				timesToPrint.push_back(timeBeforeYesterday);
 		}
@@ -915,18 +920,18 @@ void HAR::PrintInfo(int currentTime)
 	}
 
 	//MA Buffer
-	if( currentTime % getConfig<int>("log", "slot_log") == 0
-	    || currentTime == getConfig<int>("simulation", "runtime") )
+	if( now % getConfig<int>("log", "slot_log") == 0
+	    || now == getConfig<int>("simulation", "runtime") )
 	{
 		//每个MA的当前buffer状态
 		ofstream buffer_ma( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_ma"), ios::app);
-		if(currentTime == getConfig<int>("hs", "starttime_hospot_select"))
+		if(now == getConfig<int>("hs", "starttime_hospot_select"))
 		{
 			buffer_ma << endl << getConfig<string>("log", "info_log") << endl ;
 			buffer_ma << getConfig<string>("log", "info_buffer_ma") << endl;
 		}
-		buffer_ma << currentTime << TAB;
-		for(auto iMA = CHARMANode::getBusyMANodes().begin(); iMA != CHARMANode::getBusyMANodes().end(); ++iMA)
+		buffer_ma << now << TAB;
+		for(auto iMA = busyMAs.begin(); iMA != busyMAs.end(); ++iMA)
 			buffer_ma << (*iMA)->getBufferSize() << TAB ;
 		buffer_ma << endl;
 		buffer_ma.close();
@@ -935,9 +940,9 @@ void HAR::PrintInfo(int currentTime)
 
 }
 
-void HAR::PrintFinal(int currentTime)
+void HAR::PrintFinal(int now)
 {
-	CRoutingProtocol::PrintFinal(currentTime);
+	CRoutingProtocol::PrintFinal(now);
 
 	//最终final输出（补充）
 	ofstream final( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
@@ -945,12 +950,12 @@ void HAR::PrintFinal(int currentTime)
 	final << CData::getPercentDeliveryAtWaypoint() << TAB ;
 	final.close();
 
-	CHotspotSelect::PrintFinal(currentTime);
+	CHotspotSelect::PrintFinal(now);
 }
 
-//void HAR::DecayPositionsWithoutDeliveryCount(int currentTime)
+//void HAR::DecayPositionsWithoutDeliveryCount(int now)
 //{
-//	if(currentTime == 0)
+//	if(now == 0)
 //		return ;
 //	vector<CPosition*> badPositions;
 //	if( CHotspot::oldSelectedHotspots.empty() )
@@ -958,7 +963,7 @@ void HAR::PrintFinal(int currentTime)
 //
 //	for(vector<CHotspot*>::iterator ihotspot = CHotspot::oldSelectedHotspots.begin(); ihotspot != CHotspot::oldSelectedHotspots.end(); )
 //	{
-//		if( (*ihotspot)->getCountDelivery(currentTime) == 0 )
+//		if( (*ihotspot)->getCountDelivery(now) == 0 )
 //		{
 //			AddToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
 //			//free(*ihotspot);
@@ -997,33 +1002,32 @@ bool HAR::Init()
 	return true;
 }
 
-bool HAR::Operate(int currentTime)
+bool HAR::Operate(int now)
 {
 	bool hasNodes = true;
 	// 不允许 xHAR 使用 HDC 作为 MAC 协议
 	//if( config.MAC_PROTOCOL == config::_hdc )
-	//	hasNodes = CHDC::Prepare(currentTime);
+	//	hasNodes = CHDC::Prepare(now);
 	//else 
 	if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
-		hasNodes = CSMac::Prepare(currentTime);
+		hasNodes = CSMac::Prepare(now);
 
 	if( ! hasNodes )
 		return false;
 
-	HotspotClassification(currentTime);
+	HotspotClassification(now);
 
-	MANodeRouteDesign(currentTime);
+	MANodeRouteDesign(now);
 
-	CMacProtocol::UpdateMANodeStatus(currentTime);
+	UpdateMANodeStatus(now);
 
 	// 不允许 xHAR 使用 HDC 作为 MAC 协议
 	//if( config.MAC_PROTOCOL == config::_hdc )
-	//	CHDC::Operate(currentTime);
+	//	CHDC::Operate(now);
 	//else 
-	if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
-		CSMac::Operate(currentTime);
+	CommunicateWithNeighbor(now);
 
-	PrintInfo(currentTime);
+	PrintInfo(now);
 
 	return true;
 }

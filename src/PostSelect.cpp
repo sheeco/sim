@@ -88,7 +88,7 @@ bool CPostSelect::verifyCompleted()
 		return false;
 }
 
-vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
+vector<CHotspot *> CPostSelect::PostSelect(int now)
 {
 	CPrintHelper::PrintDoing("POST SELECT");
 

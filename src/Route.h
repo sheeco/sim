@@ -124,10 +124,15 @@ public:
 	string format() override
 	{
 		stringstream sstr;
-		for( vector<pair<CBasicEntity *, int>>::const_iterator iwaypoint = waypoints.begin(); iwaypoint != waypoints.end(); iwaypoint++ )
+		sstr << "[";
+		for( vector<pair<CBasicEntity *, int>>::const_iterator iwaypoint = waypoints.begin(); iwaypoint != waypoints.end(); )
 		{
-			sstr << iwaypoint->first->getLocation().format() << TAB;
+			sstr << iwaypoint->first->getLocation().format();
+			++iwaypoint;
+			if(iwaypoint != waypoints.end())
+				sstr << ", ";
 		}
+		sstr << "]";
 		// e.g "0.0, 1.234	234.5, 345.6 ..."
 		return sstr.str();
 	}

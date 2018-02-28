@@ -122,7 +122,7 @@ public:
 	friend bool operator > (const CBasicEntity &lt, const CBasicEntity &rt);
 	
 	//virtual void updateStatus() {};
-	//virtual void updateStatus(int currentTime) {};
+	//virtual void updateStatus(int now) {};
 
 };
 	

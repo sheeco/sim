@@ -83,31 +83,28 @@ public:
 	}
 
 	//过听时返回 false；否则返回 true
-	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime);
+	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now);
 	//TODO: change to below
-	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int currentTime, vector<CGeneralNode*> (*findNeighbors)(CGeneralNode&), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
-	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int currentTime);
+	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now, vector<CGeneralNode*> (*findNeighbors)(CGeneralNode&), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
+	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int now);
 	//TODO: change to below
-	static bool receiveFrame(CGeneralNode& gnode, CFrame* frame, int currentTime, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
+	static bool receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
 
 	//更新所有 node 的坐标、占空比和工作状态，生成数据，返回是否仍有节点
-	static bool UpdateNodeStatus(int currentTime);
+	static bool UpdateNodeStatus(int now);
 
 	//注意：必须在 Prepare() 之后调用
-	static void CommunicateWithNeighbor(int currentTime);
+	static void CommunicateWithNeighbor(int now);
 
 
 	//更新节点数目、节点状态；收集位置点信息、选取热点、更新节点是否位于热点区域；
 	//如果无更多节点，返回 false
-	static bool Prepare(int currentTime);
-	//更新所有 MA 的坐标、等待时间
-	//注意：必须在新一轮热点选取之后调用
-	static void UpdateMANodeStatus(int currentTime);
+	static bool Prepare(int now);
 
 	//打印相关信息到文件
-	static void PrintInfo(int currentTime);
-	static void PrintInfo(vector<CNode*> allNodes, int currentTime);
-	static void PrintFinal(int currentTime);
+	static void PrintInfo(int now);
+	static void PrintInfo(vector<CNode*> allNodes, int now);
+	static void PrintFinal(int now);
 
 };
 

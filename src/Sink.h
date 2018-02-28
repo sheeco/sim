@@ -54,7 +54,7 @@ public:
 		return true;
 	}
 
-	CFrame* sendRTS(int currentTime);
+	CFrame* sendRTS(int now);
 
 	//void Occupy(int time) override
 	//{
@@ -95,7 +95,7 @@ public:
 
 	static vector<CData> bufferData(int time, vector<CData> datas);
 
-//	void receiveFrame(CFrame* frame, int currentTime) override;
+//	void receiveFrame(CFrame* frame, int now) override;
 
 
 //	//从Node收取数据

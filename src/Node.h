@@ -74,7 +74,7 @@ protected:
 
 	static void initNodes();
 
-	void generateData(int currentTime);
+	void generateData(int now);
 
 
 	/****************************************  MAC  ***************************************/
@@ -84,8 +84,8 @@ protected:
 	//待测试
 	static void restoreNodes(int n);
 
-	//	CFrame sendCTSWithIndex(CNode* dst, int currentTime);
-	//	CFrame sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
+	//	CFrame sendCTSWithIndex(CNode* dst, int now);
+	//	CFrame sendDataWithIndex(CNode* dst, vector<CData> datas, int now);
 	//	vector<CData> bufferData(int time, vector<CData> datas) override;
 
 
@@ -115,18 +115,18 @@ public:
 	// *TODO: move even between 2 locations ?
 	// TODO: how to trigger RTS ?
 	//更新所有node的坐标、占空比和工作状态，生成数据；调用之后应调用 isAlive() 检验存活
-	void updateStatus(int currentTime);
+	void updateStatus(int now);
 
 	void updateTimerWake(int time);
 	void updateTimerSleep(int time);
 
 	//	void receiveRTS(CFrame frame);
 
-	//	void receiveFrame(CFrame* frame, int currentTime) override;
+	//	void receiveFrame(CFrame* frame, int now) override;
 
-	CFrame* sendRTSWithCapacityAndPred(int currentTime);
+	CFrame* sendRTSWithCapacityAndPred(int now);
 
-	bool hasSpokenRecently(CNode* node, int currentTime);
+	bool hasSpokenRecently(CNode* node, int now);
 
 	void addToSpokenCache(CNode* node, int t);
 
@@ -143,7 +143,7 @@ public:
 	//	return false;
 	//}
 
-	void Overhear(int currentTime) override;
+	void Overhear(int now) override;
 
 	/*************************** DC相关 ***************************/
 
@@ -216,14 +216,14 @@ public:
 
 	/*************************** 能耗相关 ***************************/
 
-	void consumeEnergy(double cons, int currentTime) override
+	void consumeEnergy(double cons, int now) override
 	{
 		this->energyConsumption += cons;
 		if( getConfig<int>("node", "energy") > 0
 		   && getConfig<int>("node", "energy") - energyConsumption <= 0 )
 		{
-			this->die(currentTime);
-			CPrintHelper::PrintDetail(currentTime, this->getName() + " dies of energy exhaustion.");
+			this->die(now);
+			CPrintHelper::PrintDetail(now, this->getName() + " dies of energy exhaustion.");
 		}
 	}
 
@@ -243,24 +243,24 @@ public:
 	//true if energy has ran out
 	//false if trace information has ran out
 	//the feature is not used for now
-	bool isRecyclable(int currentTime) const
+	bool isRecyclable(int now) const
 	{
-		return this->trace->isValid(currentTime);
+		return this->trace->isValid(now);
 	}
 
-	void die(int currentTime)
+	void die(int now)
 	{
-		this->timeDeath = currentTime;
+		this->timeDeath = now;
 	}
 
 	//将死亡节点整理移出，返回是否有新的节点死亡
-	static bool ClearDeadNodes(int currentTime);
+	static bool ClearDeadNodes(int now);
 	// TODO: change to the new implementation below
 	static bool ClearDeadNodes(vector<CNode*> &aliveList, vector<CNode*> &deadList, int now);
 
 	static bool finiteEnergy();
 
-	static bool hasNodes(int currentTime);
+	static bool hasNodes(int now);
 
 	static double getSumEnergyConsumption();
 
@@ -300,7 +300,7 @@ public:
 	vector<CData> dropDataIfOverflow();
 
 	//注意：需要在每次收到数据之后、投递数据之后、生成新数据之后调用此函数
-	vector<CData> updateBufferStatus(int currentTime);
+	vector<CData> updateBufferStatus(int now);
 
 	/*************************** ------- ***************************/
 

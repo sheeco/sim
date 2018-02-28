@@ -34,11 +34,11 @@ void CProphet::initDeliveryPreds(CNode * node)
 	node->setDeliveryPreds(deliveryPreds);
 }
 
-void CProphet::decayDeliveryPreds(CNode * node, int currentTime)
+void CProphet::decayDeliveryPreds(CNode * node, int now)
 {
 	map<int, double> deliveryPreds = node->getDeliveryPreds();
 	for( map<int, double>::iterator imap = deliveryPreds.begin(); imap != deliveryPreds.end(); ++imap )
-		deliveryPreds[imap->first] = imap->second * pow(getConfig<double>("prophet", "decay_pred"), ( currentTime - node->getTime() ) / getConfig<int>("trace", "interval"));
+		deliveryPreds[imap->first] = imap->second * pow(getConfig<double>("prophet", "decay_pred"), ( now - node->getTime() ) / getConfig<int>("trace", "interval"));
 	node->setDeliveryPreds(deliveryPreds);
 }
 
@@ -120,7 +120,7 @@ vector<CData> CProphet::bufferData(CNode* node, vector<CData> datas, int time)
 	return ack;
 }
 
-vector<CPacket*> CProphet::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int currentTime)
+vector<CPacket*> CProphet::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFromNode, vector<CPacket*> packets, int now)
 {
 	vector<CPacket*> packetsToSend;
 
@@ -133,7 +133,7 @@ vector<CPacket*> CProphet::receivePackets(CGeneralNode & gToNode, CGeneralNode &
 		if( typeid( gFromNode ) == typeid( CNode ) )
 		{
 			CNode* fromNode = dynamic_cast<CNode*>( &gFromNode );
-			packetsToSend = CProphet::receivePackets(toSink, fromNode, packets, currentTime);
+			packetsToSend = CProphet::receivePackets(toSink, fromNode, packets, now);
 		}
 	}
 
@@ -146,7 +146,7 @@ vector<CPacket*> CProphet::receivePackets(CGeneralNode & gToNode, CGeneralNode &
 		if( typeid( gFromNode ) == typeid( CSink ) )
 		{
 			CSink* fromSink = dynamic_cast< CSink* >( &gFromNode );
-			packetsToSend = CProphet::receivePackets(node, fromSink, packets, currentTime);
+			packetsToSend = CProphet::receivePackets(node, fromSink, packets, now);
 		}
 
 		/*********************************************** Node <- Node *******************************************************/
@@ -154,7 +154,7 @@ vector<CPacket*> CProphet::receivePackets(CGeneralNode & gToNode, CGeneralNode &
 		else if( typeid( gFromNode ) == typeid( CNode ) )
 		{
 			CNode* fromNode = dynamic_cast<CNode*>( &gFromNode );
-			packetsToSend = CProphet::receivePackets(node, fromNode, packets, currentTime);
+			packetsToSend = CProphet::receivePackets(node, fromNode, packets, now);
 		}
 	}
 
@@ -573,23 +573,23 @@ bool CProphet::Init()
 	return true;
 }
 
-bool CProphet::Operate(int currentTime)
+bool CProphet::Operate(int now)
 {
 	bool hasNodes = true;
 	if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
-		hasNodes = CHDC::Prepare(currentTime);
+		hasNodes = CHDC::Prepare(now);
 	else if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
-		hasNodes = CSMac::Prepare(currentTime);
+		hasNodes = CSMac::Prepare(now);
 
 	if( ! hasNodes )
 		return false;
 
 	if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
-		CHDC::Operate(currentTime);
+		CHDC::Operate(now);
 	else if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
-		CSMac::Operate(currentTime);
+		CSMac::Operate(now);
 
-	PrintInfo(currentTime);
+	PrintInfo(now);
 
 	return true;
 }

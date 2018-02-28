@@ -15,13 +15,13 @@ public:
 	CSMac(){};
 	~CSMac(){};
 
-//	static void DetectNeighborNode(CNode* node, int currentTime);
+//	static void DetectNeighborNode(CNode* node, int now);
 
-	static bool Operate(int currentTime);
+	static bool Operate(int now);
 
 //	//打印相关信息到文件
-//	static void PrintInfo(int currentTime);
-//	static void PrintFinal(int currentTime);
+//	static void PrintInfo(int now);
+//	static void PrintFinal(int now);
 
 };
 

@@ -73,18 +73,17 @@ protected:
 	
 	void setRoute(CRoute* route)
 	{
-		FreePointer(this->route);
 		this->route = route;
 	}
 	CMANode()
 	{
 		init();
 	}
-	CMANode(CRoute route, int time)
+	CMANode(CRoute* route, int time)
 	{
 		init();
 		FreePointer(this->route);
-		this->setRoute(new CRoute(route));
+		this->setRoute(route);
 		this->setTime(time);
 		generateID();
 		this->setName("MA #" + STRING(this->getID()));
@@ -148,14 +147,10 @@ public:
 		waitingState = 0;
 		this->setReturnAtOnce(false);
 	}
-	inline void assignRoute(CRoute route)
-	{
-		this->route = new CRoute(route);
-	}
-	inline void updateRoute(CRoute route)
+	inline void updateRoute(CRoute *route)
 	{
 		this->endRoute();
-		this->assignRoute(route);
+		this->setRoute(route);
 	}
 	//inline void setAtSink(bool atSink)
 	//{
@@ -223,13 +218,13 @@ public:
 	//virtual void updateStatus(int time) = 0;
 
 	//TODO: ?
-	CFrame* sendRTSWithCapacity(int currentTime)
+	CFrame* sendRTSWithCapacity(int now)
 	{
 		vector<CPacket*> packets;
-		packets.push_back(new CCtrl(ID, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_rts));
+		packets.push_back(new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_rts));
 		if( getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_selfish
 		   && ( !buffer.empty() ) )
-			packets.push_back(new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity));
+			packets.push_back(new CCtrl(ID, capacityBuffer - buffer.size(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity));
 
 		CFrame* frame = new CFrame(*this, packets);
 

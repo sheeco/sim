@@ -14,7 +14,7 @@ private:
 
 //	//在特定时槽上发送数据
 //	//注意：必须在调用UpdateNodeStatus之后调用此函数
-//	static void SendData(int currentTime);
+//	static void SendData(int now);
 
 
 public:
@@ -23,7 +23,7 @@ public:
 	~CProphet();
 
 	static void initDeliveryPreds(CNode* node);
-	static void decayDeliveryPreds(CNode* node, int currentTime);
+	static void decayDeliveryPreds(CNode* node, int now);
 	static void updateDeliveryPredsWith(CNode* node, int fromNode, map<int, double> preds);
 	static void updateDeliveryPredsWithSink(CNode* node, CSink* sink);
 
@@ -43,7 +43,7 @@ public:
 	static vector<CPacket*> receivePackets(CNode* node, CNode* fromNode, vector<CPacket*> packets, int time);
 
 	static bool Init();
-	static bool Operate(int currentTime);
+	static bool Operate(int now);
 
 };
 
