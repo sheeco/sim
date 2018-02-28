@@ -10,9 +10,6 @@
 
 void CRunHelper::InitLogPath()
 {
-	CPrintHelper::PrintNewLine();
-	CPrintHelper::PrintHeading("Initializing Log Path ...");
-
 	// Create root path (../test/) if doesn't exist
 	if( access(getConfig<string>("log", "dir_log").c_str(), 00) != 0 )
 		_mkdir(getConfig<string>("log", "dir_log").c_str());
@@ -22,12 +19,12 @@ void CRunHelper::InitLogPath()
 	char temp[65] = { '\0' };
 	seconds = time(nullptr); //获取目前秒时间  
 	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
-	updateConfig<string>("log", "timestamp", string(temp));
+	CConfiguration::updateConfiguration<string>("log", "timestamp", string(temp), true);
 	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
 	string timestring;
 	timestring = string(temp);
-	updateConfig<string>("log", "info_log", string("@" + getConfig<string>("log", "timestamp") + TAB));
-	updateConfig<string>("log", "path_timestamp", string("." + timestring + "/"));
+	CConfiguration::updateConfiguration<string>("log", "info_log", string("@" + getConfig<string>("log", "timestamp") + TAB), true);
+	CConfiguration::updateConfiguration<string>("log", "path_timestamp", string("." + timestring + "/"), true);
 
 	// Create log path
 	if( access(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str(), 00) != 0 )

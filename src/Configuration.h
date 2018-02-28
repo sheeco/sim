@@ -114,6 +114,12 @@ public:
 	template <class T>
 	static void updateConfiguration(string group, string keyword, T value)
 	{
+		updateConfiguration(group, keyword, value, false);
+	}
+		
+	template <class T>
+	static void updateConfiguration(string group, string keyword, T value, bool silence)
+	{
 		if( !has(group, keyword) )
 			throw string("CConfiguration::updateConfiguration(): Cannot find configuration with keyword \"" + keyword + "\" in group \"" + group + "\".");
 
@@ -127,7 +133,8 @@ public:
 			echo << "from " << *pT;
 			*pT = value;
 			echo << " to " << *pT << "." << endl;
-			CPrintHelper::FlashDetail(echo.str());
+			if( !silence )
+				CPrintHelper::FlashDetail(echo.str());
 		}
 		else
 			throw string("CConfiguration::updateConfiguration(): Cannot convert configuration \"" + keyword + "\" from " + typeid( pVoid ).name() + " to " + typeid( T ).name() + ".");
