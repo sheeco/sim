@@ -20,7 +20,7 @@ vector<CData> CRoutingProtocol::getDataForTrans(CGeneralNode* node, int capacity
 }
 void CRoutingProtocol::PrintInfo(int now)
 {
-	PrintInfo(CNode::getAllNodes(true), now);
+	PrintInfo(CNode::getAllNodes(), now);
 }
 
 void CRoutingProtocol::PrintInfo(vector<CNode*> allNodes, int now)

@@ -6,7 +6,6 @@
 #include "Global.h"
 #include "Configuration.h"
 #include "GeneralNode.h"
-#include "Hotspot.h"
 #include "Frame.h"
 #include "Trace.h"
 #include "FileHelper.h"
@@ -43,25 +42,20 @@ protected:
 
 	int timeLastData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
-	CHotspot *atHotspot;
 
 	int sumTimeAwake;
 	int sumTimeAlive;
 	//用于统计输出节点的buffer状态信息
 	int sumBufferRecord;
 	int countBufferRecord;
-	static int encounterAtWaypoint;
-	//	static int encounterActiveAtHotspot;
-	//	static int encounterActive;  //有效相遇
+	//TODO: move to proper class
 	static int encounter;
-	static int visiterAtWaypoint;
 	static int visiter;
 
 	static int COUNT_ID;
-	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
+	static vector<CNode *> allNodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
+	static vector<int> idNodes;
 								   // TODO: remove ?
-	static vector<CNode *> deadNodes;  //能量耗尽的节点
-	static vector<CNode *> deletedNodes;  //用于暂存Node个数动态变化时被暂时移出的节点
 
 
 	void init();
@@ -70,19 +64,40 @@ protected:
 
 	CNode(double dataRate);
 
-	~CNode();
+	static vector<CNode> loadNodesFromFile()
+	{
+		vector<CNode> allNodes;
+		string path = getConfig<string>("trace", "path");
+		vector<string> filenames = CFileHelper::ListDirectory(path);
+		filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
 
-	static void initNodes();
+		if(filenames.empty())
+			throw string("CNode::loadNodesFromFile(): Cannot find any trace files under \"" + path + "\".");
 
+		for(int i = 0; i < filenames.size(); ++i)
+		{
+			double dataRate = getConfig<double>("node", "default_data_rate");
+			if(i % 5 == 0)
+				dataRate *= 5;
+			CNode node;
+			node.setDataByteRate(dataRate);
+			node.generateID();
+			node.loadTrace(filenames[i]);
+
+			allNodes.push_back(node);
+		}
+		return allNodes;
+	}
+	static bool setNodes(vector<CNode*> nodes);
 	void generateData(int now);
 
 
 	/****************************************  MAC  ***************************************/
 
 	//待测试
-	static void removeNodes(int n);
+	static vector<CNode*> removeNodes(int n);
 	//待测试
-	static void restoreNodes(int n);
+	static vector<CNode*> restoreNodes(vector<CNode*> removedNodes, int n);
 
 	//	CFrame sendCTSWithIndex(CNode* dst, int now);
 	//	CFrame sendDataWithIndex(CNode* dst, vector<CData> datas, int now);
@@ -103,6 +118,8 @@ protected:
 
 
 public:
+
+	~CNode();
 
 	CCTrace getTrace() const
 	{
@@ -150,6 +167,14 @@ public:
 	void Wake() override;
 	void Sleep() override;
 
+	void setDutyCycle(double dutyCycle)
+	{
+		this->dutyCycle = dutyCycle;
+	}
+	double getDutyCycle() const
+	{
+		return this->dutyCycle;
+	}
 	bool isAwake() const override
 	{
 		//将 timerOccupied 的下沿也认为是唤醒的
@@ -199,18 +224,28 @@ public:
 		this->timerWake += timeDelay;
 	}
 
-	inline bool useDefaultDutyCycle()
-	{
-		return EQUAL(dutyCycle, getConfig<double>("mac", "duty_rate"));
-	}
-	inline bool useHotspotDutyCycle()
-	{
-		return EQUAL(dutyCycle, getConfig<double>("hdc", "hotspot_duty_rate"));
-	}
 	//在热点处提高 dc
-	void raiseDutyCycle();
+	void raiseDutyCycle(double newDutyCycle)
+	{
+		this->setDutyCycle(newDutyCycle);
+		int oldSlotWake = SLOT_WAKE;
+		SLOT_WAKE = int(getConfig<int>("mac", "cycle") * newDutyCycle);
+		SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
+		//唤醒状态下，延长唤醒时间
+		if(isAwake())
+			timerWake += SLOT_WAKE - oldSlotWake;
+		//休眠状态下，立即唤醒
+		else
+			Wake();
+	}
 	//在非热点处降低 dc
-	void resetDutyCycle();
+	void resetDutyCycle()
+	{
+		this->setDutyCycle( getConfig<double>("hdc", "hotspot_duty_rate") );
+		int oldSlotWake = SLOT_WAKE;
+		SLOT_WAKE = int(getConfig<int>("mac", "cycle") * this->getDutyCycle());
+		SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
+	}
 
 	/*************************** ------- ***************************/
 
@@ -253,14 +288,75 @@ public:
 		this->timeDeath = now;
 	}
 
-	//将死亡节点整理移出，返回是否有新的节点死亡
-	static bool ClearDeadNodes(int now);
+	template <class T>
+	static T* downcast(CNode* node)
+	{
+		return dynamic_cast< T* >( node );
+	}
+	template <class T>
+	static CNode* upcast(T* node)
+	{
+		return dynamic_cast< CNode* >( node );
+	}
+	template <class T>
+	static vector<T*> downcast(vector<CNode*> nodes)
+	{
+		vector<T*> res;
+		for(CNode* node : nodes)
+			res.push_back(downcast<T>(node));
+		return res;
+	}
+	template <class T>
+	static vector<CNode*> upcast(vector<T*> nodes)
+	{
+		vector<CNode*> res;
+		for(T* node : nodes)
+			res.push_back(upcast<T>(node));
+		return res;
+	}
 	// TODO: change to the new implementation below
-	static bool ClearDeadNodes(vector<CNode*> &aliveList, vector<CNode*> &deadList, int now);
+	//将死亡节点整理移出，返回是否有新的节点死亡
+	template <class T>
+	static bool ClearDeadNodes(vector<T*> &aliveList, vector<T*> &deadList, int now)
+	{
+		vector<CNode*> aliveNodes, deadNodes;
+		aliveNodes = upcast<T>(aliveList);
+		deadNodes = upcast<T>(deadList);
+		bool death = false;
+		for(vector<CNode *>::iterator ipNode = aliveNodes.begin(); ipNode != aliveNodes.end(); )
+		{
+			if(!( *ipNode )->isAlive())
+			{
+				CPrintHelper::PrintDetail(now, ( *ipNode )->getName() + " is dead.");
+				death = true;
+				aliveNodes.push_back(*ipNode);
+				ipNode = aliveNodes.erase(ipNode);
+			}
+			else
+				++ipNode;
+		}
+
+		if(death)
+		{
+			ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
+			if(now == 0)
+			{
+				death << endl << getConfig<string>("log", "info_log") << endl;
+				death << getConfig<string>("log", "info_death") << endl;
+			}
+			death << now << TAB << aliveNodes.size() << TAB << CData::getCountDelivery()
+				<< TAB << CData::getDeliveryRatio() << endl;
+			death.close();
+
+			CPrintHelper::PrintAttribute("Node Count", aliveNodes.size());
+		}
+
+		aliveList = downcast<T>(aliveNodes);
+		deadList = downcast<T>(deadNodes);
+		return death;
+	}
 
 	static bool finiteEnergy();
-
-	static bool hasNodes(int now);
 
 	static double getSumEnergyConsumption();
 
@@ -325,12 +421,9 @@ public:
 	int getCapacityForward();
 
 
-	static vector<CNode *>& getNodes();
+	static vector<CNode *>& getAllNodes();
 
 	static int getNodeCount();
-
-	//包括已经失效的节点和删除的节点，按照ID排序
-	static vector<CNode *> getAllNodes(bool sort);
 
 	static vector<int> getIdNodes();
 
@@ -354,17 +447,6 @@ public:
 	//	{
 	//		++encounterActive;
 	//	}
-	//热点区域所有可能的相遇（只与数据集和热点选取有关）
-	static void encountAtWaypoint()
-	{
-		++encounterAtWaypoint;
-	}
-	//	//热点区域内的有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
-	//	static void encountActiveAtHotspot() 
-	//	{
-	//		++encounterActiveAtHotspot;
-	//	}
-
 	static int getEncounter()
 	{
 		return encounter;
@@ -373,57 +455,14 @@ public:
 	//	{
 	//		return encounterActive;
 	//	}
-	static int getEncounterAtWaypoint()
-	{
-		return encounterAtWaypoint;
-	}
-	//	static int getEncounterActiveAtHotspot() 
-	//	{
-	//		return encounterActiveAtHotspot;
-	//	}
-	//	//所有有效相遇中，发生在热点区域的比例
-	//	static double getPercentEncounterActiveAtHotspot() 
-	//	{
-	//		if(encounterActiveAtHotspot == 0)
-	//			return 0.0;
-	//		return double(encounterActiveAtHotspot) / double(encounterActive);
-	//	}
-	static double getPercentEncounterAtWaypoint()
-	{
-		if( encounterAtWaypoint == 0 )
-			return 0.0;
-		return double(encounterAtWaypoint) / double(encounter);
-	}
-	//	static double getPercentEncounterActive() 
-	//	{
-	//		if(encounterActive == 0)
-	//			return 0.0;
-	//		return double(encounterActive) / double(encounter);
-	//	}
-
-	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
-	static void visitAtHotspot()
-	{
-		++visiterAtWaypoint;
-	}
 	static void visit()
 	{
 		++visiter;
 	}
 
-	static double getPercentVisiterAtHotspot()
-	{
-		if( visiterAtWaypoint == 0 )
-			return 0.0;
-		return double(visiterAtWaypoint) / double(visiter);
-	}
 	static int getVisiter()
 	{
 		return visiter;
-	}
-	static int getVisiterAtHotspot()
-	{
-		return visiterAtWaypoint;
 	}
 
 	/*************************** ------- ***************************/
@@ -439,21 +478,6 @@ public:
 	double getDataCountRate() const
 	{
 		return dataRate / getConfig<int>("data", "size_data");
-	}
-
-	CHotspot* getAtHotspot() const
-	{
-		return atHotspot;
-	}
-
-	void setAtWaypoint(CHotspot* atHotspot)
-	{
-		this->atHotspot = atHotspot;
-	}
-
-	bool isAtWaypoint() const
-	{
-		return atHotspot != nullptr;
 	}
 
 	void generateID()

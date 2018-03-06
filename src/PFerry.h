@@ -3,7 +3,9 @@
 #ifndef __PFERRY_H__
 #define __PFERRY_H__
 
+#include "Configuration.h"
 #include "RoutingProtocol.h"
+#include "HAR.h"
 #include "MacProtocol.h"
 #include "TracePrediction.h"
 #include "MANode.h"
@@ -15,6 +17,11 @@ class CPFerryNode :
 	virtual public CNode
 {
 private:
+	void init()
+	{
+
+	}
+
 public:
 	~CPFerryNode()
 	{
@@ -25,6 +32,15 @@ protected:
 
 	CPFerryNode()
 	{
+		init();
+	};
+	CPFerryNode(CNode& node) : CNode(node)
+	{
+		this->init();
+	};
+	CPFerryNode(CHARNode& harNode): CNode(harNode)
+	{
+		this->init();
 	};
 };
 
@@ -119,10 +135,13 @@ public:
 protected:
 	friend class CPFerry;
 
-	//TODO: check for proper initialization from base class
 	CPFerryMANode()
 	{
 		init();
+	}
+	CPFerryMANode(CHARMANode* ma): CMANode(*ma)
+	{
+		this->init();
 	}
 	map<CPFerryNode*, CPosition> getCollections() const
 	{
@@ -173,7 +192,7 @@ protected:
 		vector<CData> ack = datas;
 		RemoveFromList(datas, this->buffer);
 
-		bool atPoint = isAtWaypoint();
+		bool atPoint = isAtHotspot();
 		if( atPoint )
 		{
 			CData::deliverAtWaypoint(datas.size());
@@ -315,32 +334,35 @@ private:
 	} CNodeRecord;
 	static map<CPFerryNode*, CNodeRecord> collectionRecords;  //known latest collection time for nodes
 
-	static void initNodes()
+	//init based on newly loaded CNode
+	static void initNodes(vector<CNode> nodes, int now)
 	{
-		vector<string> filenames = CFileHelper::ListDirectory(getConfig<string>("trace", "path"));
-		filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
-
-		if( filenames.empty() )
-			throw string("CPFerry::initNodes(): Cannot find any trace files under \"" + getConfig<string>("trace", "path")
-						 + "\".");
-
-		for( int i = 0; i < filenames.size(); ++i )
+		for(CNode node : nodes)
 		{
-			double dataRate = getConfig<double>("node", "default_data_rate");
-			if( i % 5 == 0 )
-				dataRate *= 5;
-			CPFerryNode* node = new CPFerryNode();
-			node->setDataByteRate(dataRate);
-			node->generateID();
-			node->loadTrace(filenames[i]);
-			allNodes.push_back(node);
+			CPFerryNode* pferryNode = new CPFerryNode(node);
 
-			updatecollectionRecords(node, node->getBufferVacancy(), 0);
-			collectionHistory[node] = vector<CPosition>();
+			allNodes.push_back(pferryNode);
+			updatecollectionRecords(pferryNode, pferryNode->getBufferVacancy(), now);
+			collectionHistory[pferryNode] = vector<CPosition>();
+
 		}
-
 		aliveNodes = allNodes;
 		candidateNodes = allNodes;
+	}
+	//init based on HAR::allNodes & ClearDeadNodes()
+	static void initNodes(vector<CHARNode*> nodes, int now)
+	{
+		for(CHARNode* pnode : nodes)
+		{
+			CPFerryNode* pferryNode = new CPFerryNode(*pnode);
+
+			allNodes.push_back(pferryNode);
+			updatecollectionRecords(pferryNode, pferryNode->getBufferVacancy(), now);
+			collectionHistory[pferryNode] = vector<CPosition>();
+
+		}
+		
+		CNode::ClearDeadNodes<CPFerryNode>(aliveNodes, deadNodes, now);
 	}
 	static void initMANodes()
 	{
@@ -355,6 +377,7 @@ private:
 		vector<CPFerryNode *> nodes = allNodes;
 		string dir = getConfig<string>("pferry", "path_predict"); //e.g. ../res/predict
 		vector<string> subdirs = CFileHelper::ListDirectory(dir);
+		int minStartTime = INVALID;
 
 		if( subdirs.empty() )
 			throw string("CPFerry::initPredictions(): Cannot find any trace files under \"" + dir + "\".");
@@ -376,42 +399,16 @@ private:
 				predictions[stride] = map<int, CTracePrediction*>();
 				for( CPFerryNode *pnode : nodes )
 				{
-					predictions[stride][pnode->getID()] = new CTracePrediction(pnode, subdir);
+					CTracePrediction *pPred = new CTracePrediction(pnode, subdir);
+					int starttime = pPred->getStartTime();
+					if(minStartTime < 0
+					   || starttime < minStartTime)
+						minStartTime = starttime;
+					predictions[stride][pnode->getID()] = pPred;
 				}
 			}
 		}
-	}
-
-	static CPFerryNode* cast(CNode* node)
-	{
-		return dynamic_cast< CPFerryNode* >( node );
-	}
-	static CNode* cast(CPFerryNode* node)
-	{
-		return dynamic_cast< CNode* >( node );
-	}
-	static vector<CPFerryNode*> cast(vector<CNode*> nodes)
-	{
-		vector<CPFerryNode*> res;
-		for( CNode* node : nodes )
-			res.push_back(cast(node));
-		return res;
-	}
-	static vector<CNode*> cast(vector<CPFerryNode*> nodes)
-	{
-		vector<CNode*> res;
-		for( CPFerryNode* node : nodes )
-			res.push_back(cast(node));
-		return res;
-	}
-	static bool ClearDeadNodes(int now)
-	{
-		vector<CNode*> tempAliveList = cast(aliveNodes);
-		vector<CNode*> tempDeadList = cast(deadNodes);
-		bool death = CNode::ClearDeadNodes(tempAliveList, tempDeadList, now);
-		aliveNodes = cast(tempAliveList);
-		deadNodes = cast(tempDeadList);
-		return death;
+		STARTTIME_PREDICTION = minStartTime;
 	}
 
 	static bool hasNodes(int now)
@@ -481,7 +478,7 @@ private:
 		for( CPFerryNode * node : nodes )
 			node->updateStatus(now);
 
-		ClearDeadNodes(now);
+		CNode::ClearDeadNodes<CPFerryNode>(aliveNodes, deadNodes, now);
 
 		if( !hasNodes(now) )
 			return false;
@@ -1306,9 +1303,9 @@ private:
 
 public:
 
-	static bool Init()
+	static bool Init(int now)
 	{	// UNDONE:
-		initNodes();
+		initNodes(HAR::getAllNodes(), now);
 
 		initMANodes();
 		
@@ -1317,28 +1314,38 @@ public:
 	}
 	static bool Operate(int now)
 	{
-		//update node & ma positions
-		if( !updateNodeStatus(now) )
-			return false;
-		CSink::getSink()->updateStatus(now);
-		updateMAStatus(now);
-		
-		//task management
-		ArrangeTask(now);
+		if(now < STARTTIME_PREDICTION)
+		{
+			HAR::Operate(now);
+		}
+		else if(now >= STARTTIME_PREDICTION
+				&& now <= STARTTIME_PREDICTION + getConfig<int>("simulation", "slot"))
+			Init(now);
+		else
+		{
+			//update node & ma positions
+			if(!updateNodeStatus(now))
+				return false;
+			CSink::getSink()->updateStatus(now);
+			updateMAStatus(now);
 
-		CommunicateWithNeighbor(now);
-		//communicate
-			//MA/sink - node: data collection
-				//right node: return 
-				//wrong node: wait until timeout
-			//MA - sink: report task result
-				//met: move node to candidate list, move ma to free list
-				//miss: 
-					//urgent node: redo
-					//otherwise: move ma to free list, waiting for reassign
-		ArrangeTask(now);
+			//task management
+			ArrangeTask(now);
 
-		PrintInfo(now);
+			CommunicateWithNeighbor(now);
+			//communicate
+				//MA/sink - node: data collection
+					//right node: return 
+					//wrong node: wait until timeout
+				//MA - sink: report task result
+					//met: move node to candidate list, move ma to free list
+					//miss: 
+						//urgent node: redo
+						//otherwise: move ma to free list, waiting for reassign
+			ArrangeTask(now);
+
+			PrintInfo(now);
+		}
 		return true;
 	}
 	
@@ -1351,7 +1358,7 @@ public:
 
 		/***************************************** 路由协议的通用输出 *********************************************/
 
-		CRoutingProtocol::PrintInfo(cast(allNodes), now);
+		CRoutingProtocol::PrintInfo(CNode::upcast<CPFerryNode>(allNodes), now);
 
 		/**************************************** 补充输出 *********************************************/
 

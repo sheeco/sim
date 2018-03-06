@@ -11,6 +11,9 @@
 #include "SMac.h"
 #include "PrintHelper.h"
 
+vector<CHARNode*> HAR::allNodes;
+vector<CHARNode*> HAR::aliveNodes;
+vector<CHARNode*> HAR::deadNodes;
 vector<CHARMANode *> HAR::allMAs;
 vector<CHARMANode *> HAR::busyMAs;
 vector<CHARMANode *> HAR::freeMAs;
@@ -33,7 +36,7 @@ void CHARMANode::updateStatus(int time)
 		   && buffer.size() >= capacityBuffer ) )
 	{
 		//记录一次未填满窗口的等待；可能录入(t, 0)，即说明由于路线过期而跳过等待
-		if( isAtWaypoint() )
+		if( isAtHotspot() )
 			getAtHotspot()->recordWaitingTime(time - waitingState, waitingState);
 
 		waitingWindow = waitingState = 0;
@@ -385,7 +388,7 @@ void HAR::MANodeRouteDesign(int now)
 	CPrintHelper::PrintAttribute("MA", busyMAs.size());
 }
 
-inline bool HAR::transmitFrame(CGeneralNode & src, CFrame * frame, int now)
+bool HAR::transmitFrame(CGeneralNode & src, CFrame * frame, int now)
 {
 	vector<CGeneralNode*> neighbors = findNeighbors(src);
 	return CMacProtocol::transmitFrame(src, frame, now, findNeighbors, receivePackets);
@@ -995,42 +998,4 @@ void HAR::PrintFinal(int now)
 //			++ipos;
 //	}
 //}
-
-bool HAR::Init()
-{
-	return true;
-}
-
-bool HAR::Operate(int now)
-{
-	bool hasNodes = true;
-	// 不允许 xHAR 使用 HDC 作为 MAC 协议
-	//if( config.MAC_PROTOCOL == config::_hdc )
-	//	hasNodes = CHDC::Prepare(now);
-	//else 
-	if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
-		hasNodes = CSMac::Prepare(now);
-
-	if( ! hasNodes )
-		return false;
-
-	if( now == getConfig<int>("hs", "starttime_hospot_select") )
-		initMANodes(now);
-
-	HotspotClassification(now);
-
-	MANodeRouteDesign(now);
-
-	UpdateMANodeStatus(now);
-
-	// 不允许 xHAR 使用 HDC 作为 MAC 协议
-	//if( config.MAC_PROTOCOL == config::_hdc )
-	//	CHDC::Operate(now);
-	//else 
-	CommunicateWithNeighbor(now);
-
-	PrintInfo(now);
-
-	return true;
-}
 

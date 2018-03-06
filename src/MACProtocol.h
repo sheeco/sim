@@ -90,15 +90,16 @@ public:
 	//TODO: change to below
 	static bool receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
 
-	//更新所有 node 的坐标、占空比和工作状态，生成数据，返回是否仍有节点
-	static bool UpdateNodeStatus(int now);
-
 	//注意：必须在 Prepare() 之后调用
 	static void CommunicateWithNeighbor(int now);
 
 
 	//更新节点数目、节点状态；收集位置点信息、选取热点、更新节点是否位于热点区域；
 	//如果无更多节点，返回 false
+	static bool Init()
+	{
+		return true;
+	};
 	static bool Prepare(int now);
 
 	//打印相关信息到文件

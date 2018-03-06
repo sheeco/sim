@@ -159,13 +159,13 @@ public:
 	//{
 	//	this->atSink = atSink;
 	//}
-	inline void setAtWaypoint(CBasicEntity *wayPoint)
+	inline void setAtHotspot(CBasicEntity *wayPoint)
 	{
 		this->atPoint = wayPoint;
 	}
 
 	//TODO: include when im still in range of the hotspot after leaving the center, maybe introducing m_lastAtHotspot
-	inline bool isAtWaypoint() const
+	inline bool isAtHotspot() const
 	{
 		if(atPoint == nullptr)
 			return false;

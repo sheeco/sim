@@ -9,6 +9,7 @@
 #include "MANode.h"
 #include "Route.h"
 #include "RoutingProtocol.h"
+#include "SMac.h"
 
 
 class CHARRoute : 
@@ -64,7 +65,26 @@ protected:
 class CHARNode : 
 	virtual public CNode
 {
-	//UNDONE:
+private:
+	void init()
+	{
+	}
+protected:
+	friend class HAR;
+	CHARNode()
+	{
+		init();
+	}
+	CHARNode(CNode& node): CNode(node)
+	{
+		init();
+	}
+
+public:
+	~CHARNode()
+	{
+	}
+
 };
 
 class CHARMANode : 
@@ -110,7 +130,7 @@ protected:
 		vector<CData> ack = datas;
 		RemoveFromList(datas, this->buffer);
 
-		bool atPoint = isAtWaypoint();
+		bool atPoint = isAtHotspot();
 		if( atPoint )
 		{
 			this->getAtHotspot()->recordCountDelivery(datas.size());
@@ -143,10 +163,9 @@ private:
 	//vector<CHARMANode> m_MANodes;
 	//static vector<CHARRoute> m_newRoutes;
 
-	//TODO:
-	//static vector<CHARNode*> allNodes;
-	//static vector<CHARNode*> aliveNodes;
-	//static vector<CHARNode*> deadNodes;
+	static vector<CHARNode*> allNodes;
+	static vector<CHARNode*> aliveNodes;
+	static vector<CHARNode*> deadNodes;
 
 	static vector<CHARMANode *> allMAs;
 	static vector<CHARMANode *> busyMAs;
@@ -155,6 +174,34 @@ private:
 	static int INIT_NUM_MA;
 	static int MAX_NUM_MA;
 
+
+	//init based on newly loaded CNode
+	static void initNodes(vector<CNode> nodes, int now)
+	{
+		for(CNode node : nodes)
+		{
+			CHARNode* harNode = new CHARNode(node);
+
+			allNodes.push_back(harNode);
+		}
+		aliveNodes = allNodes;
+	}
+	static bool hasNodes(int now)
+	{
+		return !aliveNodes.empty();
+	}
+
+	static bool updateNodeStatus(int now)
+	{
+		//update basic status
+		vector<CHARNode *> nodes = aliveNodes;
+		for(CHARNode * node : nodes)
+			node->updateStatus(now);
+
+		CNode::ClearDeadNodes<CHARNode>(aliveNodes, deadNodes, now);
+
+		return hasNodes(now);
+	}
 	static void turnFree(CHARMANode * ma)
 	{
 		AddToListUniquely(freeMAs, ma);
@@ -167,7 +214,7 @@ private:
 	}
 	static bool newMANode(int now)
 	{
-		if( allMAs.size() >= MAX_NUM_MA )
+		if(allMAs.size() >= MAX_NUM_MA)
 			return false;
 		else
 		{
@@ -180,9 +227,9 @@ private:
 	}
 	static bool newMANode(int n, int now)
 	{
-		for( int i = 0; i < n; ++i )
+		for(int i = 0; i < n; ++i)
 		{
-			if( !newMANode(now) )
+			if(!newMANode(now))
 				return false;
 		}
 		return true;
@@ -257,6 +304,15 @@ public:
 	HAR(){};
 	~HAR(){};
 
+	static vector<CHARNode*> getAllNodes()
+	{
+		return allNodes;
+	}
+	static vector<CHARMANode*> getAllMAs()
+	{
+		return allMAs;
+	}
+
 	static inline bool hasRoutes()
 	{
 		return ! m_routes.empty();
@@ -318,8 +374,8 @@ public:
 
 		/************************************************ Sensor Node *******************************************************/
 
-		vector<CNode*> nodes = CNode::getNodes();
-		for( vector<CNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
+		vector<CHARNode*> nodes = aliveNodes;
+		for( vector<CHARNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
 		{
 			CNode* dstNode = *idstNode;
 			//skip itself
@@ -402,7 +458,6 @@ public:
 		CSink* sink = CSink::getSink();
 		transmitFrame(*sink, sink->sendRTS(now), now);
 
-		vector<CNode*> nodes = CNode::getNodes();
 		vector<CHARMANode*> MAs = busyMAs;
 
 		// xHAR: MAs => nodes
@@ -412,6 +467,8 @@ public:
 			if( ( *srcMA )->getCapacityForward() > 0 )
 				transmitFrame(**srcMA, ( *srcMA )->sendRTSWithCapacity(now), now);
 		}
+
+		vector<CHARNode*> nodes = aliveNodes;
 		// xHAR: no forward between nodes
 
 		if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
@@ -426,8 +483,51 @@ public:
 	static void PrintInfo(int now);
 	static void PrintFinal(int now);
 
-	static bool Init();
-	static bool Operate(int now);
+	static bool Init(int now)
+	{
+		return true;
+		initNodes(CNode::loadNodesFromFile(), now);
+	}
+	static bool Operate(int now)
+	{
+		bool hasNodes = true;
+		// 不允许 xHAR 使用 HDC 作为 MAC 协议
+		//if( config.MAC_PROTOCOL == config::_hdc )
+		//	hasNodes = CHDC::Prepare(now);
+		//else 
+		if(getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
+			hasNodes = CSMac::Prepare(now);
+
+		CHotspotSelect::CollectNewPositions(now);
+		CHotspotSelect::HotspotSelect(now);
+
+		//检测节点所在热点区域
+		CHotspot::UpdateAtHotspotForNodes(CNode::upcast<CHARNode>(aliveNodes), now);
+
+
+		return true;
+		if(!hasNodes)
+			return false;
+
+		if(now == getConfig<int>("hs", "starttime_hospot_select"))
+			initMANodes(now);
+
+		HotspotClassification(now);
+
+		MANodeRouteDesign(now);
+
+		UpdateMANodeStatus(now);
+
+		// 不允许 xHAR 使用 HDC 作为 MAC 协议
+		//if( config.MAC_PROTOCOL == config::_hdc )
+		//	CHDC::Operate(now);
+		//else 
+		CommunicateWithNeighbor(now);
+
+		PrintInfo(now);
+
+		return true;
+	}
 
 };
 

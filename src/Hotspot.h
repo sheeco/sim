@@ -6,8 +6,7 @@
 #include <iostream>
 #include "Configuration.h"
 #include "Position.h"
-#include "GeoEntity.h"
-#include "GeneralNode.h"
+#include "Node.h"
 
 
 //存储hostspot信息的类
@@ -33,6 +32,11 @@ protected:
 	static map<int, vector<CHotspot *>> oldSelectedHotspots;
 	//static vector<CHotspot *> deletedHotspots;
 
+	static map<int, CHotspot*> atHotspots;
+
+	static int encounterAtHotspot;
+	static int visiterAtHotspot;
+	//热点区域所有可能的相遇（只与数据集和热点选取有关）
 
 private:
 	
@@ -114,7 +118,6 @@ private:
 		}while(modified);
 		
 	}
-
 	CHotspot()
 	{
 		init();
@@ -204,6 +207,64 @@ public:
 
 	int getNCoveredPositionsForNode(int inode);	
 	
+	static CHotspot* getAtHotspot(int nodeid)
+	{
+		if(!isAtHotspot(nodeid))
+			return nullptr;
+		else
+			return atHotspots[nodeid];
+	}
+
+	static void setAtHotspot(int nodeid, CHotspot* atHotspot)
+	{
+		atHotspots[nodeid] = atHotspot;
+	}
+
+	static bool isAtHotspot(int nodeid)
+	{
+		if(atHotspots.find(nodeid) == atHotspots.end())
+			return false;
+		else
+			return getAtHotspot(nodeid) != nullptr;
+	}
+	static void encountAtHotspot()
+	{
+		++encounterAtHotspot;
+	}
+
+	static int getEncounterAtHotspot()
+	{
+		return encounterAtHotspot;
+	}
+	static double getPercentEncounterAtHotspot()
+	{
+		if(encounterAtHotspot == 0)
+			return 0.0;
+		return double(encounterAtHotspot) / double(CNode::getEncounter());
+	}
+	//	static double getPercentEncounterActive() 
+	//	{
+	//		if(encounterActive == 0)
+	//			return 0.0;
+	//		return double(encounterActive) / double(encounter);
+	//	}
+
+	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
+	static void visitAtHotspot()
+	{
+		++visiterAtHotspot;
+	}
+	static double getPercentVisiterAtHotspot()
+	{
+		if(visiterAtHotspot == 0)
+			return 0.0;
+		return double(visiterAtHotspot) / double(CNode::getVisiter());
+	}
+	static int getVisiterAtHotspot()
+	{
+		return visiterAtHotspot;
+	}
+
 	inline void recordCountDelivery(int n)
 	{
 		map<int, int>::iterator imap = countsDelivery.find(this->time);
@@ -282,6 +343,10 @@ public:
 	}
 	string format() const
 	{
+		return "Hotspot " + this->location.format();
+	}
+	string getName() const
+	{
 		return "Hotspot " + STRING(this->ID);
 	}
 
@@ -321,7 +386,7 @@ public:
 
 	//为所有节点检查是否位于热点区域内，并统计visiter和encounter的热点区域计数
 	//visit 和 encounter 计数的统计时槽仅由轨迹文件决定
-	static bool UpdateAtHotspotForNodes(int now);
+	static bool UpdateAtHotspotForNodes(vector<CNode *> nodes, int now);
 //	//为所有MA节点检查是否位于热点区域内（用于xHAR）
 //	static bool UpdateAtHotspotForMANodes(int now);
 		

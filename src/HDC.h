@@ -11,17 +11,20 @@ class CHDC :
 {
 private:
 
+	static double HOTSPOT_DUTY_RATE;
 	CHDC();
 
 	//检查所有Node，如果位于热点区域，更新占空比
 	//注意：必须在调用 UpdateAtHotspotForNodes() 之后调用
 	static void UpdateDutyCycleForNodes(int now);
+	static bool isUsingHotspotDutyCycle(CNode* node);
 
 
 public:
 
 	~CHDC();
 
+	static bool Init();
 	static bool Prepare(int now);
 	static bool Operate(int now);
 

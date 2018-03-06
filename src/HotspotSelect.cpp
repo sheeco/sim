@@ -83,7 +83,7 @@ void CHotspotSelect::CollectNewPositions(int now)
 	vector<int> deadNodes = idNodes;
 	RemoveFromList(deadNodes, CNode::getIdNodes());
 	idNodes = CNode::getIdNodes();
-	vector<CNode*> nodes = CNode::getNodes();
+	vector<CNode*> nodes = CNode::getAllNodes();
 
 	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到CPosition::positions中
 	for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
@@ -520,7 +520,7 @@ void CHotspotSelect::PrintInfo(int now)
 		at_hotspot << endl << getConfig<string>("log", "info_log") << endl ; 
 		at_hotspot << getConfig<string>("log", "info_visit") << endl;
 	}
-	at_hotspot << now << TAB << CNode::getPercentVisiterAtHotspot() << TAB << CNode::getVisiterAtHotspot() << TAB << CNode::getVisiter() << endl;
+	at_hotspot << now << TAB << CHotspot::getPercentVisiterAtHotspot() << TAB << CHotspot::getVisiterAtHotspot() << TAB << CNode::getVisiter() << endl;
 	at_hotspot.close();
 
 

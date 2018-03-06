@@ -89,7 +89,7 @@ bool CRunHelper::RunSimulation()
 
 		case config::_xhar:
 
-			HAR::Init();
+			HAR::Init(now);
 			while( now <= getConfig<int>("simulation", "runtime") )
 			{
 				dead = !HAR::Operate(now);
@@ -107,7 +107,6 @@ bool CRunHelper::RunSimulation()
 
 		case config::_pferry:
 
-			CPFerry::Init();
 			while( now <= getConfig<int>("simulation", "runtime") )
 			{
 				dead = !CPFerry::Operate(now);

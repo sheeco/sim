@@ -1,6 +1,7 @@
 #pragma once
 #include "Process.h"
 #include "Node.h"
+#include "Position.h"
 
 class CTracePrediction :
 	virtual public CProcess
@@ -108,6 +109,12 @@ public:
 									  + STRING( NDigitFloat(hitrate * 100, 1) ) + "%.");
 		}
 	}
+
+	int getStartTime() const
+	{
+		return this->predictions->getRange().first;
+	}
+
 	static double calculateHitrate(CCTrace fact, CCTrace pred, int hitrange)
 	{
 		map<int, CCoordinate> facts = fact.getTrace(), preds = pred.getTrace();

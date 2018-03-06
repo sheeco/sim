@@ -6,6 +6,7 @@
 #include "HotspotSelect.h"
 #include "PrintHelper.h"
 
+double CHDC::HOTSPOT_DUTY_RATE = 0;
 
 CHDC::CHDC()
 {
@@ -23,45 +24,36 @@ void CHDC::UpdateDutyCycleForNodes(int now)
 		return;
 
 	vector<CHotspot *> hotspots = CHotspot::getSelectedHotspots();
-	vector<CNode *> nodes = CNode::getNodes();
+	vector<CNode *> nodes = CNode::getAllNodes();
 	if( hotspots.empty()
 		|| nodes.empty() )
 		return;
 
-	static bool print = false;
-	if( now == 0 
-		|| print )
-	{
-		CPrintHelper::PrintHeading(now, "DUTY CYCLE UPDATE");
-		print = false;
-	}
+	CPrintHelper::PrintHeading(now, "DUTY CYCLE UPDATE");
 
-	int atHotspotCount = 0;
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
+		bool usingHotspotDutyCycle = isUsingHotspotDutyCycle( *inode );
+		bool atHotspot = CHotspot::isAtHotspot(( *inode )->getID());
 		//update duty cycle
-		if( (*inode)->useHotspotDutyCycle()
-			&& ( ! (*inode)->isAtWaypoint() ) )
+		if( usingHotspotDutyCycle
+			&& !atHotspot  )
 		{
-			CPrintHelper::FlashDetail(now, (*inode)->format() + " leaves hotspot");
 			(*inode)->resetDutyCycle();
+			CPrintHelper::PrintDetail(now, "Duty cycle of " + ( *inode )->getName() + " is reset.");
 		}
-		else if( (*inode)->useDefaultDutyCycle()
-				 && (*inode)->isAtWaypoint() )
+		else if( !usingHotspotDutyCycle
+				 && atHotspot )
 		{
-			CPrintHelper::FlashDetail(now, ( *inode )->format() + " enters " + ( *inode )->getAtHotspot()->format());
-			(*inode)->raiseDutyCycle();
+			(*inode)->raiseDutyCycle(HOTSPOT_DUTY_RATE);
+			CPrintHelper::PrintDetail(now, "Duty cycle of " + (*inode)->getName() + " is raised.");
 		}
 	}
+}
 
-	//控制台输出时保留一位小数
-	if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
-	{
-		CPrintHelper::PrintPercentage("Hotspot Encounter", CNode::getPercentEncounterAtWaypoint());
-		print = true;
-	}
-	CPrintHelper::PrintPercentage("Hot-Node", atHotspotCount);
-
+inline bool CHDC::isUsingHotspotDutyCycle(CNode * node)
+{
+	return EQUAL(node->getDutyCycle(), HOTSPOT_DUTY_RATE);
 }
 
 void CHDC::PrintInfo(int now)
@@ -82,6 +74,11 @@ void CHDC::PrintFinal(int now)
 
 	CHotspotSelect::PrintFinal(now);
 	
+}
+
+inline bool CHDC::Init()
+{
+	HOTSPOT_DUTY_RATE = getConfig<double>("hdc", "hotspot_duty_rate");
 }
 
 bool CHDC::Prepare(int now)

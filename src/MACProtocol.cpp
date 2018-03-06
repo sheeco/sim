@@ -28,7 +28,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now)
 
 	/************************************************ Sensor Node *******************************************************/
 
-	vector<CNode*> nodes = CNode::getNodes();
+	vector<CNode*> nodes = CNode::getAllNodes();
 	for( vector<CNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
 	{
 		CNode* dstNode = *idstNode;
@@ -288,55 +288,9 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int now)
 	return true;
 }
 
-bool CMacProtocol::UpdateNodeStatus(int now)
-{
-	vector<CNode *> nodes = CNode::getNodes();
-	for( CNode * inode : nodes )
-		inode->updateStatus(now);
-
-	CNode::ClearDeadNodes(now);
-
-	//按照轨迹文件的时槽统计节点相遇计数
-	if( ! CNode::hasNodes(now) )
-		return false;
-
-	nodes = CSortHelper::mergeSort(nodes);
-
-	if( now % getConfig<int>("trace", "interval") == 0 )
-	{
-		for( vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
-		{
-			for( vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode )
-			{
-				if( ( *inode )->getX() + getConfig<int>("trans", "range_trans") < ( *jnode )->getX() )
-					break;
-				if( CBasicEntity::withinRange(**inode, **jnode, getConfig<int>("trans", "range_trans")) )
-					CNode::encount();
-			}
-		}
-	}
-
-	return CNode::hasNodes(now);
-}
-
 bool CMacProtocol::Prepare(int now)
 {
-	CSink::getSink()->updateStatus(now);
-
-	if( ! CMacProtocol::UpdateNodeStatus(now) )
-		return false;
-
-	//热点选取
-	if( getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") != config::_skip )
-	{
-		CHotspotSelect::CollectNewPositions(now);
-		CHotspotSelect::HotspotSelect(now);
-
-		//检测节点所在热点区域
-		CHotspot::UpdateAtHotspotForNodes(now);
-
-	}
-
+	CSink::UpdateStatus(now);
 	return true;
 }
 
@@ -356,7 +310,7 @@ void CMacProtocol::CommunicateWithNeighbor(int now)
 	CSink* sink = CSink::getSink();
 	transmitFrame( *sink, sink->sendRTS(now) , now );
 
-	vector<CNode*> nodes = CNode::getNodes();
+	vector<CNode*> nodes = CNode::getAllNodes();
 
 	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
@@ -388,7 +342,7 @@ void CMacProtocol::CommunicateWithNeighbor(int now)
 
 void CMacProtocol::PrintInfo(int now)
 {
-	PrintInfo(CNode::getAllNodes(true), now);
+	PrintInfo(CNode::getAllNodes(), now);
 }
 
 void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int now)
@@ -428,7 +382,7 @@ void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 		if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc || getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar )
 		{
 			//encounter << CNode::getPercentEncounterActiveAtHotspot() << TAB << CNode::getEncounterActiveAtHotspot() << TAB;
-			encounter << CNode::getPercentEncounterAtWaypoint() << TAB << CNode::getEncounterAtWaypoint() << TAB;
+			encounter << CHotspot::getPercentEncounterAtHotspot() << TAB << CHotspot::getEncounterAtHotspot() << TAB;
 		}
 		//encounter << CNode::getPercentEncounterActive() << TAB << CNode::getEncounterActive() << TAB;
 		encounter << CNode::getEncounter() << TAB;
@@ -492,7 +446,7 @@ void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 		if( CNode::finiteEnergy() )
 		{			
 			//节点剩余能量
-			energy_consumption << TAB << CNode::getSumEnergyConsumption() << TAB << CNode::getNodes().size() << TAB;
+			energy_consumption << TAB << CNode::getSumEnergyConsumption() << TAB << CNode::getAllNodes().size() << TAB;
 			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 				energy_consumption << (*inode)->getEnergy() << TAB;
 		}
@@ -509,7 +463,7 @@ void CMacProtocol::PrintFinal(int now)
 	final << CData::getAverageEnergyConsumption() << TAB << CMacProtocol::getPercentTransmitSuccessful() << TAB;
 	//final << CNode::getPercentEncounterActive() << TAB ;
 	if( CNode::finiteEnergy() )
-		final << now << TAB << CNode::getNodes().size() << TAB ;
+		final << now << TAB << CNode::getAllNodes().size() << TAB ;
 
 	final.close();
 

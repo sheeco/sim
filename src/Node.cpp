@@ -12,23 +12,19 @@
 
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
-int CNode::encounterAtWaypoint = 0;
 //int CNode::encounterActiveAtHotspot = 0;
 //int CNode::encounterActive = 0;
 int CNode::encounter = 0;
-int CNode::visiterAtWaypoint = 0;
 int CNode::visiter = 0;
 
-vector<CNode*> CNode::nodes;
-vector<CNode*> CNode::deadNodes;
-vector<CNode *> CNode::deletedNodes;
+vector<CNode*> CNode::allNodes;
+vector<int> CNode::idNodes;
 
 
 void CNode::init() 
 {
 	trace = nullptr;
 	dataRate = 0;
-	atHotspot = nullptr;
 	//timerCarrierSense = getConfig<int>("mac", "cycle_carrier_sense");
 	//discovering = false;
 	timeLastData = 0;
@@ -84,27 +80,13 @@ CNode::~CNode()
 	}
 }
 
-void CNode::initNodes() {
-	if( nodes.empty() && deadNodes.empty() )
-	{
-		vector<string> filepaths = CFileHelper::ListDirectory(getConfig<string>("trace", "path"));
-		filepaths = CFileHelper::FilterByExtension(filepaths, getConfig<string>("trace", "extension_trace_file"));
-
-		if( filepaths.empty() )
-			throw string("CNode::initNodes(): Cannot find any trace files under \"" + getConfig<string>("trace", "path")
-						  + "\".");
-
-		for(int i = 0; i < filepaths.size(); ++i)
-		{
-			double dataRate = getConfig<double>("node", "default_data_rate");
-			if(i % 5 == 0)
-				dataRate *= 5;
-			CNode* node = new CNode(dataRate);
-			node->generateID();
-			node->loadTrace(filepaths[i]);
-			CNode::nodes.push_back(node);
-		}
-	}
+inline bool CNode::setNodes(vector<CNode*> nodes)
+{
+	allNodes = nodes;
+	allNodes = CSortHelper::mergeSort(allNodes, CSortHelper::ascendByID);
+	idNodes.clear();
+	for(CNode * inode : allNodes)
+		idNodes.push_back(inode->getID());
 }
 
 void CNode::generateData(int now) {
@@ -123,41 +105,19 @@ void CNode::generateData(int now) {
 }
 
 
-vector<CNode*>& CNode::getNodes() 
+vector<CNode*>& CNode::getAllNodes() 
 {
-	if( getConfig<int>("mac", "cycle") == 0 || ( ZERO( getConfig<double>("mac", "duty_rate") ) && ZERO( getConfig<double>("hdc", "hotspot_duty_rate") ) ) )
-	{
-		throw string("CNode::getNodes() : cycle_total = " + STRING(getConfig<int>("mac", "cycle")) + ", duty_rate = " + STRING(getConfig<double>("mac", "duty_rate")) + ", hotspot_duty_rate = " + STRING(getConfig<double>("hdc", "hotspot_duty_rate")) + ".");
-	}
-
-	if( nodes.empty() && deadNodes.empty() )
-		initNodes();
-	return nodes;
+	return allNodes;
 }
 
 int CNode::getNodeCount() 
 {
-	return nodes.size();
-}
-
-vector<CNode *> CNode::getAllNodes(bool sort)
-{
-	vector<CNode *> allNodes = CNode::getNodes();
-	allNodes.insert(allNodes.end(), deadNodes.begin(), deadNodes.end());
-	allNodes.insert(allNodes.end(), deletedNodes.begin(), deletedNodes.end());
-	if( sort )
-		allNodes = CSortHelper::mergeSort(allNodes, CSortHelper::ascendByID);
-	return allNodes;
+	return allNodes.size();
 }
 
 vector<int> CNode::getIdNodes() 
 {
-	if( nodes.empty() && deadNodes.empty() )
-		initNodes();
-	vector<int> ids;
-	for( CNode * inode : nodes )
-		ids.push_back(inode->getID());
-	return ids;
+	return idNodes;
 }
 
 bool CNode::finiteEnergy() 
@@ -165,60 +125,9 @@ bool CNode::finiteEnergy()
 	return getConfig<int>("node", "energy") > 0;
 }
 
-bool CNode::hasNodes(int now) 
+bool CNode::ifNodeExists(int id)
 {
-	if( nodes.empty() && deadNodes.empty() )
-	{
-		initNodes();
-		return true;
-	}
-		
-	return ( ! nodes.empty() );
-}
-
-bool CNode::ClearDeadNodes(int now) 
-{
-	return ClearDeadNodes(nodes, deadNodes, now);
-}
-
-// TODO: change to the new implementation below
-
-inline bool CNode::ClearDeadNodes(vector<CNode*>& aliveList, vector<CNode*>& deadList, int now)
-{
-	bool death = false;
-	for( vector<CNode *>::iterator ipNode = aliveList.begin(); ipNode != aliveList.end(); )
-	{
-		if( !( *ipNode )->isAlive() )
-		{
-			death = true;
-			deadNodes.push_back(*ipNode);
-			ipNode = aliveList.erase(ipNode);
-		}
-		else
-			++ipNode;
-	}
-
-	// TODO: more detailed feedback
-	if( death )
-	{
-		ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
-		if( now == 0 )
-		{
-			death << endl << getConfig<string>("log", "info_log") << endl;
-			death << getConfig<string>("log", "info_death") << endl;
-		}
-		death << now << TAB << aliveList.size() << TAB << CData::getCountDelivery()
-			<< TAB << CData::getDeliveryRatio() << endl;
-		death.close();
-
-		CPrintHelper::PrintAttribute("Node Count", aliveList.size());
-	}
-	return death;
-}
-
-bool CNode::ifNodeExists(int id) 
-{
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
+	for(vector<CNode *>::iterator inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 	{
 		if((*inode)->getID() == id)
 			return true;
@@ -228,7 +137,7 @@ bool CNode::ifNodeExists(int id)
 
 CNode* CNode::getNodeByID(int id) 
 {
-	for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
+	for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 	{
 		if((*inode)->getID() == id)
 			return *inode;
@@ -239,38 +148,10 @@ CNode* CNode::getNodeByID(int id)
 double CNode::getSumEnergyConsumption() 
 {
 	double sumEnergyConsumption = 0;
-	auto allNodes = getAllNodes(false);
+	auto allNodes = getAllNodes();
 	for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 		sumEnergyConsumption += (*inode)->getEnergyConsumption();
 	return sumEnergyConsumption;
-}
-
-void CNode::raiseDutyCycle() 
-{
-	if( useHotspotDutyCycle() )
-		return;
-
-	dutyCycle = getConfig<double>("hdc", "hotspot_duty_rate");
-	int oldSlotWake = SLOT_WAKE;
-	SLOT_WAKE = int( getConfig<int>("mac", "cycle") * dutyCycle );
-	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
-	//唤醒状态下，延长唤醒时间
-	if( isAwake() )
-		timerWake += SLOT_WAKE - oldSlotWake;
-	//休眠状态下，立即唤醒
-	else
-		Wake();
-}
-
-void CNode::resetDutyCycle() 
-{
-	if( useDefaultDutyCycle() )
-		return;
-
-	dutyCycle = getConfig<double>("hdc", "hotspot_duty_rate");
-	int oldSlotWake = SLOT_WAKE;
-	SLOT_WAKE = int(getConfig<int>("mac", "cycle") * dutyCycle);
-	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
 }
 
 void CNode::checkDataByAck(vector<CData> ack)
@@ -444,44 +325,33 @@ vector<int> CNode::updateSummaryVector()
 	return summaryVector;
 }
 
-void CNode::restoreNodes(int n) 
+vector<CNode*> CNode::restoreNodes(vector<CNode*> removedNodes, int n)
 {
-	// TODO: 恢复时重新充满能量？
-	for(int i = nodes.size(); i < nodes.size() + n; ++i)
-	{
-		if( deletedNodes.empty() )
-			break;
+	vector<CNode*> restoredNodes;
+	if(removedNodes.empty())
+		return restoredNodes;
 
-		CNode::nodes.push_back(deletedNodes[0]);
+	// TODO: 恢复时重新充满能量？
+	for(int i = allNodes.size(); i < allNodes.size() + n; ++i)
+	{
+		restoredNodes.push_back(removedNodes[0]);
 		--n;
 	}
+	return restoredNodes;
 }
 
-void CNode::removeNodes(int n) 
+vector<CNode*> CNode::removeNodes(int n)
 {
 	//FIXME: Random selected ?
-	vector<CNode *>::iterator start = nodes.begin();
-	vector<CNode *>::iterator end = nodes.end();
-	vector<CNode *>::iterator fence = nodes.begin();
-	fence += nodes.size() - n;
+	vector<CNode *>::iterator start = allNodes.begin();
+	vector<CNode *>::iterator end = allNodes.end();
+	vector<CNode *>::iterator fence = allNodes.begin();
+	fence += allNodes.size() - n;
 	vector<CNode *> leftNodes(start, fence);
 
 	//Remove invalid positoins belonging to the deleted nodes
-	vector<CNode *> deletedNodes(fence, end);
-	vector<int> deletedIDs;
-	for(auto inode = deletedNodes.begin(); inode != deletedNodes.end(); ++inode)
-		deletedIDs.push_back( (*inode)->getID() );
-
-	for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
-	{
-		if( IfExists(deletedIDs, (*ipos)->getNode()) )
-			ipos = CPosition::positions.erase(ipos);
-		else
-			++ipos;
-	}
-
-	nodes = leftNodes;
-	CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
+	vector<CNode *> removed(fence, end);
+	return removed;
 }
 
 void CNode::updateStatus(int now)

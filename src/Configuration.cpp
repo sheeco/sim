@@ -32,14 +32,14 @@ bool CConfiguration::has(string group, string keyword)
 		return igroup->second.find(keyword) != igroup->second.end();
 }
 
-inline void CConfiguration::addGroup(string group)
+void CConfiguration::addGroup(string group)
 {
 	if( has(group) )
 		throw string("CConfiguration::addGroup(): Configuration group with name \"" + group + "\" already exists.");
 	configurations[group] = map<string, pair<void*, EnumType>>();
 }
 
-inline void CConfiguration::addConfiguration(string group, string keyword, const type_info & type, void * value)
+void CConfiguration::addConfiguration(string group, string keyword, const type_info & type, void * value)
 {
 	if( has(group, keyword) )
 		throw string("CConfiguration::addConfiguration(): Configuration with keyword \"" + keyword + "\" already exists in group \"" + group + "\".");
@@ -309,6 +309,7 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("ma", "max_num_ma", typeid( int ), new int(0));
 
 
+	//TODO: move to group "node" ?
 	addGroup("trace");
 	addConfiguration("trace", "continuous", typeid(bool), new bool(true));
 	addConfiguration("trace", "extension_trace_file", typeid(string), new string(".trace"));
@@ -448,7 +449,7 @@ void CConfiguration::PrintConfiguration()
 
 }
 
-inline void CConfiguration::Help()
+void CConfiguration::Help()
 {
 	return;
 	CPrintHelper::PrintFile(getConfig<string>("log", "dir_run") + getConfig<string>("log", "file_help"), "");

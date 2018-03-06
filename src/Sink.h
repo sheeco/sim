@@ -61,12 +61,18 @@ public:
 	//	return;
 	//}
 
+	//TODO: put statistic here?
 	void updateStatus(int time)
 	{
 		//updateTimerOccupied(time);
 
 		this->time = time;
 	}
+	static void UpdateStatus(int time)
+	{
+		getSink()->updateStatus(time);
+	}
+
 
 	//相遇计数：统计节点和 sink 的相遇
 	static void encount() 

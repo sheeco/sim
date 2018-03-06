@@ -5,7 +5,7 @@ int CPFerryTask::NUM_TASK_MET;
 int CPFerryTask::NUM_TASK;
 
 map<int, map<int, CTracePrediction*>> CPFerry::predictions;
-int CPFerry::STARTTIME_PREDICTION;
+int CPFerry::STARTTIME_PREDICTION = INVALID;
 vector<int> CPFerry::strides;
 
 vector<CPFerryMANode*> CPFerry::allMAs;

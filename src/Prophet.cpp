@@ -25,7 +25,7 @@ void CProphet::initDeliveryPreds(CNode * node)
 	if( ! deliveryPreds.empty() )
 		return;
 
-	vector<CNode*> nodes = CNode::getNodes();
+	vector<CNode*> nodes = CNode::getAllNodes();
 	for( int id = 0; id <= nodes.size(); ++id )
 	{
 		if( id != node->getID() )
@@ -567,7 +567,12 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 
 bool CProphet::Init()
 {
-	vector<CNode*> nodes = CNode::getNodes();
+	if(getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc)
+		CHDC::Init();
+	else if(getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
+		CSMac::Init();
+
+	vector<CNode*> nodes = CNode::getAllNodes();
 	for( vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode )
 		CProphet::initDeliveryPreds(*inode);
 	return true;
