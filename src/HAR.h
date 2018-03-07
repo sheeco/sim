@@ -20,16 +20,29 @@ protected:
 	friend class HAR;
 
 	vector<int> coveredNodes;
+	int timeCreation;
+	int timeExpiration;
 	bool overdue;  //是否过期
 
 	void init()
 	{
+		CRoute::init();
+		timeCreation = INVALID;
+		timeExpiration = INVALID;
 		overdue = false;
+		this->setStartPoint(CSink::getSink());
 	}
-	CHARRoute()
+	int getTimeCreation() const
+	{
+		return timeCreation;
+	}
+	int getTimeExpiration() const
+	{
+		return timeExpiration;
+	}
+	CHARRoute(int timeCreation, int timeExpiration): timeCreation(timeCreation), timeExpiration(timeExpiration)
 	{
 		this->init();
-		this->setStartPoint(CSink::getSink());
 	}
 
 	inline vector<int> getCoveredNodes() const
@@ -157,8 +170,9 @@ class HAR :
 {
 private:
 
-	static vector<CHotspot *> m_hotspots;
-	static vector<CHARRoute *> m_routes;  //即hotspot class
+	static vector<CHotspot *> hotspots;
+	static vector<CHARRoute *> maRoutes;  //即hotspot class
+	static vector<CHARRoute *> oldRoutes;
 	static int indexRoute;
 	//vector<CHARMANode> m_MANodes;
 	//static vector<CHARRoute> m_newRoutes;
@@ -185,8 +199,9 @@ private:
 			allNodes.push_back(harNode);
 		}
 		aliveNodes = allNodes;
+		CNode::setNodes(CNode::upcast<CHARNode>(allNodes));
 	}
-	static bool hasNodes(int now)
+	static bool hasNodes()
 	{
 		return !aliveNodes.empty();
 	}
@@ -200,7 +215,7 @@ private:
 
 		CNode::ClearDeadNodes<CHARNode>(aliveNodes, deadNodes, now);
 
-		return hasNodes(now);
+		return hasNodes();
 	}
 	static void turnFree(CHARMANode * ma)
 	{
@@ -243,15 +258,15 @@ private:
 		freeMAs = allMAs;
 	}
 	//取得新的路线集合
-	static inline void setRoutes(vector<CHARRoute*> newRoutes)
+	static inline void updateRoutes(vector<CHARRoute*> newRoutes)
 	{
-		FreePointerVector(m_routes);
-		m_routes = newRoutes;
+		oldRoutes.insert(oldRoutes.end(), maRoutes.begin(), maRoutes.end());
+		maRoutes = newRoutes;
 		indexRoute = 0;
 	}
 	static inline vector<CHARRoute*> getRoutes()
 	{
-		return m_routes;
+		return maRoutes;
 	}
 
 	//用于计算所需MA个数的历史平均值
@@ -294,10 +309,6 @@ private:
 //	//在特定时槽上发送数据
 //	static void SendData(int now);
 
-//	//在每一次贪婪选择之前调用，将从CHotspot::oldSelectedHotspots中寻找投递计数为0的热点删除放入CHotspot::deletedHotspots
-//	//并删除其对应的所有position放入CPosition::deletedPositions
-//	static void DecayPositionsWithoutDeliveryCount(int now);
-
 
 public:
 
@@ -315,13 +326,13 @@ public:
 
 	static inline bool hasRoutes()
 	{
-		return ! m_routes.empty();
+		return ! maRoutes.empty();
 	}
 	//必须先调用hasRoutes判断
 	static inline CHARRoute* popRoute()
 	{
-		CHARRoute* result = m_routes[indexRoute];
-		indexRoute = ( indexRoute + 1 ) % m_routes.size();
+		CHARRoute* result = maRoutes[indexRoute];
+		indexRoute = ( indexRoute + 1 ) % maRoutes.size();
 		return new CHARRoute(*result);
 	}
 
@@ -353,7 +364,7 @@ public:
 	//注意：必须在新一轮热点选取之后调用
 	static void UpdateMANodeStatus(int now)
 	{
-		//将新增的路线分配给新的MA
+		//为空闲的MA分配路线
 		while( !freeMAs.empty() )
 		{
 			CHARMANode *ma = freeMAs.front();
@@ -443,7 +454,7 @@ public:
 	// MA <- Node 
 	static vector<CPacket*> receivePackets(CHARMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time);
 
-	static void CommunicateWithNeighbor(int now)
+	static void CommunicateBetweenNeighbors(int now)
 	{
 		static bool print = false;
 		if( now == 0
@@ -485,31 +496,36 @@ public:
 
 	static bool Init(int now)
 	{
-		return true;
 		initNodes(CNode::loadNodesFromFile(), now);
+		CHotspotSelect::Init();
+		return true;
 	}
 	static bool Operate(int now)
 	{
-		bool hasNodes = true;
 		// 不允许 xHAR 使用 HDC 作为 MAC 协议
 		//if( config.MAC_PROTOCOL == config::_hdc )
 		//	hasNodes = CHDC::Prepare(now);
 		//else 
 		if(getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
-			hasNodes = CSMac::Prepare(now);
+			CSMac::Prepare(now);
+		else
+			throw string("HAR::Operate(): Only SMac is allowed as MAC protocol for HAR.");
 
-		CHotspotSelect::CollectNewPositions(now);
-		CHotspotSelect::HotspotSelect(now);
+		vector<CNode*> aliveList = CNode::upcast<CHARNode>(aliveNodes);
+
+		CHotspotSelect::RemovePositionsForDeadNodes(CNode::getIdNodes(CNode::upcast<CHARNode>(deadNodes)), now);
+		CHotspotSelect::CollectNewPositions(now, aliveList);
+
+		hotspots = CHotspotSelect::HotspotSelect(CNode::getIdNodes(aliveList), now);
 
 		//检测节点所在热点区域
-		CHotspot::UpdateAtHotspotForNodes(CNode::upcast<CHARNode>(aliveNodes), now);
+		CHotspot::UpdateAtHotspotForNodes(aliveList, hotspots, now);
 
-
-		return true;
-		if(!hasNodes)
+		if(!hasNodes())
 			return false;
 
-		if(now == getConfig<int>("hs", "starttime_hospot_select"))
+		if(now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT
+		   && now <= CHotspotSelect::STARTTIME_HOTSPOT_SELECT + getConfig<int>("simulation", "slot"))
 			initMANodes(now);
 
 		HotspotClassification(now);
@@ -522,7 +538,7 @@ public:
 		//if( config.MAC_PROTOCOL == config::_hdc )
 		//	CHDC::Operate(now);
 		//else 
-		CommunicateWithNeighbor(now);
+		CommunicateBetweenNeighbors(now);
 
 		PrintInfo(now);
 

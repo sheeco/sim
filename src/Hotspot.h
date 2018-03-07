@@ -24,13 +24,6 @@ protected:
 
 	typedef enum EnumHotspotType {_new_hotspot, _old_hotspot, _merge_hotspot } EnumHotspotType;
 
-	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
-	static vector<CHotspot *> hotspotCandidates;
-	static vector<CHotspot *> selectedHotspots;
-	//上一次贪婪选取最终得到的热点集合，保留
-	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
-	static map<int, vector<CHotspot *>> oldSelectedHotspots;
-	//static vector<CHotspot *> deletedHotspots;
 
 	static map<int, CHotspot*> atHotspots;
 
@@ -66,80 +59,26 @@ private:
 	//计算两个热点的重叠面积，如无重叠则返回0
 	static double getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot);
 
-	void init()
-	{
-		this->heat = 0;
-		this->ratio = 0;		
-		
-		//merge_HAR
-		this->typeHotspotCandidate = _new_hotspot;
-		this->age = 0;
-	}
-
-	void generateHotspot(CCoordinate location, int time)
-	{
-		init();
-		this->setLocation(location);
-		this->setTime(time);
-		//必须在setTime之后初始化
-		this->countsDelivery[this->time] = 0;
-		this->generateID();
-
-		//重置flag
-		for(int i = 0; i < CPosition::nPositions; ++i)
-			CPosition::positions[i]->setFlag(false);
-
-		bool modified;
-		//循环，直到没有新的position被加入
-		do
-		{
-			modified = false;
-			//对新的hotspot重心，再次遍历position
-			for(int i = 0; i < CPosition::nPositions; ++i)
-			{
-				if( CPosition::positions[i]->getFlag() )
-					continue;
-				if( CPosition::positions[i]->getX() + getConfig<int>("trans", "range_trans") < this->getX() )
-					continue;
-				//若水平距离已超出range，则可以直接停止搜索
-				if( this->getX() + getConfig<int>("trans", "range_trans") < CPosition::positions[i]->getX() )
-					break;
-				if( CBasicEntity::withinRange(*this, *CPosition::positions[i], getConfig<int>("trans", "range_trans") ) )
-				{
-					this->addPosition(CPosition::positions[i]);
-					CPosition::positions[i]->setFlag(true);
-					modified = true;
-				}
-			}
-
-			//重新计算hotspot的重心
-			if(modified)
-				this->recalculateCenter();
-		}while(modified);
-		
-	}
+	void init();
 	CHotspot()
 	{
 		init();
 	}
+
+	static CHotspot* generateHotspot(CCoordinate location, vector<CPosition*> positions, int time);
 
 
 public:
 
 	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
 	//time应当是当前time，而不是pos的time
-	CHotspot(CPosition* pos, int time)
-	{
-		init();
-		addPosition(pos);
-		generateHotspot(pos->getLocation(), time);
-	}
-
 	//由merge函数调用
 	CHotspot(CCoordinate location, int time)
 	{
 		init();
-		generateHotspot(location, time);
+		this->setLocation(location);
+		this->setTime(time);
+		this->generateID();
 	}
 
 	~CHotspot(){};
@@ -225,7 +164,7 @@ public:
 		if(atHotspots.find(nodeid) == atHotspots.end())
 			return false;
 		else
-			return getAtHotspot(nodeid) != nullptr;
+			return atHotspots[nodeid] != nullptr;
 	}
 	static void encountAtHotspot()
 	{
@@ -369,24 +308,9 @@ public:
 	//确定覆盖的node列表，在hotspot选取结束后手动调用
 	void generateCoveredNodes();
 
-	static vector<CHotspot*> getSelectedHotspots()
-	{
-		return selectedHotspots;
-	}
-	static vector<CHotspot*> getSelectedHotspots(int forTime)
-	{
-		if( !selectedHotspots.empty()
-		   && forTime == selectedHotspots[0]->getTime() )
-			return selectedHotspots;
-		else if( oldSelectedHotspots.find(forTime) != oldSelectedHotspots.end() )
-			return oldSelectedHotspots[forTime];
-		else
-			throw string("CHotspot::getSelectedHotspots(" + STRING(forTime) + ") : Cannot find selected hotspots for given time !");
-	}
-
 	//为所有节点检查是否位于热点区域内，并统计visiter和encounter的热点区域计数
 	//visit 和 encounter 计数的统计时槽仅由轨迹文件决定
-	static bool UpdateAtHotspotForNodes(vector<CNode *> nodes, int now);
+	static bool UpdateAtHotspotForNodes(vector<CNode *> nodes, vector<CHotspot*> hotspots, int now);
 //	//为所有MA节点检查是否位于热点区域内（用于xHAR）
 //	static bool UpdateAtHotspotForMANodes(int now);
 		

@@ -6,10 +6,6 @@
 #include "HotspotSelect.h"
 
 int CHotspot::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
-vector<CHotspot *> CHotspot::hotspotCandidates;
-vector<CHotspot *> CHotspot::selectedHotspots;
-map<int, vector<CHotspot *>> CHotspot::oldSelectedHotspots;
-//vector<CHotspot *> CHotspot::deletedHotspots;
 
 map<int, CHotspot*> CHotspot::atHotspots;
 
@@ -109,112 +105,15 @@ void CHotspot::generateCoveredNodes()
 	}
 }
 
-double CHotspot::calculateRatio()
-{
-	if( getConfig<bool>("mhs", "test_balanced_ratio") )
-	{
-		ratio = coveredPositions.size() * double(CNode::getNodeCount() - coveredNodes.size() + 1) / double(CNode::getNodeCount());
-		return ratio;
-	}
-//	else if( HAR::TEST_LEARN )
-//	{
-//		ratio = 0;
-//		for(vector<CPosition*>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
-//			ratio += (*ipos)->getWeight();
-//		return ratio;
-//
-//	}
-	else
-	{
-		ratio = coveredPositions.size();
-		return ratio;
-	}
-}
-
-double CHotspot::getRatioByTypeHotspotCandidate() const
-{
-	switch( this->typeHotspotCandidate )
-	{
-	case _merge_hotspot: 
-		return getConfig<double>("mhs", "ratio_merge_hotspot");
-	case _new_hotspot: 
-		return getConfig<double>("mhs", "ratio_new_hotspot");
-	case _old_hotspot: 
-		return getConfig<double>("mhs", "ratio_old_hotspot");
-	default:
-		return 1;
-	}
-}
-
-double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
-{
-	double distance = CBasicEntity::getDistance(*oldHotspot, *newHotspot);
-	double cos = ( distance / 2 ) / getConfig<int>("trans", "range_trans");
-	double sin = sqrt( 1 - cos * cos );
-	double angle = acos(cos);
-	double sector = ( angle / 2 ) * getConfig<int>("trans", "range_trans") * getConfig<int>("trans", "range_trans");
-	double triangle = ( getConfig<int>("trans", "range_trans") * ( distance / 2 ) ) * sin / 2;
-
-	return ( sector - triangle ) * 4 ;
-}
-
-//bool CHotspot::UpdateAtHotspotForMANodes(int now)
-//{
-//	if( ! ( now % getConfig<int>("hs", "slot_hotspot_update") == 0 ) )
-//		return false;
-//
-//	vector<CHotspot *> hotspots = selectedHotspots;
-//	vector<CMANode *> mas = CMANode::getMANodes();
-//	if( hotspots.empty() 
-//		|| mas.empty() )
-//		return false;
-//
-//	hotspots = CSortHelper::mergeSort( hotspots, CSortHelper::ascendByLocationX );
-//
-//	for(vector<CMANode *>::iterator iMA = mas.begin(); iMA != mas.end(); ++iMA)
-//	{
-//		CHotspot *atHotspot = nullptr;
-//
-//		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
-//		{
-//			if( (*ihotspot)->getX() + getConfig<int>("trans", "range_trans") < (*iMA)->getX() )
-//				continue;
-//			if( (*iMA)->getX() + getConfig<int>("trans", "range_trans") < (*ihotspot)->getX() )
-//				break;
-//			if( CBasicEntity::withinRange( **iMA, **ihotspot, getConfig<int>("trans", "range_trans") ) )		
-//			{
-//				atHotspot = *ihotspot;
-//				break;
-//			}
-//		}
-//
-//		//update atHotspot
-//		if( ( ! (*iMA)->isAtHotspot() )
-//			&& atHotspot != nullptr )
-//		{
-//			(*iMA)->setAtHotspot(atHotspot);
-//			(*iMA)->setWaitingTime( HAR::calculateWaitingTime(now, atHotspot) );
-//		}
-//	}
-//
-//	return true;
-//}
-
-
 //为所有节点检查是否位于热点区域内，并统计visiter和encounter的热点区域计数
 //visit 和 encounter 计数的统计时槽仅由轨迹文件决定
 
-
-//为所有节点检查是否位于热点区域内，并统计visiter和encounter的热点区域计数
-//visit 和 encounter 计数的统计时槽仅由轨迹文件决定
-
-bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, int now)
+bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> hotspots, int now)
 {
 	if(!( getConfig<bool>("trace", "continuous")
 		 || now % getConfig<int>("trace", "interval") == 0 ))
 		return false;
 
-	vector<CHotspot *> hotspots = selectedHotspots;
 	if(hotspots.empty()
 	   || nodes.empty())
 		return false;
@@ -288,6 +187,109 @@ bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, int now)
 
 	return true;
 }
+
+double CHotspot::calculateRatio()
+{
+	if( getConfig<bool>("mhs", "test_balanced_ratio") )
+	{
+		ratio = coveredPositions.size() * double(CNode::getNodeCount() - coveredNodes.size() + 1) / double(CNode::getNodeCount());
+		return ratio;
+	}
+//	else if( HAR::TEST_LEARN )
+//	{
+//		ratio = 0;
+//		for(vector<CPosition*>::iterator ipos = coveredPositions.begin(); ipos != coveredPositions.end(); ++ipos)
+//			ratio += (*ipos)->getWeight();
+//		return ratio;
+//
+//	}
+	else
+	{
+		ratio = coveredPositions.size();
+		return ratio;
+	}
+}
+
+double CHotspot::getRatioByTypeHotspotCandidate() const
+{
+	switch( this->typeHotspotCandidate )
+	{
+	case _merge_hotspot: 
+		return getConfig<double>("mhs", "ratio_merge_hotspot");
+	case _new_hotspot: 
+		return getConfig<double>("mhs", "ratio_new_hotspot");
+	case _old_hotspot: 
+		return getConfig<double>("mhs", "ratio_old_hotspot");
+	default:
+		return 1;
+	}
+}
+
+double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
+{
+	double distance = CBasicEntity::getDistance(*oldHotspot, *newHotspot);
+	double cos = ( distance / 2 ) / getConfig<int>("trans", "range_trans");
+	double sin = sqrt( 1 - cos * cos );
+	double angle = acos(cos);
+	double sector = ( angle / 2 ) * getConfig<int>("trans", "range_trans") * getConfig<int>("trans", "range_trans");
+	double triangle = ( getConfig<int>("trans", "range_trans") * ( distance / 2 ) ) * sin / 2;
+
+	return ( sector - triangle ) * 4 ;
+}
+
+void CHotspot::init()
+{
+	this->heat = 0;
+	this->ratio = 0;
+
+	//merge_HAR
+	this->typeHotspotCandidate = _new_hotspot;
+	this->age = 0;
+}
+
+CHotspot * CHotspot::generateHotspot(CCoordinate location, vector<CPosition*> positions, int time)
+{
+	CHotspot* photspot = new CHotspot(location, time);
+
+	//必须在setTime之后初始化
+	photspot->countsDelivery[photspot->time] = 0;
+
+	int nPositions = positions.size();
+	//重置flag
+	for(int i = 0; i < nPositions; ++i)
+		positions[i]->setFlag(false);
+
+	bool modified;
+	//循环，直到没有新的position被加入
+	do
+	{
+		modified = false;
+		//对新的hotspot重心，再次遍历position
+		for(int i = 0; i < nPositions; ++i)
+		{
+			if(positions[i]->getFlag())
+				continue;
+			if(positions[i]->getX() + getConfig<int>("trans", "range_trans") < photspot->getX())
+				continue;
+			//若水平距离已超出range，则可以直接停止搜索
+			if(photspot->getX() + getConfig<int>("trans", "range_trans") < positions[i]->getX())
+				break;
+			if(CBasicEntity::withinRange(*photspot, *positions[i], getConfig<int>("trans", "range_trans")))
+			{
+				photspot->addPosition(positions[i]);
+				positions[i]->setFlag(true);
+				modified = true;
+			}
+		}
+
+		//重新计算hotspot的重心
+		if(modified)
+			photspot->recalculateCenter();
+	} while(modified);
+
+	return photspot;
+}
+
 
 double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots)
 {

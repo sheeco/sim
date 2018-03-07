@@ -26,13 +26,13 @@ private:
 	//vector<CBasicEntity *>::iterator fromPoint;
 	int toPoint;  //前往的点再数组waypoints中下标
 
+protected:
+
 	void init()
 	{
 		length = 0;
 		toPoint = -1;
 	}
-
-protected:
 
 	void setStartPoint(CBasicEntity *startPoint)
 	{

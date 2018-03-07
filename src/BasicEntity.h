@@ -28,7 +28,7 @@ protected:
 public:
 
 	CBasicEntity(): 
-		ID(-1), time(-1), flag(false) {};
+		ID(INVALID), time(INVALID), flag(false) {};
 
 	virtual ~CBasicEntity() = 0
 	{};

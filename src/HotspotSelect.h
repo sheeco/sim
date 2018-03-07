@@ -13,12 +13,20 @@ class CHotspotSelect :
 {
 private:
 
-	//static vector<CHotspot *> copy_hotspotCandidates;  //来自CHotspot::hotspotCandidates，贪婪选取过程中会修改hotspot的信息
-	static vector<CPosition *> uncoveredPositions;  //保存尚未被cover的position
+	static vector<CPosition *> positions;
+	//	//保存从候选position集合中删除的position，测试用
+	//	static vector<CPosition *> deletedPositions;
+
+	static vector<CHotspot *> hotspotCandidates;
 	static vector<CHotspot *> unselectedHotspots;  //未被选中的hotspot集合
 	static vector<CHotspot *> hotspotsAboveAverage;  //ratio高于1/2的hotspot集合
 	static vector<CHotspot *> selectedHotspots;  //选中的hotspot集合，即整个贪婪算法的输出
-	
+
+	//上一次贪婪选取最终得到的热点集合，保留
+	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用
+	//，因为在merge结束后将被free
+	static map<int, vector<CHotspot *>> oldSelectedHotspots;
+
 	//用于计算最终取出的热点总数的历史平均值
 	static int SUM_HOTSPOT_COST;
 	static int COUNT_HOTSPOT_COST;
@@ -32,18 +40,8 @@ private:
 	static int COUNT_SIMILARITY_RATIO;
 
 
-	//检查是否已完成选取得到合法的解
-	static inline bool isValid()
-	{
-		if( (! selectedHotspots.empty()) && uncoveredPositions.empty() )
-			return true;
-		else
-			return false;
-	}
-	//在构建候选热点之后调用
-	static void updateHotspotCandidates();
 	//更新hotspotsAboveAverage，在每一次迭代后调用
-	static void updateStatus();
+	static void updateAboveAverageList();
 
 	//保存过期的选中热点，释放上一轮选取中未被选中的废弃热点
 	static void SaveOldSelectedHotspots(int now);
@@ -67,10 +65,29 @@ private:
 
 public:
 
-	/************************************ IHAR ************************************/
+	static int STARTTIME_HOTSPOT_SELECT;
+	static int SLOT_POSITION_UPDATE;
+	static int SLOT_HOTSPOT_UPDATE;
+
+	static void Init();
 
 	CHotspotSelect(){};
 	~CHotspotSelect(){};
+
+	static vector<CHotspot*> getSelectedHotspots()
+	{
+		return selectedHotspots;
+	}
+	static vector<CHotspot*> getSelectedHotspots(int forTime)
+	{
+		if(!selectedHotspots.empty()
+		   && forTime == selectedHotspots[0]->getTime())
+			return selectedHotspots;
+		else if(oldSelectedHotspots.find(forTime) != oldSelectedHotspots.end())
+			return oldSelectedHotspots[forTime];
+		else
+			throw string("CHotspotSelect::getSelectedHotspots(" + STRING(forTime) + ") : Cannot find selected hotspots for given time !");
+	}
 
 	//用于最终final结果的统计和记录
 	static inline double getAverageHotspotCost()
@@ -105,15 +122,98 @@ public:
 			return SUM_SIMILARITY_RATIO / COUNT_SIMILARITY_RATIO;
 	}	
 
+	static void RemovePositionsForDeadNodes(vector<int> deadNodes, int now)
+	{
+		static vector<int> idDeadNodes;
+		//用于筛选出新的死亡节点
+		vector<int> newIds = deadNodes;
+		RemoveFromList(newIds, idDeadNodes);
+		//删除死亡节点的position记录
+		if(newIds.empty())
+			return;
+		else
+		{
+			for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); )
+			{
+				if(IfExists(newIds, ( *ipos )->getNode()))
+				{
+					delete *ipos;
+					ipos = positions.erase(ipos);
+				}
+				else
+					++ipos;
+			}
+			AddToListUniquely(idDeadNodes, newIds);
+		}
+
+	}
+
 	//读取所有节点的当前位置，加入position列表（append），在每个地理位置信息收集时隙上调用
 	//注意：必须在调用 UpdateNodeStatus() 之后调用
-	static void CollectNewPositions(int now);
+	static void CollectNewPositions(int now, vector<CNode*> nodes)
+	{
+		if(!( now % SLOT_POSITION_UPDATE == 0 ))
+			return;
+
+		CPosition* temp_pos = nullptr;
+
+		//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到positions中
+		for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
+		{
+			temp_pos = new CPosition();
+			CCoordinate location = ( *inode )->getLocation();
+			temp_pos->setLocation(location, now);
+			temp_pos->setNode(( *inode )->getID());
+			temp_pos->generateID();
+			positions.push_back(temp_pos);
+		}
+
+		//IHAR: 删除过期的position记录
+		if(getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved)
+		{
+			int threshold = now - getConfig<int>("ihs", "lifetime_position");
+			if(threshold > 0)
+			{
+				for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); )
+				{
+					if(( *ipos )->getTime() < threshold)
+					{
+						delete *ipos;
+						ipos = positions.erase(ipos);
+					}
+					else
+						++ipos;
+				}
+			}
+		}
+	}
 
 	//选取hotspot完成后，将被覆盖的每一个position分配到唯一一个hotspot
-	static vector<CHotspot *> assignPositionsToHotspots(vector<CHotspot *> hotspots);
+	static void assignPositionsToHotspots(vector<CHotspot *> &hotspots)
+	{
+		vector<CHotspot *> temp_hotspots = hotspots;
+		hotspots.clear();
 
-	//执行热点选取
-	static void HotspotSelect(int now);
+		while(!temp_hotspots.empty())
+		{
+			temp_hotspots = CSortHelper::mergeSort(temp_hotspots, CSortHelper::ascendByRatio);
+			//FIXME:尽量多 / 平均？
+			CHotspot *selected_hotspot = temp_hotspots.back();
+			if(selected_hotspot->getNCoveredPosition() == 0)
+				break;
+			temp_hotspots.pop_back();
+			hotspots.push_back(selected_hotspot);
+			vector<CPosition *> positions = selected_hotspot->getCoveredPositions();
+			for(vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin(); ihotspot != temp_hotspots.end(); ++ihotspot)
+			{
+				( *ihotspot )->removePositionList(positions);
+				( *ihotspot )->updateStatus();
+			}
+		}
+	}
+
+	//执行热点选取，返回选取结果
+	static vector<CHotspot *> HotspotSelect(vector<int> idNodes, int now);
 
 	static void PrintInfo(int now);
 	static void PrintFinal(int now);

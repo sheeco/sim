@@ -88,7 +88,7 @@ protected:
 		}
 		return allNodes;
 	}
-	static bool setNodes(vector<CNode*> nodes);
+	static void setNodes(vector<CNode*> nodes);
 	void generateData(int now);
 
 
@@ -426,6 +426,13 @@ public:
 	static int getNodeCount();
 
 	static vector<int> getIdNodes();
+	static vector<int> getIdNodes(vector<CNode*> nodes)
+	{
+		vector<int> ids;
+		for(CNode * inode : nodes)
+			ids.push_back(inode->getID());
+		return ids;
+	}
 
 	static bool ifNodeExists(int id);
 

@@ -19,6 +19,8 @@ string CPrintHelper::TAIL_DOING = " ...";
 
 string CPrintHelper::LINE_END = "";
 
+bool CPrintHelper::newline = true;
+
 void CPrintHelper::printToCout(string str, bool newLine)
 {
 	ofstream console(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_console"), ios::app);
@@ -34,7 +36,7 @@ void CPrintHelper::printToCout(string str, bool newLine)
 	console.close();
 
 	if( newLine )
-		LINE_END = LF;
+		LINE_END = LF, CPrintHelper::newline = true;
 	else
-		LINE_END = "";
+		LINE_END = "", CPrintHelper::newline = false;
 }

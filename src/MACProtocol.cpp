@@ -294,7 +294,7 @@ bool CMacProtocol::Prepare(int now)
 	return true;
 }
 
-void CMacProtocol::CommunicateWithNeighbor(int now)
+void CMacProtocol::CommunicateBetweenNeighbors(int now)
 {
 	static bool print = false;
 	if( now == 0 

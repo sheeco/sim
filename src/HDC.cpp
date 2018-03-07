@@ -23,7 +23,7 @@ void CHDC::UpdateDutyCycleForNodes(int now)
 	if( ! ( now % getConfig<int>("trace", "interval") == 0 ) )
 		return;
 
-	vector<CHotspot *> hotspots = CHotspot::getSelectedHotspots();
+	vector<CHotspot *> hotspots = CHotspotSelect::getSelectedHotspots();
 	vector<CNode *> nodes = CNode::getAllNodes();
 	if( hotspots.empty()
 		|| nodes.empty() )
@@ -51,7 +51,7 @@ void CHDC::UpdateDutyCycleForNodes(int now)
 	}
 }
 
-inline bool CHDC::isUsingHotspotDutyCycle(CNode * node)
+bool CHDC::isUsingHotspotDutyCycle(CNode * node)
 {
 	return EQUAL(node->getDutyCycle(), HOTSPOT_DUTY_RATE);
 }
@@ -76,9 +76,10 @@ void CHDC::PrintFinal(int now)
 	
 }
 
-inline bool CHDC::Init()
+bool CHDC::Init()
 {
 	HOTSPOT_DUTY_RATE = getConfig<double>("hdc", "hotspot_duty_rate");
+	return true;
 }
 
 bool CHDC::Prepare(int now)
@@ -93,7 +94,7 @@ bool CHDC::Prepare(int now)
 
 bool CHDC::Operate(int now)
 {
-	CMacProtocol::CommunicateWithNeighbor(now);
+	CMacProtocol::CommunicateBetweenNeighbors(now);
 
 	return true;
 }

@@ -73,20 +73,16 @@ CNode::CNode(double dataRate)
 
 CNode::~CNode()
 {
-	if( trace != nullptr )
-	{
-		delete trace;
-		trace = nullptr;
-	}
 }
 
-inline bool CNode::setNodes(vector<CNode*> nodes)
+void CNode::setNodes(vector<CNode*> nodes)
 {
+	if(!allNodes.empty())
+		throw string("CNode::setNodes(): `CNode::allNodes` have already been initialized.");
 	allNodes = nodes;
 	allNodes = CSortHelper::mergeSort(allNodes, CSortHelper::ascendByID);
 	idNodes.clear();
-	for(CNode * inode : allNodes)
-		idNodes.push_back(inode->getID());
+	idNodes = getIdNodes(allNodes);
 }
 
 void CNode::generateData(int now) {

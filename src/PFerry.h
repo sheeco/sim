@@ -1203,7 +1203,7 @@ private:
 
 	//TODO: add node->sink ?
 
-	static void CommunicateWithNeighbor(int now)
+	static void CommunicateBetweenNeighbors(int now)
 	{
 		static bool print = false;
 		if( now == 0
@@ -1332,7 +1332,7 @@ public:
 			//task management
 			ArrangeTask(now);
 
-			CommunicateWithNeighbor(now);
+			CommunicateBetweenNeighbors(now);
 			//communicate
 				//MA/sink - node: data collection
 					//right node: return 

@@ -30,8 +30,6 @@ public:
 	static pair<string, string> SplitFilename(string filename);
 	static void test();
 
-	//static CPosition* findPositionByID(vector<CPosition *> positions, int ID);
-
 	////将hotspot的时间、坐标和cover数保存到文件
 	//static void writeHotspotToFile(char *filename, CHotspot *hotspot, bool withDetail);
 	//static void writeHotspotToFile(char *filename, vector<CHotspot *> list_hotspot, bool withDetail);

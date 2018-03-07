@@ -55,8 +55,11 @@ protected:
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{
-		++COUNT_ID;
-		this->ID = COUNT_ID;
+		if(this->getID() == INVALID)
+		{
+			++COUNT_ID;
+			this->ID = COUNT_ID;
+		}
 	}
 
 	inline bool ifReturnAtOnce()

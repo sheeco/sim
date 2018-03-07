@@ -26,7 +26,7 @@
 
 bool CSMac::Operate(int now)
 {
-	CMacProtocol::CommunicateWithNeighbor(now);
+	CMacProtocol::CommunicateBetweenNeighbors(now);
 
 	return true;
 }

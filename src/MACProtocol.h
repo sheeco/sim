@@ -91,7 +91,7 @@ public:
 	static bool receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
 
 	//注意：必须在 Prepare() 之后调用
-	static void CommunicateWithNeighbor(int now);
+	static void CommunicateBetweenNeighbors(int now);
 
 
 	//更新节点数目、节点状态；收集位置点信息、选取热点、更新节点是否位于热点区域；

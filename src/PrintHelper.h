@@ -28,6 +28,8 @@ private:
 
 	static string LINE_END;
 
+	static bool newline;
+
 	static void printToCout(string str, bool newLine);
 
 	inline static void flashToCout(string str)
@@ -93,7 +95,9 @@ public:
 	}
 	inline static void PrintSubHeading(string str)
 	{
-		printToCout(toSubHeading(str), false);
+		if(newline)
+			str = toSubHeading(str);
+		printToCout(str, false);
 	}
 	inline static void PrintAttribute(string des, string value)
 	{

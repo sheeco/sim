@@ -28,7 +28,8 @@ void CHARMANode::updateStatus(int time)
 
 	//updateTimerOccupied(time);
 
-	//更新时间戳
+	if(this->routeIsOverdue())
+		setReturnAtOnce(true);
 
 	//路线过期或缓存已满，立即返回sink
 	if( ifReturnAtOnce()
@@ -109,8 +110,9 @@ void CHARMANode::updateStatus(int time)
 }
 
 
-vector<CHotspot *> HAR::m_hotspots;
-vector<CHARRoute *> HAR::m_routes;
+vector<CHotspot *> HAR::hotspots;
+vector<CHARRoute *> HAR::maRoutes;
+vector<CHARRoute *> HAR::oldRoutes;
 int HAR::indexRoute = 0;
 int HAR::SUM_MA_COST = 0;
 int HAR::COUNT_MA_COST = 0;
@@ -157,7 +159,7 @@ double HAR::calculateWaitingTime(int now, CHotspot *hotspot)
 		}
 
 		nCoveredPositionsForNode.push_back( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) );
-		temp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( temp_time + getConfig<int>("hs", "slot_hotspot_update") );
+		temp = double( hotspot->getNCoveredPositionsForNode(coveredNodes[i]) ) / double( temp_time + CHotspotSelect::SLOT_HOTSPOT_UPDATE );
 
 		//merge-HAR: ratio
 		temp *= pow( hotspot->getRatioByTypeHotspotCandidate(), hotspot->getAge() );
@@ -221,21 +223,21 @@ double HAR::calculateEDTime(int now)
 	double EIM = 0;
 	double ED = 0;
 
-	for(vector<CHARRoute*>::iterator iroute = m_routes.begin(); iroute != m_routes.end(); ++iroute)
+	for(vector<CHARRoute*>::iterator iroute = maRoutes.begin(); iroute != maRoutes.end(); ++iroute)
 		sum_length += (*iroute)->getLength();
-	avg_length = sum_length / m_hotspots.size() + 1;
-	for(vector<CHotspot *>::iterator ihotspot = m_hotspots.begin(); ihotspot != m_hotspots.end(); ++ihotspot)
+	avg_length = sum_length / hotspots.size() + 1;
+	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 	{
 		sum_waitingTime += calculateWaitingTime(now, *ihotspot);
 		sum_pm += exp( -1 / (*ihotspot)->getHeat() );
 	}
-	avg_waitingTime = sum_waitingTime / m_hotspots.size();
+	avg_waitingTime = sum_waitingTime / hotspots.size();
 	avg_u = avg_length / CHARMANode::getSpeed() + avg_waitingTime;
-	avg_pw = sum_pm / m_hotspots.size();
+	avg_pw = sum_pm / hotspots.size();
 	pmh = sum_waitingTime / (sum_length / CHARMANode::getSpeed() + sum_waitingTime);
 	EM = (1 - pmh) * ( ( (1 - avg_pw) / avg_pw) * avg_u + (avg_length / (2 * CHARMANode::getSpeed()) + avg_waitingTime) ) + pmh * ( ( (1 - avg_pw) / avg_pw) * avg_u + avg_waitingTime);
 	EIM = avg_u / avg_pw;
-	ED = EM + ( (1 - getConfig<double>("trans", "prob_trans")) / getConfig<double>("trans", "prob_trans") ) * EIM + ( double( m_hotspots.size() ) / (2 * m_routes.size()) ) * avg_u;
+	ED = EM + ( (1 - getConfig<double>("trans", "prob_trans")) / getConfig<double>("trans", "prob_trans") ) * EIM + ( double( hotspots.size() ) / (2 * maRoutes.size()) ) * avg_u;
 
 	return ED;
 }
@@ -245,7 +247,7 @@ void HAR::OptimizeRoute(CHARRoute *route)
 {
 	vector<pair<CBasicEntity *, int>> waypoints = route->getWayPoints();
 	CBasicEntity *current = CSink::getSink();
-	CHARRoute result;
+	CHARRoute result(route->getTimeCreation(), route->getTimeExpiration());
 	waypoints.erase(waypoints.begin());
 	while(! waypoints.empty())
 	{
@@ -271,12 +273,11 @@ void HAR::OptimizeRoute(CHARRoute *route)
 
 void HAR::HotspotClassification(int now)
 {
-	if( ! ( now % getConfig<int>("hs", "slot_hotspot_update") == 0 
-		&& now >= getConfig<int>("hs", "starttime_hospot_select") ) )
+	if( ! ( now % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 
+		&& now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT ) )
 		return;
 
-	vector<CHotspot *> temp_hotspots = CHotspot::getSelectedHotspots();
-	m_hotspots = CHotspot::getSelectedHotspots();
+	vector<CHotspot *> temp_hotspots = hotspots;
 	for(vector<CHotspot *>::iterator ihotspot = temp_hotspots.begin(); ihotspot != temp_hotspots.end(); ++ihotspot)
 	{
 		(*ihotspot)->setHeat( getHotspotHeat(*ihotspot) );
@@ -287,7 +288,7 @@ void HAR::HotspotClassification(int now)
 	while(! temp_hotspots.empty())
 	{
 		//构造一个hotspot class
-		CHARRoute* route = new CHARRoute();
+		CHARRoute* route = new CHARRoute(now, now + CHotspotSelect::SLOT_HOTSPOT_UPDATE);
 		double current_time_cost = 0;
 		while(true)
 		{
@@ -361,14 +362,14 @@ void HAR::HotspotClassification(int now)
 		newRoutes.push_back(route);
 	}
 	//将得到的新的hotspot class放入sink的route列表
-	setRoutes(newRoutes);
+	updateRoutes(newRoutes);
 }
 
 
 void HAR::MANodeRouteDesign(int now)
 {
-	if( !( now % getConfig<int>("hs", "slot_hotspot_update") == 0
-		  && now >= getConfig<int>("hs", "starttime_hospot_select") ) )
+	if( !( now % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0
+		  && now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT ) )
 		return;
 
 	vector<CHARRoute*> routes = getRoutes();
@@ -376,13 +377,6 @@ void HAR::MANodeRouteDesign(int now)
 	for(vector<CHARRoute*>::iterator iroute = routes.begin(); iroute != routes.end(); ++iroute)
 	{
 		OptimizeRoute( *iroute );
-	}
-
-	//通知当前的所有MA路线已过期，立即返回
-	for(auto iMANode = busyMAs.begin(); iMANode != busyMAs.end(); ++iMANode)
-	{
-		(*iMANode)->setRouteOverdue(true);
-		( *iMANode )->setReturnAtOnce(true);
 	}
 
 	CPrintHelper::PrintAttribute("MA", busyMAs.size());
@@ -830,49 +824,49 @@ void HAR::PrintInfo(int now)
 
 	CHotspotSelect::PrintInfo(now);
 
-	if( ! ( now >= getConfig<int>("hs", "starttime_hospot_select") ) )
+	if( ! ( now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT ) )
 		return;
 
 	/**************************************** HAR 路由的补充输出 *********************************************/
 
 	//hotspot选取结果、hotspot class数目、ED、Energy Consumption、MA节点buffer状态 ...
 
-	if( now % getConfig<int>("hs", "slot_hotspot_update") == 0
+	if( now % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0
 	    || now == getConfig<int>("simulation", "runtime") )
 	{
 		//MA节点个数
 		ofstream ma(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ma"), ios::app);
-		if( now == getConfig<int>("hs", "starttime_hospot_select") )
+		if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
 		{
 			ma << endl << getConfig<string>("log", "info_log") << endl;
 			ma << getConfig<string>("log", "info_ma") << endl;
 		}
-		ma << now << TAB << m_routes.size() << TAB << ( double(m_hotspots.size()) / double(m_routes.size()) ) << endl;
+		ma << now << TAB << maRoutes.size() << TAB << ( double(hotspots.size()) / double(maRoutes.size()) ) << endl;
 		ma.close();
 
 		//
 		ofstream ma_route(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ma_route"), ios::app);
-		if( now == getConfig<int>("hs", "starttime_hospot_select") )
+		if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
 		{
 			ma_route << endl << getConfig<string>("log", "info_log") << endl;
 			ma_route << getConfig<string>("log", "info_ma_route") << endl;
 		}
-		for( vector<CHARRoute*>::iterator iroute = m_routes.begin(); iroute != m_routes.end(); iroute++ )
+		for( vector<CHARRoute*>::iterator iroute = maRoutes.begin(); iroute != maRoutes.end(); iroute++ )
 		{
 			ma_route << now << TAB << (*iroute)->format() << endl;
 		}
 		ma_route.close();			
 
 		//用于计算MA节点个数的历史平均值信息
-		SUM_MA_COST += m_routes.size();
+		SUM_MA_COST += maRoutes.size();
 		++COUNT_MA_COST;
 		//用于计算MA路点（热点）平均个数的历史平均值信息
-		SUM_WAYPOINT_PER_MA += double(m_hotspots.size()) / double(m_routes.size());
+		SUM_WAYPOINT_PER_MA += double(hotspots.size()) / double(maRoutes.size());
 		++COUNT_WAYPOINT_PER_MA;
 
 		//ED即平均投递延迟的理论值
 		ofstream ed(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ed"), ios::app);
-		if( now == getConfig<int>("hs", "starttime_hospot_select") )
+		if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
 		{
 			ed << endl << getConfig<string>("log", "info_log") << endl;
 			ed << getConfig<string>("log", "info_ed") << endl;
@@ -882,7 +876,7 @@ void HAR::PrintInfo(int now)
 
 		//热点质量、投递计数等统计信息
 		ofstream hotspot_statistics(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hotspot_statistics"), ios::app);
-		if( now == getConfig<int>("hs", "starttime_hospot_select") )
+		if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
 		{
 			hotspot_statistics << endl << getConfig<string>("log", "info_log") << endl;
 			hotspot_statistics << getConfig<string>("log", "info_hotspot_statistics") << endl;
@@ -893,27 +887,27 @@ void HAR::PrintInfo(int now)
 		//运行结束，补充输出上一轮的热点统计
 		if( now == getConfig<int>("simulation", "runtime") )
 		{
-			timeBeforeYesterday = ( now / getConfig<int>("hs", "slot_hotspot_update") - 1 ) * getConfig<int>("hs", "slot_hotspot_update");
-			int timeYesterday = timeBeforeYesterday + getConfig<int>("hs", "slot_hotspot_update");
-			if( timeBeforeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
+			timeBeforeYesterday = ( now / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1 ) * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+			int timeYesterday = timeBeforeYesterday + CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+			if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
 				timesToPrint.push_back(timeBeforeYesterday);
-			if( timeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
+			if( timeYesterday >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
 				timesToPrint.push_back(timeYesterday);
 		}
-		else if( now % getConfig<int>("hs", "slot_hotspot_update") == 0 )
+		else if( now % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 )
 		{
-			timeBeforeYesterday = now - 2 * getConfig<int>("hs", "slot_hotspot_update");
-			if( timeBeforeYesterday >= getConfig<int>("hs", "starttime_hospot_select") )
+			timeBeforeYesterday = now - 2 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+			if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
 				timesToPrint.push_back(timeBeforeYesterday);
 		}
 		if( ! timesToPrint.empty() )
 		{
 			for( vector<int>::iterator itime = timesToPrint.begin(); itime != timesToPrint.end(); itime++ )
 			{
-				vector<CHotspot *> hotspotsToPrint = CHotspot::getSelectedHotspots(*itime);
+				vector<CHotspot *> hotspotsToPrint = CHotspotSelect::getSelectedHotspots(*itime);
 				hotspotsToPrint = CSortHelper::mergeSort(hotspotsToPrint, CSortHelper::descendByCountDelivery);
 				for( vector<CHotspot *>::iterator it = hotspotsToPrint.begin(); it != hotspotsToPrint.end(); ++it )
-					hotspot_statistics << *itime << '-' << *itime + getConfig<int>("hs", "slot_hotspot_update") << TAB
+					hotspot_statistics << *itime << '-' << *itime + CHotspotSelect::SLOT_HOTSPOT_UPDATE << TAB
 					<< ( *it )->getID() << TAB << ( *it )->getLocation().format() << TAB << ( *it )->getNCoveredPosition() << "," << ( *it )->getNCoveredNodes() << TAB
 					<< ( *it )->getRatio() << TAB << ( *it )->getWaitingTimesString(true) << TAB << ( *it )->getCountDelivery(*itime) << endl;
 			}
@@ -927,7 +921,7 @@ void HAR::PrintInfo(int now)
 	{
 		//每个MA的当前buffer状态
 		ofstream buffer_ma( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_ma"), ios::app);
-		if(now == getConfig<int>("hs", "starttime_hospot_select"))
+		if(now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT)
 		{
 			buffer_ma << endl << getConfig<string>("log", "info_log") << endl ;
 			buffer_ma << getConfig<string>("log", "info_buffer_ma") << endl;
@@ -954,48 +948,3 @@ void HAR::PrintFinal(int now)
 
 	CHotspotSelect::PrintFinal(now);
 }
-
-//void HAR::DecayPositionsWithoutDeliveryCount(int now)
-//{
-//	if(now == 0)
-//		return ;
-//	vector<CPosition*> badPositions;
-//	if( CHotspot::oldSelectedHotspots.empty() )
-//		return ;
-//
-//	for(vector<CHotspot*>::iterator ihotspot = CHotspot::oldSelectedHotspots.begin(); ihotspot != CHotspot::oldSelectedHotspots.end(); )
-//	{
-//		if( (*ihotspot)->getCountDelivery(now) == 0 )
-//		{
-//			AddToListUniquely( badPositions, (*ihotspot)->getCoveredPositions() );
-//			//free(*ihotspot);
-//			//在mHAR中，应该考虑是否将这些热点排除在归并之外
-//			//CHotspot::deletedHotspots.push_back(*ihotspot);
-//			//ihotspot = CHotspot::oldSelectedHotspots.erase(ihotspot);
-//			++ihotspot;
-//		}
-//		else
-//			++ihotspot;
-//	}
-//	for(vector<CPosition*>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
-//	{
-//		if( IfExists(badPositions, *ipos) )
-//		{
-//			(*ipos)->decayWeight();
-//			//Reduce complexity
-//			RemoveFromList(badPositions, *ipos);
-//			//如果权值低于最小值，直接删除，MIN_POSITION_WEIGHT默认值为1，即不会删除任何position
-////			if( (*ipos)->getWeight() < MIN_POSITION_WEIGHT )
-////			{
-////				CPosition::deletedPositions.push_back(*ipos);
-////				ipos = CPosition::positions.erase(ipos);
-////			}
-////			else
-////				++ipos;
-//			++ipos;
-//		}
-//		else
-//			++ipos;
-//	}
-//}
-
