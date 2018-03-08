@@ -415,7 +415,7 @@ void CNode::updateStatus(int now)
 	if( ! trace->isValid(now) )
 	{
 		die(now);
-		CPrintHelper::PrintDetail(now, this->getName() + " dies of trace exhaustion.");
+		CPrintHelper::PrintContent(now, this->getName() + " dies of trace exhaustion.");
 		return;
 	}
 	setLocation(trace->getLocation(now));

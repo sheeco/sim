@@ -55,6 +55,7 @@ public:
 		selectedHotspots = selector.selectedHotspots;
 		unselectedHotspots.insert(unselectedHotspots.end(), selector.unselectedHotspots.begin(), selector.unselectedHotspots.end());
 
+		CPrintHelper::PrintDoing(STRING(selectedHotspots.size()) + " hotspots");
 		CPrintHelper::PrintDone();
 	}
 };

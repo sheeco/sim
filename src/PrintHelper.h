@@ -50,7 +50,7 @@ private:
 	{
 		return HEADER_H_1 + str + TAIL_H_1;
 	}
-	inline static string toSubHeading(string str)
+	inline static string toContent(string str)
 	{
 		return HEADER_H_2 + str + TAIL_H_2;
 	}
@@ -75,6 +75,27 @@ private:
 		return HEADER_COMMUNICATION + comm + TAIL_COMMUNICATION;
 	}
 
+	inline static void PrintToCurrentLine(string str)
+	{
+		printToCout(str, false);
+	}
+	inline static void PrintAsContent(string str, bool newline)
+	{
+		printToCout(toContent(str), newline);
+	}
+	inline static void PrintAttribute(string des, string value)
+	{
+		PrintAsContent(toAttribute(des) + value, true);
+	}
+	inline static void FlashDetail(string str)
+	{
+		flashToCout(toDetail(str));
+	}
+	inline static void PrintCommunication(int time, string str)
+	{
+		PrintDetail(time, str);
+	}
+
 
 public:
 
@@ -93,17 +114,6 @@ public:
 	{
 		PrintHeading(toTime(time) + str);
 	}
-	inline static void PrintSubHeading(string str)
-	{
-		if(newline)
-			str = toSubHeading(str);
-		printToCout(str, false);
-	}
-	inline static void PrintAttribute(string des, string value)
-	{
-		PrintSubHeading( toAttribute(des) + value );
-		PrintNewLine();
-	}
 	inline static void PrintAttribute(string des, double value)
 	{
 		PrintAttribute(des, STRING(NDigitFloat(value, 2)));
@@ -115,11 +125,16 @@ public:
 	}
 	inline static void PrintDoing(string str)
 	{
-		PrintSubHeading(toDoing(str));
+		str = toDoing(str);
+		if(newline)
+			PrintAsContent(str, false);
+		else
+			PrintToCurrentLine(str);
 	}
 	inline static void PrintDone()
 	{
-		printToCout(" Done", true);
+		PrintToCurrentLine(" Done");
+		PrintNewLine();
 	}
 
 	inline static void Alert()
@@ -143,29 +158,26 @@ public:
 	{
 		printToCout("Error caught correctly @ " + error, true);
 	}
-	inline static void PrintDetail(string str)
+	inline static void PrintContent(string str)
 	{
-		printToCout(toDetail(str), true);
+		PrintAsContent(str, true);
 	}
+	inline static void PrintContent(int time, string str)
+	{
+		PrintContent(toTime(time) + str);
+	}
+	static void PrintDetail(string str);
 	inline static void PrintDetail(int time, string str)
 	{
-		printToCout(toDetail(toTime(time) + str), true);
-	}
-	inline static void FlashDetail(string str)
-	{
-		flashToCout(toDetail(str));
-	}
-	inline static void FlashDetail(int time, string str)
-	{
-		flashToCout(toDetail( toTime(time) + str ));
+		PrintDetail(toTime(time) + str);
 	}
 	inline static void PrintCommunication(int time, string from, string to, string comm)
 	{
-		PrintDetail(time, from + toCommunication(comm) + to);
+		PrintCommunication(time, from + toCommunication(comm) + to);
 	}
 	inline static void PrintCommunication(int time, string from, string to, int nData)
 	{
-		PrintDetail(time, from + toCommunication( NDigitString(nData, 2) ) + to);
+		PrintCommunication(time, from + toCommunication( NDigitString(nData, 2) ) + to);
 	}
 	inline static void PrintFile(string filepath, string des)
 	{

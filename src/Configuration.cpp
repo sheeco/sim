@@ -173,7 +173,8 @@ void CConfiguration::InitConfiguration()
 
 
 	addGroup("log");
-	addConfiguration("log", "slot_log", typeid(int), new int(100));  //记录数据投递率和数据投递时延的slot
+	addConfiguration("log", "slot_log", typeid( int ), new int(100));  //记录数据投递率和数据投递时延的slot
+	addConfiguration("log", "detail", typeid(bool), new int(true));  //记录数据投递率和数据投递时延的slot
 
 	addConfiguration("log", "dir_root", typeid(string), new string("../"));
 	addConfiguration("log", "dir_project", typeid(string), new string("../.project/"));

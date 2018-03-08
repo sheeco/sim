@@ -34,14 +34,6 @@ protected:
 	{
 		init();
 	};
-	CPFerryNode(CNode& node) : CNode(node)
-	{
-		this->init();
-	};
-	CPFerryNode(CHARNode& harNode): CNode(harNode)
-	{
-		this->init();
-	};
 };
 
 class CPFerryTask: 
@@ -139,10 +131,7 @@ protected:
 	{
 		init();
 	}
-	CPFerryMANode(CHARMANode* ma): CMANode(*ma)
-	{
-		this->init();
-	}
+
 	map<CPFerryNode*, CPosition> getCollections() const
 	{
 		return collections;
@@ -272,7 +261,7 @@ protected:
 				this->atPoint = toPoint;
 
 #ifdef DEBUG
-				CPrintHelper::PrintDetail(now, this->getName() + " arrives at task position " + ppos->format() + ".");
+				CPrintHelper::PrintContent(now, this->getName() + " arrives at task position " + ppos->format() + ".");
 #endif // DEBUG
 
 				CPFerryTask* task = this->findTask(ppos->getNode());
@@ -291,7 +280,7 @@ protected:
 			else if( ( psink = dynamic_cast< CSink * >( toPoint ) ) != nullptr )
 			{
 #ifdef DEBUG
-				CPrintHelper::PrintDetail(time, this->getName() + " arrives at sink.");
+				CPrintHelper::PrintContent(time, this->getName() + " arrives at sink.");
 #endif // DEBUG
 				//route->updateToPoint();
 			}
@@ -339,7 +328,9 @@ private:
 	{
 		for(CNode node : nodes)
 		{
-			CPFerryNode* pferryNode = new CPFerryNode(node);
+			CPFerryNode* pferryNode = new CPFerryNode();
+			CNode* pBase = dynamic_cast< CNode* >( pferryNode );
+			*pBase = node;
 
 			allNodes.push_back(pferryNode);
 			updatecollectionRecords(pferryNode, pferryNode->getBufferVacancy(), now);
@@ -352,9 +343,11 @@ private:
 	//init based on HAR::allNodes & ClearDeadNodes()
 	static void initNodes(vector<CHARNode*> nodes, int now)
 	{
-		for(CHARNode* pnode : nodes)
+		for(CNode* pHARNode : nodes)
 		{
-			CPFerryNode* pferryNode = new CPFerryNode(*pnode);
+			CPFerryNode* pferryNode = new CPFerryNode();
+			CNode* pbase = dynamic_cast< CNode* >( pferryNode );
+			*pbase = *pHARNode;
 
 			allNodes.push_back(pferryNode);
 			updatecollectionRecords(pferryNode, pferryNode->getBufferVacancy(), now);
@@ -471,7 +464,7 @@ private:
 		}
 
 	}
-	static bool updateNodeStatus(int now)
+	static bool UpdateNodeStatus(int now)
 	{
 		//update basic status
 		vector<CPFerryNode *> nodes = aliveNodes;
@@ -547,7 +540,7 @@ private:
 		else
 			message += "miss";
 		message += " & " + STRING(collections.size()) + " collections.";
-		CPrintHelper::PrintDetail(now, message);
+		CPrintHelper::PrintContent(now, message);
 	}
 
 	//FIXME:
@@ -560,7 +553,7 @@ private:
 	{
 #ifdef DEBUG
 		if(!nodes.empty() )
-			CPrintHelper::PrintDetail(now, STRING(nodes.size()) + " nodes are unreachable.");
+			CPrintHelper::PrintContent(now, STRING(nodes.size()) + " nodes are unreachable.");
 #endif // DEBUG
 
 		int i = 0;
@@ -572,7 +565,7 @@ private:
 			ma->assignTask(node, pos, minWaitingTime());
 			ma->setTime(now);
 
-			CPrintHelper::PrintDetail(now, ma->getName() + " is targetting (unreachable) " + node->getName()
+			CPrintHelper::PrintContent(now, ma->getName() + " is targetting (unreachable) " + node->getName()
 									  + " around " + pos.getLocation().format()
 									  + " at " + STRING(pos.getTime()) + "s.");
 
@@ -696,7 +689,7 @@ private:
 			CPFerryMANode* ma = new CPFerryMANode();
 			allMAs.push_back(ma);
 			freeMAs.push_back(ma);
-			CPrintHelper::PrintDetail(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
+			CPrintHelper::PrintContent(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
 			return true;
 		}
 	}
@@ -732,8 +725,7 @@ private:
 			{
 				if( dstNode->isAwake() )
 				{
-					if( Bet(getConfig<double>("trans", "prob_trans")) )
-						neighbors.push_back(dstNode);
+					neighbors.push_back(dstNode);
 				}
 			}
 		}
@@ -742,7 +734,6 @@ private:
 
 		CSink* sink = CSink::getSink();
 		if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range_trans"))
-		   && Bet(getConfig<double>("trans", "prob_trans"))
 		   && sink->getID() != src.getID() )
 		{
 			neighbors.push_back(sink);
@@ -761,7 +752,6 @@ private:
 				continue;
 
 			if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
-			   && Bet(getConfig<double>("trans", "prob_trans"))
 			   && ( *iMA )->isAwake() )
 			{
 				neighbors.push_back(*iMA);
@@ -826,6 +816,8 @@ private:
 				packetsToSend = receivePackets(node, fromMA, packets, now);
 			}
 		}
+		else
+			throw string("CPFerry::receivePackets(): Unexpected condition.");
 
 		// TODO: + comm : node <--> sink ?
 
@@ -1258,7 +1250,7 @@ private:
 				ma->assignTask(node, pos, minWaitingTime());
 				ma->setTime(now);
 				
-				CPrintHelper::PrintDetail(now, ma->getName() + " is targetting " + node->getName()
+				CPrintHelper::PrintContent(now, ma->getName() + " is targetting " + node->getName()
 										  + " around " + pos.getLocation().format() 
 										  + " at " + STRING(pos.getTime()) + "s.");
 
@@ -1288,14 +1280,14 @@ private:
 			int n = urgentNodes.size();
 			if( newMANode(n) )
 			{
-				CPrintHelper::PrintDetail(now, "Another " + STRING(n) + " MAs are created. (" + STRING(allMAs.size()) + " in total)");
+				CPrintHelper::PrintContent(now, "Another " + STRING(n) + " MAs are created. (" + STRING(allMAs.size()) + " in total)");
 				arrangeTask(urgentNodes, now);
 			}
 		}
 		else if( !urgentNodes.empty() )
 		{
 #ifdef DEBUG
-			CPrintHelper::PrintDetail(now, STRING(urgentNodes.size()) + " nodes are short of MAs.");
+			CPrintHelper::PrintContent(now, STRING(urgentNodes.size()) + " nodes are short of MAs.");
 #endif // DEBUG
 		}
 	}
@@ -1324,7 +1316,7 @@ public:
 		else
 		{
 			//update node & ma positions
-			if(!updateNodeStatus(now))
+			if(!UpdateNodeStatus(now))
 				return false;
 			CSink::getSink()->updateStatus(now);
 			updateMAStatus(now);

@@ -81,6 +81,7 @@ void CNodeRepair::Repair(vector<CHotspot*>& selectedHotspots, vector<CHotspot*>&
 	selectedHotspots = repair.selectedHotspots;
 	unselectedHotspots = repair.unselectedHotspots;
 
+	CPrintHelper::PrintDoing(STRING(selectedHotspots.size()) + " hotspots");
 	CPrintHelper::PrintDone();
 }
 

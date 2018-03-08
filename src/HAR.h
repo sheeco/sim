@@ -88,10 +88,6 @@ protected:
 	{
 		init();
 	}
-	CHARNode(CNode& node): CNode(node)
-	{
-		init();
-	}
 
 public:
 	~CHARNode()
@@ -121,7 +117,7 @@ protected:
 	inline void updateRoute(CHARRoute *route, int now)
 	{
 		CMANode::updateRoute(route);
-		CPrintHelper::PrintDetail(now, this->getName() + " is assigned with route " + route->format() + ".");
+		CPrintHelper::PrintContent(now, this->getName() + " is assigned with route " + route->format() + ".");
 	}
 	inline CHotspot* getAtHotspot() const
 	{
@@ -194,7 +190,9 @@ private:
 	{
 		for(CNode node : nodes)
 		{
-			CHARNode* harNode = new CHARNode(node);
+			CHARNode* harNode = new CHARNode();
+			CNode* pBase = dynamic_cast< CNode* >( harNode );
+			*pBase = node;
 
 			allNodes.push_back(harNode);
 		}
@@ -206,7 +204,7 @@ private:
 		return !aliveNodes.empty();
 	}
 
-	static bool updateNodeStatus(int now)
+	static bool UpdateNodeStatus(int now)
 	{
 		//update basic status
 		vector<CHARNode *> nodes = aliveNodes;
@@ -217,16 +215,6 @@ private:
 
 		return hasNodes();
 	}
-	static void turnFree(CHARMANode * ma)
-	{
-		AddToListUniquely(freeMAs, ma);
-		RemoveFromList(busyMAs, ma);
-	}
-	static void turnBusy(CHARMANode * ma)
-	{
-		RemoveFromList(freeMAs, ma);
-		AddToListUniquely(busyMAs, ma);
-	}
 	static bool newMANode(int now)
 	{
 		if(allMAs.size() >= MAX_NUM_MA)
@@ -236,7 +224,7 @@ private:
 			CHARMANode* ma = new CHARMANode(now);
 			allMAs.push_back(ma);
 			freeMAs.push_back(ma);
-			CPrintHelper::PrintDetail(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
+			CPrintHelper::PrintContent(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
 			return true;
 		}
 	}
@@ -257,6 +245,17 @@ private:
 
 		freeMAs = allMAs;
 	}
+	static void turnFree(CHARMANode * ma)
+	{
+		AddToListUniquely(freeMAs, ma);
+		RemoveFromList(busyMAs, ma);
+	}
+	static void turnBusy(CHARMANode * ma)
+	{
+		RemoveFromList(freeMAs, ma);
+		AddToListUniquely(busyMAs, ma);
+	}
+
 	//取得新的路线集合
 	static inline void updateRoutes(vector<CHARRoute*> newRoutes)
 	{
@@ -405,8 +404,7 @@ public:
 					if( typeid( src ) == typeid( CSink ) )
 						CSink::encountActive();
 
-					if( Bet(getConfig<double>("trans", "prob_trans")) )
-						neighbors.push_back(dstNode);
+					neighbors.push_back(dstNode);
 				}
 			}
 		}
@@ -415,7 +413,6 @@ public:
 
 		CSink* sink = CSink::getSink();
 		if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range_trans"))
-		   && Bet(getConfig<double>("trans", "prob_trans"))
 		   && sink->getID() != src.getID() )
 		{
 			neighbors.push_back(sink);
@@ -433,7 +430,6 @@ public:
 				continue;
 
 			if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
-			   && Bet(getConfig<double>("trans", "prob_trans"))
 			   && ( *iMA )->isAwake() )
 			{
 				neighbors.push_back(*iMA);
@@ -513,6 +509,9 @@ public:
 
 		vector<CNode*> aliveList = CNode::upcast<CHARNode>(aliveNodes);
 
+		if(! UpdateNodeStatus(now))
+			return false;
+
 		CHotspotSelect::RemovePositionsForDeadNodes(CNode::getIdNodes(CNode::upcast<CHARNode>(deadNodes)), now);
 		CHotspotSelect::CollectNewPositions(now, aliveList);
 
@@ -521,18 +520,15 @@ public:
 		//检测节点所在热点区域
 		CHotspot::UpdateAtHotspotForNodes(aliveList, hotspots, now);
 
-		if(!hasNodes())
-			return false;
-
 		if(now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT
 		   && now <= CHotspotSelect::STARTTIME_HOTSPOT_SELECT + getConfig<int>("simulation", "slot"))
 			initMANodes(now);
 
+		UpdateMANodeStatus(now);
+
 		HotspotClassification(now);
 
 		MANodeRouteDesign(now);
-
-		UpdateMANodeStatus(now);
 
 		// 不允许 xHAR 使用 HDC 作为 MAC 协议
 		//if( config.MAC_PROTOCOL == config::_hdc )

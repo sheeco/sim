@@ -40,13 +40,13 @@ void CHDC::UpdateDutyCycleForNodes(int now)
 			&& !atHotspot  )
 		{
 			(*inode)->resetDutyCycle();
-			CPrintHelper::PrintDetail(now, "Duty cycle of " + ( *inode )->getName() + " is reset.");
+			CPrintHelper::PrintContent(now, "Duty cycle of " + ( *inode )->getName() + " is reset.");
 		}
 		else if( !usingHotspotDutyCycle
 				 && atHotspot )
 		{
 			(*inode)->raiseDutyCycle(HOTSPOT_DUTY_RATE);
-			CPrintHelper::PrintDetail(now, "Duty cycle of " + (*inode)->getName() + " is raised.");
+			CPrintHelper::PrintContent(now, "Duty cycle of " + (*inode)->getName() + " is raised.");
 		}
 	}
 }

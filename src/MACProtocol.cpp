@@ -48,8 +48,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now)
 				if( typeid( src ) == typeid( CSink ) )
 					CSink::encountActive();
 
-				if( Bet( getConfig<double>("trans", "prob_trans")) )
-					neighbors.push_back(dstNode);
+				neighbors.push_back(dstNode);
 			}
 		}
 	}
@@ -58,7 +57,6 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now)
 
 	CSink* sink = CSink::getSink();
 	if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range_trans"))
-	   && Bet( getConfig<double>("trans", "prob_trans"))
 	   && sink->getID() != src.getID() )
 	{
 		neighbors.push_back(sink);
@@ -117,6 +115,9 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now)
 
 bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ))
 {
+	if(! Bet(getConfig<double>("trans", "prob_trans")) )
+	   return false;
+
 	// Make local copy
 	frame = new CFrame(*frame);
 	CGeneralNode* gFromNode = frame->getSrcNode();
@@ -225,6 +226,9 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now, vect
 
 bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int now)
 {
+	if(!Bet(getConfig<double>("trans", "prob_trans")))
+		return false;
+
 	// Make local copy
 	frame = new CFrame(*frame);
 	CGeneralNode* gFromNode = frame->getSrcNode();

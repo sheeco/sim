@@ -65,7 +65,7 @@ void CHotspotSelect::updateAboveAverageList()
 
 void CHotspotSelect::SaveOldSelectedHotspots(int now)
 {
-	if( now <= getConfig<int>("hs", "starttime_hospot_select") )
+	if( now <= SLOT_HOTSPOT_UPDATE )
 		return;
 
 	//释放上一轮选取中未被选中的废弃热点
@@ -212,6 +212,7 @@ void CHotspotSelect::GreedySelect(int now)
 		}
 	}while(! uncoveredPositions.empty());
 
+	CPrintHelper::PrintDoing(STRING(selectedHotspots.size()) + " hotspots");
 	CPrintHelper::PrintDone();
 }
 
@@ -227,7 +228,7 @@ void CHotspotSelect::MergeHotspots(int now)
 	//sort new hotspots by x coordinates
 	hotspotCandidates = CSortHelper::mergeSort(hotspotCandidates, CSortHelper::ascendByLocationX);
 
-	vector<CHotspot*> lastSelectedHotspots = oldSelectedHotspots[now - getConfig<int>("hs", "slot_hotspot_update")];
+	vector<CHotspot*> lastSelectedHotspots = oldSelectedHotspots[now - SLOT_HOTSPOT_UPDATE];
 	for(vector<CHotspot *>::iterator iOld = lastSelectedHotspots.begin(); iOld != lastSelectedHotspots.end(); /* ++iOld*/ )
 	{
 		CHotspot *best_merge = nullptr;
@@ -307,14 +308,14 @@ void CHotspotSelect::CompareWithOldHotspots(int now)
 	if( oldSelectedHotspots.empty() )
 		return ;
 
-	double overlapArea = CHotspot::getOverlapArea(oldSelectedHotspots[now - getConfig<int>("hs", "slot_hotspot_update")], selectedHotspots);
-	double oldArea = oldSelectedHotspots[now - getConfig<int>("hs", "slot_hotspot_update")].size() 
+	double overlapArea = CHotspot::getOverlapArea(oldSelectedHotspots[now - SLOT_HOTSPOT_UPDATE], selectedHotspots);
+	double oldArea = oldSelectedHotspots[now - SLOT_HOTSPOT_UPDATE].size() 
 		* AreaCircle( getConfig<int>("trans", "range_trans")) 
-		- CHotspot::getOverlapArea(oldSelectedHotspots[now - getConfig<int>("hs", "slot_hotspot_update")]);
+		- CHotspot::getOverlapArea(oldSelectedHotspots[now - SLOT_HOTSPOT_UPDATE]);
 	double newArea = selectedHotspots.size() * AreaCircle( getConfig<int>("trans", "range_trans")) - CHotspot::getOverlapArea(selectedHotspots);
 
 	ofstream similarity( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hotspot_similarity"), ios::app);
-	if( now == getConfig<int>("hs", "starttime_hospot_select") + getConfig<int>("hs", "slot_hotspot_update") )
+	if( now == STARTTIME_HOTSPOT_SELECT + SLOT_HOTSPOT_UPDATE )
 	{
 		similarity << endl << endl << getConfig<string>("log", "info_log") << endl ;
 		similarity << getConfig<string>("log", "info_hotspot_similarity") << endl;
@@ -340,8 +341,8 @@ void CHotspotSelect::Init()
 
 vector<CHotspot *> CHotspotSelect::HotspotSelect(vector<int> idNodes, int now)
 {
-	if(!( now % getConfig<int>("hs", "slot_hotspot_update") == 0
-		 && now >= getConfig<int>("hs", "starttime_hospot_select") ))
+	if(!( now % SLOT_HOTSPOT_UPDATE == 0
+		 && now >= STARTTIME_HOTSPOT_SELECT ))
 		return vector<CHotspot*>();
 
 	CPrintHelper::PrintHeading(now, "HOTSPOT SELECT");
@@ -383,13 +384,13 @@ vector<CHotspot *> CHotspotSelect::HotspotSelect(vector<int> idNodes, int now)
 
 void CHotspotSelect::PrintInfo(int now)
 {
-	if( ! ( now % getConfig<int>("hs", "slot_hotspot_update")  == 0
-		    && now >= getConfig<int>("hs", "starttime_hospot_select") ) )
+	if( ! ( now % SLOT_HOTSPOT_UPDATE  == 0
+		    && now >= STARTTIME_HOTSPOT_SELECT ) )
 		return;
 	
 	//热点个数
 	ofstream hotspot( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hotspot"), ios::app);
-	if(now == getConfig<int>("hs", "starttime_hospot_select"))
+	if(now == STARTTIME_HOTSPOT_SELECT)
 	{
 		hotspot << endl << getConfig<string>("log", "info_log") << endl ;
 		hotspot << getConfig<string>("log", "info_hotspot") << endl;
@@ -400,7 +401,7 @@ void CHotspotSelect::PrintInfo(int now)
 	
 	//热点位置
 	ofstream hotspot_details(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hotspot_details"), ios::app);
-	if( now == getConfig<int>("hs", "starttime_hospot_select") )
+	if( now == STARTTIME_HOTSPOT_SELECT )
 	{
 		hotspot_details << endl << getConfig<string>("log", "info_log") << endl;
 		hotspot_details << getConfig<string>("log", "info_hotspot_details") << endl;
@@ -412,7 +413,7 @@ void CHotspotSelect::PrintInfo(int now)
 
 	//节点在热点内的百分比（从热点选取开始时开始统计）
 	ofstream at_hotspot( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_visit"), ios::app);
-	if(now == getConfig<int>("hs", "starttime_hospot_select"))
+	if(now == STARTTIME_HOTSPOT_SELECT)
 	{
 		at_hotspot << endl << getConfig<string>("log", "info_log") << endl ; 
 		at_hotspot << getConfig<string>("log", "info_visit") << endl;
@@ -436,7 +437,7 @@ void CHotspotSelect::PrintInfo(int now)
 			ofstream merge( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_merge"), ios::app);
 			ofstream merge_details( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_merge_details"), ios::app);
 
-			if(now == getConfig<int>("hs", "starttime_hospot_select"))
+			if(now == STARTTIME_HOTSPOT_SELECT)
 			{
 				merge << endl << getConfig<string>("log", "info_log") << endl ;
 				merge << getConfig<string>("log", "info_merge") << endl;

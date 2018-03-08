@@ -92,7 +92,7 @@ void CHARMANode::updateStatus(int time)
 			waitingState = 0;  //重新开始等待
 
 #ifdef DEBUG
-			CPrintHelper::PrintDetail(time, this->getName() + " arrives at waypoint " + photspot->getLocation().format() + ".");
+			CPrintHelper::PrintContent(time, this->getName() + " arrives at waypoint " + photspot->getLocation().format() + ".");
 #endif // DEBUG
 			route->updateToPoint();
 		}
@@ -100,7 +100,7 @@ void CHARMANode::updateStatus(int time)
 		else if( ( psink = dynamic_cast<CSink *>( toPoint ) ) != nullptr )
 		{
 #ifdef DEBUG
-			CPrintHelper::PrintDetail(time, this->getName() + " arrives at sink.");
+			CPrintHelper::PrintContent(time, this->getName() + " arrives at sink.");
 #endif // DEBUG
 			setReturnAtOnce(true);
 		}
@@ -379,7 +379,7 @@ void HAR::MANodeRouteDesign(int now)
 		OptimizeRoute( *iroute );
 	}
 
-	CPrintHelper::PrintAttribute("MA", busyMAs.size());
+	CPrintHelper::PrintAttribute("MA", allMAs.size());
 }
 
 bool HAR::transmitFrame(CGeneralNode & src, CFrame * frame, int now)
@@ -392,26 +392,26 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 {
 	vector<CPacket*> packetsToSend;
 
-	if( typeid( gToNode ) == typeid( CSink ) )
+	if(typeid( gToNode ) == typeid( CSink ))
 	{
 		CSink* toSink = dynamic_cast< CSink* >( &gToNode );
 
 		/*********************************************** Sink <- MA *******************************************************/
 
-		if( typeid( gFromNode ) == typeid( CHARMANode ) )
+		if(typeid( gFromNode ) == typeid( CHARMANode ))
 		{
-			CHARMANode* fromMA = dynamic_cast<CHARMANode*>( &gFromNode );
+			CHARMANode* fromMA = dynamic_cast< CHARMANode* >( &gFromNode );
 			packetsToSend = HAR::receivePackets(toSink, fromMA, packets, now);
 		}
 	}
 
-	else if( typeid( gToNode ) == typeid( CHARMANode ) )
+	else if(typeid( gToNode ) == typeid( CHARMANode ))
 	{
-		CHARMANode* toMA = dynamic_cast<CHARMANode*>( &gToNode );
+		CHARMANode* toMA = dynamic_cast< CHARMANode* >( &gToNode );
 
 		/************************************************ MA <- sink *******************************************************/
 
-		if( typeid( gFromNode ) == typeid( CSink ) )
+		if(typeid( gFromNode ) == typeid( CSink ))
 		{
 			CSink* fromSink = dynamic_cast< CSink* >( &gFromNode );
 			packetsToSend = HAR::receivePackets(toMA, fromSink, packets, now);
@@ -419,25 +419,27 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 
 		/************************************************ MA <- node *******************************************************/
 
-		else if( typeid( gFromNode ) == typeid( CNode ) )
+		else if(typeid( gFromNode ) == typeid( CHARNode ))
 		{
-			CNode* fromNode = dynamic_cast<CNode*>( &gFromNode );
+			CHARNode* fromNode = dynamic_cast< CHARNode* >( &gFromNode );
 			packetsToSend = HAR::receivePackets(toMA, fromNode, packets, now);
 		}
 	}
 
-	else if( typeid( gToNode ) == typeid( CNode ) )
+	else if(typeid( gToNode ) == typeid( CHARNode ))
 	{
-		CNode* node = dynamic_cast<CNode*>( &gToNode );
+		CHARNode* node = dynamic_cast< CHARNode* >( &gToNode );
 
 		/************************************************ Node <- MA *******************************************************/
 
-		if( typeid( gFromNode ) == typeid( CHARMANode ) )
+		if(typeid( gFromNode ) == typeid( CHARMANode ))
 		{
-			CHARMANode* fromMA = dynamic_cast<CHARMANode*>( &gFromNode );
+			CHARMANode* fromMA = dynamic_cast< CHARMANode* >( &gFromNode );
 			packetsToSend = HAR::receivePackets(node, fromMA, packets, now);
 		}
 	}
+	else
+		throw string("HAR::receivePackets(): Unexpected condition.");
 
 	// TODO: + comm : node <--> sink ?
 

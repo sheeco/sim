@@ -40,3 +40,12 @@ void CPrintHelper::printToCout(string str, bool newLine)
 	else
 		LINE_END = "", CPrintHelper::newline = false;
 }
+
+void CPrintHelper::PrintDetail(string str)
+{
+	if(getConfig<bool>("log", "detail"))
+		PrintContent(str);
+	else
+		FlashDetail(str);
+}
+

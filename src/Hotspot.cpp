@@ -143,10 +143,10 @@ bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> h
 
 		if(oldAtHotspot != nullptr
 		   && newAtHotspot != oldAtHotspot)
-			CPrintHelper::FlashDetail(now, pnode->getName() + " leaves " + oldAtHotspot->getName() + ".");
+			CPrintHelper::PrintDetail(now, pnode->getName() + " leaves " + oldAtHotspot->getName() + ".");
 		if(newAtHotspot != nullptr
 		   && newAtHotspot != oldAtHotspot)
-			CPrintHelper::FlashDetail(now, pnode->getName() + " enters " + newAtHotspot->getName() + ".");
+			CPrintHelper::PrintDetail(now, pnode->getName() + " enters " + newAtHotspot->getName() + ".");
 		if(newAtHotspot != nullptr)
 			++countAtHotspot;
 
@@ -183,7 +183,7 @@ bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> h
 	{
 		CPrintHelper::PrintPercentage("Encounters At Hotspots", CHotspot::getPercentEncounterAtHotspot());
 	}
-	CPrintHelper::PrintPercentage("Nodes At Hotspots", countAtHotspot);
+	CPrintHelper::PrintPercentage("Nodes At Hotspots", (double)countAtHotspot / nodes.size());
 
 	return true;
 }

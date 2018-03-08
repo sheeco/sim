@@ -105,7 +105,7 @@ public:
 			pan.CancelPanding(this->predictions);
 
 			double hitrate = calculateHitrate(node->getTrace(), *(this->predictions), 100);
-			CPrintHelper::PrintDetail("Trace prediction for " + node->getName() + " is loaded, hitrate " 
+			CPrintHelper::PrintContent("Trace prediction for " + node->getName() + " is loaded, hitrate " 
 									  + STRING( NDigitFloat(hitrate * 100, 1) ) + "%.");
 		}
 	}

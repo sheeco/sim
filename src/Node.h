@@ -258,7 +258,7 @@ public:
 		   && getConfig<int>("node", "energy") - energyConsumption <= 0 )
 		{
 			this->die(now);
-			CPrintHelper::PrintDetail(now, this->getName() + " dies of energy exhaustion.");
+			CPrintHelper::PrintContent(now, this->getName() + " dies of energy exhaustion.");
 		}
 	}
 
@@ -327,7 +327,7 @@ public:
 		{
 			if(!( *ipNode )->isAlive())
 			{
-				CPrintHelper::PrintDetail(now, ( *ipNode )->getName() + " is dead.");
+				CPrintHelper::PrintContent(now, ( *ipNode )->getName() + " is dead.");
 				death = true;
 				aliveNodes.push_back(*ipNode);
 				ipNode = aliveNodes.erase(ipNode);
