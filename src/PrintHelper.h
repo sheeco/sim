@@ -133,7 +133,7 @@ public:
 	}
 	inline static void PrintDone()
 	{
-		PrintToCurrentLine(" Done");
+		PrintToCurrentLine("Done");
 		PrintNewLine();
 	}
 

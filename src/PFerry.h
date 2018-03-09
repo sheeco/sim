@@ -352,8 +352,8 @@ private:
 			allNodes.push_back(pferryNode);
 			updatecollectionRecords(pferryNode, pferryNode->getBufferVacancy(), now);
 			collectionHistory[pferryNode] = vector<CPosition>();
-
 		}
+		CNode::setNodes(CNode::upcast<CPFerryNode>(allNodes));
 		
 		CNode::ClearDeadNodes<CPFerryNode>(aliveNodes, deadNodes, now);
 	}
@@ -1297,7 +1297,7 @@ public:
 
 	static bool Init(int now)
 	{	// UNDONE:
-		initNodes(HAR::getAllNodes(), now);
+		initNodes(HAR::getAllHARNodes(), now);
 
 		initMANodes();
 		

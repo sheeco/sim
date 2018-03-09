@@ -355,6 +355,7 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("pferry", "path_predict", typeid( string ), new string(""));  //e.g. ../res/predict
 	addConfiguration("pferry", "keyword_predict", typeid( string ), new string(""));
 	addConfiguration("pferry", "extension_pan_file", typeid( string ), new string(".pan"));
+	addConfiguration("pferry", "prestage_protocol", typeid( int ), new EnumRoutingProtocolScheme(_xhar));
 
 }
 

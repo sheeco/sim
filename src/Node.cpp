@@ -24,11 +24,11 @@ vector<int> CNode::idNodes;
 void CNode::init() 
 {
 	trace = nullptr;
-	dataRate = 0;
+	dataRate = INVALID;
 	//timerCarrierSense = getConfig<int>("mac", "cycle_carrier_sense");
 	//discovering = false;
-	timeLastData = 0;
-	timeDeath = 0;
+	timeLastData = INVALID;
+	timeDeath = INVALID;
 	capacityBuffer = getConfig<int>("node", "buffer");
 	sumTimeAwake = 0;
 	sumTimeAlive = 0;
@@ -77,8 +77,6 @@ CNode::~CNode()
 
 void CNode::setNodes(vector<CNode*> nodes)
 {
-	if(!allNodes.empty())
-		throw string("CNode::setNodes(): `CNode::allNodes` have already been initialized.");
 	allNodes = nodes;
 	allNodes = CSortHelper::mergeSort(allNodes, CSortHelper::ascendByID);
 	idNodes.clear();

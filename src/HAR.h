@@ -197,6 +197,7 @@ private:
 			allNodes.push_back(harNode);
 		}
 		aliveNodes = allNodes;
+		deadNodes.clear();
 		CNode::setNodes(CNode::upcast<CHARNode>(allNodes));
 	}
 	static bool hasNodes()
@@ -314,7 +315,7 @@ public:
 	HAR(){};
 	~HAR(){};
 
-	static vector<CHARNode*> getAllNodes()
+	static vector<CHARNode*> getAllHARNodes()
 	{
 		return allNodes;
 	}

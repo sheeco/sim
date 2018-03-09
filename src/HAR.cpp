@@ -379,7 +379,7 @@ void HAR::MANodeRouteDesign(int now)
 		OptimizeRoute( *iroute );
 	}
 
-	CPrintHelper::PrintAttribute("MA", allMAs.size());
+	CPrintHelper::PrintAttribute("MA Routes", routes.size());
 }
 
 bool HAR::transmitFrame(CGeneralNode & src, CFrame * frame, int now)
@@ -599,7 +599,10 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 
 					CPrintHelper::PrintCommunication(time, ma->format(), fromSink->format(), ctrl->getACK().size());
 					if( ma->ifReturnAtOnce() )
-						atMAReturn(ma, time);
+					{
+						if( !ma->hasData() )
+							atMAReturn(ma, time);
+					}
 				}
 				return packetsToSend;
 

@@ -24,6 +24,7 @@ class CNode :
 
 protected:
 
+	//TODO: make sure identifier is printed instead of ID in log files
 	string nodeIdentifier;  //node identifier read from trace file
 	CCTrace* trace;
 	double dataRate;
@@ -53,7 +54,7 @@ protected:
 	static int visiter;
 
 	static int COUNT_ID;
-	static vector<CNode *> allNodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
+	static vector<CNode *> allNodes;  //用于储存所有传感器节点的基类型指针拷贝
 	static vector<int> idNodes;
 								   // TODO: remove ?
 
@@ -88,6 +89,8 @@ protected:
 		}
 		return allNodes;
 	}
+	//TODO: check all the static methods for CNode
+	//TODO: is it necessary to create inhertied node type for each protocol ?
 	static void setNodes(vector<CNode*> nodes);
 	void generateData(int now);
 
@@ -265,7 +268,7 @@ public:
 	//不设置能量值时，始终返回true
 	bool isAlive() const
 	{
-		return this->timeDeath >= 0;
+		return ! (this->timeDeath >= 0);
 	}
 
 	double getEnergy() const
@@ -286,6 +289,7 @@ public:
 	void die(int now)
 	{
 		this->timeDeath = now;
+		this->setTime(now);
 	}
 
 	template <class T>
@@ -319,17 +323,15 @@ public:
 	template <class T>
 	static bool ClearDeadNodes(vector<T*> &aliveList, vector<T*> &deadList, int now)
 	{
-		vector<CNode*> aliveNodes, deadNodes;
+		vector<CNode*> aliveNodes, newlyDeadNodes;
 		aliveNodes = upcast<T>(aliveList);
-		deadNodes = upcast<T>(deadList);
 		bool death = false;
 		for(vector<CNode *>::iterator ipNode = aliveNodes.begin(); ipNode != aliveNodes.end(); )
 		{
 			if(!( *ipNode )->isAlive())
 			{
-				CPrintHelper::PrintContent(now, ( *ipNode )->getName() + " is dead.");
 				death = true;
-				aliveNodes.push_back(*ipNode);
+				newlyDeadNodes.push_back(*ipNode);
 				ipNode = aliveNodes.erase(ipNode);
 			}
 			else
@@ -344,15 +346,18 @@ public:
 				death << endl << getConfig<string>("log", "info_log") << endl;
 				death << getConfig<string>("log", "info_death") << endl;
 			}
-			death << now << TAB << aliveNodes.size() << TAB << CData::getCountDelivery()
-				<< TAB << CData::getDeliveryRatio() << endl;
+			int nAlive = aliveList.size();
+			for(CNode* pdead : newlyDeadNodes )
+				death << now << TAB << pdead->getIdentifier() << TAB << --nAlive << TAB << CData::getCountDelivery() 
+					<< TAB << CData::getDeliveryRatio() << endl;
 			death.close();
-
-			CPrintHelper::PrintAttribute("Node Count", aliveNodes.size());
+			ASSERT(nAlive == aliveNodes.size());
+			CPrintHelper::PrintAttribute("Node Count", nAlive);
 		}
 
 		aliveList = downcast<T>(aliveNodes);
-		deadList = downcast<T>(deadNodes);
+		vector<T*> newlyDeadList = downcast<T>(newlyDeadNodes);
+		deadList.insert(deadList.end(), newlyDeadList.begin(), newlyDeadList.end());
 		return death;
 	}
 
