@@ -32,8 +32,8 @@ protected:
 
 	//  [ ----------SLEEP----------> | ----WAKE----> )
 
-	int SLOT_SLEEP;  //由getConfig<int>("mac", "cycle")和DC计算得到
-	int SLOT_WAKE;  //由getConfig<int>("mac", "cycle")和DC计算得到
+	int SLOT_SLEEP;  //由WORK_CYCLE和DC计算得到
+	int SLOT_WAKE;  //由WORK_CYCLE和DC计算得到
 
 					//计时器：INVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
 	int timerSleep;
@@ -54,10 +54,20 @@ protected:
 	static int visiter;
 
 	static int COUNT_ID;
-	static vector<CNode *> allNodes;  //用于储存所有传感器节点的基类型指针拷贝
+	static vector<CNode*> allNodes;
+	static vector<CNode*> aliveNodes;
+	static vector<CNode*> deadNodes;
+	static map<int, CNode*> mapAllNodes;
+	//TODO: remove
 	static vector<int> idNodes;
-								   // TODO: remove ?
 
+	static double DEFAULT_DATA_RATE;
+	static int DEFAULT_CAPACITY_BUFFER;
+	static int DEFAULT_CAPACITY_ENERGY;
+	static int WORK_CYCLE;
+	static double DEFAULT_DUTY_RATE;
+
+	/***********************  Initialization  ************************/
 
 	void init();
 
@@ -65,9 +75,26 @@ protected:
 
 	CNode(double dataRate);
 
-	static vector<CNode> loadNodesFromFile()
+	void generateID()
 	{
-		vector<CNode> allNodes;
+		++COUNT_ID;
+		this->ID = COUNT_ID;
+	}
+	void setIdentifier(string nodeIdentifier)
+	{
+		this->nodeIdentifier = nodeIdentifier;
+	}
+	void loadTrace(string filepath)
+	{
+		this->trace = CCTrace::readTraceFromFile(filepath, getConfig<bool>("trace", "continuous"));
+		string filename = CFileHelper::SplitPath(filepath).second;
+		string nodename = CFileHelper::SplitFilename(filename).first;
+		this->setIdentifier(nodename);
+		this->setName("Node #" + nodename);
+	}
+	static vector<CNode*> loadNodesFromFile()
+	{
+		vector<CNode*> nodes;
 		string path = getConfig<string>("trace", "path");
 		vector<string> filenames = CFileHelper::ListDirectory(path);
 		filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
@@ -77,21 +104,21 @@ protected:
 
 		for(int i = 0; i < filenames.size(); ++i)
 		{
-			double dataRate = getConfig<double>("node", "default_data_rate");
+			double dataRate = DEFAULT_DATA_RATE;
 			if(i % 5 == 0)
 				dataRate *= 5;
-			CNode node;
-			node.setDataByteRate(dataRate);
-			node.generateID();
-			node.loadTrace(filenames[i]);
+			CNode* pnode = new CNode();
+			pnode->setDataByteRate(dataRate);
+			pnode->generateID();
+			pnode->loadTrace(filenames[i]);
 
-			allNodes.push_back(node);
+			nodes.push_back(pnode);
+			CPrintHelper::PrintBrief(pnode->getName() + " is loaded from trace file " + filenames[i] + ". (" 
+									   + STRING(nodes.size()) + " in total)");
 		}
-		return allNodes;
+		return nodes;
 	}
-	//TODO: check all the static methods for CNode
-	//TODO: is it necessary to create inhertied node type for each protocol ?
-	static void setNodes(vector<CNode*> nodes);
+
 	void generateData(int now);
 
 
@@ -110,51 +137,79 @@ protected:
 
 	/*************************************  Epidemic  *************************************/
 
-	vector<int> summaryVector;
-	map<CNode *, int> spokenCache;
-
-
-	/**************************************  Prophet  *************************************/
-
-
-	map<int, double> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
+	//vector<int> summaryVector;
+	static int LIFETIME_COMMUNICATION_HISROTY;
+	map<int, int> communicationHistory;  // (nodeId, lastCommunicationTime)
 
 
 public:
 
 	~CNode();
 
+	/***********************  Setters & Getters  ************************/
+
+	string getIdentifier()
+	{
+		return this->nodeIdentifier;
+	}
+
+	//返回节点允许接收的最大数据数
+	int getCapacityForward();
+
+	void setDataByteRate(double dataRate)
+	{
+		this->dataRate = dataRate;
+	}
+	double getDataByteRate() const
+	{
+		return dataRate;
+	}
+	double getDataCountRate() const
+	{
+		return dataRate / getConfig<int>("data", "size_data");
+	}
 	CCTrace getTrace() const
 	{
 		return *(this->trace);
 	}
 
+
+	/***********************  Alive / Dead  ************************/
+
+	void die(int now)
+	{
+		this->timeDeath = now;
+		this->setTime(now);
+	}
+	//不设置能量值时，始终返回true
+	bool isAlive() const
+	{
+		return !( this->timeDeath >= 0 );
+	}
+	//true if energy has ran out
+	//false if trace information has ran out
+	//the feature is not used for now
+	bool isRecyclable(int now) const
+	{
+		return this->trace->isValid(now);
+	}
+
 	/****************************************  MAC  ***************************************/
 
 	// TODO: trigger operations here ?
-	// *TODO: move even between 2 locations ?
+	// TODO: move even between 2 locations ?
 	// TODO: how to trigger RTS ?
 	//更新所有node的坐标、占空比和工作状态，生成数据；调用之后应调用 isAlive() 检验存活
 	void updateStatus(int now);
 
-	void updateTimerWake(int time);
-	void updateTimerSleep(int time);
+	CFrame* sendRTSWithCapacityAndIndex(int now);
 
-	//	void receiveRTS(CFrame frame);
+	bool hasCommunicatedRecently(int nodeId, int now);
 
-	//	void receiveFrame(CFrame* frame, int now) override;
-
-	CFrame* sendRTSWithCapacityAndPred(int now);
-
-	bool hasSpokenRecently(CNode* node, int now);
-
-	void addToSpokenCache(CNode* node, int t);
-
-	//由给出的ID列表提取对应数据
-	vector<CData> getDataByRequestList(vector<int> requestList) const;
+	void updateCommunicationHistory(int nodeId, int now);
 
 	//（仅MODE_SEND == _dump时）删除 ACK 的数据
-	void checkDataByAck(vector<CData> ack);
+	void dropDataByAck(vector<CData> ack);
 
 	// TODO: skip sending RTS if node has received any RTS ? yes if *trans delay countable
 	//标记已收到过其他节点的 RTS (暂未使用)
@@ -183,6 +238,9 @@ public:
 		//将 timerOccupied 的下沿也认为是唤醒的
 		return state == _awake /*|| timerOccupied == 0*/;
 	}
+	void updateTimerWake(int time);
+	void updateTimerSleep(int time);
+
 
 	//判断是否处于邻居节点发现状态
 	//注意：调用此函数之前必须确保已updateStatus
@@ -232,8 +290,8 @@ public:
 	{
 		this->setDutyCycle(newDutyCycle);
 		int oldSlotWake = SLOT_WAKE;
-		SLOT_WAKE = int(getConfig<int>("mac", "cycle") * newDutyCycle);
-		SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
+		SLOT_WAKE = int(WORK_CYCLE * newDutyCycle);
+		SLOT_SLEEP = WORK_CYCLE - SLOT_WAKE;
 		//唤醒状态下，延长唤醒时间
 		if(isAwake())
 			timerWake += SLOT_WAKE - oldSlotWake;
@@ -244,91 +302,101 @@ public:
 	//在非热点处降低 dc
 	void resetDutyCycle()
 	{
-		this->setDutyCycle( getConfig<double>("hdc", "hotspot_duty_rate") );
+		this->setDutyCycle( DEFAULT_DUTY_RATE );
 		int oldSlotWake = SLOT_WAKE;
-		SLOT_WAKE = int(getConfig<int>("mac", "cycle") * this->getDutyCycle());
-		SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
+		SLOT_WAKE = int(WORK_CYCLE * this->getDutyCycle());
+		SLOT_SLEEP = WORK_CYCLE - SLOT_WAKE;
 	}
 
-	/*************************** ------- ***************************/
 
 	/*************************** 能耗相关 ***************************/
 
 	void consumeEnergy(double cons, int now) override
 	{
-		this->energyConsumption += cons;
-		if( getConfig<int>("node", "energy") > 0
-		   && getConfig<int>("node", "energy") - energyConsumption <= 0 )
+		CGeneralNode::consumeEnergy(cons, now);
+
+		if( !hasEnergyLeft() )
 		{
 			this->die(now);
-			CPrintHelper::PrintContent(now, this->getName() + " dies of energy exhaustion.");
+			CPrintHelper::PrintBrief(now, this->getName() + " dies of energy exhaustion.");
 		}
 	}
 
-	//不设置能量值时，始终返回true
-	bool isAlive() const
+
+	/****************************  Static Methods  *******************************/
+
+	static int getCountAliveNodes();
+
+	static vector<int> getIdNodes(vector<CNode*> nodes)
 	{
-		return ! (this->timeDeath >= 0);
+		vector<int> ids;
+		for(CNode * inode : nodes)
+			ids.push_back(inode->getID());
+		return ids;
 	}
 
-	double getEnergy() const
+	static void Init(int now)
 	{
-		if( !isAlive() )
-			return 0;
-		return getConfig<int>("node", "energy") - energyConsumption;
-	}
+		DEFAULT_DATA_RATE = getConfig<double>("node", "default_data_rate");
+		DEFAULT_CAPACITY_BUFFER = getConfig<int>("node", "buffer");
+		DEFAULT_CAPACITY_ENERGY = getConfig<int>("node", "energy");
+		WORK_CYCLE = getConfig<int>("mac", "cycle");
+		DEFAULT_DUTY_RATE = getConfig<double>("mac", "duty_rate");
 
-	//true if energy has ran out
-	//false if trace information has ran out
-	//the feature is not used for now
-	bool isRecyclable(int now) const
-	{
-		return this->trace->isValid(now);
-	}
+		LIFETIME_COMMUNICATION_HISROTY = getConfig<int>("node", "lifetime_communication_history");
 
-	void die(int now)
-	{
-		this->timeDeath = now;
-		this->setTime(now);
+		allNodes = CNode::loadNodesFromFile();
+		aliveNodes = allNodes;
+		mapAllNodes.clear();
+		for( CNode* pnode : allNodes )
+			mapAllNodes[pnode->getID()] = pnode;
+		deadNodes.clear();
 	}
+	//TODO: check all the static methods for CNode
+	static bool hasNodes()
+	{
+		return !aliveNodes.empty();
+	}
+	static vector<CNode*> getAllNodes()
+	{
+		return allNodes;
+	}
+	static vector<CNode*> getAliveNodes()
+	{
+		return aliveNodes;
+	}
+	static vector<CNode*> getDeadNodes()
+	{
+		return deadNodes;
+	}
+	static CNode* findNodeByID(int id)
+	{
+		map<int, CNode*>::iterator imap = mapAllNodes.find(id);
+		if( imap == mapAllNodes.end() )
+			return nullptr;
+		else
+			return imap->second;
+	}
+	static bool UpdateNodeStatus(int now)
+	{
+		//update basic status
+		vector<CNode *> nodes = aliveNodes;
+		for( CNode * pnode : aliveNodes )
+			pnode->updateStatus(now);
 
-	template <class T>
-	static T* downcast(CNode* node)
-	{
-		return dynamic_cast< T* >( node );
+		CNode::ClearDeadNodes(now);
+
+		return hasNodes();
 	}
-	template <class T>
-	static CNode* upcast(T* node)
-	{
-		return dynamic_cast< CNode* >( node );
-	}
-	template <class T>
-	static vector<T*> downcast(vector<CNode*> nodes)
-	{
-		vector<T*> res;
-		for(CNode* node : nodes)
-			res.push_back(downcast<T>(node));
-		return res;
-	}
-	template <class T>
-	static vector<CNode*> upcast(vector<T*> nodes)
-	{
-		vector<CNode*> res;
-		for(T* node : nodes)
-			res.push_back(upcast<T>(node));
-		return res;
-	}
-	// TODO: change to the new implementation below
 	//将死亡节点整理移出，返回是否有新的节点死亡
-	template <class T>
-	static bool ClearDeadNodes(vector<T*> &aliveList, vector<T*> &deadList, int now)
+	static bool ClearDeadNodes(int now)
 	{
-		vector<CNode*> aliveNodes, newlyDeadNodes;
-		aliveNodes = upcast<T>(aliveList);
+		int nAlive = aliveNodes.size();
+		vector<CNode*> newlyDeadNodes;
 		bool death = false;
-		for(vector<CNode *>::iterator ipNode = aliveNodes.begin(); ipNode != aliveNodes.end(); )
+		for( vector<CNode *>::iterator ipNode = aliveNodes.begin(); ipNode != aliveNodes.end(); )
 		{
-			if(!( *ipNode )->isAlive())
+			if( !( *ipNode )->isAlive() )
 			{
 				death = true;
 				newlyDeadNodes.push_back(*ipNode);
@@ -338,32 +406,43 @@ public:
 				++ipNode;
 		}
 
-		if(death)
+		if( death )
 		{
+			int nDead = 0;
 			ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
-			if(now == 0)
+			if( now == 0 )
 			{
 				death << endl << getConfig<string>("log", "info_log") << endl;
 				death << getConfig<string>("log", "info_death") << endl;
 			}
-			int nAlive = aliveList.size();
-			for(CNode* pdead : newlyDeadNodes )
-				death << now << TAB << pdead->getIdentifier() << TAB << --nAlive << TAB << CData::getCountDelivery() 
-					<< TAB << CData::getDeliveryRatio() << endl;
+			for( CNode* pdead : newlyDeadNodes )
+				death << now << TAB << pdead->getIdentifier() << TAB << nAlive - (++nDead) << TAB << CData::getCountDelivery()
+				<< TAB << CData::getDeliveryRatio() << endl;
 			death.close();
 			ASSERT(nAlive == aliveNodes.size());
-			CPrintHelper::PrintAttribute("Node Count", nAlive);
+			CPrintHelper::PrintAttribute("Node Count", STRING(nAlive) + " -> " + STRING(nAlive - nDead));
 		}
 
-		aliveList = downcast<T>(aliveNodes);
-		vector<T*> newlyDeadList = downcast<T>(newlyDeadNodes);
-		deadList.insert(deadList.end(), newlyDeadList.begin(), newlyDeadList.end());
+		deadNodes.insert(deadNodes.end(), newlyDeadNodes.begin(), newlyDeadNodes.end());
 		return death;
 	}
 
 	static bool finiteEnergy();
 
+	/****************************  Statistics  *******************************/
+
 	static double getSumEnergyConsumption();
+
+	//更新buffer状态记录，以便计算buffer status
+	void recordBufferStatus();
+
+	double getAverageSizeBuffer() const
+	{
+		if( sumBufferRecord == 0 )
+			return 0;
+		else
+			return double(sumBufferRecord) / double(countBufferRecord);
+	}
 
 	//统计唤醒时间
 	int getSumTimeAwake() const
@@ -376,76 +455,6 @@ public:
 			return 0;
 		return double(sumTimeAwake) / double(sumTimeAlive);
 	}
-
-	/*************************** ------- ***************************/
-
-
-	/*************************** 队列管理 ***************************/
-
-	bool isFull()
-	{
-		return buffer.size() == capacityBuffer;
-	}
-
-	//手动将数据压入 buffer，不伴随其他任何操作
-	//注意：必须在调用此函数之后手动调用 updateBufferStatus() 检查溢出
-	void pushIntoBuffer(vector<CData> datas);
-
-	//返回溢出的数据
-	//注意：调用之前应该确保数据已排序
-	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity, bool fromLeft);
-
-	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
-	//超出MAX_DATA_RELAY时从前端丢弃数据，溢出时将从前端丢弃数据并返回
-	//注意：必须在dropOverdueData之后调用
-	vector<CData> dropDataIfOverflow();
-
-	//注意：需要在每次收到数据之后、投递数据之后、生成新数据之后调用此函数
-	vector<CData> updateBufferStatus(int now);
-
-	/*************************** ------- ***************************/
-
-	//获取最新 SV（HOP == 0 的消息不会放入SV）
-	//注意：应确保调用之前buffer状态为最新
-	vector<int> updateSummaryVector();
-
-
-	/**************************************  Prophet  *************************************/
-
-	map<int, double> getDeliveryPreds() const
-	{
-		return deliveryPreds;
-	}
-
-	void setDeliveryPreds(map<int, double> deliveryPreds)
-	{
-		this->deliveryPreds = deliveryPreds;
-	}
-
-	//返回节点允许接收的最大数据数
-	int getCapacityForward();
-
-
-	static vector<CNode *>& getAllNodes();
-
-	static int getNodeCount();
-
-	static vector<int> getIdNodes();
-	static vector<int> getIdNodes(vector<CNode*> nodes)
-	{
-		vector<int> ids;
-		for(CNode * inode : nodes)
-			ids.push_back(inode->getID());
-		return ids;
-	}
-
-	static bool ifNodeExists(int id);
-
-	//该节点不存在时无返回值所以将出错，所以必须在每次调用之前调用函数ifNodeExists()进行检查
-	static CNode* getNodeByID(int id);
-
-
-	/*************************** 相遇 & 访问 & 传输计数 ***************************/
 
 	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
 	//注意：暂时只支持Prophet路由，其他路由尚未添加相关代码
@@ -476,67 +485,6 @@ public:
 	{
 		return visiter;
 	}
-
-	/*************************** ------- ***************************/
-
-	void setDataByteRate(double dataRate)
-	{
-		this->dataRate = dataRate;
-	}
-	double getDataByteRate() const
-	{
-		return dataRate;
-	}
-	double getDataCountRate() const
-	{
-		return dataRate / getConfig<int>("data", "size_data");
-	}
-
-	void generateID()
-	{
-		++COUNT_ID;
-		this->ID = COUNT_ID;
-	}
-	void setIdentifier(string nodeIdentifier)
-	{
-		this->nodeIdentifier = nodeIdentifier;
-	}
-	string getIdentifier()
-	{
-		return this->nodeIdentifier;
-	}
-	void loadTrace(string filepath)
-	{
-		this->trace = CCTrace::readTraceFromFile(filepath, getConfig<bool>("trace", "continuous"));
-		string filename = CFileHelper::SplitPath(filepath).second;
-		string nodename = CFileHelper::SplitFilename(filename).first;
-		this->setIdentifier(nodename);
-		this->setName("Node #" + nodename);
-	}
-
-	double getAverageSizeBuffer() const
-	{
-		if( sumBufferRecord == 0 )
-			return 0;
-		else
-			return double(sumBufferRecord) / double(countBufferRecord);
-	}
-
-	//更新buffer状态记录，以便计算buffer status
-	void recordBufferStatus();
-
-	//	vector<CData> sendAllData(_SEND mode) override;
-
-	//	vector<CData> sendData(int n);
-
-	//	bool receiveData(int time, vector<CData> datas) override;
-
-
-	/**************************************  Prophet  *************************************/
-
-	//	map<int, double> sendDeliveryPreds();
-	//
-	//	map<int, double> receiveDeliveryPredsAndSV(map<int, double> preds, vector<int>& sv);
 
 };
 

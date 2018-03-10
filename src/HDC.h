@@ -26,7 +26,6 @@ public:
 
 	static bool Init();
 	static bool Prepare(int now);
-	static bool Operate(int now);
 
 	//打印相关信息到文件
 	static void PrintInfo(int now);

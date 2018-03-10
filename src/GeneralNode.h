@@ -50,6 +50,7 @@ protected:
 	EnumTransmitterState state;
 	vector<CData> buffer;
 	int capacityBuffer;
+	int capacityEnergy;
 	double energyConsumption;
 	int timerOccupied;
 
@@ -59,6 +60,7 @@ public:
 	CGeneralNode()
 	{
 		this->capacityBuffer = 0;
+		this->capacityEnergy = 0;
 		this->energyConsumption = 0;
 		this->timerOccupied = INVALID;
 		state = _awake;
@@ -67,6 +69,26 @@ public:
 	virtual ~CGeneralNode() = 0
 	{};
 
+	inline bool finiteEnergy() const
+	{
+		return this->capacityEnergy > 0;
+	}
+	inline bool hasEnergyLeft() const
+	{
+		return !finiteEnergy() || ( this->getEnergyLeft() > 0 );
+	}
+	double getEnergyLeft() const
+	{
+		return this->capacityEnergy - energyConsumption;
+	}
+	inline void setCapacityEnergy(int energy)
+	{
+		this->capacityEnergy = energy;
+	}
+	inline int getCapacityEnergy() const
+	{
+		return capacityEnergy;
+	}
 	inline double getEnergyConsumption() const
 	{
 		return energyConsumption;
@@ -127,14 +149,80 @@ public:
 	//		timerOccupied = INVALID;
 	//}
 
-//	virtual void receiveFrame(CFrame* frame, int now);
+	/*************************** Buffer ***************************/
 
-//	virtual vector<CData> bufferData(int time, vector<CData> datas);
+	bool isFull()
+	{
+		return buffer.size() >= capacityBuffer;
+	}
 
+	//手动将数据压入 buffer，不伴随其他任何操作，返回新数据的数目
+	//注意：必须在调用此函数之后手动调用 dropDataIfOverflow() 检查溢出
+	int pushIntoBuffer(vector<CData> datas, int now);
 
-//	virtual vector<CData> sendAllData(_SEND mode);
+	//TODO: add queue managing method as arg
+	//溢出时将按照fifo原则丢弃数据并返回溢出的数据
+	vector<CData> dropDataIfOverflow()
+	{
+		if( buffer.empty() )
+			return vector<CData>();
 
-//	virtual bool receiveData(int time, vector<CData> datas);
+		vector<CData> myData;
+		vector<CData> overflow;
+
+		myData = buffer;
+		//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
+		overflow = removeDataByCapacity(myData, capacityBuffer, true);
+
+		buffer = myData;
+		return overflow;
+	}
+
+	//返回溢出的数据
+	//注意：调用之前应该确保数据已排序
+	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity, bool fifo)
+	{
+		vector<CData> overflow;
+		if( capacity <= 0
+		   || datas.size() <= capacity )
+			return overflow;
+
+		if( fifo )
+		{
+			overflow = vector<CData>(datas.begin(), datas.begin() + capacity);
+			datas = vector<CData>(datas.begin() + capacity, datas.end());
+		}
+		else
+		{
+			datas = vector<CData>(datas.begin(), datas.begin() + capacity);
+			overflow = vector<CData>(datas.begin() + capacity, datas.end());
+		}
+
+		return overflow;
+	}
+
+	//给定容量和 FIFO/FILO，选出合适的数据用于数据传输
+	//返回的队列不会超过传输窗口大小，如果capacity 为 0 即默认上限即窗口大小
+	vector<CData> getDataForTrans(int capacity, bool fifo)
+	{
+		if( capacity <= 0
+		   || capacity > getConfig<int>("trans", "window_trans") )
+			capacity = getConfig<int>("trans", "window_trans");
+
+		vector<CData> datas = this->getAllData();
+		removeDataByCapacity(datas, capacity, !fifo);
+		return datas;
+	}
+	vector<CData> bufferData(int now, vector<CData> datas)
+	{
+		vector<CData> ack = datas;
+
+		this->pushIntoBuffer(datas, now);
+		vector<CData> overflow = this->dropDataIfOverflow();
+		RemoveFromList(ack, overflow);
+
+		return ack;
+	}
 
 };
 

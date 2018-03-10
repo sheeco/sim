@@ -43,9 +43,5 @@ void CPrintHelper::printToCout(string str, bool newLine)
 
 void CPrintHelper::PrintDetail(string str)
 {
-	if(getConfig<bool>("log", "detail"))
-		PrintContent(str);
-	else
-		FlashDetail(str);
+	PrintDetail(str, getConfig<bool>("log", "detail"));
 }
-

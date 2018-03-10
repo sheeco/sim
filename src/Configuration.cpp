@@ -192,8 +192,6 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("log", "file_console", typeid(string), new string("console.log"));
 	addConfiguration("log", "file_error", typeid(string), new string("error.log"));
 	addConfiguration("log", "file_config", typeid(string), new string("config.log"));
-	addConfiguration("log", "file_final", typeid(string), new string("final.log"));
-	addConfiguration("log", "info_final", typeid(string), new string("#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#HOP/TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay/	#HOP/	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime	#Node)	#Log "));
 
 	addConfiguration("log", "file_node", typeid(string), new string("node.log"));
 	addConfiguration("log", "info_node", typeid(string), new string("#Time	#NodeCount "));
@@ -257,7 +255,7 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("data", "size_data", typeid(int), new int(200));  //( Byte )
 	addConfiguration("data", "size_ctrl", typeid(int), new int(10));  // FIXME:
 	addConfiguration("data", "size_header_mac", typeid(int), new int(8));  //Mac Header Size
-	addConfiguration("data", "max_hop", typeid(int), new int(0));
+	addConfiguration("data", "max_hop", typeid(int), new int(INVALID));
 
 
 	addGroup("mac");
@@ -295,7 +293,7 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("node", "default_data_rate", typeid(double), new double(6.8));  //( Byte / s )
 	addConfiguration("node", "buffer", typeid(int), new int(0));
 	addConfiguration("node", "energy", typeid(int), new int(0));
-	addConfiguration("node", "lifetime_spoken_cache", typeid(int), new int(0));  //在这个时间内交换过数据的节点暂时不再交换数据
+	addConfiguration("node", "lifetime_communication_history", typeid(int), new int(INVALID));  //在这个时间内交换过数据的节点暂时不再交换数据
 	addConfiguration("node", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
 	addConfiguration("node", "scheme_forward", typeid(int), new EnumForwardScheme(_dump));
 	addConfiguration("node", "scheme_queue", typeid(int), new EnumQueueScheme(_fifo));
@@ -421,19 +419,6 @@ void CConfiguration::PrintConfiguration()
 	log << ss.str();
 	log.close();
 
-
-	//输出文件为空时，输出文件头
-	ofstream final(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
-	final.seekp(0, ios::end);
-	if( !final.tellp() )
-		final << getConfig<string>("log", "info_final") << endl;
-
-	final << getConfig<int>("simulation", "datatime") << TAB << getConfig<int>("simulation", "runtime") << TAB << getConfig<double>("trans", "prob_trans") << TAB << getConfig<int>("node", "buffer") << TAB << getConfig<int>("node", "energy") << TAB;
-	if( CData::useHOP() )
-		final << getConfig<int>("data", "max_hop") << TAB;
-
-	final << getConfig<int>("mac", "cycle") << TAB << getConfig<double>("mac", "duty_rate") << TAB;
-	final.close();
 
 	// 输出版本信息
 

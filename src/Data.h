@@ -57,8 +57,9 @@ protected:
 	void init()
 	{
 		CPacket::init();
-		this->timeArrival = -1;
-//		this->TTL = 0;
+		this->timeArrival = INVALID;
+		this->HOP = 0;
+		this->MAX_HOP = getConfig<int>("data", "max_hop");
 	}
 
 
@@ -71,8 +72,6 @@ public:
 		this->time = this->timeBirth = timeBirth;
 		this->size = byte;
 		this->generateID();
-		this->HOP = getConfig<int>("data", "max_hop");
-//		this->TTL = MAX_TTL;
 	}
 
 	~CData(){};
@@ -110,60 +109,14 @@ public:
 		return timeArrival;
 	}
 
-	//实际上只更新TTL
-	void updateStatus(int now)
-	{
-//		this->TTL -= ( now - time );
-		this->time = now;
-	}
 	inline void arriveSink(int timeArrival)
 	{
 		this->timeArrival = timeArrival;
 		this->time = timeArrival;
 		++COUNT_ARRIVAL;
 		SUM_DELAY += timeArrival - timeBirth;
-		--HOP;
-		SUM_HOP += -HOP;
+		SUM_HOP += HOP;
 	}
-
-	// TODO: call this func when receiving anything
-	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
-	//注意：数据发送方应在发送之前检查剩余HOP大于1
-	inline void arriveAnotherNode(int now) override
-	{
-		this->HOP--;
-
-//		this->TTL -= ( now - time );
-		//this->timeArrival = now;
-		//this->time = now;
-	}
-
-//	//判断是否已经超过生存期(TTL <= 0)，超出应丢弃
-//	inline bool isOverdue() const
-//	{
-//		if( ! useTTL() )
-//			return false;
-//		else
-//			return TTL <= 0;
-//	}
-	
-	//判断是否允许转发（HOP > 0），不允许则不放入SV中
-	inline bool allowForward() const
-	{
-		if( ! useHOP() )
-			return true;
-		else
-			return HOP > 0;
-	}
-
-	static bool useHOP()
-	{
-		return getConfig<int>("data", "max_hop") > 0;
-	}
-//	static bool useTTL()
-//	{
-//		return MAX_TTL > 0;	
-//	}
 
 	//统计数据
 	static int getCountData()

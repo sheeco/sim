@@ -18,6 +18,7 @@ using std::ios;
 using std::cin;
 using std::cout;
 using std::endl;
+using std::ostream;
 using std::exception;
 
 
@@ -292,7 +293,6 @@ namespace global
 	{
 		return NDigitString(STRING(input), n, '0');
 	}
-
 	//圆形区域面积
 	inline double AreaCircle(double radius)
 	{

@@ -31,24 +31,29 @@ void CHDC::UpdateDutyCycleForNodes(int now)
 
 	CPrintHelper::PrintHeading(now, "DUTY CYCLE UPDATE");
 
+	int nHotspotDutyRate = 0;
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
 		bool usingHotspotDutyCycle = isUsingHotspotDutyCycle( *inode );
-		bool atHotspot = CHotspot::isAtHotspot(( *inode )->getID());
+		bool atHotspot = CHotspot::isAtWaypoint(( *inode )->getID());
 		//update duty cycle
 		if( usingHotspotDutyCycle
 			&& !atHotspot  )
 		{
 			(*inode)->resetDutyCycle();
-			CPrintHelper::PrintContent(now, "Duty cycle of " + ( *inode )->getName() + " is reset.");
+			CPrintHelper::PrintDetail(now, "Duty cycle of " + ( *inode )->getName() + " is reset.");
 		}
 		else if( !usingHotspotDutyCycle
 				 && atHotspot )
 		{
 			(*inode)->raiseDutyCycle(HOTSPOT_DUTY_RATE);
-			CPrintHelper::PrintContent(now, "Duty cycle of " + (*inode)->getName() + " is raised.");
+			CPrintHelper::PrintDetail(now, "Duty cycle of " + (*inode)->getName() + " is raised.");
 		}
+
+		if( isUsingHotspotDutyCycle(*inode) )
+			++nHotspotDutyRate;
 	}
+	CPrintHelper::PrintPercentage("Nodes Using Hotspot Duty Rate", (double)nHotspotDutyRate / nodes.size());
 }
 
 bool CHDC::isUsingHotspotDutyCycle(CNode * node)
@@ -88,13 +93,6 @@ bool CHDC::Prepare(int now)
 		return false;
 
 	UpdateDutyCycleForNodes(now);
-
-	return true;
-}
-
-bool CHDC::Operate(int now)
-{
-	CMacProtocol::CommunicateBetweenNeighbors(now);
 
 	return true;
 }

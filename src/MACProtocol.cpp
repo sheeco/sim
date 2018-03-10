@@ -16,15 +16,9 @@ CMacProtocol::CMacProtocol()
 {
 }
 
-bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now)
+vector<CGeneralNode*> CMacProtocol::findNeighbors(CGeneralNode & src)
 {
-	static map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > > frameArrivals;
-
-	bool rcv = false;
 	vector<CGeneralNode*> neighbors;
-
-	src.consumeEnergy(frame->getSize() * getConfig<double>("trans", "consumption_byte_send"), now);
-	CMacProtocol::transmitTry();
 
 	/************************************************ Sensor Node *******************************************************/
 
@@ -60,56 +54,11 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now)
 	   && sink->getID() != src.getID() )
 	{
 		neighbors.push_back(sink);
+		CSink::encount();
+		CSink::encountActive();
 	}
 
-	int timeTrans = 0;
-	timeTrans = int( getTransmissionDelay(frame) );
-	int timeArrival = now + timeTrans;
-	vector< pair<CFrame*, vector< CGeneralNode* > > > currentArrivals;
-
-	//压入将来的到达队列
-	if( timeArrival > now )
-	{
-		vector< pair<CFrame*, vector< CGeneralNode* > > > futureArrivals;
-		map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > >::iterator iArrivals = frameArrivals.find(timeArrival);
-		if( iArrivals != frameArrivals.end() )
-			futureArrivals = ( *iArrivals ).second;
-
-		futureArrivals.push_back(pair<CFrame*, vector< CGeneralNode* > >(frame, neighbors));
-		frameArrivals[timeArrival] = futureArrivals;
-	}
-	//压入当前的到达队列
-	else
-		currentArrivals.push_back(pair<CFrame*, vector< CGeneralNode* > >(frame, neighbors));
-
-	//取出之前存入的当前时间的到达队列
-	map<int, vector< pair<CFrame*, vector< CGeneralNode* > > > >::iterator iMoreArrivals = frameArrivals.find(now);
-	if( iMoreArrivals != frameArrivals.end() )
-	{
-		vector< pair<CFrame*, vector< CGeneralNode* > > > moreCurrentArrivals = ( *iMoreArrivals ).second;
-		currentArrivals.insert(currentArrivals.end(), moreCurrentArrivals.begin(), moreCurrentArrivals.end());
-
-		//从队列中移除
-		frameArrivals.erase(iMoreArrivals);
-	}
-
-	//投递队列中的数据
-	for( vector< pair<CFrame*, vector< CGeneralNode* > > >::iterator iArrival = currentArrivals.begin();
-		 iArrival != currentArrivals.end(); ++iArrival )
-	{
-		CFrame* currentFrame = iArrival->first;
-		vector<CGeneralNode*> currentNeighbors = iArrival->second;
-		for( vector<CGeneralNode*>::iterator ineighbor = currentNeighbors.begin(); ineighbor != currentNeighbors.end(); ++ineighbor )
-		{
-			bool new_rcv = receiveFrame(**ineighbor, currentFrame, now);
-			rcv = rcv || new_rcv;
-		}
-
-		free(currentFrame);
-	}
-
-	return rcv;
-
+	return neighbors;
 	// TODO: sort by distance with src node ?
 }
 
@@ -224,124 +173,10 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now, vect
 	return rcv;
 }
 
-bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int now)
-{
-	if(!Bet(getConfig<double>("trans", "prob_trans")))
-		return false;
-
-	// Make local copy
-	frame = new CFrame(*frame);
-	CGeneralNode* gFromNode = frame->getSrcNode();
-	CGeneralNode* gToNode = frame->getDstNode();
-	
-	//if( gnode.getTime() > now )
-	//	return false;
-
-	//if( gnode.isOccupied() )
-	//	return false;
-
-	int timeTrans = 0;
-	timeTrans = int( getTransmissionDelay(frame) );
-	//gnode.Occupy(timeTrans);    
-	//if( timeTrans > 0 )
-	//	gnode.updateStatus(now + timeTrans);
-
-	//非广播且目标节点非本节点，即过听
-	if( gToNode != nullptr
-	    && gToNode->getID() != gnode.getID() )
-	{
-		gnode.Overhear(now);
-		return false;
-	}
-	
-	gnode.consumeEnergy(frame->getSize() * getConfig<double>("trans", "consumption_byte_receive"), now);
-	
-	vector<CPacket*> packets = frame->getPackets();
-	vector<CPacket*> packetsToSend;
-	CFrame* frameToSend = nullptr;
-
-	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
-	{
-		case config::_prophet:
-
-			packetsToSend = CProphet::receivePackets(gnode, *gFromNode, packets, now);
-
-			break;
-
-		case config::_xhar:
-
-			packetsToSend = HAR::receivePackets(gnode, *gFromNode, packets, now);
-
-			break;
-		
-		default:
-			break;
-	}
-
-	/*********************************************** send reply *******************************************************/
-
-	if( ! packetsToSend.empty() )
-	{
-		frameToSend = new CFrame(gnode, *gFromNode, packetsToSend);
-		transmitFrame( gnode, frameToSend, now + timeTrans);
-	}
-	else
-	{
-		CMacProtocol::transmitSucceed();
-	}
-	return true;
-}
-
 bool CMacProtocol::Prepare(int now)
 {
 	CSink::UpdateStatus(now);
 	return true;
-}
-
-void CMacProtocol::CommunicateBetweenNeighbors(int now)
-{
-	static bool print = false;
-	if( now == 0 
-		|| print )
-	{
-		CPrintHelper::PrintHeading(now, "DATA DELIVERY");
-		print = false;
-	}
-
-	// TODO: sink receive RTS / send by slot ?
-	// Prophet: sink => nodes
-	// xHAR: sink => MAs
-	CSink* sink = CSink::getSink();
-	transmitFrame( *sink, sink->sendRTS(now) , now );
-
-	vector<CNode*> nodes = CNode::getAllNodes();
-
-	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
-	{
-	case config::_prophet:
-
-		for(vector<CNode*>::iterator srcNode = nodes.begin(); srcNode != nodes.end(); ++srcNode )
-		{
-			if( (*srcNode)->isDiscovering() )
-			{
-				transmitFrame( **srcNode, (*srcNode)->sendRTSWithCapacityAndPred(now), now );
-				(*srcNode)->finishDiscovering();
-			}
-		}
-		
-		break;
-
-	default:
-		break;
-				
-	}
-
-	if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
-	{
-		CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
-		CPrintHelper::PrintNewLine();
-		print = true;
-	}
 }
 
 void CMacProtocol::PrintInfo(int now)
@@ -452,7 +287,7 @@ void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 			//节点剩余能量
 			energy_consumption << TAB << CNode::getSumEnergyConsumption() << TAB << CNode::getAllNodes().size() << TAB;
 			for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
-				energy_consumption << (*inode)->getEnergy() << TAB;
+				energy_consumption << (*inode)->getEnergyLeft() << TAB;
 		}
 		energy_consumption << endl;
 		energy_consumption.close();
@@ -463,12 +298,4 @@ void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 
 void CMacProtocol::PrintFinal(int now)
 {
-	ofstream final( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
-	final << CData::getAverageEnergyConsumption() << TAB << CMacProtocol::getPercentTransmitSuccessful() << TAB;
-	//final << CNode::getPercentEncounterActive() << TAB ;
-	if( CNode::finiteEnergy() )
-		final << now << TAB << CNode::getAllNodes().size() << TAB ;
-
-	final.close();
-
 }

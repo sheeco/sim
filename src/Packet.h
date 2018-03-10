@@ -17,6 +17,7 @@ protected:
 	int timeBirth;  //生成时间
 	int size;  //byte
 	int HOP;
+	int MAX_HOP;
 
 	virtual void init();
 
@@ -48,12 +49,18 @@ public:
 
 	//该数据被转发到达新的节点后应该调用的函数，将更新跳数或TTL剩余值，并更新时间戳
 	//注意：数据发送方应在发送之前检查剩余HOP大于1
-	virtual inline void arriveAnotherNode(int now)
+	inline void arriveAnotherNode(int now)
 	{
-		this->HOP--;
+		this->HOP++;
 	};
 
-	virtual inline bool allowForward() const = 0;
+	//判断是否允许转发（HOP > 0），不允许则不放入SV中
+	inline bool allowForward() const
+	{
+		return MAX_HOP <= 0 || HOP < MAX_HOP;
+	}
+
+
 
 };
 

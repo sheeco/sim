@@ -9,15 +9,6 @@
 
 CRoutingProtocol::CRoutingProtocol() {}
 
-vector<CData> CRoutingProtocol::getDataForTrans(CGeneralNode* node, int capacity, bool FIFO)
-{
-	if( capacity <= 0
-	   || capacity > getConfig<int>("trans", "window_trans") )
-		capacity = getConfig<int>("trans", "window_trans");
-	vector<CData> datas = node->getAllData();
-	CNode::removeDataByCapacity(datas, capacity, ! FIFO);
-	return datas;
-}
 void CRoutingProtocol::PrintInfo(int now)
 {
 	PrintInfo(CNode::getAllNodes(), now);
@@ -135,14 +126,7 @@ void CRoutingProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 
 void CRoutingProtocol::PrintFinal(int now)
 {
-	ofstream final( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
-	if( CNode::finiteEnergy() )
-		final << CData::getCountDelivery() << TAB ;
-	else
-		final << CData::getDeliveryRatio() << TAB ;
-	final << CData::getAverageDelay() << TAB << CData::getAverageHOP() << TAB ;
-	final.close();
-
+	
 	switch( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") )
 	{
 		case config::_smac:

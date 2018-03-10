@@ -13,35 +13,12 @@
 #include "PrintHelper.h"
 
 
-class CPFerryNode : 
-	virtual public CNode
-{
-private:
-	void init()
-	{
-
-	}
-
-public:
-	~CPFerryNode()
-	{
-	};
-
-protected:
-	friend class CPFerry;
-
-	CPFerryNode()
-	{
-		init();
-	};
-};
-
 class CPFerryTask: 
 	virtual CEntity
 {
 private:
 
-	CPFerryNode* target;
+	CNode* target;
 	CPosition location;  //when & where to expect the target node
 	bool met;
 
@@ -52,13 +29,13 @@ protected:
 	friend class CPFerryMANode;
 	friend class CPFerry;
 
-	CPFerryTask(CPFerryNode* node, CPosition location)
+	CPFerryTask(CNode* node, CPosition location)
 	{
 		this->target = node;
 		this->location = location;
 		this->met = false;
 	}
-	CPFerryNode* getTarget() const
+	CNode* getTarget() const
 	{
 		return this->target;
 	}
@@ -104,10 +81,26 @@ protected:
 class CPFerryMANode : 
 	virtual public CMANode
 {
+protected:
+
+	typedef struct CCollectionRecord
+	{
+		int time = 0;
+		CCoordinate location;
+		int bufferVacancy = INVALID;
+
+		CCollectionRecord(){};
+
+		CCollectionRecord(int time, CCoordinate location, int bufferVacancy):
+			time(time), location(location), bufferVacancy(bufferVacancy)
+		{
+		};
+	} CCollectionRecord;
+
 private:
 	map<int, CPFerryTask*> tasks;
 	vector<CPFerryTask*> taskHistory;
-	map<CPFerryNode*, CPosition> collections;  //actual met nodes & latest collection time
+	map<int, CCollectionRecord> collections;  //actual met nodes & (latest collection time, bufferVacancy)
 
 	inline void init()
 	{
@@ -132,7 +125,7 @@ protected:
 		init();
 	}
 
-	map<CPFerryNode*, CPosition> getCollections() const
+	map<int, CCollectionRecord> getCollections() const
 	{
 		return collections;
 	}
@@ -147,7 +140,7 @@ protected:
 		else
 			return tasks[nodeId];
 	}
-	void assignTask(CPFerryNode* node, CPosition location, int waitingTime)
+	void assignTask(CNode* node, CPosition location, int waitingTime)
 	{
 		CPFerryTask* task = new CPFerryTask(node, location);
 		this->tasks[node->getID()] = task;
@@ -165,38 +158,15 @@ protected:
 		this->collections.clear();
 		this->endRoute();
 	}
-	void recordCollection(CPFerryNode* node, CCoordinate location, int time)
+	void recordCollection(int nodeId, CCoordinate location, int bufferVacancy, int time)
 	{
-		this->collections[node] = CPosition(node->getID(), location, time);
-		CPFerryTask* task = findTask(node->getID());
+		this->collections[nodeId] = CCollectionRecord(time, location, bufferVacancy);
+		CPFerryTask* task = findTask(nodeId);
 		if( task != nullptr )
 		{
 			task->setMet(true);
 			this->setReturnAtOnce(true);
 		}
-	}
-	//UNDONE: test
-	vector<CData> bufferData(int time, vector<CData> datas)
-	{
-		vector<CData> ack = datas;
-		RemoveFromList(datas, this->buffer);
-
-		bool atPoint = isAtHotspot();
-		if( atPoint )
-		{
-			CData::deliverAtWaypoint(datas.size());
-		}
-		else
-			CData::deliverOnRoute(datas.size());
-
-		for( auto idata = datas.begin(); idata != datas.end(); ++idata )
-		{
-			////认为到达 MA 节点即到达 sink
-			//idata->arriveSink(time);
-			this->buffer.push_back(*idata);
-		}
-
-		return ack;
 	}
 	//UNDONE: test
 	void updateStatus(int now)
@@ -261,7 +231,7 @@ protected:
 				this->atPoint = toPoint;
 
 #ifdef DEBUG
-				CPrintHelper::PrintContent(now, this->getName() + " arrives at task position " + ppos->format() + ".");
+				CPrintHelper::PrintBrief(now, this->getName() + " arrives at task position " + ppos->format() + ".");
 #endif // DEBUG
 
 				CPFerryTask* task = this->findTask(ppos->getNode());
@@ -280,7 +250,7 @@ protected:
 			else if( ( psink = dynamic_cast< CSink * >( toPoint ) ) != nullptr )
 			{
 #ifdef DEBUG
-				CPrintHelper::PrintContent(time, this->getName() + " arrives at sink.");
+				CPrintHelper::PrintBrief(time, this->getName() + " arrives at sink.");
 #endif // DEBUG
 				//route->updateToPoint();
 			}
@@ -294,7 +264,6 @@ class CPFerry :
 {
 private:
 
-
 	static map<int, map<int, CTracePrediction*>> predictions;  //{stride: {node: prediction}}
 	static int STARTTIME_PREDICTION;
 	static vector<int> strides;
@@ -306,56 +275,28 @@ private:
 	static int INIT_NUM_MA;
 	static int MAX_NUM_MA;
 
-	static vector<CPFerryNode*> allNodes;
-	static vector<CPFerryNode*> aliveNodes;
-	static vector<CPFerryNode*> deadNodes;
-	static vector<CPFerryNode*> targetNodes;
-	//static vector<CPFerryNode*> missNodes;
-	static vector<CPFerryNode*> candidateNodes;  //untargetted nodes
-	static vector<CPFerryNode*> urgentNodes;
-
-	static map<CPFerryNode*, vector<CPosition>> collectionHistory;
+	static vector<CNode*> targetNodes;
+	//static vector<CNode*> missNodes;
+	static vector<CNode*> candidateNodes;  //untargetted nodes
+	static vector<CNode*> urgentNodes;
 
 	typedef struct CNodeRecord
 	{
 		int timeCollect;
 		int bufferVacancy;  //after collection
 	} CNodeRecord;
-	static map<CPFerryNode*, CNodeRecord> collectionRecords;  //known latest collection time for nodes
+	static map<int, CNodeRecord> collectionRecords;  //known latest collection time for nodes
 
 	//init based on newly loaded CNode
-	static void initNodes(vector<CNode> nodes, int now)
+	static void initNodeInfo(int now)
 	{
-		for(CNode node : nodes)
+		vector<CNode*> allNodes = CNode::getAllNodes();
+		for(CNode* pnode : allNodes)
 		{
-			CPFerryNode* pferryNode = new CPFerryNode();
-			CNode* pBase = dynamic_cast< CNode* >( pferryNode );
-			*pBase = node;
-
-			allNodes.push_back(pferryNode);
-			updatecollectionRecords(pferryNode, pferryNode->getBufferVacancy(), now);
-			collectionHistory[pferryNode] = vector<CPosition>();
+			updatecollectionRecords(pnode->getID(), pnode->getBufferVacancy(), now);
 
 		}
-		aliveNodes = allNodes;
-		candidateNodes = allNodes;
-	}
-	//init based on HAR::allNodes & ClearDeadNodes()
-	static void initNodes(vector<CHARNode*> nodes, int now)
-	{
-		for(CNode* pHARNode : nodes)
-		{
-			CPFerryNode* pferryNode = new CPFerryNode();
-			CNode* pbase = dynamic_cast< CNode* >( pferryNode );
-			*pbase = *pHARNode;
-
-			allNodes.push_back(pferryNode);
-			updatecollectionRecords(pferryNode, pferryNode->getBufferVacancy(), now);
-			collectionHistory[pferryNode] = vector<CPosition>();
-		}
-		CNode::setNodes(CNode::upcast<CPFerryNode>(allNodes));
-		
-		CNode::ClearDeadNodes<CPFerryNode>(aliveNodes, deadNodes, now);
+		candidateNodes = CNode::getAliveNodes();
 	}
 	static void initMANodes()
 	{
@@ -367,7 +308,7 @@ private:
 	}
 	static void initPredictions()
 	{
-		vector<CPFerryNode *> nodes = allNodes;
+		vector<CNode *> nodes = CNode::getAllNodes();
 		string dir = getConfig<string>("pferry", "path_predict"); //e.g. ../res/predict
 		vector<string> subdirs = CFileHelper::ListDirectory(dir);
 		int minStartTime = INVALID;
@@ -390,7 +331,7 @@ private:
 				}
 				strides.push_back(stride);
 				predictions[stride] = map<int, CTracePrediction*>();
-				for( CPFerryNode *pnode : nodes )
+				for( CNode *pnode : nodes )
 				{
 					CTracePrediction *pPred = new CTracePrediction(pnode, subdir);
 					int starttime = pPred->getStartTime();
@@ -404,21 +345,16 @@ private:
 		STARTTIME_PREDICTION = minStartTime;
 	}
 
-	static bool hasNodes(int now)
-	{
-		return !aliveNodes.empty();
-	}
-
 	static int minWaitingTime()
 	{
 		return CCTrace::getInterval();
 	}
 
-	static void updatecollectionRecords(CPFerryNode* node, int bufferVacancy, int time)
+	static void updatecollectionRecords(int nodeId, int bufferVacancy, int time)
 	{
-		if(collectionRecords.find(node) == collectionRecords.end()
-		   || collectionRecords[node].timeCollect < time)
-			collectionRecords[node] = CNodeRecord{ time, bufferVacancy };
+		if(collectionRecords.find(nodeId) == collectionRecords.end()
+		   || collectionRecords[nodeId].timeCollect < time)
+			collectionRecords[nodeId] = CNodeRecord{ time, bufferVacancy };
 	}
 	
 	// 60 -> 90; 50 -> 60
@@ -427,12 +363,12 @@ private:
 		int interval = CCTrace::getInterval();
 		return ( now / interval + stride ) * interval;
 	}
-	static bool hasPrediction(CPFerryNode* node, int time, int stride)
+	static bool hasPrediction(CNode* node, int time, int stride)
 	{
 		CTracePrediction* prediction = predictions[stride][node->getID()];
 		return prediction->isValid( nextInterval(time, stride) );
 	}
-	static CPosition getNextPrediction(CPFerryNode* node, int time, int stride)
+	static CPosition getNextPrediction(CNode* node, int time, int stride)
 	{
 		int timePred = nextInterval(time, stride);
 		CTracePrediction* prediction = predictions[stride][node->getID()];
@@ -447,13 +383,13 @@ private:
 	}
 
 	// TODO: ?
-	static bool isUrgent(CPFerryNode* node, int now)
+	static bool isUrgent(CNode* node, int now)
 	{
 		try
 		{
 			//CPosition prediction = getNextPrediction(node, now, strides[0]);
 			double timePrediction = nextInterval(now, strides[0]);
-			double timeOverflow = collectionRecords[node].timeCollect + collectionRecords[node].bufferVacancy / node->getDataCountRate();
+			double timeOverflow = collectionRecords[node->getID()].timeCollect + collectionRecords[node->getID()].bufferVacancy / node->getDataCountRate();
 			//double timeTravel = 2 * CBasicEntity::getDistance(prediction, *CSink::getSink()) / CPFerryMANode::getSpeed();
 		
 			return (timeOverflow < timePrediction);
@@ -466,25 +402,18 @@ private:
 	}
 	static bool UpdateNodeStatus(int now)
 	{
-		//update basic status
-		vector<CPFerryNode *> nodes = aliveNodes;
-		for( CPFerryNode * node : nodes )
-			node->updateStatus(now);
-
-		CNode::ClearDeadNodes<CPFerryNode>(aliveNodes, deadNodes, now);
-
-		if( !hasNodes(now) )
+		if( !CNode::UpdateNodeStatus(now) )
 			return false;
 
 		//update urgent list
 		urgentNodes.clear();
-		for( CPFerryNode* node : aliveNodes )
+		for( CNode* node : CNode::getAliveNodes() )
 		{
 			if( isUrgent(node, now) )
 				urgentNodes.push_back(node);
 		}
 
-		return hasNodes(now);
+		return true;
 	}
 	static bool updateMAStatus(int now)
 	{
@@ -496,13 +425,13 @@ private:
 		return true;
 	}
 
-	static void recordTargetMet(CPFerryNode* node)
+	static void recordTargetMet(CNode* node)
 	{
 		RemoveFromList(targetNodes, node);
 		//RemoveFromList(missNodes, node);
 		AddToListUniquely(candidateNodes, node);
 	}
-	static void recordTargetMiss(CPFerryNode* node)
+	static void recordTargetMiss(CNode* node)
 	{
 		RemoveFromList(targetNodes, node);
 		AddToListUniquely(candidateNodes, node);
@@ -513,7 +442,7 @@ private:
 		for( pair<int, CPFerryTask*> p : ma->getTasks() )
 		{
 			CPFerryTask* task = p.second;
-			CPFerryNode* node = task->target;
+			CNode* node = task->target;
 			met = task->met;
 			if( met )
 			{
@@ -527,11 +456,10 @@ private:
 			}
 		}
 
-		map<CPFerryNode*, CPosition> collections = ma->getCollections();
-		for( pair<CPFerryNode*, CPosition> collection : collections )
+		map<int, CPFerryMANode::CCollectionRecord> collections = ma->getCollections();
+		for( pair<int, CPFerryMANode::CCollectionRecord> collection : collections )
 		{
-			CPFerryNode* node = collection.first;
-			recordTargetMet(node);
+			recordTargetMet( CNode::findNodeByID( collection.first ) );
 		}
 
 		string message = ma->getName() + " returns with target ";
@@ -540,7 +468,7 @@ private:
 		else
 			message += "miss";
 		message += " & " + STRING(collections.size()) + " collections.";
-		CPrintHelper::PrintContent(now, message);
+		CPrintHelper::PrintBrief(now, message);
 	}
 
 	//FIXME:
@@ -549,23 +477,23 @@ private:
 	//	AddToListUniquely(candidateNodes, missNodes);
 	//}
 	//FIXME:
-	static bool dealWithUnreachableNodes(vector<pair<CPFerryNode*, CPosition>> nodes, int now)
+	static bool dealWithUnreachableNodes(vector<pair<CNode*, CPosition>> nodes, int now)
 	{
 #ifdef DEBUG
 		if(!nodes.empty() )
-			CPrintHelper::PrintContent(now, STRING(nodes.size()) + " nodes are unreachable.");
+			CPrintHelper::PrintBrief(now, STRING(nodes.size()) + " nodes are unreachable.");
 #endif // DEBUG
 
 		int i = 0;
 		for( ; !freeMAs.empty() && i < nodes.size(); ++i )
 		{
 			CPFerryMANode* ma = freeMAs.front();
-			CPFerryNode* node = nodes[i].first;
+			CNode* node = nodes[i].first;
 			CPosition pos = nodes[i].second;
 			ma->assignTask(node, pos, minWaitingTime());
 			ma->setTime(now);
 
-			CPrintHelper::PrintContent(now, ma->getName() + " is targetting (unreachable) " + node->getName()
+			CPrintHelper::PrintBrief(now, ma->getName() + " is targetting (unreachable) " + node->getName()
 									  + " around " + pos.getLocation().format()
 									  + " at " + STRING(pos.getTime()) + "s.");
 
@@ -580,9 +508,9 @@ private:
 		return i > 0;
 	}
 
-	static void atDataCollection(CPFerryMANode* ma, CPFerryNode* node, CCoordinate location, int time)
+	static void atDataCollection(CPFerryMANode* ma, CNode* node, CCoordinate location, int time)
 	{
-		ma->recordCollection(node, location, time);
+		ma->recordCollection(node->getID(), location, node->getBufferVacancy(), time);
 	}
 
 	static void turnFree(CPFerryMANode* ma)
@@ -590,26 +518,18 @@ private:
 		AddToListUniquely(freeMAs, ma);
 		RemoveFromList(busyMAs, ma);
 	}
-	static void recordCollection(CPFerryMANode* ma)
-	{
-		map<CPFerryNode*, CPosition> collections = ma->getCollections();
-		for( pair<CPFerryNode*, CPosition> pCollection : collections )
-			collectionHistory[pCollection.first].push_back(pCollection.second);
-	}
-
 	static void atMAReturn(CPFerryMANode* ma, int now)
 	{
 		reportTask(ma, now);
 		ma->endTask();
-		recordCollection(ma);
 		turnFree(ma);
 	}
 
 	//FIXME:
-	static double calculateMetric(CPFerryNode* node, CPosition prediction, int now)
+	static double calculateMetric(CNode* node, CPosition prediction, int now)
 	{
 		double timePrediction = prediction.getTime();
-		double timeOverflow = collectionRecords[node].timeCollect + collectionRecords[node].bufferVacancy / node->getDataCountRate();
+		double timeOverflow = collectionRecords[node->getID()].timeCollect + collectionRecords[node->getID()].bufferVacancy / node->getDataCountRate();
 		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CPFerryMANode::getSpeed();
 
 		if( timeArrival + now > timePrediction )
@@ -626,11 +546,11 @@ private:
 		}
 	}
 
-	static pair<vector<pair<CPFerryNode*, CPosition>>, vector<pair<CPFerryNode*, CPosition>>> sortByPriority(vector<CPFerryNode*> nodes, int now)
+	static pair<vector<pair<CNode*, CPosition>>, vector<pair<CNode*, CPosition>>> sortByPriority(vector<CNode*> nodes, int now)
 	{
-		multimap<double, pair<CPFerryNode*, CPosition>> priNormal;
-		multimap<double, pair<CPFerryNode*, CPosition>> priUnreachable;
-		for( CPFerryNode* node : nodes )
+		multimap<double, pair<CNode*, CPosition>> priNormal;
+		multimap<double, pair<CNode*, CPosition>> priUnreachable;
+		for( CNode* node : nodes )
 		{
 			CPosition prediction;
 			bool unreachable = true;
@@ -646,39 +566,39 @@ private:
 				metric = calculateMetric(node, prediction, now);
 				if( metric > 0 )
 				{
-					priNormal.insert(pair<double, pair<CPFerryNode*, CPosition>>(metric, pair<CPFerryNode*, CPosition>(node, prediction)));
+					priNormal.insert(pair<double, pair<CNode*, CPosition>>(metric, pair<CNode*, CPosition>(node, prediction)));
 					unreachable = false;
 					break;
 				}
 			}
 			if( unreachable )
-				priUnreachable.insert(pair<double, pair<CPFerryNode*, CPosition>>(-metric, pair<CPFerryNode*, CPosition>(node, prediction)));
-				//priUnreachable.insert(pair<double, pair<CPFerryNode*, CPosition>>(priUnreachable.size(), pair<CPFerryNode*, CPosition>(node, prediction)));
+				priUnreachable.insert(pair<double, pair<CNode*, CPosition>>(-metric, pair<CNode*, CPosition>(node, prediction)));
+				//priUnreachable.insert(pair<double, pair<CNode*, CPosition>>(priUnreachable.size(), pair<CNode*, CPosition>(node, prediction)));
 		}
-		vector<pair<CPFerryNode*, CPosition>> normal;
+		vector<pair<CNode*, CPosition>> normal;
 		////least pri first
-		//for( map<double, pair<CPFerryNode*, CPosition>>::iterator i = priNormal.begin(); i != priNormal.end(); ++i )
+		//for( map<double, pair<CNode*, CPosition>>::iterator i = priNormal.begin(); i != priNormal.end(); ++i )
 		//{
 		//	normal.push_back(i->second);
 		//}
 		//largest pri first
-		for( map<double, pair<CPFerryNode*, CPosition>>::reverse_iterator i = priNormal.rbegin(); i != priNormal.rend(); ++i )
+		for( map<double, pair<CNode*, CPosition>>::reverse_iterator i = priNormal.rbegin(); i != priNormal.rend(); ++i )
 		{
 			normal.push_back(i->second);
 		}
 
-		vector<pair<CPFerryNode*, CPosition>> unreachable;
+		vector<pair<CNode*, CPosition>> unreachable;
 		//least pri first
-		for( map<double, pair<CPFerryNode*, CPosition>>::iterator i = priUnreachable.begin(); i != priUnreachable.end(); ++i )
+		for( map<double, pair<CNode*, CPosition>>::iterator i = priUnreachable.begin(); i != priUnreachable.end(); ++i )
 		{
 			unreachable.push_back(i->second);
 		}
 		////largest pri first
-		//for( map<double, pair<CPFerryNode*, CPosition>>::reverse_iterator i = priUnreachable.rbegin(); i != priUnreachable.rend(); ++i )
+		//for( map<double, pair<CNode*, CPosition>>::reverse_iterator i = priUnreachable.rbegin(); i != priUnreachable.rend(); ++i )
 		//{
 		//	unreachable.push_back(i->second);
 		//}
-		return pair<vector<pair<CPFerryNode*, CPosition>>, vector<pair<CPFerryNode*, CPosition>>>(normal, unreachable);
+		return pair<vector<pair<CNode*, CPosition>>, vector<pair<CNode*, CPosition>>>(normal, unreachable);
 	}
 	static bool newMANode()
 	{
@@ -689,7 +609,7 @@ private:
 			CPFerryMANode* ma = new CPFerryMANode();
 			allMAs.push_back(ma);
 			freeMAs.push_back(ma);
-			CPrintHelper::PrintContent(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
+			CPrintHelper::PrintBrief(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
 			return true;
 		}
 	}
@@ -709,38 +629,7 @@ private:
 
 	static vector<CGeneralNode*> findNeighbors(CGeneralNode& src)
 	{
-		vector<CGeneralNode*> neighbors;
-
-		/************************************************ Sensor Node *******************************************************/
-
-		vector<CPFerryNode*> nodes = aliveNodes;
-		for( vector<CPFerryNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
-		{
-			CNode* dstNode = *idstNode;
-			//skip itself
-			if( ( dstNode )->getID() == src.getID() )
-				continue;
-
-			if( CBasicEntity::withinRange(src, *dstNode, getConfig<int>("trans", "range_trans")) )
-			{
-				if( dstNode->isAwake() )
-				{
-					neighbors.push_back(dstNode);
-				}
-			}
-		}
-
-		/*************************************************** Sink **********************************************************/
-
-		CSink* sink = CSink::getSink();
-		if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range_trans"))
-		   && sink->getID() != src.getID() )
-		{
-			neighbors.push_back(sink);
-			CSink::encount();
-			CSink::encountActive();
-		}
-
+		vector<CGeneralNode*> neighbors = CMacProtocol::findNeighbors(src);
 
 		/**************************************************** MA ***********************************************************/
 
@@ -797,16 +686,16 @@ private:
 
 			/************************************************ MA <- node *******************************************************/
 
-			else if( typeid( gFromNode ) == typeid( CPFerryNode ) )
+			else if( typeid( gFromNode ) == typeid( CNode ) )
 			{
-				CPFerryNode* fromNode = dynamic_cast<CPFerryNode*>( &gFromNode );
+				CNode* fromNode = dynamic_cast<CNode*>( &gFromNode );
 				packetsToSend = receivePackets(toMA, fromNode, packets, now);
 			}
 		}
 
-		else if( typeid( gToNode ) == typeid( CPFerryNode ) )
+		else if( typeid( gToNode ) == typeid( CNode ) )
 		{
-			CPFerryNode* node = dynamic_cast<CPFerryNode*>( &gToNode );
+			CNode* node = dynamic_cast<CNode*>( &gToNode );
 
 			/************************************************ Node <- MA *******************************************************/
 
@@ -928,7 +817,7 @@ private:
 						//CTS
 						ctrlToSend = new CCtrl(ma->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 						// + DATA
-						dataToSend = getDataForTrans(ma, 0, true);
+						dataToSend = ma->getDataForTrans(0, true);
 
 						// TODO: mark skipRTS ?
 						// TODO: connection established ?
@@ -943,7 +832,7 @@ private:
 							return packetsToSend;
 						}
 						// + DATA
-						dataToSend = getDataForTrans(ma, 0, true);
+						dataToSend = ma->getDataForTrans(0, true);
 
 						break;
 
@@ -969,7 +858,7 @@ private:
 							return packetsToSend;
 						//clear data with ack
 						else
-							ma->checkDataByAck(ctrl->getACK());
+							ma->dropDataByAck(ctrl->getACK());
 
 						return packetsToSend;
 
@@ -1034,7 +923,7 @@ private:
 						ctrlToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 
 						// + DATA
-						dataToSend = getDataForTrans(node, 0, true);
+						dataToSend = node->getDataForTrans(0, true);
 
 						if( dataToSend.empty() )
 							return packetsToSend;
@@ -1054,9 +943,8 @@ private:
 						if( capacity == 0 )
 							return packetsToSend;
 						else if( capacity > 0
-								&& capacity < getConfig<int>("node", "buffer")
 								&& capacity < dataToSend.size() )
-							CNode::removeDataByCapacity(dataToSend, capacity, false);
+							CGeneralNode::removeDataByCapacity(dataToSend, capacity, false);
 
 						break;
 
@@ -1077,7 +965,7 @@ private:
 							return packetsToSend;
 						//clear data with ack
 						else
-							node->checkDataByAck(ctrl->getACK());
+							node->dropDataByAck(ctrl->getACK());
 
 						return packetsToSend;
 
@@ -1114,7 +1002,7 @@ private:
 
 	}
 
-	static vector<CPacket*> receivePackets(CPFerryMANode* ma, CPFerryNode* fromNode, vector<CPacket*> packets, int time)
+	static vector<CPacket*> receivePackets(CPFerryMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time)
 	{
 		vector<CPacket*> packetsToSend;
 		CCtrl* ctrlToSend = nullptr;
@@ -1210,7 +1098,7 @@ private:
 		CSink* sink = CSink::getSink();
 		transmitFrame(*sink, sink->sendRTS(now), now);
 
-		vector<CPFerryNode*> nodes = aliveNodes;
+		vector<CNode*> nodes = CNode::getAliveNodes();
 		vector<CPFerryMANode*> MAs = busyMAs;
 
 
@@ -1233,24 +1121,24 @@ private:
 	}
 
 	//return false if skipped (no valid prediction for current time / no available nodes)
-	static bool arrangeTask(vector<CPFerryNode*> nodes, int now)
+	static bool arrangeTask(vector<CNode*> nodes, int now)
 	{
 		if( !freeMAs.empty() )
 		{
-			pair<vector<pair<CPFerryNode*, CPosition>>, vector<pair<CPFerryNode*, CPosition>>> res = sortByPriority(nodes, now);
-			vector<pair<CPFerryNode*, CPosition>> sorted = res.first;
-			vector<pair<CPFerryNode*, CPosition>> unreachableNodes = res.second;
+			pair<vector<pair<CNode*, CPosition>>, vector<pair<CNode*, CPosition>>> res = sortByPriority(nodes, now);
+			vector<pair<CNode*, CPosition>> sorted = res.first;
+			vector<pair<CNode*, CPosition>> unreachableNodes = res.second;
 			
 			int i = 0;
 			for( ; !freeMAs.empty() && i < sorted.size(); ++i )
 			{
 				CPFerryMANode* ma = freeMAs.front();
-				CPFerryNode* node = sorted[i].first;
+				CNode* node = sorted[i].first;
 				CPosition pos = sorted[i].second;
 				ma->assignTask(node, pos, minWaitingTime());
 				ma->setTime(now);
 				
-				CPrintHelper::PrintContent(now, ma->getName() + " is targetting " + node->getName()
+				CPrintHelper::PrintBrief(now, ma->getName() + " is targetting " + node->getName()
 										  + " around " + pos.getLocation().format() 
 										  + " at " + STRING(pos.getTime()) + "s.");
 
@@ -1280,14 +1168,14 @@ private:
 			int n = urgentNodes.size();
 			if( newMANode(n) )
 			{
-				CPrintHelper::PrintContent(now, "Another " + STRING(n) + " MAs are created. (" + STRING(allMAs.size()) + " in total)");
+				CPrintHelper::PrintBrief(now, "Another " + STRING(n) + " MAs are created. (" + STRING(allMAs.size()) + " in total)");
 				arrangeTask(urgentNodes, now);
 			}
 		}
 		else if( !urgentNodes.empty() )
 		{
 #ifdef DEBUG
-			CPrintHelper::PrintContent(now, STRING(urgentNodes.size()) + " nodes are short of MAs.");
+			CPrintHelper::PrintBrief(now, STRING(urgentNodes.size()) + " nodes are short of MAs.");
 #endif // DEBUG
 		}
 	}
@@ -1297,7 +1185,7 @@ public:
 
 	static bool Init(int now)
 	{	// UNDONE:
-		initNodes(HAR::getAllHARNodes(), now);
+		initNodeInfo(now);
 
 		initMANodes();
 		
@@ -1315,10 +1203,14 @@ public:
 			Init(now);
 		else
 		{
+			if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
+				CSMac::Prepare(now);
+			else
+				throw string("HAR::Operate(): Only SMac is allowed as MAC protocol for HAR.");
+
 			//update node & ma positions
 			if(!UpdateNodeStatus(now))
 				return false;
-			CSink::getSink()->updateStatus(now);
 			updateMAStatus(now);
 
 			//task management
@@ -1350,7 +1242,7 @@ public:
 
 		/***************************************** 路由协议的通用输出 *********************************************/
 
-		CRoutingProtocol::PrintInfo(CNode::upcast<CPFerryNode>(allNodes), now);
+		CRoutingProtocol::PrintInfo(CNode::getAllNodes(), now);
 
 		/**************************************** 补充输出 *********************************************/
 
@@ -1390,11 +1282,6 @@ public:
 	static void PrintFinal(int now)
 	{
 		CRoutingProtocol::PrintFinal(now);
-
-		//最终final输出（补充）
-		ofstream final(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
-		final << CData::getPercentDeliveryAtWaypoint() << TAB;
-		final.close();
 	}
 };
 

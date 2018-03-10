@@ -31,12 +31,7 @@ void CRunHelper::InitLogPath()
 		_mkdir(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str());
 
 	// Hide folder
-	LPWSTR wstr = CString(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str()).AllocSysString();
-	int attr = GetFileAttributes(wstr);
-	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
-	{
-		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
-	}
+	CFileHelper::SetHidden( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") );
 
 }
 
@@ -67,11 +62,13 @@ bool CRunHelper::RunSimulation()
 	int now = 0;
 	bool dead = false;
 
+	CNode::Init(now);
+
 	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
 		case config::_prophet:
 			
-			CProphet::Init();
+			CProphet::Init(now);
 			while( now <= getConfig<int>("simulation", "runtime") )
 			{
 				dead = !CProphet::Operate(now);
@@ -107,6 +104,7 @@ bool CRunHelper::RunSimulation()
 
 		case config::_pferry:
 
+			CPFerry::Init(now);
 			while( now <= getConfig<int>("simulation", "runtime") )
 			{
 				dead = !CPFerry::Operate(now);

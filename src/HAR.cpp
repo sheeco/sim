@@ -11,9 +11,8 @@
 #include "SMac.h"
 #include "PrintHelper.h"
 
-vector<CHARNode*> HAR::allNodes;
-vector<CHARNode*> HAR::aliveNodes;
-vector<CHARNode*> HAR::deadNodes;
+map<int, double> HAR::mapDataCountRates;
+
 vector<CHARMANode *> HAR::allMAs;
 vector<CHARMANode *> HAR::busyMAs;
 vector<CHARMANode *> HAR::freeMAs;
@@ -37,7 +36,7 @@ void CHARMANode::updateStatus(int time)
 		   && buffer.size() >= capacityBuffer ) )
 	{
 		//记录一次未填满窗口的等待；可能录入(t, 0)，即说明由于路线过期而跳过等待
-		if( isAtHotspot() )
+		if( isAtWaypoint() )
 			getAtHotspot()->recordWaitingTime(time - waitingState, waitingState);
 
 		waitingWindow = waitingState = 0;
@@ -92,7 +91,7 @@ void CHARMANode::updateStatus(int time)
 			waitingState = 0;  //重新开始等待
 
 #ifdef DEBUG
-			CPrintHelper::PrintContent(time, this->getName() + " arrives at waypoint " + photspot->getLocation().format() + ".");
+			CPrintHelper::PrintBrief(time, this->getName() + " arrives at waypoint " + photspot->getLocation().format() + ".");
 #endif // DEBUG
 			route->updateToPoint();
 		}
@@ -100,7 +99,7 @@ void CHARMANode::updateStatus(int time)
 		else if( ( psink = dynamic_cast<CSink *>( toPoint ) ) != nullptr )
 		{
 #ifdef DEBUG
-			CPrintHelper::PrintContent(time, this->getName() + " arrives at sink.");
+			CPrintHelper::PrintBrief(time, this->getName() + " arrives at sink.");
 #endif // DEBUG
 			setReturnAtOnce(true);
 		}
@@ -125,14 +124,9 @@ double HAR::getHotspotHeat(CHotspot *hotspot)
 	int nCoveredNodes = hotspot->getNCoveredNodes();
 	double sum_generationRate = 0;
 	vector<int> coveredNodes = hotspot->getCoveredNodes();
-	for(int i = 0; i < coveredNodes.size(); ++i)
+	for(int nodeId: coveredNodes)
 	{
-		if( ! CNode::ifNodeExists( coveredNodes[i] ) )
-		{
-			nCoveredNodes--;
-			continue;
-		}
-		sum_generationRate += CNode::getNodeByID( coveredNodes[i] )->getDataCountRate();
+		sum_generationRate += mapDataCountRates[nodeId];
 	}
 
 	double ratio = 1;
@@ -183,11 +177,9 @@ double HAR::calculateWaitingTime(int now, CHotspot *hotspot)
 double HAR::getSumDataRate(vector<int> nodes)
 {
 	double sum = 0;
-	for(int i = 0; i < nodes.size(); ++i)
+	for(int nodeId: nodes)
 	{
-		if( ! CNode::ifNodeExists( nodes[i] ) )
-			continue;
-		sum += CNode::getNodeByID( nodes[i] )->getDataCountRate();
+		sum += mapDataCountRates[nodeId];
 	}
 	return sum;
 }
@@ -382,6 +374,28 @@ void HAR::MANodeRouteDesign(int now)
 	CPrintHelper::PrintAttribute("MA Routes", routes.size());
 }
 
+vector<CGeneralNode*> HAR::findNeighbors(CGeneralNode & src)
+{
+	vector<CGeneralNode*> neighbors = CMacProtocol::findNeighbors(src);
+
+	/**************************************************** MA ***********************************************************/
+
+	for( vector<CHARMANode*>::iterator iMA = busyMAs.begin(); iMA != busyMAs.end(); ++iMA )
+	{
+		//skip itself
+		if( ( *iMA )->getID() == src.getID() )
+			continue;
+
+		if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
+		   && ( *iMA )->isAwake() )
+		{
+			neighbors.push_back(*iMA);
+		}
+	}
+	return neighbors;
+	// TODO: sort by distance with src node ?
+}
+
 bool HAR::transmitFrame(CGeneralNode & src, CFrame * frame, int now)
 {
 	vector<CGeneralNode*> neighbors = findNeighbors(src);
@@ -419,16 +433,16 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 
 		/************************************************ MA <- node *******************************************************/
 
-		else if(typeid( gFromNode ) == typeid( CHARNode ))
+		else if(typeid( gFromNode ) == typeid( CNode ))
 		{
-			CHARNode* fromNode = dynamic_cast< CHARNode* >( &gFromNode );
+			CNode* fromNode = dynamic_cast< CNode* >( &gFromNode );
 			packetsToSend = HAR::receivePackets(toMA, fromNode, packets, now);
 		}
 	}
 
-	else if(typeid( gToNode ) == typeid( CHARNode ))
+	else if(typeid( gToNode ) == typeid( CNode ))
 	{
-		CHARNode* node = dynamic_cast< CHARNode* >( &gToNode );
+		CNode* node = dynamic_cast< CNode* >( &gToNode );
 
 		/************************************************ Node <- MA *******************************************************/
 
@@ -550,7 +564,7 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 				//CTS
 				ctrlToSend = new CCtrl(ma->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 				// + DATA
-				dataToSend = getDataForTrans(ma, 0, true);
+				dataToSend = ma->getDataForTrans(0, true);
 
 				// TODO: mark skipRTS ?
 				// TODO: connection established ?
@@ -565,7 +579,7 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 					return packetsToSend;
 				}
 				// + DATA
-				dataToSend = getDataForTrans(ma, 0, true);
+				dataToSend = ma->getDataForTrans(0, true);
 
 				break;
 
@@ -595,7 +609,7 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 				//clear data with ack
 				else
 				{
-					ma->checkDataByAck(ctrl->getACK());
+					ma->dropDataByAck(ctrl->getACK());
 
 					CPrintHelper::PrintCommunication(time, ma->format(), fromSink->format(), ctrl->getACK().size());
 					if( ma->ifReturnAtOnce() )
@@ -665,7 +679,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CHARMANode* fromMA, vector<CPa
 				ctrlToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 
 				// + DATA
-				dataToSend = getDataForTrans(node, 0, true);
+				dataToSend = node->getDataForTrans(0, true);
 
 				if( dataToSend.empty() )
 					return packetsToSend;
@@ -685,9 +699,8 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CHARMANode* fromMA, vector<CPa
 				if( capacity == 0 )
 					return packetsToSend;
 				else if( capacity > 0
-						 && capacity < getConfig<int>("node", "buffer") 
 						 && capacity < dataToSend.size() )
-					CNode::removeDataByCapacity(dataToSend, capacity, false);
+					CGeneralNode::removeDataByCapacity(dataToSend, capacity, false);
 
 				break;
 
@@ -708,7 +721,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CHARMANode* fromMA, vector<CPa
 					return packetsToSend;
 				//clear data with ack
 				else
-					node->checkDataByAck( ctrl->getACK() );
+					node->dropDataByAck( ctrl->getACK() );
 
 				CPrintHelper::PrintCommunication(time, node->format(), fromMA->format(), ctrl->getACK().size());
 
@@ -944,12 +957,6 @@ void HAR::PrintInfo(int now)
 void HAR::PrintFinal(int now)
 {
 	CRoutingProtocol::PrintFinal(now);
-
-	//最终final输出（补充）
-	ofstream final( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
-	final << getAverageMACost() << TAB ;
-	final << CData::getPercentDeliveryAtWaypoint() << TAB ;
-	final.close();
 
 	CHotspotSelect::PrintFinal(now);
 }

@@ -50,7 +50,7 @@ private:
 	{
 		return HEADER_H_1 + str + TAIL_H_1;
 	}
-	inline static string toContent(string str)
+	inline static string toBrief(string str)
 	{
 		return HEADER_H_2 + str + TAIL_H_2;
 	}
@@ -79,13 +79,13 @@ private:
 	{
 		printToCout(str, false);
 	}
-	inline static void PrintAsContent(string str, bool newline)
+	inline static void PrintBrief(string str, bool newline)
 	{
-		printToCout(toContent(str), newline);
+		printToCout(toBrief(str), newline);
 	}
-	inline static void PrintAttribute(string des, string value)
+	inline static void PrintDetailToCout(string str)
 	{
-		PrintAsContent(toAttribute(des) + value, true);
+		printToCout(toDetail(str), true);
 	}
 	inline static void FlashDetail(string str)
 	{
@@ -114,6 +114,10 @@ public:
 	{
 		PrintHeading(toTime(time) + str);
 	}
+	inline static void PrintAttribute(string des, string value)
+	{
+		PrintBrief(toAttribute(des) + value, true);
+	}
 	inline static void PrintAttribute(string des, double value)
 	{
 		PrintAttribute(des, STRING(NDigitFloat(value, 2)));
@@ -127,7 +131,7 @@ public:
 	{
 		str = toDoing(str);
 		if(newline)
-			PrintAsContent(str, false);
+			PrintBrief(str, false);
 		else
 			PrintToCurrentLine(str);
 	}
@@ -158,13 +162,20 @@ public:
 	{
 		printToCout("Error caught correctly @ " + error, true);
 	}
-	inline static void PrintContent(string str)
+	inline static void PrintBrief(string str)
 	{
-		PrintAsContent(str, true);
+		PrintBrief(str, true);
 	}
-	inline static void PrintContent(int time, string str)
+	inline static void PrintBrief(int time, string str)
 	{
-		PrintContent(toTime(time) + str);
+		PrintBrief(toTime(time) + str);
+	}
+	inline static void PrintDetail(string str, bool detail)
+	{
+		if( detail )
+			PrintDetailToCout(str);
+		else
+			FlashDetail(str);
 	}
 	static void PrintDetail(string str);
 	inline static void PrintDetail(int time, string str)

@@ -132,9 +132,9 @@ public:
 		{
 			echo << "from " << *pT;
 			*pT = value;
-			echo << " to " << *pT << "." << endl;
+			echo << " to " << *pT << ".";
 			if( !silence )
-				CPrintHelper::PrintDetail(echo.str());
+				CPrintHelper::PrintDetail(echo.str(), true);
 		}
 		else
 			throw string("CConfiguration::updateConfiguration(): Cannot convert configuration \"" + keyword + "\" from " + typeid( pVoid ).name() + " to " + typeid( T ).name() + ".");

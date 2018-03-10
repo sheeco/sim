@@ -53,9 +53,6 @@ private:
 	//从覆盖列表中删除某个position，只有贪婪算法会用到
 	void removePosition(CPosition* pos);
 
-	//检查某个node是否在覆盖列表中，必须在generateCoveredNodes之后调用
-	bool ifNodeExists(int inode) const;
-
 	//计算两个热点的重叠面积，如无重叠则返回0
 	static double getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot);
 
@@ -148,18 +145,18 @@ public:
 	
 	static CHotspot* getAtHotspot(int nodeid)
 	{
-		if(!isAtHotspot(nodeid))
+		if(!isAtWaypoint(nodeid))
 			return nullptr;
 		else
 			return atHotspots[nodeid];
 	}
 
-	static void setAtHotspot(int nodeid, CHotspot* atHotspot)
+	static void setAtWaypoint(int nodeid, CHotspot* atHotspot)
 	{
 		atHotspots[nodeid] = atHotspot;
 	}
 
-	static bool isAtHotspot(int nodeid)
+	static bool isAtWaypoint(int nodeid)
 	{
 		if(atHotspots.find(nodeid) == atHotspots.end())
 			return false;

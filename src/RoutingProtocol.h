@@ -27,10 +27,6 @@ public:
 	virtual ~CRoutingProtocol() = 0
 	{};
 
-	//给定容量和 FIFO/FILO，返回合适的数据用于数据传输
-	//返回的队列不会超过传输窗口大小，如果c apacity 为 0 即默认上限即窗口大小
-	static vector<CData> getDataForTrans(CGeneralNode* node, int capacity, bool FIFO);
-
 	//打印相关信息到文件
 	static void PrintInfo(int now);
 	static void PrintInfo(vector<CNode*> allNodes, int now);

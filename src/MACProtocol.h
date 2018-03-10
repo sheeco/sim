@@ -82,16 +82,22 @@ public:
 		return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + getConfig<int>("trans", "window_trans") * getConfig<int>("data", "size_data") + getConfig<int>("data", "size_ctrl"));
 	}
 
-	//过听时返回 false；否则返回 true
-	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now);
-	//TODO: change to below
-	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now, vector<CGeneralNode*> (*findNeighbors)(CGeneralNode&), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
-	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int now);
-	//TODO: change to below
-	static bool receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
+	static vector<CGeneralNode*> findNeighbors(CGeneralNode& src);
 
-	//注意：必须在 Prepare() 之后调用
-	static void CommunicateBetweenNeighbors(int now);
+	//过听时返回 false；否则返回 true
+	//default transmitting, search for neighbors only among sensor nodes
+	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now, vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ))
+	{
+		return transmitFrame(src, frame, now, findNeighbors, receivePackets);
+	}
+	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int now, vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ))
+	{
+		receiveFrame(src, frame, now, receivePackets);
+	}
+	//TODO: check again
+	//custom transmitting, enabled routing protocols to pass in its own neighbor pool
+	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now, vector<CGeneralNode*> (*findNeighbors)(CGeneralNode&), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
+	static bool receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
 
 
 	//更新节点数目、节点状态；收集位置点信息、选取热点、更新节点是否位于热点区域；

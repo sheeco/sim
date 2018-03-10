@@ -486,14 +486,4 @@ void CHotspotSelect::PrintInfo(int now)
 
 void CHotspotSelect::PrintFinal(int now)
 {
-	//×îÖÕfinalÊä³ö£¨²¹³ä£©
-	ofstream final( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
-	//final << CNode::getPercentEncounterActiveAtHotspot() << TAB ;
-	//final << CData::getPercentDeliveryAtHotspot() << TAB ;
-	if( getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_merge )
-		final << getAveragePercentMerge() << TAB << getAveragePercentOld() << TAB ;
-	if( getConfig<bool>("hs", "test_hotspot_similarity") )
-		final << getAverageSimilarityRatio() << TAB ;
-	final.close();
-	
 }

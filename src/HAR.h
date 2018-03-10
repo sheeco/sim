@@ -75,27 +75,6 @@ protected:
 
 };
 
-class CHARNode : 
-	virtual public CNode
-{
-private:
-	void init()
-	{
-	}
-protected:
-	friend class HAR;
-	CHARNode()
-	{
-		init();
-	}
-
-public:
-	~CHARNode()
-	{
-	}
-
-};
-
 class CHARMANode : 
 	virtual public CMANode
 {
@@ -117,7 +96,7 @@ protected:
 	inline void updateRoute(CHARRoute *route, int now)
 	{
 		CMANode::updateRoute(route);
-		CPrintHelper::PrintContent(now, this->getName() + " is assigned with route " + route->format() + ".");
+		CPrintHelper::PrintBrief(now, this->getName() + " is assigned with route " + route->format() + ".");
 	}
 	inline CHotspot* getAtHotspot() const
 	{
@@ -132,32 +111,16 @@ protected:
 		this->getHARRoute()->setOverdue(overdue);
 	}
 
-	void updateStatus(int time);
-
 	vector<CData> bufferData(int time, vector<CData> datas)
 	{
-		vector<CData> ack = datas;
-		RemoveFromList(datas, this->buffer);
+		vector<CData> ack = CMANode::bufferData(time, datas);
 
-		bool atPoint = isAtHotspot();
-		if( atPoint )
-		{
-			this->getAtHotspot()->recordCountDelivery(datas.size());
-			CData::deliverAtWaypoint(datas.size());
-		}
-		else
-			CData::deliverOnRoute(datas.size());
-
-		for( auto idata = datas.begin(); idata != datas.end(); ++idata )
-		{
-			////认为到达 MA 节点即到达 sink
-			//idata->arriveSink(time);
-			this->buffer.push_back(*idata);
-		}
+		if( isAtWaypoint() )
+			this->getAtHotspot()->recordCountDelivery(ack.size());
 
 		return ack;
 	}
-
+	void updateStatus(int time);
 
 };
 
@@ -173,9 +136,7 @@ private:
 	//vector<CHARMANode> m_MANodes;
 	//static vector<CHARRoute> m_newRoutes;
 
-	static vector<CHARNode*> allNodes;
-	static vector<CHARNode*> aliveNodes;
-	static vector<CHARNode*> deadNodes;
+	static map<int, double> mapDataCountRates;
 
 	static vector<CHARMANode *> allMAs;
 	static vector<CHARMANode *> busyMAs;
@@ -185,37 +146,6 @@ private:
 	static int MAX_NUM_MA;
 
 
-	//init based on newly loaded CNode
-	static void initNodes(vector<CNode> nodes, int now)
-	{
-		for(CNode node : nodes)
-		{
-			CHARNode* harNode = new CHARNode();
-			CNode* pBase = dynamic_cast< CNode* >( harNode );
-			*pBase = node;
-
-			allNodes.push_back(harNode);
-		}
-		aliveNodes = allNodes;
-		deadNodes.clear();
-		CNode::setNodes(CNode::upcast<CHARNode>(allNodes));
-	}
-	static bool hasNodes()
-	{
-		return !aliveNodes.empty();
-	}
-
-	static bool UpdateNodeStatus(int now)
-	{
-		//update basic status
-		vector<CHARNode *> nodes = aliveNodes;
-		for(CHARNode * node : nodes)
-			node->updateStatus(now);
-
-		CNode::ClearDeadNodes<CHARNode>(aliveNodes, deadNodes, now);
-
-		return hasNodes();
-	}
 	static bool newMANode(int now)
 	{
 		if(allMAs.size() >= MAX_NUM_MA)
@@ -225,7 +155,7 @@ private:
 			CHARMANode* ma = new CHARMANode(now);
 			allMAs.push_back(ma);
 			freeMAs.push_back(ma);
-			CPrintHelper::PrintContent(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
+			CPrintHelper::PrintBrief(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
 			return true;
 		}
 	}
@@ -237,6 +167,11 @@ private:
 				return false;
 		}
 		return true;
+	}
+	static void initNodeInfo()
+	{
+		for( CNode* pnode : CNode::getAllNodes() )
+			mapDataCountRates[pnode->getID()] = pnode->getDataCountRate();
 	}
 	static void initMANodes(int now)
 	{
@@ -315,10 +250,6 @@ public:
 	HAR(){};
 	~HAR(){};
 
-	static vector<CHARNode*> getAllHARNodes()
-	{
-		return allNodes;
-	}
 	static vector<CHARMANode*> getAllMAs()
 	{
 		return allMAs;
@@ -379,66 +310,7 @@ public:
 			( *iMA )->updateStatus(now);
 	}
 
-	static vector<CGeneralNode*> findNeighbors(CGeneralNode& src)
-	{
-		vector<CGeneralNode*> neighbors;
-
-		/************************************************ Sensor Node *******************************************************/
-
-		vector<CHARNode*> nodes = aliveNodes;
-		for( vector<CHARNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
-		{
-			CNode* dstNode = *idstNode;
-			//skip itself
-			if( ( dstNode )->getID() == src.getID() )
-				continue;
-
-			if( CBasicEntity::withinRange(src, *dstNode, getConfig<int>("trans", "range_trans")) )
-			{
-				//统计sink节点的相遇计数
-				if( typeid( src ) == typeid( CSink ) )
-					CSink::encount();
-
-				if( dstNode->isAwake() )
-				{
-					//统计sink节点的相遇计数
-					if( typeid( src ) == typeid( CSink ) )
-						CSink::encountActive();
-
-					neighbors.push_back(dstNode);
-				}
-			}
-		}
-
-		/*************************************************** Sink **********************************************************/
-
-		CSink* sink = CSink::getSink();
-		if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range_trans"))
-		   && sink->getID() != src.getID() )
-		{
-			neighbors.push_back(sink);
-			CSink::encount();
-			CSink::encountActive();
-		}
-
-
-		/**************************************************** MA ***********************************************************/
-
-		for( vector<CHARMANode*>::iterator iMA = busyMAs.begin(); iMA != busyMAs.end(); ++iMA )
-		{
-			//skip itself
-			if( ( *iMA )->getID() == src.getID() )
-				continue;
-
-			if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
-			   && ( *iMA )->isAwake() )
-			{
-				neighbors.push_back(*iMA);
-			}
-		}
-		return neighbors;
-		// TODO: sort by distance with src node ?
-	}
+	static vector<CGeneralNode*> findNeighbors(CGeneralNode& src);
 	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now);
 	//从下层协议传入的控制/数据包
 	static vector<CPacket*> receivePackets(CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time);
@@ -476,7 +348,6 @@ public:
 				transmitFrame(**srcMA, ( *srcMA )->sendRTSWithCapacity(now), now);
 		}
 
-		vector<CHARNode*> nodes = aliveNodes;
 		// xHAR: no forward between nodes
 
 		if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
@@ -493,33 +364,28 @@ public:
 
 	static bool Init(int now)
 	{
-		initNodes(CNode::loadNodesFromFile(), now);
+		initNodeInfo();
 		CHotspotSelect::Init();
 		return true;
 	}
 	static bool Operate(int now)
 	{
-		// 不允许 xHAR 使用 HDC 作为 MAC 协议
-		//if( config.MAC_PROTOCOL == config::_hdc )
-		//	hasNodes = CHDC::Prepare(now);
-		//else 
 		if(getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
 			CSMac::Prepare(now);
+		// 不允许 xHAR 使用 HDC 作为 MAC 协议
 		else
 			throw string("HAR::Operate(): Only SMac is allowed as MAC protocol for HAR.");
 
-		vector<CNode*> aliveList = CNode::upcast<CHARNode>(aliveNodes);
-
-		if(! UpdateNodeStatus(now))
+		if(! CNode::UpdateNodeStatus(now))
 			return false;
 
-		CHotspotSelect::RemovePositionsForDeadNodes(CNode::getIdNodes(CNode::upcast<CHARNode>(deadNodes)), now);
-		CHotspotSelect::CollectNewPositions(now, aliveList);
+		CHotspotSelect::RemovePositionsForDeadNodes(CNode::getIdNodes(CNode::getDeadNodes()), now);
+		CHotspotSelect::CollectNewPositions(now, CNode::getAliveNodes());
 
-		hotspots = CHotspotSelect::HotspotSelect(CNode::getIdNodes(aliveList), now);
+		hotspots = CHotspotSelect::HotspotSelect(CNode::getIdNodes(CNode::getAliveNodes()), now);
 
 		//检测节点所在热点区域
-		CHotspot::UpdateAtHotspotForNodes(aliveList, hotspots, now);
+		CHotspot::UpdateAtHotspotForNodes(CNode::getAliveNodes(), hotspots, now);
 
 		if(now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT
 		   && now <= CHotspotSelect::STARTTIME_HOTSPOT_SELECT + getConfig<int>("simulation", "slot"))

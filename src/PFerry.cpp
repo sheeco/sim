@@ -15,16 +15,12 @@ vector<CPFerryMANode*> CPFerry::busyMAs;
 int CPFerry::INIT_NUM_MA;
 int CPFerry::MAX_NUM_MA;
 
-vector<CPFerryNode*> CPFerry::allNodes;
-vector<CPFerryNode*> CPFerry::aliveNodes;
-vector<CPFerryNode*> CPFerry::deadNodes;
-vector<CPFerryNode*> CPFerry::targetNodes;
-//vector<CPFerryNode*> CPFerry::missNodes;
-vector<CPFerryNode*> CPFerry::candidateNodes; //untargetted nodes
-vector<CPFerryNode*> CPFerry::urgentNodes;
+vector<CNode*> CPFerry::targetNodes;
+//vector<CNode*> CPFerry::missNodes;
+vector<CNode*> CPFerry::candidateNodes; //untargetted nodes
+vector<CNode*> CPFerry::urgentNodes;
 
-map<CPFerryNode*, vector<CPosition>> CPFerry::collectionHistory;
-map<CPFerryNode*, CPFerry::CNodeRecord> CPFerry::collectionRecords;  //known latest collection time for nodes
+map<int, CPFerry::CNodeRecord> CPFerry::collectionRecords;  //known latest collection time for nodes
 
 
 CPFerry::CPFerry()
@@ -33,11 +29,4 @@ CPFerry::CPFerry()
 
 CPFerry::~CPFerry()
 {
-	FreePointerVector(allNodes);
-	FreePointerVector(allMAs);
-	for( pair<int, map<int, CTracePrediction*>> p : predictions )
-	{
-		for( pair<int, CTracePrediction*> pp : p.second )
-			FreePointer(pp.second);
-	}
 }

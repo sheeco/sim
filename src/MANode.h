@@ -162,13 +162,13 @@ public:
 	//{
 	//	this->atSink = atSink;
 	//}
-	inline void setAtHotspot(CBasicEntity *wayPoint)
+	inline void setAtWaypoint(CBasicEntity *wayPoint)
 	{
 		this->atPoint = wayPoint;
 	}
 
 	//TODO: include when im still in range of the hotspot after leaving the center, maybe introducing m_lastAtHotspot
-	inline bool isAtHotspot() const
+	inline bool isAtWaypoint() const
 	{
 		if(atPoint == nullptr)
 			return false;
@@ -212,6 +212,20 @@ public:
 			return 0;
 	}
 
+	vector<CData> bufferData(int now, vector<CData> datas)
+	{
+		vector<CData> ack = CGeneralNode::bufferData(now, datas);
+
+		if( isAtWaypoint() )
+		{
+			CData::deliverAtWaypoint(ack.size());
+		}
+		else
+			CData::deliverOnRoute(ack.size());
+
+		return ack;
+	}
+
 	//MA node: all on
 	bool isAwake() const
 	{
@@ -237,7 +251,7 @@ public:
 		return frame;
 	}
 
-	void checkDataByAck(vector<CData> ack)
+	void dropDataByAck(vector<CData> ack)
 	{
 		RemoveFromList(buffer, ack);
 	}

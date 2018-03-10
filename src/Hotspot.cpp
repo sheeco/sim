@@ -91,11 +91,6 @@ int CHotspot::getNCoveredPositionsForNode(int inode)
 	return count;
 }
 
-bool CHotspot::ifNodeExists(int inode) const
-{
-	return ( IfExists(coveredNodes, inode) );
-}
-
 void CHotspot::generateCoveredNodes()
 {
 	this->coveredNodes.clear();
@@ -151,7 +146,7 @@ bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> h
 			++countAtHotspot;
 
 		//update atHotspot
-		setAtHotspot(pnode->getID(), newAtHotspot);
+		setAtWaypoint(pnode->getID(), newAtHotspot);
 
 		// visit 和 encounter 计数的统计
 		// 时槽仅由轨迹文件决定
@@ -170,7 +165,7 @@ bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> h
 					CNode::encount();
 
 					if(newAtHotspot != nullptr
-					   || isAtHotspot(( *jnode )->getID()))
+					   || isAtWaypoint(( *jnode )->getID()))
 						encountAtHotspot();
 				}
 			}
@@ -192,7 +187,7 @@ double CHotspot::calculateRatio()
 {
 	if( getConfig<bool>("mhs", "test_balanced_ratio") )
 	{
-		ratio = coveredPositions.size() * double(CNode::getNodeCount() - coveredNodes.size() + 1) / double(CNode::getNodeCount());
+		ratio = coveredPositions.size() * double(CNode::getCountAliveNodes() - coveredNodes.size() + 1) / double(CNode::getCountAliveNodes());
 		return ratio;
 	}
 //	else if( HAR::TEST_LEARN )

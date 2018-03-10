@@ -28,6 +28,30 @@ bool CFileHelper::IsEmpty(string filename)
 	return false;
 }
 
+bool CFileHelper::SetHidden(string filename)
+{
+	LPWSTR wstr = CString(filename.c_str()).AllocSysString();
+	int attr = GetFileAttributes(wstr);
+	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
+	{
+		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
+		return true;
+	}
+	return false;
+}
+
+bool CFileHelper::UnsetHidden(string filename)
+{
+	LPWSTR wstr = CString(filename.c_str()).AllocSysString();
+	int attr = GetFileAttributes(wstr);
+	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == FILE_ATTRIBUTE_HIDDEN )
+	{
+		SetFileAttributes(wstr, attr & ~FILE_ATTRIBUTE_HIDDEN);
+		return true;
+	}
+	return false;
+}
+
 bool CFileHelper::IsDirectory(string strPath)
 {
 	path p(strPath);
