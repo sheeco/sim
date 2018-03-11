@@ -174,7 +174,7 @@ void CConfiguration::InitConfiguration()
 
 	addGroup("log");
 	addConfiguration("log", "slot_log", typeid( int ), new int(100));  //记录数据投递率和数据投递时延的slot
-	addConfiguration("log", "detail", typeid(bool), new int(true));  //记录数据投递率和数据投递时延的slot
+	addConfiguration("log", "detail", typeid(int), new int(1));  //控制台输出的细致等级，1~3，数值越大越细致
 
 	addConfiguration("log", "dir_root", typeid(string), new string("../"));
 	addConfiguration("log", "dir_project", typeid(string), new string("../.project/"));

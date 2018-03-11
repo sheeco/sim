@@ -125,6 +125,10 @@ protected:
 	{
 		return collections;
 	}
+	inline bool hasTask() const
+	{
+		return !(this->tasks.empty());
+	}
 	map<int, CPFerryTask*> getTasks() const
 	{
 		return this->tasks;
@@ -161,11 +165,18 @@ protected:
 		if( task != nullptr )
 		{
 			task->setMet(true);
+			CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink due to task met.", 2);
+
+			CBasicEntity* waypoint = nullptr;
+			if( (waypoint = getAtWaypoint())
+			    && waitingState >= 0 )
+				CPrintHelper::PrintDetail(time, this->getName() + " has waited at " + waypoint->format() + " for " 
+										  + STRING(waitingState) + "s.", 3);
 			this->setReturningToSink();
 		}
 	}
 	//UNDONE: test
-	void updateStatus(int now) override;
+	void updateStatus(int now);
 };
 
 class CPFerry :
@@ -184,7 +195,6 @@ private:
 	static vector<CNode*> targetNodes;
 	//static vector<CNode*> missNodes;
 	static vector<CNode*> candidateNodes;  //untargetted nodes
-	static vector<CNode*> urgentNodes;
 
 	typedef struct CNodeRecord
 	{
@@ -192,6 +202,11 @@ private:
 		int bufferVacancy;  //after collection
 	} CNodeRecord;
 	static map<int, CNodeRecord> collectionRecords;  //known latest collection time for nodes
+
+
+	static string PATH_PREDICT;
+	static config::EnumRoutingProtocolScheme PRESTAGE_PROTOCOL;
+
 
 	//init based on newly loaded CNode
 	static void initNodeInfo(int now)
@@ -209,9 +224,15 @@ private:
 		for( CHarMANode* harMA : HAR::getAllMAs() )
 		{
 			CPFerryMANode* ma = new CPFerryMANode(*harMA);
+
+			CPrintHelper::PrintBrief(ma->getName() + " has switched to PFerry protocol.");
+
 			allMAs.push_back(ma);
 			if( ma->isBusy() )
+			{
+				ma->setReturningToSink();
 				busyMAs.push_back(ma);
+			}
 			else
 				freeMAs.push_back(ma);
 		}
@@ -222,7 +243,7 @@ private:
 		predictions.clear();
 
 		vector<CNode *> nodes = CNode::getAllNodes();
-		string dir = getConfig<string>("pferry", "path_predict"); //e.g. ../res/predict
+		string dir = PATH_PREDICT; //e.g. ../res/predict
 		vector<string> subdirs = CFileHelper::ListDirectory(dir);
 		int minStartTime = INVALID;
 
@@ -295,36 +316,10 @@ private:
 		}
 	}
 
-	// TODO: ?
-	static bool isUrgent(CNode* node, int now)
-	{
-		try
-		{
-			//CPosition prediction = getNextPrediction(node, now, strides[0]);
-			double timePrediction = nextInterval(now, strides[0]);
-			double timeOverflow = collectionRecords[node->getID()].timeCollect + collectionRecords[node->getID()].bufferVacancy / node->getDataCountRate();
-			//double timeTravel = 2 * CBasicEntity::getDistance(prediction, *CSink::getSink()) / CPFerryMANode::getSpeed();
-		
-			return (timeOverflow < timePrediction);
-		}
-		catch( string error )
-		{
-			return false;
-		}
-
-	}
 	static bool UpdateNodeStatus(int now)
 	{
 		if( !CNode::UpdateNodeStatus(now) )
 			return false;
-
-		//update urgent list
-		urgentNodes.clear();
-		for( CNode* node : CNode::getAliveNodes() )
-		{
-			if( isUrgent(node, now) )
-				urgentNodes.push_back(node);
-		}
 
 		return true;
 	}
@@ -341,7 +336,6 @@ private:
 	static void recordTargetMet(CNode* node)
 	{
 		RemoveFromList(targetNodes, node);
-		//RemoveFromList(missNodes, node);
 		AddToListUniquely(candidateNodes, node);
 	}
 	static void recordTargetMiss(CNode* node)
@@ -392,10 +386,8 @@ private:
 	//FIXME:
 	static bool dealWithUnreachableNodes(vector<pair<CNode*, CPosition>> nodes, int now)
 	{
-#ifdef DEBUG
 		if(!nodes.empty() )
-			CPrintHelper::PrintBrief(now, STRING(nodes.size()) + " nodes are unreachable.");
-#endif // DEBUG
+			CPrintHelper::PrintDetail(now, STRING(nodes.size()) + " nodes are unreachable.", 4);
 
 		int i = 0;
 		for( ; !freeMAs.empty() && i < nodes.size(); ++i )
@@ -406,12 +398,11 @@ private:
 			ma->assignTask(node, pos, minWaitingTime(), now);
 
 			CPrintHelper::PrintBrief(now, ma->getName() + " is targetting (unreachable) " + node->getName()
-									  + " around " + pos.getLocation().format()
+									  + " around " + pos.format()
 									  + " at " + STRING(pos.getTime()) + "s.");
 
 			RemoveFromList(freeMAs, ma);
 			busyMAs.push_back(ma);
-			RemoveFromList(urgentNodes, node);
 			RemoveFromList(candidateNodes, node);
 			targetNodes.push_back(node);
 			//missNodes.push_back(node);
@@ -432,30 +423,53 @@ private:
 	}
 	static void atMAReturn(CPFerryMANode* ma, int now)
 	{
-		reportTask(ma, now);
-		ma->endTask();
+		if( ma->hasTask() )
+		{
+			reportTask(ma, now);
+			ma->endTask();
+		}
 		turnFree(ma);
 	}
 
 	//FIXME:
 	static double calculateMetric(CNode* node, CPosition prediction, int now)
 	{
+		int datatime = getConfig<int>("simulation", "datatime");
+		int timeLastCollectoin = collectionRecords[node->getID()].timeCollect;
+		int bufferVacancy = collectionRecords[node->getID()].bufferVacancy;
+		int bufferCapacity = node->getCapacityBuffer();
+		double dataRate = node->getDataCountRate();
 		double timePrediction = prediction.getTime();
-		double timeOverflow = collectionRecords[node->getID()].timeCollect + collectionRecords[node->getID()].bufferVacancy / node->getDataCountRate();
+
+		int bufferOccupancy = int( ( min(timePrediction, datatime) - timeLastCollectoin ) * dataRate + bufferCapacity - bufferVacancy );
+		int dataLoss = max(0, bufferOccupancy - bufferCapacity);
+		bufferOccupancy = min(bufferOccupancy, bufferCapacity);
+		//double timeOverflow = timeLastCollectoin + bufferVacancy / dataRate;
 		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CMANode::getMASpeed();
 
+		//if( timeArrival + now > timePrediction )
+		//	return -timeOverflow;
+		//else
+		//{
+		//	if( timeOverflow >= now )
+		//	//if( timeOverflow >= timePrediction )
+		//		return timeArrival / max(1, timeOverflow - now);
+		//		//return 1 / timeArrival + 1 / max(1, timeOverflow - now);
+		//	else
+		//		return (now - timeOverflow) * node->getDataCountRate();
+		//		//return (timePrediction - timeOverflow) * node->getDataCountRate();
+		//}
+
 		if( timeArrival + now > timePrediction )
-			return -timeOverflow;
+			return -( bufferOccupancy + dataLoss ) / timeArrival;
 		else
 		{
-			if( timeOverflow >= now )
-			//if( timeOverflow >= timePrediction )
-				return timeArrival / max(1, timeOverflow - now);
-				//return 1 / timeArrival + 1 / max(1, timeOverflow - now);
+			if( dataLoss == 0 )
+				return bufferOccupancy / timeArrival;
 			else
-				return (now - timeOverflow) * node->getDataCountRate();
-				//return (timePrediction - timeOverflow) * node->getDataCountRate();
+				return dataLoss;
 		}
+
 	}
 
 	static pair<vector<pair<CNode*, CPosition>>, vector<pair<CNode*, CPosition>>> sortByPriority(vector<CNode*> nodes, int now)
@@ -493,6 +507,7 @@ private:
 		//{
 		//	normal.push_back(i->second);
 		//}
+
 		//largest pri first
 		for( map<double, pair<CNode*, CPosition>>::reverse_iterator i = priNormal.rbegin(); i != priNormal.rend(); ++i )
 		{
@@ -500,16 +515,17 @@ private:
 		}
 
 		vector<pair<CNode*, CPosition>> unreachable;
-		//least pri first
-		for( map<double, pair<CNode*, CPosition>>::iterator i = priUnreachable.begin(); i != priUnreachable.end(); ++i )
-		{
-			unreachable.push_back(i->second);
-		}
-		////largest pri first
-		//for( map<double, pair<CNode*, CPosition>>::reverse_iterator i = priUnreachable.rbegin(); i != priUnreachable.rend(); ++i )
+		////least pri first
+		//for( map<double, pair<CNode*, CPosition>>::iterator i = priUnreachable.begin(); i != priUnreachable.end(); ++i )
 		//{
 		//	unreachable.push_back(i->second);
 		//}
+
+		//largest pri first
+		for( map<double, pair<CNode*, CPosition>>::reverse_iterator i = priUnreachable.rbegin(); i != priUnreachable.rend(); ++i )
+		{
+			unreachable.push_back(i->second);
+		}
 		return pair<vector<pair<CNode*, CPosition>>, vector<pair<CNode*, CPosition>>>(normal, unreachable);
 	}
 	static bool newMANode()
@@ -834,14 +850,6 @@ private:
 						//CTS
 						ctrlToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 
-						if( capacity == 0 )
-							return packetsToSend;
-						else
-							dataToSend = node->getDataForTrans(capacity);
-
-						if( dataToSend.empty() )
-							return packetsToSend;
-
 						break;
 
 					case CCtrl::_cts:
@@ -853,6 +861,14 @@ private:
 					case CCtrl::_capacity:
 
 						capacity = ctrl->getCapacity();
+
+						if( capacity == 0 )
+							return packetsToSend;
+						else
+							dataToSend = node->getDataForTrans(capacity);
+
+						if( dataToSend.empty() )
+							return packetsToSend;
 
 						break;
 
@@ -945,9 +961,6 @@ private:
 					case CCtrl::_no_data:
 
 						atDataCollection(ma, fromNode, ma->getLocation(), time);
-#ifdef DEBUG
-						CPrintHelper::PrintCommunication(time, fromNode->getName(), ma->getName(), 0);
-#endif // DEBUG
 
 						break;
 
@@ -1006,16 +1019,14 @@ private:
 		CSink* sink = CSink::getSink();
 		transmitFrame(*sink, sink->sendRTS(now), now);
 
-		vector<CNode*> nodes = CNode::getAliveNodes();
-		vector<CPFerryMANode*> MAs = busyMAs;
-
-
+		vector<CPFerryMANode*> MAs = allMAs;
 		// pferry: MAs => nodes
-		for( vector<CPFerryMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
+		for( CPFerryMANode* pMA : MAs )
 		{
 			// skip discover if buffer is full && _selfish is used
-			if( ( *srcMA )->getBufferVacancy() > 0 )
-				transmitFrame(**srcMA, ( *srcMA )->sendRTSWithCapacity(now), now);
+			if( pMA->isBusy()
+			   && pMA->getBufferVacancy() > 0 )
+				transmitFrame(*pMA, pMA->sendRTSWithCapacity(now), now);
 		}
 		// pferry: no forward between nodes
 
@@ -1046,15 +1057,13 @@ private:
 				ma->assignTask(node, pos, minWaitingTime(), now);
 				
 				CPrintHelper::PrintBrief(now, ma->getName() + " is targetting " + node->getName()
-										  + " around " + pos.getLocation().format() 
+										  + " around " + pos.format() 
 										  + " at " + STRING(pos.getTime()) + "s.");
 
 				RemoveFromList(freeMAs, ma);
 				busyMAs.push_back(ma);
-				RemoveFromList(urgentNodes, node);
 				RemoveFromList(candidateNodes, node);
 				targetNodes.push_back(node);
-				//missNodes.push_back(node);
 			}
 
 			dealWithUnreachableNodes(unreachableNodes, now);
@@ -1065,37 +1074,30 @@ private:
 	}
 	static void ArrangeTask(int now)
 	{
-		if( !freeMAs.empty() )
-		{
-			arrangeTask(candidateNodes, now);
-		}
-		if( !urgentNodes.empty() &&
-				allMAs.size() < CMANode::MAX_NUM_MA )
-		{
-			int n = urgentNodes.size();
-			if( newMANode(n) )
-			{
-				CPrintHelper::PrintBrief(now, "Another " + STRING(n) + " MAs are created. (" + STRING(allMAs.size()) + " in total)");
-				arrangeTask(urgentNodes, now);
-			}
-		}
-		else if( !urgentNodes.empty() )
-		{
-#ifdef DEBUG
-			CPrintHelper::PrintBrief(now, STRING(urgentNodes.size()) + " nodes are short of MAs.");
-#endif // DEBUG
-		}
+		arrangeTask(candidateNodes, now);
 	}
 	
 
 public:
 
-	static bool Init(int now)
-	{	// UNDONE:
-		initNodeInfo(now);
-		initMANodes();
-		
-		return true;
+	static void Init(int now)
+	{	
+		PATH_PREDICT = getConfig<string>("pferry", "path_predict");
+		PRESTAGE_PROTOCOL = getConfig<config::EnumRoutingProtocolScheme>("pferry", "prestage_protocol");
+
+		if( PRESTAGE_PROTOCOL == config::_xhar )
+			HAR::Init(now);
+	}
+	static void InitFromPrestageProtocol(int now)
+	{
+		if( PRESTAGE_PROTOCOL == config::_xhar )
+		{
+			CPrintHelper::PrintHeading(now, "IMPORTING FROM HAR");
+			initNodeInfo(now);
+			initMANodes();
+			CPrintHelper::PrintNewLine();
+		}
+
 	}
 	static bool Operate(int now)
 	{
@@ -1103,12 +1105,13 @@ public:
 			initPredictions();
 
 		if(now >= STARTTIME_PREDICTION
-				&& now <= STARTTIME_PREDICTION + getConfig<int>("simulation", "slot"))
-			Init(now);
+				&& now < STARTTIME_PREDICTION + getConfig<int>("simulation", "slot"))
+			InitFromPrestageProtocol(now);
 
 		if(now < STARTTIME_PREDICTION)
 		{
-			HAR::Operate(now);
+			if( PRESTAGE_PROTOCOL == config::_xhar )
+				HAR::Operate(now);
 		}
 		else
 		{
@@ -1125,7 +1128,8 @@ public:
 			//task management
 			ArrangeTask(now);
 
-			CommunicateBetweenNeighbors(now);
+			if( now < getConfig<int>("simulation", "runtime") )
+				CommunicateBetweenNeighbors(now);
 			//communicate
 				//MA/sink - node: data collection
 					//right node: return 

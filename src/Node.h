@@ -418,7 +418,7 @@ public:
 				death << now << TAB << pdead->getIdentifier() << TAB << nAlive - (++nDead) << TAB << CData::getCountDelivery()
 				<< TAB << CData::getDeliveryRatio() << endl;
 			death.close();
-			ASSERT(nAlive == aliveNodes.size());
+			ASSERT(nAlive - nDead == aliveNodes.size());
 			CPrintHelper::PrintAttribute("Node Count", STRING(nAlive) + " -> " + STRING(nAlive - nDead));
 		}
 

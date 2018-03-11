@@ -40,8 +40,7 @@ public:
 
 	static void Init()
 	{
-		if(ALPHA == INVALID)
-			ALPHA = getConfig<double>("hs", "alpha");
+		ALPHA = getConfig<double>("hs", "alpha");
 	}
 	//执行hotspot选取，返回得到的hotspot集合
 	static void PostSelect(vector<CHotspot *> &selectedHotspots, vector<CHotspot *> &unselectedHotspots, vector<int> idNodes)

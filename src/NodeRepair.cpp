@@ -5,7 +5,6 @@
 
 
 double CNodeRepair::LAMBDA = INVALID;
-int CNodeRepair::LIFETIME_POSITION = INVALID;
 
 int CNodeRepair::countForNode(vector<CHotspot *> hotspots, int n) const
 {
@@ -54,7 +53,7 @@ void CNodeRepair::Repair()
 	while(!poorNodes.empty())
 	{
 		int inode = poorNodes.back();
-		while(countForNode(selectedHotspots, inode) < LAMBDA * min(time, LIFETIME_POSITION))
+		while(countForNode(selectedHotspots, inode) < LAMBDA * min(time, CHotspotSelect::LIFETIME_POSITION))
 		{
 			CHotspot *hotspot = findMaxCoverHotspotForNode(inode);
 			if(hotspot != nullptr)

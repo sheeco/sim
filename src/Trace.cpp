@@ -33,12 +33,14 @@ CCTrace* CCTrace::readTraceFromFile(string filename, bool continuous)
 
 		while( !feof(file) )
 		{
-			double temp_time = 0;
-			double temp_x = 0;
-			double temp_y = 0;
+			double temp_time = INVALID;
+			double temp_x = INVALID;
+			double temp_y = INVALID;
 			fscanf(file, "%lf %lf %lf", &temp_time, &temp_x, &temp_y);
 
-			if( temp_time > getConfig<int>("simulation", "runtime") + getConfig<int>("trace", "interval") )
+			if( temp_time < 0 )
+				break;
+			else if( temp_time > getConfig<int>("simulation", "runtime") + getConfig<int>("trace", "interval") )
 				break;
 
 			trace->addLocation(int(temp_time), CCoordinate(temp_x, temp_y) );

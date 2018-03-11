@@ -138,10 +138,10 @@ bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> h
 
 		if(oldAtHotspot != nullptr
 		   && newAtHotspot != oldAtHotspot)
-			CPrintHelper::PrintDetail(now, pnode->getName() + " leaves " + oldAtHotspot->getName() + ".");
+			CPrintHelper::PrintDetail(now, pnode->getName() + " leaves " + oldAtHotspot->getName() + ".", 3);
 		if(newAtHotspot != nullptr
 		   && newAtHotspot != oldAtHotspot)
-			CPrintHelper::PrintDetail(now, pnode->getName() + " enters " + newAtHotspot->getName() + ".");
+			CPrintHelper::PrintDetail(now, pnode->getName() + " enters " + newAtHotspot->getName() + ".", 3);
 		if(newAtHotspot != nullptr)
 			++countAtHotspot;
 

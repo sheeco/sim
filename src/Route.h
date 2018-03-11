@@ -132,7 +132,7 @@ public:
 			sstr << iwaypoint->first->getLocation().format();
 			++iwaypoint;
 			if(iwaypoint != waypoints.end())
-				sstr << ", ";
+				sstr << " -> ";
 		}
 		sstr << "]";
 		// e.g "0.0, 1.234	234.5, 345.6 ..."

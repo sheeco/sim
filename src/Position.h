@@ -50,6 +50,10 @@ public:
 		++COUNT_ID;
 		this->ID = COUNT_ID;
 	}
+	string format() override
+	{
+		return this->location.format();
+	};
 
 };
 

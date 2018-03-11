@@ -32,11 +32,7 @@ private:
 
 	static void printToCout(string str, bool newLine);
 
-	inline static void flashToCout(string str)
-	{
-		printToCout(CR + str, false);
-		LINE_END = CR;
-	}
+	static void flashToCout(string str);
 	// TODO: call printToFile() for logging in PrintInfo()
 	inline static void printToFile(string filepath, string str, bool newLine)
 	{
@@ -93,7 +89,7 @@ private:
 	}
 	inline static void PrintCommunication(int time, string str)
 	{
-		PrintDetail(time, str);
+		PrintDetail(time, str, 1);
 	}
 
 
@@ -170,17 +166,11 @@ public:
 	{
 		PrintBrief(toTime(time) + str);
 	}
-	inline static void PrintDetail(string str, bool detail)
+	//给定该输出信息的detail等级，当该等级高于(小于)当前配置等级时正常输出，低于(大于)配置等级时flash输出
+	static void PrintDetail(string str, int detail);
+	inline static void PrintDetail(int time, string str, int detail)
 	{
-		if( detail )
-			PrintDetailToCout(str);
-		else
-			FlashDetail(str);
-	}
-	static void PrintDetail(string str);
-	inline static void PrintDetail(int time, string str)
-	{
-		PrintDetail(toTime(time) + str);
+		PrintDetail(toTime(time) + str, detail);
 	}
 	inline static void PrintCommunication(int time, string from, string to, string comm)
 	{

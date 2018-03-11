@@ -31,10 +31,10 @@ private:
 
 	static map<int, map<int, CDeliveryPredRecord>> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
 
-	static int INIT_PRED;
-	static int DECAY_PRED;
-	static int TRANS_PRED;
-	static int TRANS_STRICT_BY_PRED;
+	static double INIT_PRED;
+	static double DECAY_PRED;
+	static double TRANS_PRED;
+	static bool TRANS_STRICT_BY_PRED;
 
 
 public:

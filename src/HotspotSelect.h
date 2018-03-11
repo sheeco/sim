@@ -68,6 +68,8 @@ public:
 	static int STARTTIME_HOTSPOT_SELECT;
 	static int SLOT_POSITION_UPDATE;
 	static int SLOT_HOTSPOT_UPDATE;
+	static int LIFETIME_POSITION;
+	static bool TEST_HOTSPOT_SIMILARITY;
 
 	static void Init();
 
@@ -171,7 +173,7 @@ public:
 		//IHAR: 删除过期的position记录
 		if(getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved)
 		{
-			int threshold = now - getConfig<int>("ihs", "lifetime_position");
+			int threshold = now - LIFETIME_POSITION;
 			if(threshold > 0)
 			{
 				for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); )

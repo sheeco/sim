@@ -37,14 +37,11 @@ private:
 public:
 
 	static double LAMBDA;
-	static int LIFETIME_POSITION;
 
 	static void Init()
 	{
 		if(EQUAL( LAMBDA, INVALID))
 			LAMBDA = getConfig<double>("ihs", "lambda");
-		if(LIFETIME_POSITION == INVALID)
-			LIFETIME_POSITION = getConfig<int>("ihs", "lifetime_position");
 	}
 
 	static void Repair(vector<CHotspot *> &selectedHotspots, vector<CHotspot *> &unselectedHotspots, vector<int> idNodes, int now);

@@ -134,7 +134,7 @@ public:
 			*pT = value;
 			echo << " to " << *pT << ".";
 			if( !silence )
-				CPrintHelper::PrintDetail(echo.str(), true);
+				CPrintHelper::PrintDetail(echo.str(), 0);
 		}
 		else
 			throw string("CConfiguration::updateConfiguration(): Cannot convert configuration \"" + keyword + "\" from " + typeid( pVoid ).name() + " to " + typeid( T ).name() + ".");

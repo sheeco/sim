@@ -50,8 +50,8 @@ protected:
 		setLocation( CSink::getSink()->getLocation() );  //初始化 MA 位置在 sink 处
 		speed = getConfig<int>("ma", "speed");
 		atPoint = nullptr;	
-		waitingWindow = 0;
-		waitingState = 0;
+		waitingWindow = INVALID;
+		waitingState = INVALID;
 		capacityBuffer = getConfig<int>("ma", "buffer");
 		returningToSink = false;
 		busy = false;
@@ -63,14 +63,10 @@ protected:
 	}
 	static void Init()
 	{
-		if( INIT_NUM_MA == INVALID )
-			INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
-		if( MAX_NUM_MA == INVALID )
-			MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
-		if( CAPACITY_BUFFER == INVALID )
-			CAPACITY_BUFFER = getConfig<int>("ma", "buffer");
-		if( SPEED == INVALID )
-			SPEED = getConfig<int>("ma", "speed");
+		INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
+		MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
+		CAPACITY_BUFFER = getConfig<int>("ma", "buffer");
+		SPEED = getConfig<int>("ma", "speed");
 	}
 	//自动生成ID，需手动调用
 	inline void generateID()
@@ -180,8 +176,7 @@ public:
 		FreePointer(this->route);
 		this->route = nullptr;
 		atPoint = nullptr;
-		waitingWindow = 0;
-		waitingState = 0;
+		endWaiting();
 		this->returningToSink = false;
 	}
 	inline void updateRoute(CRoute *route)
@@ -191,17 +186,21 @@ public:
 	}
 	inline bool isWaiting() const
 	{
-		return this->waitingWindow > 0;
+		return this->waitingWindow >= 0;
 	}
-	inline void setWaiting(int window)
+	inline void setWaiting(double window)
 	{
+		if( window < 0 )
+			throw string("CMANode::setWaiting(): window = " + STRING(window));
+
 		this->endWaiting();
-		this->waitingWindow = window;
+		this->waitingWindow = (int)window;
+		this->waitingState = 0;
 	}
 	//等待结束，将时间窗重置
 	inline void endWaiting()
 	{
-		this->waitingWindow = this->waitingState = 0;
+		this->waitingWindow = this->waitingState = INVALID;
 	}
 	//更新等待状态，不会更新节点时间戳
 	//返回等待结束后，剩余的将用于移动的时间；返回 0 意味着等待未结束/刚好结束
@@ -256,15 +255,6 @@ public:
 //		return waitingWindow;
 //	}
 
-	//判断Buffer是否已满
-	inline bool isFull() const
-	{
-		if(buffer.size() >= getConfig<int>("ma", "buffer"))
-			return true;
-		else
-			return false;
-	}	
-
 	vector<CData> bufferData(int now, vector<CData> datas)
 	{
 		vector<CData> ack = CGeneralNode::bufferData(now, datas);
@@ -307,7 +297,7 @@ public:
 		RemoveFromList(buffer, ack);
 	}
 
-	virtual void updateStatus(int time) = 0;
+	//virtual void updateStatus(int time) = 0;
 };
 
 #endif // __MA_NODE_H__

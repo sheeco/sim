@@ -22,7 +22,7 @@ vector<CGeneralNode*> CMacProtocol::findNeighbors(CGeneralNode & src)
 
 	/************************************************ Sensor Node *******************************************************/
 
-	vector<CNode*> nodes = CNode::getAllNodes();
+	vector<CNode*> nodes = CNode::getAliveNodes();
 	for( vector<CNode*>::iterator idstNode = nodes.begin(); idstNode != nodes.end(); ++idstNode )
 	{
 		CNode* dstNode = *idstNode;

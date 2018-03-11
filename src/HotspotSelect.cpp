@@ -17,6 +17,8 @@ map<int, vector<CHotspot *>> CHotspotSelect::oldSelectedHotspots;
 int CHotspotSelect::STARTTIME_HOTSPOT_SELECT = INVALID;
 int CHotspotSelect::SLOT_POSITION_UPDATE = INVALID;
 int CHotspotSelect::SLOT_HOTSPOT_UPDATE = INVALID;
+int CHotspotSelect::LIFETIME_POSITION = INVALID;
+bool CHotspotSelect::TEST_HOTSPOT_SIMILARITY = false;
 
 int CHotspotSelect::SUM_HOTSPOT_COST = 0;
 int CHotspotSelect::COUNT_HOTSPOT_COST = 0;
@@ -331,12 +333,11 @@ void CHotspotSelect::CompareWithOldHotspots(int now)
 
 void CHotspotSelect::Init()
 {
-	if(STARTTIME_HOTSPOT_SELECT == INVALID)
-		STARTTIME_HOTSPOT_SELECT = getConfig<int>("hs", "starttime_hospot_select");
-	if(SLOT_POSITION_UPDATE == INVALID)
-		SLOT_POSITION_UPDATE = getConfig<int>("hs", "slot_position_update");
-	if(SLOT_HOTSPOT_UPDATE == INVALID)
-		SLOT_HOTSPOT_UPDATE = getConfig<int>("hs", "slot_hotspot_update");
+	STARTTIME_HOTSPOT_SELECT = getConfig<int>("hs", "starttime_hospot_select");
+	SLOT_POSITION_UPDATE = getConfig<int>("hs", "slot_position_update");
+	SLOT_HOTSPOT_UPDATE = getConfig<int>("hs", "slot_hotspot_update");
+	TEST_HOTSPOT_SIMILARITY = getConfig<int>("hs", "test_hotspot_similarity");
+	LIFETIME_POSITION = getConfig<int>("ihs", "lifetime_position");
 }
 
 vector<CHotspot *> CHotspotSelect::HotspotSelect(vector<int> idNodes, int now)
@@ -374,7 +375,7 @@ vector<CHotspot *> CHotspotSelect::HotspotSelect(vector<int> idNodes, int now)
 	CPrintHelper::PrintAttribute("Hotspot", selectedHotspots.size());
 
 	//比较相邻两次热点选取的相似度
-	if(getConfig<bool>("hs", "test_hotspot_similarity"))
+	if(TEST_HOTSPOT_SIMILARITY)
 	{
 		CompareWithOldHotspots(now);
 	}

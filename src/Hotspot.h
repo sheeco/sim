@@ -279,7 +279,7 @@ public:
 	}
 	string format() const
 	{
-		return "Hotspot " + this->location.format();
+		return this->location.format();
 	}
 	string getName() const
 	{

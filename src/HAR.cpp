@@ -40,12 +40,20 @@ void CHarMANode::updateStatus(int now)
 	//updateTimerOccupied(time);
 
 	//if route has expired, return to sink
-	if( this->routeHasExpired(now) )
+	if( !this->isReturningToSink() 
+	   && this->routeHasExpired(now) )
+	{
+		CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink due to route expiration.", 2);
 		this->setReturningToSink();
+	}
 
 	//如果缓存已满，立即返回sink
-	if( this->isFull() )
+	if( !this->isReturningToSink()
+	   && this->isFull() )
+	{
+		CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink due to buffer filled.", 2);
 		this->setReturningToSink();
+	}
 
 	/********************* Returning to Sink **********************/
 
@@ -77,8 +85,14 @@ void CHarMANode::updateStatus(int now)
 		//如果等待已经结束，记录一次等待
 		if( !this->isWaiting() )
 		{
+			if( atHotspot == nullptr )
+				throw string("CHarMANode::updateStatus(): atHotspot = nullptr");
+
 			int timeStartWaiting = now - timeLeftAfterWaiting - copyWaitingWindow;
 			atHotspot->recordWaitingTime(timeStartWaiting, copyWaitingWindow);
+			CPrintHelper::PrintDetail(this->time + duration - timeLeftAfterWaiting
+									  , this->getName() + " has waited at " + atHotspot->format() 
+									  + " for " + STRING(copyWaitingWindow) + "s.", 3);
 		}
 	}
 	else
@@ -98,7 +112,6 @@ void CHarMANode::updateStatus(int now)
 	atPoint = nullptr;  //离开之前的路点
 
 	CBasicEntity *toPoint = route->getToPoint();
-	int waitingTime = route->getWaitingTime();
 	int timeLeftAfterArrival = this->moveToward(*toPoint, timeLeftAfterWaiting, this->getSpeed());
 
 	if( timeLeftAfterArrival >= 0 )
@@ -113,7 +126,7 @@ void CHarMANode::updateStatus(int now)
 		{
 			this->atPoint = toPoint;
 
-			CPrintHelper::PrintDetail(time, this->getName() + " arrives at waypoint " + photspot->getLocation().format() + ".");
+			CPrintHelper::PrintDetail(time, this->getName() + " arrives at waypoint " + photspot->format() + ".", 2);
 			
 			//set waiting time
 			this->setWaiting(HAR::calculateWaitingTime(now, photspot));
@@ -121,7 +134,7 @@ void CHarMANode::updateStatus(int now)
 		//若目的地的类型是 sink
 		else if( ( psink = dynamic_cast<CSink *>( toPoint ) ) != nullptr )
 		{
-			CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink.");
+			CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink.", 2);
 			setReturningToSink();
 		}
 	}
@@ -944,7 +957,7 @@ void HAR::PrintInfo(int now)
 				hotspotsToPrint = CSortHelper::mergeSort(hotspotsToPrint, CSortHelper::descendByCountDelivery);
 				for( vector<CHotspot *>::iterator it = hotspotsToPrint.begin(); it != hotspotsToPrint.end(); ++it )
 					hotspot_statistics << *itime << '-' << *itime + CHotspotSelect::SLOT_HOTSPOT_UPDATE << TAB
-					<< ( *it )->getID() << TAB << ( *it )->getLocation().format() << TAB << ( *it )->getNCoveredPosition() << "," << ( *it )->getNCoveredNodes() << TAB
+					<< ( *it )->getID() << TAB << ( *it )->format() << TAB << ( *it )->getNCoveredPosition() << "," << ( *it )->getNCoveredNodes() << TAB
 					<< ( *it )->getRatio() << TAB << ( *it )->getWaitingTimesString(true) << TAB << ( *it )->getCountDelivery(*itime) << endl;
 			}
 		}

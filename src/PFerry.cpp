@@ -15,9 +15,12 @@ vector<CPFerryMANode*> CPFerry::busyMAs;
 vector<CNode*> CPFerry::targetNodes;
 //vector<CNode*> CPFerry::missNodes;
 vector<CNode*> CPFerry::candidateNodes; //untargetted nodes
-vector<CNode*> CPFerry::urgentNodes;
 
 map<int, CPFerry::CNodeRecord> CPFerry::collectionRecords;  //known latest collection time for nodes
+
+
+string CPFerry::PATH_PREDICT;
+config::EnumRoutingProtocolScheme CPFerry::PRESTAGE_PROTOCOL = config::_xhar;
 
 
 CPFerryMANode::~CPFerryMANode()
@@ -51,8 +54,12 @@ void CPFerryMANode::updateStatus(int now)
 	//updateTimerOccupied(time);
 
 	//如果缓存已满，立即返回sink
-	if( this->isFull() )
+	if( !this->isReturningToSink()
+	   && this->isFull() )
+	{
+		CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink due to buffer filled.", 2);
 		this->setReturningToSink();
+	}
 
 	/********************* Returning to Sink **********************/
 
@@ -70,7 +77,20 @@ void CPFerryMANode::updateStatus(int now)
 	int timeLeftAfterWaiting = 0;
 	if( this->isWaiting() )
 	{
+		CBasicEntity* waypoint = getAtWaypoint();
+		int copyWaitingWindow = this->waitingWindow;
 		timeLeftAfterWaiting = this->wait(duration);
+
+		//如果等待已经结束，记录一次等待
+		if( !this->isWaiting() )
+		{
+			if( waypoint == nullptr )
+				throw string("CPFerryMANode::updateStatus(): waypoint = nullptr");
+
+			CPrintHelper::PrintDetail(this->time + duration - timeLeftAfterWaiting
+									  , this->getName() + " has waited at " + waypoint->format() + " for " 
+									  + STRING(copyWaitingWindow) + "s.", 3);
+		}
 	}
 	else
 	{
@@ -89,7 +109,7 @@ void CPFerryMANode::updateStatus(int now)
 	atPoint = nullptr;  //离开之前的路点
 
 	CBasicEntity *toPoint = route->getToPoint();
-	int waitingTime = route->getWaitingTime();
+	int minWaitingTime = route->getWaitingTime();
 	int timeLeftAfterArrival = this->moveToward(*toPoint, timeLeftAfterWaiting, this->getSpeed());
 
 	//如果已到达目的地
@@ -103,14 +123,14 @@ void CPFerryMANode::updateStatus(int now)
 		{
 			this->atPoint = toPoint;
 
-			CPrintHelper::PrintDetail(now, this->getName() + " arrives at task position " + ppos->format() + ".");
+			CPrintHelper::PrintDetail(now, this->getName() + " arrives at task position " + ppos->format() + ".", 2);
 
 			CPFerryTask* task = this->findTask(ppos->getNode());
 			if( task && !task->isMet() )
 			{
 				//set waiting time
 				int timePred = task->getTime();
-				this->setWaiting(timePred - this->getTime() + waitingTime);
+				this->setWaiting(max(minWaitingTime, timePred - this->getTime() + minWaitingTime));
 			}
 			else if( !task )
 				throw string("CPFerryMANode::updateStatus(): Cannot find task for node id" + STRING(ppos->getNode()) + ".");
@@ -118,7 +138,7 @@ void CPFerryMANode::updateStatus(int now)
 		//若目的地的类型是 sink
 		else if( ( psink = dynamic_cast< CSink * >( toPoint ) ) != nullptr )
 		{
-			CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink.");
+			CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink.", 2);
 			this->setReturningToSink();
 		}
 	}

@@ -20,29 +20,31 @@ protected:
 	friend class HAR;
 
 	vector<int> coveredNodes;
-	int timeCreation;
-	int timeExpiration;
+	int timeCreate;
+	int timeExpire;
 	bool overdue;  //ÊÇ·ñ¹ýÆÚ
 
 	void init()
 	{
 		CRoute::init();
-		timeCreation = INVALID;
-		timeExpiration = INVALID;
+		timeCreate = INVALID;
+		timeExpire = INVALID;
 		overdue = false;
 		this->setStartPoint(CSink::getSink());
 	}
 	int getTimeCreation() const
 	{
-		return timeCreation;
+		return timeCreate;
 	}
 	int getTimeExpiration() const
 	{
-		return timeExpiration;
+		return timeExpire;
 	}
-	CHarRoute(int timeCreation, int timeExpiration): timeCreation(timeCreation), timeExpiration(timeExpiration)
+	CHarRoute(int timeCreate, int timeExpire)
 	{
 		this->init();
+		this->timeCreate = timeCreate;
+		this->timeExpire = timeExpire;
 	}
 
 	inline vector<int> getCoveredNodes() const
@@ -113,7 +115,7 @@ protected:
 
 		return ack;
 	}
-	void updateStatus(int time) override;
+	void updateStatus(int time);
 
 };
 
@@ -260,6 +262,9 @@ public:
 
 	static void atMAReturn(CHarMANode* ma, int now)
 	{
+		if( !CBasicEntity::withinRange(*ma, *CSink::getSink(), getConfig<int>("trans", "range_trans")) )
+			throw string("CHarMANode::atMAReturn(): " + ma->getName() + " is not around Sink.");
+
 		if( hasRoutes() )
 			ma->updateRoute(HAR::popRoute(), now);
 		else
@@ -327,14 +332,14 @@ public:
 		CSink* sink = CSink::getSink();
 		transmitFrame(*sink, sink->sendRTS(now), now);
 
-		vector<CHarMANode*> MAs = busyMAs;
-
+		vector<CHarMANode*> MAs = allMAs;
 		// xHAR: MAs => nodes
-		for( vector<CHarMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
+		for( CHarMANode* pMA : busyMAs )
 		{
 			// skip discover if buffer is full
-			if( ( *srcMA )->getBufferVacancy() > 0 )
-				transmitFrame(**srcMA, ( *srcMA )->sendRTSWithCapacity(now), now);
+			if( pMA->isBusy()
+			   && pMA->getBufferVacancy() > 0 )
+				transmitFrame(*pMA, pMA->sendRTSWithCapacity(now), now);
 		}
 
 		// xHAR: no forward between nodes
@@ -392,7 +397,8 @@ public:
 		//if( config.MAC_PROTOCOL == config::_hdc )
 		//	CHDC::Operate(now);
 		//else 
-		CommunicateBetweenNeighbors(now);
+		if(now < getConfig<int>("simulation", "runtime") )
+			CommunicateBetweenNeighbors(now);
 
 		PrintInfo(now);
 

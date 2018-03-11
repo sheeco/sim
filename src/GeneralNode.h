@@ -103,6 +103,10 @@ public:
 	{
 		return ( ! this->buffer.empty() );
 	}
+	inline int getCapacityBuffer() const
+	{
+		return this->capacityBuffer;
+	}
 	inline int getBufferSize() const
 	{
 		return this->buffer.size();

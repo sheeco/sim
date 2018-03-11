@@ -9,7 +9,7 @@ int CSink::encounter = 0;
 vector<CData> CSink::bufferData(int time, vector<CData> datas)
 {
 	vector<CData> ack = datas;
-	RemoveFromList( datas, sink->buffer );
+	//RemoveFromList( datas, sink->buffer );
 	for(auto idata = datas.begin(); idata != datas.end(); ++idata)
 	{
 		if( idata->getTimeArrival() == INVALID )

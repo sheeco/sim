@@ -68,6 +68,7 @@ private:
 	// FIXME: 1 or 30 ?
 
 	static string KEYWORD_PREDICT;
+	static string EXTENSION_PAN_FILE;
 
 	//e.g. 31.full.trace
 	static string filenamePrediction(string nodename)
@@ -80,7 +81,9 @@ private:
 	//e.g. 31.pan
 	static string filenamePan(string nodename)
 	{
-		string filename = nodename + getConfig<string>("pferry", "extension_pan_file");
+		if( EXTENSION_PAN_FILE.empty() )
+			EXTENSION_PAN_FILE = getConfig<string>("pferry", "extension_pan_file");
+		string filename = nodename + EXTENSION_PAN_FILE;
 		return filename;
 	}
 
@@ -105,7 +108,10 @@ public:
 			pan.CancelPanding(this->predictions);
 
 			double hitrate = calculateHitrate(node->getTrace(), *(this->predictions), 100);
-			CPrintHelper::PrintBrief("Trace prediction for " + node->getName() + " is loaded, hitrate " 
+			pair<int, int> range = this->predictions->getRange();
+			CPrintHelper::PrintBrief("Trace prediction for " + node->getName() 
+									 + " from " + STRING(range.first) + "s to " 
+									 + STRING(range.second) + "s is loaded, hitrate " 
 									  + STRING( NDigitFloat(hitrate * 100, 1) ) + "%.");
 		}
 	}

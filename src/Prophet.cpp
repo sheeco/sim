@@ -10,10 +10,10 @@
 
 map<int, map<int, CProphet::CDeliveryPredRecord>> CProphet::deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
 
-int CProphet::INIT_PRED;
-int CProphet::DECAY_PRED;
-int CProphet::TRANS_PRED;
-int CProphet::TRANS_STRICT_BY_PRED;
+double CProphet::INIT_PRED;
+double CProphet::DECAY_PRED;
+double CProphet::TRANS_PRED;
+bool CProphet::TRANS_STRICT_BY_PRED;
 
 
 CProphet::CProphet()
@@ -659,7 +659,8 @@ bool CProphet::Operate(int now)
 	if( !CNode::UpdateNodeStatus(now) )
 		return false;
 
-	CommunicateBetweenNeighbors(now);
+	if( now < getConfig<int>("simulation", "runtime") )
+		CommunicateBetweenNeighbors(now);
 
 	PrintInfo(now);
 
