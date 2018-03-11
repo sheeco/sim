@@ -16,7 +16,7 @@ void CRoutingProtocol::PrintInfo(int now)
 
 void CRoutingProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 {
-	switch( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") )
+	switch( getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") )
 	{
 		case config::_smac:
 			CSMac::PrintInfo(now);
@@ -127,7 +127,7 @@ void CRoutingProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 void CRoutingProtocol::PrintFinal(int now)
 {
 	
-	switch( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") )
+	switch( getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") )
 	{
 		case config::_smac:
 			CSMac::PrintFinal(now);

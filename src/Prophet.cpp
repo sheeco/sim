@@ -40,7 +40,7 @@ void CProphet::initDeliveryPreds(int now)
 	}
 }
 
-inline void CProphet::decayDeliveryPreds(int forNode, int withNode, int now)
+void CProphet::decayDeliveryPreds(int forNode, int withNode, int now)
 {
 	CDeliveryPredRecord& record = deliveryPreds[forNode][withNode];
 
@@ -51,7 +51,7 @@ inline void CProphet::decayDeliveryPreds(int forNode, int withNode, int now)
 	record.timestamp = now;
 }
 
-inline void CProphet::DecayDeliveryPreds(CNode * node, int now)
+void CProphet::DecayDeliveryPreds(CNode * node, int now)
 {
 	if( now % getConfig<int>("trace", "interval") != 0 )
 		return;
@@ -73,7 +73,7 @@ inline void CProphet::DecayDeliveryPreds(CNode * node, int now)
 	}
 }
 
-inline void CProphet::updateDeliveryPredsBetween(int a, int b, int now)
+void CProphet::updateDeliveryPredsBetween(int a, int b, int now)
 {
 	map<int, CDeliveryPredRecord > &recordA = deliveryPreds[a],
 		recordB = deliveryPreds[b];
@@ -130,7 +130,7 @@ inline void CProphet::updateDeliveryPredsBetween(int a, int b, int now)
 	}
 }
 
-inline void CProphet::updateDeliveryPredsWithSink(int node, int now)
+void CProphet::updateDeliveryPredsWithSink(int node, int now)
 {
 	int sink = CSink::getSink()->getID();
 	if( deliveryPreds[node][sink].timestamp == now )
@@ -211,7 +211,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 	CCtrl* indexToSend = nullptr;
 	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
 	vector<CData> dataToSend;  //空vector代表拒绝传输数据
-	bool wait = false;
+	bool waitForResponse = false;
 
 	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -237,9 +237,9 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 				//CTS
 				ctrlToSend = new CCtrl(node->getID(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 				// + DATA
-				dataToSend = node->getDataForTrans(0, true);
+				dataToSend = node->getDataForTrans(INVALID);
 
-				wait = true;
+				waitForResponse = true;
 				// TODO: mark skipRTS ?
 				// TODO: connection established ?
 				break;
@@ -309,10 +309,9 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
 			packetsToSend.push_back(new CData(*idata));
 	}
-	if( wait )
+	if( waitForResponse )
 	{
 		int timeDelay = CMacProtocol::getTransmissionDelay(packetsToSend);
-		node->delayDiscovering(timeDelay);
 		node->delaySleep(timeDelay);
 	}
 	return packetsToSend;
@@ -389,6 +388,7 @@ vector<CPacket*> CProphet::receivePackets(CSink* sink, CNode* fromNode, vector<C
 
 }
 
+//TODO: test
 vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<CPacket*> packets, int now)
 {
 	vector<CPacket*> packetsToSend;
@@ -397,10 +397,8 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 	CCtrl* indexToSend = nullptr;
 	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
 	vector<CData> dataToSend;  //空vector代表拒绝传输数据
-	int capacity = -1;
-
-//	int debugNodeID = 0;
-//	int debugFromID = 0;
+	int capacity = INVALID;
+	bool waitForResponse = false;
 
 	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -430,9 +428,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 					ctrlToSend = new CCtrl(node->getID(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 
 					// + Capacity
-					if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_selfish 
-						&& node->hasData() )
-						capacityToSend = new CCtrl(node->getID(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity);
+					capacityToSend = new CCtrl(node->getID(), node->getBufferVacancy(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity);
 
 				}
 
@@ -468,25 +464,19 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				if( shouldForward(node->getID(), fromNode->getID(), now ) )
 				{
 					if( capacity == 0 )
-					{
 						return packetsToSend;
-					}
-
-					dataToSend = node->getDataForTrans(0, true);
+					else
+						dataToSend = node->getDataForTrans(capacity);
 
 					//但缓存为空
 					if( dataToSend.empty() )
 						nodataToSend = new CCtrl(node->getID(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_no_data);
-					else if( capacity > 0 )
-					{
-						CGeneralNode::removeDataByCapacity(dataToSend, capacity, false);
-					}
-					
+
 					//如果路由协议允许向该节点发送数据，对方节点就不允许发送数据，因此无需发送capacity
-					if( capacityToSend != nullptr )
+					else
 					{
-						free(capacityToSend);
-						capacityToSend = nullptr;
+						waitForResponse = true;
+						FreePointer(capacityToSend);
 					}
 				}
 				//否则，不允许转发数据时，dataToSend留空
@@ -599,12 +589,17 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 		for(auto idata = dataToSend.begin(); idata != dataToSend.end(); ++idata)
 			packetsToSend.push_back(new CData(*idata));
 	}
+	if( waitForResponse )
+	{
+		int timeDelay = CMacProtocol::getTransmissionDelay(packetsToSend);
+		node->delaySleep(timeDelay);
+	}
 
 	return packetsToSend;
 
 }
 
-inline void CProphet::CommunicateBetweenNeighbors(int now)
+void CProphet::CommunicateBetweenNeighbors(int now)
 {
 	static bool print = false;
 	if( now == 0
@@ -640,9 +635,9 @@ inline void CProphet::CommunicateBetweenNeighbors(int now)
 
 bool CProphet::Init(int now)
 {
-	if(getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc)
+	if(getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc)
 		CHDC::Init();
-	else if(getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
+	else if(getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
 		CSMac::Init();
 
 	INIT_PRED = getConfig<double>("prophet", "init_pred");
@@ -656,9 +651,9 @@ bool CProphet::Init(int now)
 
 bool CProphet::Operate(int now)
 {
-	if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
+	if( getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
 		CHDC::Prepare(now);
-	else if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
+	else if( getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
 		CSMac::Prepare(now);
 
 	if( !CNode::UpdateNodeStatus(now) )

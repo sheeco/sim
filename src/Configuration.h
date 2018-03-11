@@ -91,18 +91,18 @@ public:
 		_merge = 3
 	} EnumHotspotSelectScheme;
 
+	//TODO: not in use now
+	//typedef enum EnumForwardScheme
+	//{
+	//	_copy = 1,  //发送数据成功后，保留自身副本
+	//	_dump = 2   //发送数据成功后，删除自身副本
+	//} EnumForwardScheme;
 
-	typedef enum EnumForwardScheme
-	{
-		_copy = 1,  //发送数据成功后，保留自身副本
-		_dump = 2   //发送数据成功后，删除自身副本
-	} EnumForwardScheme;
-
-	typedef enum EnumRelayScheme
-	{
-		_loose = 1,   //MA buffer已满时，仍允许继续接收数据
-		_selfish = 2   //MA buffer已满时，不再从其他节点接收数据
-	} EnumRelayScheme;
+	//typedef enum EnumRelayScheme
+	//{
+	//	_loose = 1,   //buffer已满时，仍允许继续接收数据
+	//	_selfish = 2   //buffer已满时，不再从其他节点接收数据
+	//} EnumRelayScheme;
 
 	typedef enum EnumQueueScheme
 	{

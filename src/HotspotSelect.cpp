@@ -352,7 +352,7 @@ vector<CHotspot *> CHotspotSelect::HotspotSelect(vector<int> idNodes, int now)
 	BuildCandidateHotspots(now);
 
 	/**************************** 热点归并过程(merge-HAR) *****************************/
-	if(getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_merge)
+	if(getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_merge)
 		MergeHotspots(now);  //操作 CHotspot 类内变量
 
 							 /********************************** 贪婪选取 *************************************/
@@ -363,7 +363,7 @@ vector<CHotspot *> CHotspotSelect::HotspotSelect(vector<int> idNodes, int now)
 
 
 	/***************************** 疏漏节点修复过程(IHAR) ******************************/
-	if(getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved)
+	if(getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved)
 	{
 		CNodeRepair::Repair(selectedHotspots, unselectedHotspots, idNodes, now);  //传入引用
 	}
@@ -426,10 +426,10 @@ void CHotspotSelect::PrintInfo(int now)
 	SUM_HOTSPOT_COST += selectedHotspots.size();
 	++COUNT_HOTSPOT_COST;
 
-	if( getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_merge )
+	if( getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_merge )
 	{
 		//热点归并过程统计信息（在最终选取出的热点集合中）
-		if( getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_merge )
+		if( getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_merge )
 		{
 			int mergeCount = 0;
 			int oldCount = 0;

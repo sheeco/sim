@@ -104,23 +104,19 @@ private:
 
 	inline void init()
 	{
-		FreePointer(this->route);
-		this->route = new CRoute(CSink::getSink());
 	}
 
 public:
-	~CPFerryMANode()
-	{
-		tasks.clear();
-		for( pair<int, CPFerryTask*> p: tasks )
-			FreePointer( p.second );
-		FreePointerVector(this->taskHistory);
-	}
+	~CPFerryMANode();
 
 protected:
 	friend class CPFerry;
 
 	CPFerryMANode()
+	{
+		init();
+	}
+	CPFerryMANode(CHarMANode& harMA): CBasicEntity(harMA), CGeneralNode(harMA), CMANode(harMA)
 	{
 		init();
 	}
@@ -140,15 +136,15 @@ protected:
 		else
 			return tasks[nodeId];
 	}
-	void assignTask(CNode* node, CPosition location, int waitingTime)
+	void assignTask(CNode* node, CPosition location, int waitingTime, int now)
 	{
 		CPFerryTask* task = new CPFerryTask(node, location);
 		this->tasks[node->getID()] = task;
-		if( this->route == nullptr )
+		if( !this->hasRoute() )
 			this->route = new CRoute(CSink::getSink());
 		this->route->AddWaypoint(new CPosition(location), waitingTime);
-		if( this->route->getToPoint() == CSink::getSink() )
-			this->route->updateToPoint();
+		this->route->initToPoint();
+		this->setTime(now);
 	}
 	void endTask()
 	{
@@ -165,98 +161,11 @@ protected:
 		if( task != nullptr )
 		{
 			task->setMet(true);
-			this->setReturnAtOnce(true);
+			this->setReturningToSink();
 		}
 	}
 	//UNDONE: test
-	void updateStatus(int now)
-	{
-		if( this->time < 0 )
-			this->time = now;
-		int interval = now - this->time;
-
-		//updateTimerOccupied(time);
-
-		//target met/缓存已满，立即返回sink
-		if( ifReturnAtOnce() ||
-		   (getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_selfish
-		   && buffer.size() >= capacityBuffer) )
-		{
-			waitingWindow = waitingState = 0;
-			route->updateToPointWithSink();
-		}
-
-		//处于等待中
-		if( waitingWindow > 0 )
-		{
-			//等待即将结束		
-			if( ( waitingState + interval ) >= waitingWindow )
-			{
-				interval = waitingState + interval - waitingWindow;  //等待结束后，剩余的将用于移动的时间
-				waitingWindow = waitingState = 0;  //等待结束，将时间窗重置
-				route->updateToPoint();
-				this->setReturnAtOnce(true);
-			}
-
-			//等待还未结束
-			else
-			{
-				waitingState += interval;
-				interval = 0;  //不移动
-			}
-		}
-		if( interval == 0 )
-		{
-			this->setTime(now);
-			return;
-		}
-
-		//开始在路线上移动
-		this->setTime(now - interval);  //将时间置于等待结束，移动即将开始的时间点
-		atPoint = nullptr;  //离开路点
-
-		CBasicEntity *toPoint = route->getToPoint();
-		int waitingTime = route->getWaitingTime();
-		int timeLeftAfterArrival = this->moveTo(*toPoint, interval, getConfig<int>("ma", "speed"));
-
-		//如果已到达目的地
-		if( timeLeftAfterArrival >= 0 )
-		{
-
-			//若目的地的类型是waypoint
-			CPosition *ppos = nullptr;
-			CSink *psink = nullptr;
-			if( ( ppos = dynamic_cast< CPosition * >( toPoint ) ) != nullptr )
-			{
-				this->atPoint = toPoint;
-
-#ifdef DEBUG
-				CPrintHelper::PrintBrief(now, this->getName() + " arrives at task position " + ppos->format() + ".");
-#endif // DEBUG
-
-				CPFerryTask* task = this->findTask(ppos->getNode());
-				if( task && task->isMet() )
-					waitingWindow = 0;
-				else if( task )
-				{
-					int timePred = task->getTime();
-					waitingWindow = int(max(30, timePred + waitingTime - this->getTime()));
-				}
-				else
-					throw string("CPFerryMANode::updateStatus(): Cannot find task for node id" + STRING( ppos->getNode() ) + ".");
-				waitingState = 0;  //重新开始等待
-			}
-			//若目的地的类型是 sink
-			else if( ( psink = dynamic_cast< CSink * >( toPoint ) ) != nullptr )
-			{
-#ifdef DEBUG
-				CPrintHelper::PrintBrief(time, this->getName() + " arrives at sink.");
-#endif // DEBUG
-				//route->updateToPoint();
-			}
-		}
-		return;
-	}
+	void updateStatus(int now) override;
 };
 
 class CPFerry :
@@ -271,9 +180,6 @@ private:
 	static vector<CPFerryMANode*> allMAs;
 	static vector<CPFerryMANode*> freeMAs;
 	static vector<CPFerryMANode*> busyMAs;
-
-	static int INIT_NUM_MA;
-	static int MAX_NUM_MA;
 
 	static vector<CNode*> targetNodes;
 	//static vector<CNode*> missNodes;
@@ -290,24 +196,31 @@ private:
 	//init based on newly loaded CNode
 	static void initNodeInfo(int now)
 	{
-		vector<CNode*> allNodes = CNode::getAllNodes();
-		for(CNode* pnode : allNodes)
+		vector<CNode*> nodes = CNode::getAliveNodes();
+		for(CNode* pnode : nodes)
 		{
 			updatecollectionRecords(pnode->getID(), pnode->getBufferVacancy(), now);
 
 		}
-		candidateNodes = CNode::getAliveNodes();
+		candidateNodes = nodes;
 	}
 	static void initMANodes()
 	{
-		INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
-		MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
-		newMANode(INIT_NUM_MA);
-		
-		freeMAs = allMAs;
+		for( CHarMANode* harMA : HAR::getAllMAs() )
+		{
+			CPFerryMANode* ma = new CPFerryMANode(*harMA);
+			allMAs.push_back(ma);
+			if( ma->isBusy() )
+				busyMAs.push_back(ma);
+			else
+				freeMAs.push_back(ma);
+		}
 	}
 	static void initPredictions()
 	{
+		strides.clear();
+		predictions.clear();
+
 		vector<CNode *> nodes = CNode::getAllNodes();
 		string dir = getConfig<string>("pferry", "path_predict"); //e.g. ../res/predict
 		vector<string> subdirs = CFileHelper::ListDirectory(dir);
@@ -417,7 +330,7 @@ private:
 	}
 	static bool updateMAStatus(int now)
 	{
-		vector<CPFerryMANode*> mas = busyMAs;
+		vector<CPFerryMANode*> mas = allMAs;
 		for( CPFerryMANode* ma : mas )
 		{
 			ma->updateStatus(now);
@@ -490,8 +403,7 @@ private:
 			CPFerryMANode* ma = freeMAs.front();
 			CNode* node = nodes[i].first;
 			CPosition pos = nodes[i].second;
-			ma->assignTask(node, pos, minWaitingTime());
-			ma->setTime(now);
+			ma->assignTask(node, pos, minWaitingTime(), now);
 
 			CPrintHelper::PrintBrief(now, ma->getName() + " is targetting (unreachable) " + node->getName()
 									  + " around " + pos.getLocation().format()
@@ -530,7 +442,7 @@ private:
 	{
 		double timePrediction = prediction.getTime();
 		double timeOverflow = collectionRecords[node->getID()].timeCollect + collectionRecords[node->getID()].bufferVacancy / node->getDataCountRate();
-		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CPFerryMANode::getSpeed();
+		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CMANode::getMASpeed();
 
 		if( timeArrival + now > timePrediction )
 			return -timeOverflow;
@@ -602,7 +514,7 @@ private:
 	}
 	static bool newMANode()
 	{
-		if( allMAs.size() >= MAX_NUM_MA )
+		if( allMAs.size() >= CMANode::MAX_NUM_MA )
 			return false;
 		else
 		{
@@ -810,14 +722,14 @@ private:
 
 						if( !ma->hasData() )
 						{
-							if( ma->ifReturnAtOnce() )
+							if( ma->isReturningToSink() )
 								atMAReturn(ma, time);
 							return packetsToSend;
 						}
 						//CTS
 						ctrlToSend = new CCtrl(ma->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 						// + DATA
-						dataToSend = ma->getDataForTrans(0, true);
+						dataToSend = ma->getDataForTrans(INVALID);
 
 						// TODO: mark skipRTS ?
 						// TODO: connection established ?
@@ -827,12 +739,12 @@ private:
 
 						if( !ma->hasData() )
 						{
-							if( ma->ifReturnAtOnce() )
+							if( ma->isReturningToSink() )
 								atMAReturn(ma, time);
 							return packetsToSend;
 						}
 						// + DATA
-						dataToSend = ma->getDataForTrans(0, true);
+						dataToSend = ma->getDataForTrans(INVALID);
 
 						break;
 
@@ -897,7 +809,7 @@ private:
 		CCtrl* ctrlToSend = nullptr;
 		CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
 		vector<CData> dataToSend;  //空vector代表代表缓存为空
-		int capacity = -1;
+		int capacity = INVALID;
 
 		for( vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 		{
@@ -922,8 +834,10 @@ private:
 						//CTS
 						ctrlToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 
-						// + DATA
-						dataToSend = node->getDataForTrans(0, true);
+						if( capacity == 0 )
+							return packetsToSend;
+						else
+							dataToSend = node->getDataForTrans(capacity);
 
 						if( dataToSend.empty() )
 							return packetsToSend;
@@ -939,12 +853,6 @@ private:
 					case CCtrl::_capacity:
 
 						capacity = ctrl->getCapacity();
-
-						if( capacity == 0 )
-							return packetsToSend;
-						else if( capacity > 0
-								&& capacity < dataToSend.size() )
-							CGeneralNode::removeDataByCapacity(dataToSend, capacity, false);
 
 						break;
 
@@ -1106,7 +1014,7 @@ private:
 		for( vector<CPFerryMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
 		{
 			// skip discover if buffer is full && _selfish is used
-			if( ( *srcMA )->getCapacityForward() > 0 )
+			if( ( *srcMA )->getBufferVacancy() > 0 )
 				transmitFrame(**srcMA, ( *srcMA )->sendRTSWithCapacity(now), now);
 		}
 		// pferry: no forward between nodes
@@ -1135,8 +1043,7 @@ private:
 				CPFerryMANode* ma = freeMAs.front();
 				CNode* node = sorted[i].first;
 				CPosition pos = sorted[i].second;
-				ma->assignTask(node, pos, minWaitingTime());
-				ma->setTime(now);
+				ma->assignTask(node, pos, minWaitingTime(), now);
 				
 				CPrintHelper::PrintBrief(now, ma->getName() + " is targetting " + node->getName()
 										  + " around " + pos.getLocation().format() 
@@ -1163,7 +1070,7 @@ private:
 			arrangeTask(candidateNodes, now);
 		}
 		if( !urgentNodes.empty() &&
-				allMAs.size() < MAX_NUM_MA )
+				allMAs.size() < CMANode::MAX_NUM_MA )
 		{
 			int n = urgentNodes.size();
 			if( newMANode(n) )
@@ -1186,27 +1093,29 @@ public:
 	static bool Init(int now)
 	{	// UNDONE:
 		initNodeInfo(now);
-
 		initMANodes();
 		
-		initPredictions();
 		return true;
 	}
 	static bool Operate(int now)
 	{
+		if( STARTTIME_PREDICTION == INVALID )
+			initPredictions();
+
+		if(now >= STARTTIME_PREDICTION
+				&& now <= STARTTIME_PREDICTION + getConfig<int>("simulation", "slot"))
+			Init(now);
+
 		if(now < STARTTIME_PREDICTION)
 		{
 			HAR::Operate(now);
 		}
-		else if(now >= STARTTIME_PREDICTION
-				&& now <= STARTTIME_PREDICTION + getConfig<int>("simulation", "slot"))
-			Init(now);
 		else
 		{
-			if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
+			if( getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac )
 				CSMac::Prepare(now);
 			else
-				throw string("HAR::Operate(): Only SMac is allowed as MAC protocol for HAR.");
+				throw string("CPFerry::Operate(): Only SMac is allowed as MAC protocol for CPFerry.");
 
 			//update node & ma positions
 			if(!UpdateNodeStatus(now))

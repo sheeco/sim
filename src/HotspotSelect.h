@@ -169,7 +169,7 @@ public:
 		}
 
 		//IHAR: 删除过期的position记录
-		if(getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved)
+		if(getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved)
 		{
 			int threshold = now - getConfig<int>("ihs", "lifetime_position");
 			if(threshold > 0)

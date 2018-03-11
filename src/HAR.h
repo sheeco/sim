@@ -12,11 +12,11 @@
 #include "SMac.h"
 
 
-class CHARRoute : 
+class CHarRoute : 
 	virtual public CRoute
 {
 protected:
-	friend class CHARMANode;
+	friend class CHarMANode;
 	friend class HAR;
 
 	vector<int> coveredNodes;
@@ -40,7 +40,7 @@ protected:
 	{
 		return timeExpiration;
 	}
-	CHARRoute(int timeCreation, int timeExpiration): timeCreation(timeCreation), timeExpiration(timeExpiration)
+	CHarRoute(int timeCreation, int timeExpiration): timeCreation(timeCreation), timeExpiration(timeExpiration)
 	{
 		this->init();
 	}
@@ -50,13 +50,9 @@ protected:
 		return coveredNodes;
 	}
 
-	inline bool isOverdue() const
+	inline bool isOverdue(int now) const
 	{
-		return overdue;
-	}
-	inline void setOverdue(bool overdue)
-	{
-		this->overdue = overdue;
+		return this->getTimeExpiration() <= now;
 	}
 	//将给定的元素放到waypoint列表的最后
 	void AddHotspot(CBasicEntity *hotspot)
@@ -75,25 +71,25 @@ protected:
 
 };
 
-class CHARMANode : 
+class CHarMANode : 
 	virtual public CMANode
 {
 protected:
 	friend class HAR;
 	friend class CMacProtocol;
 
-	CHARMANode(int now)
+	CHarMANode(int now)
 	{
 		init();
 		setTime(now);
 	}
 
-	inline CHARRoute* getHARRoute() const
+	inline CHarRoute* getHARRoute() const
 	{
-		CHARRoute* res = dynamic_cast< CHARRoute* >( this->route );
+		CHarRoute* res = dynamic_cast< CHarRoute* >( this->route );
 		return res;
 	}
-	inline void updateRoute(CHARRoute *route, int now)
+	inline void updateRoute(CHarRoute *route, int now)
 	{
 		CMANode::updateRoute(route);
 		CPrintHelper::PrintBrief(now, this->getName() + " is assigned with route " + route->format() + ".");
@@ -102,15 +98,12 @@ protected:
 	{
 		return dynamic_cast<CHotspot*>( getAtWaypoint() );
 	}
-	inline bool routeIsOverdue() const
+	inline bool routeHasExpired(int now) const
 	{
-		return getHARRoute()->isOverdue();
+		if( !this->hasRoute() )
+			throw string("CHarMANode::routeHasExpired(): " + this->getName() + " has no route.");
+		return getHARRoute()->isOverdue(now);
 	}
-	inline void setRouteOverdue(bool overdue)
-	{
-		this->getHARRoute()->setOverdue(overdue);
-	}
-
 	vector<CData> bufferData(int time, vector<CData> datas)
 	{
 		vector<CData> ack = CMANode::bufferData(time, datas);
@@ -120,7 +113,7 @@ protected:
 
 		return ack;
 	}
-	void updateStatus(int time);
+	void updateStatus(int time) override;
 
 };
 
@@ -130,29 +123,26 @@ class HAR :
 private:
 
 	static vector<CHotspot *> hotspots;
-	static vector<CHARRoute *> maRoutes;  //即hotspot class
-	static vector<CHARRoute *> oldRoutes;
+	static vector<CHarRoute *> maRoutes;  //即hotspot class
+	static vector<CHarRoute *> oldRoutes;
 	static int indexRoute;
-	//vector<CHARMANode> m_MANodes;
-	//static vector<CHARRoute> m_newRoutes;
+	//vector<CHarMANode> m_MANodes;
+	//static vector<CHarRoute> m_newRoutes;
 
 	static map<int, double> mapDataCountRates;
 
-	static vector<CHARMANode *> allMAs;
-	static vector<CHARMANode *> busyMAs;
-	static vector<CHARMANode *> freeMAs;
-
-	static int INIT_NUM_MA;
-	static int MAX_NUM_MA;
+	static vector<CHarMANode *> allMAs;
+	static vector<CHarMANode *> busyMAs;
+	static vector<CHarMANode *> freeMAs;
 
 
 	static bool newMANode(int now)
 	{
-		if(allMAs.size() >= MAX_NUM_MA)
+		if(allMAs.size() >= CMANode:: MAX_NUM_MA)
 			return false;
 		else
 		{
-			CHARMANode* ma = new CHARMANode(now);
+			CHarMANode* ma = new CHarMANode(now);
 			allMAs.push_back(ma);
 			freeMAs.push_back(ma);
 			CPrintHelper::PrintBrief(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
@@ -175,31 +165,32 @@ private:
 	}
 	static void initMANodes(int now)
 	{
-		INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
-		MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
-		newMANode(INIT_NUM_MA, now);
+		newMANode(CMANode::INIT_NUM_MA, now);
 
 		freeMAs = allMAs;
 	}
-	static void turnFree(CHARMANode * ma)
+	static void turnFree(CHarMANode * ma)
 	{
+		ma->endRoute();
+		ma->setBusy(false);
 		AddToListUniquely(freeMAs, ma);
 		RemoveFromList(busyMAs, ma);
 	}
-	static void turnBusy(CHARMANode * ma)
+	static void turnBusy(CHarMANode * ma)
 	{
+		ma->setBusy(true);
 		RemoveFromList(freeMAs, ma);
 		AddToListUniquely(busyMAs, ma);
 	}
 
 	//取得新的路线集合
-	static inline void updateRoutes(vector<CHARRoute*> newRoutes)
+	static inline void updateRoutes(vector<CHarRoute*> newRoutes)
 	{
 		oldRoutes.insert(oldRoutes.end(), maRoutes.begin(), maRoutes.end());
 		maRoutes = newRoutes;
 		indexRoute = 0;
 	}
-	static inline vector<CHARRoute*> getRoutes()
+	static inline vector<CHarRoute*> getRoutes()
 	{
 		return maRoutes;
 	}
@@ -215,10 +206,10 @@ private:
 	//用于hotspot classification
 	static double getHotspotHeat(CHotspot *hotspot);
 	static double getSumDataRate(vector<int> nodes);  //计算ge的sum，同一个node不应重复计算
-	static double getTimeIncreForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot);
-	static double calculateRatioForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot);
+	static double getTimeIncreForInsertion(int now, CHarRoute route, int front, CHotspot *hotspot);
+	static double calculateRatioForInsertion(int now, CHarRoute route, int front, CHotspot *hotspot);
 	//对一条route进行优化（TSP 最近邻居算法）
-	static void OptimizeRoute(CHARRoute *route);
+	static void OptimizeRoute(CHarRoute *route);
 	//计算相关统计数据
 	static double calculateEDTime(int now);
 
@@ -250,7 +241,7 @@ public:
 	HAR(){};
 	~HAR(){};
 
-	static vector<CHARMANode*> getAllMAs()
+	static vector<CHarMANode*> getAllMAs()
 	{
 		return allMAs;
 	}
@@ -260,20 +251,19 @@ public:
 		return ! maRoutes.empty();
 	}
 	//必须先调用hasRoutes判断
-	static inline CHARRoute* popRoute()
+	static inline CHarRoute* popRoute()
 	{
-		CHARRoute* result = maRoutes[indexRoute];
+		CHarRoute* result = maRoutes[indexRoute];
 		indexRoute = ( indexRoute + 1 ) % maRoutes.size();
-		return new CHARRoute(*result);
+		return new CHarRoute(*result);
 	}
 
-	static void atMAReturn(CHARMANode* ma, int now)
+	static void atMAReturn(CHarMANode* ma, int now)
 	{
 		if( hasRoutes() )
 			ma->updateRoute(HAR::popRoute(), now);
 		else
 		{
-			ma->endRoute();
 			turnFree(ma);
 		}
 	}
@@ -298,16 +288,15 @@ public:
 		//为空闲的MA分配路线
 		while( !freeMAs.empty() )
 		{
-			CHARMANode *ma = freeMAs.front();
+			CHarMANode *ma = freeMAs.front();
 			if( !hasRoutes() )
 				break;
 			ma->updateRoute(popRoute(), now);
 			turnBusy(ma);
 		}
 
-		auto MAs = busyMAs;  //local copy to avoid iterator problem after erasing
-		for( vector<CHARMANode *>::iterator iMA = MAs.begin(); iMA != MAs.end(); ++iMA )
-			( *iMA )->updateStatus(now);
+		for( CHarMANode *pMA: allMAs )
+			pMA->updateStatus(now);
 	}
 
 	static vector<CGeneralNode*> findNeighbors(CGeneralNode& src);
@@ -315,13 +304,13 @@ public:
 	//从下层协议传入的控制/数据包
 	static vector<CPacket*> receivePackets(CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time);
 	// sink <- MA 
-	static vector<CPacket*> receivePackets(CSink* sink, CHARMANode* fromMA, vector<CPacket*> packets, int time);
+	static vector<CPacket*> receivePackets(CSink* sink, CHarMANode* fromMA, vector<CPacket*> packets, int time);
 	// MA <- sink 
-	static vector<CPacket*> receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPacket*> packets, int time);
+	static vector<CPacket*> receivePackets(CHarMANode* ma, CSink* fromSink, vector<CPacket*> packets, int time);
 	// Node <- MA 
-	static vector<CPacket*> receivePackets(CNode* node, CHARMANode* fromMA, vector<CPacket*> packets, int time);
+	static vector<CPacket*> receivePackets(CNode* node, CHarMANode* fromMA, vector<CPacket*> packets, int time);
 	// MA <- Node 
-	static vector<CPacket*> receivePackets(CHARMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time);
+	static vector<CPacket*> receivePackets(CHarMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time);
 
 	static void CommunicateBetweenNeighbors(int now)
 	{
@@ -338,13 +327,13 @@ public:
 		CSink* sink = CSink::getSink();
 		transmitFrame(*sink, sink->sendRTS(now), now);
 
-		vector<CHARMANode*> MAs = busyMAs;
+		vector<CHarMANode*> MAs = busyMAs;
 
 		// xHAR: MAs => nodes
-		for( vector<CHARMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
+		for( vector<CHarMANode*>::iterator srcMA = MAs.begin(); srcMA != MAs.end(); ++srcMA )
 		{
-			// skip discover if buffer is full && _selfish is used
-			if( ( *srcMA )->getCapacityForward() > 0 )
+			// skip discover if buffer is full
+			if( ( *srcMA )->getBufferVacancy() > 0 )
 				transmitFrame(**srcMA, ( *srcMA )->sendRTSWithCapacity(now), now);
 		}
 
@@ -364,13 +353,15 @@ public:
 
 	static bool Init(int now)
 	{
-		initNodeInfo();
+		CMANode::Init();
 		CHotspotSelect::Init();
+
+		initNodeInfo();
 		return true;
 	}
 	static bool Operate(int now)
 	{
-		if(getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
+		if(getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
 			CSMac::Prepare(now);
 		// 不允许 xHAR 使用 HDC 作为 MAC 协议
 		else

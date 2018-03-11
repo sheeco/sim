@@ -54,8 +54,6 @@ public:
 		return true;
 	}
 
-	CFrame* sendRTS(int now);
-
 	//void Occupy(int time) override
 	//{
 	//	return;

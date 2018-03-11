@@ -153,9 +153,6 @@ public:
 		return this->nodeIdentifier;
 	}
 
-	//返回节点允许接收的最大数据数
-	int getCapacityForward();
-
 	void setDataByteRate(double dataRate)
 	{
 		this->dataRate = dataRate;
@@ -202,6 +199,7 @@ public:
 	//更新所有node的坐标、占空比和工作状态，生成数据；调用之后应调用 isAlive() 检验存活
 	void updateStatus(int now);
 
+	//TODO: move into Prophet ?
 	CFrame* sendRTSWithCapacityAndIndex(int now);
 
 	bool hasCommunicatedRecently(int nodeId, int now);
@@ -270,19 +268,20 @@ public:
 
 		this->timerCarrierSense += timeDelay;
 		this->discovering = false;
-		//延迟后超出唤醒时限，则立即休眠
+		//延迟后超出唤醒时限，延长唤醒，延迟休眠
 		if( timerCarrierSense >= timerWake )
-			Sleep();
+			delaySleep(timeDelay);
 	}
 
+	//如果剩余唤醒时间不足数，将延长唤醒时间，延迟休眠
 	void delaySleep(int timeDelay)
 	{
 		if( timeDelay <= 0 )
 			return;
 		if( state != _awake )
 			return;
-
-		this->timerWake += timeDelay;
+		if( timerWake < timeDelay )
+			this->timerWake += timeDelay;
 	}
 
 	//在热点处提高 dc

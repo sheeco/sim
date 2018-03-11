@@ -64,7 +64,7 @@ bool CRunHelper::RunSimulation()
 
 	CNode::Init(now);
 
-	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
+	switch( getConfig<config::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
 		case config::_prophet:
 			

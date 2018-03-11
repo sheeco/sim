@@ -20,6 +20,7 @@ class CGeneralNode :
 {
 protected:
 	string name;
+	bool fifo;
 
 public:
 
@@ -64,6 +65,7 @@ public:
 		this->energyConsumption = 0;
 		this->timerOccupied = INVALID;
 		state = _awake;
+		fifo = true;
 	}
 
 	virtual ~CGeneralNode() = 0
@@ -113,6 +115,12 @@ public:
 	{
 		return this->buffer;
 	}
+
+	/*************************** Communication ***************************/
+
+	CFrame* sendRTS(int now);
+
+	/*************************** DC ***************************/
 
 	virtual inline void Wake()
 	{
@@ -172,15 +180,15 @@ public:
 
 		myData = buffer;
 		//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
-		overflow = removeDataByCapacity(myData, capacityBuffer, true);
+		overflow = clipDataByCapacity(myData, capacityBuffer, this->fifo);
 
 		buffer = myData;
 		return overflow;
 	}
 
-	//返回溢出的数据
+	//按照给定的容量裁剪数据列表，返回被移除的数据,FIFO意味着从左侧开始移除
 	//注意：调用之前应该确保数据已排序
-	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity, bool fifo)
+	static vector<CData> clipDataByCapacity(vector<CData> &datas, int capacity, bool fifo)
 	{
 		vector<CData> overflow;
 		if( capacity <= 0
@@ -201,16 +209,19 @@ public:
 		return overflow;
 	}
 
-	//给定容量和 FIFO/FILO，选出合适的数据用于数据传输
-	//返回的队列不会超过传输窗口大小，如果capacity 为 0 即默认上限即窗口大小
-	vector<CData> getDataForTrans(int capacity, bool fifo)
+	//给定容量，按照节点的 FIFO/FILO 策略，选出合适的数据用于数据传输
+	//返回的队列不会超过传输窗口大小，如果capacity 为 -1 即默认上限即窗口大小
+	vector<CData> getDataForTrans(int capacity)
 	{
-		if( capacity <= 0
-		   || capacity > getConfig<int>("trans", "window_trans") )
-			capacity = getConfig<int>("trans", "window_trans");
+		int window = getConfig<int>("trans", "window_trans");
+		if( capacity == 0 )
+			throw string("CGeneralNode::getDataForTrans() capacity = 0.");
+		else if( capacity < 0 
+				|| capacity > window )
+			capacity = window;
 
 		vector<CData> datas = this->getAllData();
-		removeDataByCapacity(datas, capacity, !fifo);
+		clipDataByCapacity(datas, capacity, !this->fifo);
 		return datas;
 	}
 	vector<CData> bufferData(int now, vector<CData> datas)

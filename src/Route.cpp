@@ -4,7 +4,7 @@
 
 void CRoute::updateLength()
 {
-	if(waypoints.size() < 2)
+	if(waypoints.size() <= 1)
 	{
 		throw string("CRoute::updateLength() : this route is empty");
 	}

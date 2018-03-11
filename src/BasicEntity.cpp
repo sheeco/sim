@@ -18,13 +18,13 @@
 //	return result;
 //}
 
-int CBasicEntity::moveTo(CBasicEntity &to, int interval, double speed)
+int CBasicEntity::moveToward(CBasicEntity &toward, int interval, double speed)
 {
 	double fromX, fromY, toX, toY;
 	fromX = this->getX();
 	fromY = this->getY();
-	toX = to.getX();
-	toY = to.getY();
+	toX = toward.getX();
+	toY = toward.getY();
 
 	double sin, cos, distance;
 	distance = sqrt((fromX - toX) * (fromX - toX) + (fromY - toY) * (fromY - toY));

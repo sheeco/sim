@@ -218,7 +218,7 @@ void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 			encounter << getConfig<string>("log", "info_encounter") << endl;
 		}
 		encounter << now << TAB;
-		if( getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc || getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar )
+		if( getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc || getConfig<config::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar )
 		{
 			//encounter << CNode::getPercentEncounterActiveAtHotspot() << TAB << CNode::getEncounterActiveAtHotspot() << TAB;
 			encounter << CHotspot::getPercentEncounterAtHotspot() << TAB << CHotspot::getEncounterAtHotspot() << TAB;

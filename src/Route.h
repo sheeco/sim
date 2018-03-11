@@ -86,15 +86,17 @@ public:
 		}
 		return waypoints[toPoint].second;
 	}
+	inline void initToPoint()
+	{
+		if(this->waypoints.empty() )
+			this->toPoint = 0;
+		else
+			this->toPoint = 1;
+	}
 	//将toPoint后移一个
 	inline void updateToPoint()
 	{
 		toPoint = (toPoint + 1) % waypoints.size();
-	}
-	//将toPoint置于sink
-	inline void updateToPointWithSink()
-	{
-		toPoint = 0;
 	}
 
 	//将给定的元素放到waypoint列表的最后

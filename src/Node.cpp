@@ -31,6 +31,7 @@ int CNode::visiter = 0;
 
 void CNode::init() 
 {
+	fifo = getConfig<config::EnumQueueScheme>("node", "scheme_queue") == config::_fifo;
 	trace = nullptr;
 	dataRate = INVALID;
 	//timerCarrierSense = getConfig<int>("mac", "cycle_carrier_sense");
@@ -163,10 +164,9 @@ void CNode::Sleep()
 CFrame* CNode::sendRTSWithCapacityAndIndex(int now)
 {
 	vector<CPacket*> packets;
-	if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_selfish
-		&& ( ! buffer.empty() ) )
-		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity) );
+	
 	packets.push_back( new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_rts) );
+	packets.push_back( new CCtrl(ID, this->getBufferVacancy(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity) );
 	packets.push_back( new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_index) );
 	CFrame* frame = new CFrame(*this, packets);
 
@@ -337,16 +337,3 @@ void CNode::recordBufferStatus()
 	++countBufferRecord;
 }
 
-int CNode::getCapacityForward()
-{
-	int capacity = capacityBuffer - buffer.size();
-	if( capacity < 0 )
-		capacity = 0;
-
-	if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_selfish )
-		return capacity;
-	else if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_loose )
-		return capacityBuffer;
-	else
-		return 0;
-}

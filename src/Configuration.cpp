@@ -294,15 +294,15 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("node", "buffer", typeid(int), new int(0));
 	addConfiguration("node", "energy", typeid(int), new int(0));
 	addConfiguration("node", "lifetime_communication_history", typeid(int), new int(INVALID));  //在这个时间内交换过数据的节点暂时不再交换数据
-	addConfiguration("node", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
-	addConfiguration("node", "scheme_forward", typeid(int), new EnumForwardScheme(_dump));
+	//addConfiguration("node", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
+	//addConfiguration("node", "scheme_forward", typeid(int), new EnumForwardScheme(_dump));
 	addConfiguration("node", "scheme_queue", typeid(int), new EnumQueueScheme(_fifo));
 
 
 	addGroup("ma");
 	addConfiguration("ma", "speed", typeid(int), new int(30));
 	addConfiguration("ma", "buffer", typeid(int), new int(100));
-	addConfiguration("ma", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
+	//addConfiguration("ma", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
 	addConfiguration("ma", "base_id", typeid(int), new int(100));  //ID的起始值，用于和传感器节点相区分
 	addConfiguration("ma", "init_num_ma", typeid( int ), new int(0));
 	addConfiguration("ma", "max_num_ma", typeid( int ), new int(0));
@@ -368,10 +368,10 @@ void CConfiguration::ValidateConfiguration()
 		updateConfig<int>("simulation", "datatime", INFINITE_INT);
 	}
 
-	if( ( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar
-		 || getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
-	   && getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_skip )
-		updateConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select", CConfiguration::EnumHotspotSelectScheme(config::_original));
+	if( ( getConfig<config::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar
+		 || getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
+	   && getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_skip )
+		updateConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select", config::EnumHotspotSelectScheme(config::_original));
 	
 }
 

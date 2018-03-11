@@ -13,95 +13,116 @@
 
 map<int, double> HAR::mapDataCountRates;
 
-vector<CHARMANode *> HAR::allMAs;
-vector<CHARMANode *> HAR::busyMAs;
-vector<CHARMANode *> HAR::freeMAs;
-int HAR::INIT_NUM_MA;
-int HAR::MAX_NUM_MA;
+vector<CHarMANode *> HAR::allMAs;
+vector<CHarMANode *> HAR::busyMAs;
+vector<CHarMANode *> HAR::freeMAs;
 
-void CHARMANode::updateStatus(int time)
+void CHarMANode::updateStatus(int now)
 {
 	if( this->time < 0 )
-		this->time = time;
-	int interval = time - this->time;
+		this->time = now;
 
-	//updateTimerOccupied(time);
+	/********************************* Vacant MA ************************************/
 
-	if(this->routeIsOverdue())
-		setReturnAtOnce(true);
-
-	//路线过期或缓存已满，立即返回sink
-	if( ifReturnAtOnce()
-	   || ( getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_selfish
-		   && buffer.size() >= capacityBuffer ) )
+	if( !this->isBusy() )
 	{
-		//记录一次未填满窗口的等待；可能录入(t, 0)，即说明由于路线过期而跳过等待
-		if( isAtWaypoint() )
-			getAtHotspot()->recordWaitingTime(time - waitingState, waitingState);
+		if( !CBasicEntity::withinRange(*this, *CSink::getSink(), getConfig<int>("trans", "range_trans")) )
+			throw string("CHarMANode::updateStatus(): " + this->getName() + " is free but not around Sink.");
 
-		waitingWindow = waitingState = 0;
-		route->updateToPointWithSink();
-	}
-
-	//处于等待中
-	if( waitingWindow > 0 )
-	{
-		//等待即将结束		
-		if( ( waitingState + interval ) >= waitingWindow )
-		{
-			//记录一次满窗口的等待
-			getAtHotspot()->recordWaitingTime(time - waitingWindow, waitingWindow);
-
-			interval = waitingState + interval - waitingWindow;  //等待结束后，剩余的将用于移动的时间
-			waitingWindow = waitingState = 0;  //等待结束，将时间窗重置
-		}
-
-		//等待还未结束
-		else
-		{
-			waitingState += interval;
-			interval = 0;  //不移动
-		}
-	}
-	if( interval == 0 )
-	{
-		this->setTime(time);
+		this->setTime(now);
 		return;
 	}
 
-	//开始在路线上移动
-	this->setTime(time - interval);  //将时间置于等待结束，移动即将开始的时间点
-	atPoint = nullptr;  //离开热点
+	/********************************* Busy MA ************************************/
+
+	int duration = now - this->time;
+
+	//updateTimerOccupied(time);
+
+	//if route has expired, return to sink
+	if( this->routeHasExpired(now) )
+		this->setReturningToSink();
+
+	//如果缓存已满，立即返回sink
+	if( this->isFull() )
+		this->setReturningToSink();
+
+	/********************* Returning to Sink **********************/
+
+	if( isReturningToSink() )
+	{
+		this->moveToward(*CSink::getSink(), duration, this->getSpeed());
+		this->setTime(now);
+		return;
+	}
+
+	if( isReturningToSink() )
+	{
+		this->moveToward(*CSink::getSink(), duration, this->getSpeed());
+		this->setTime(now);
+		return;
+	}
+
+	/********************* Moving on the Route **********************/
+
+	/***************** Waiting ****************/
+
+	int timeLeftAfterWaiting = 0;
+	if( this->isWaiting() )
+	{
+		CHotspot* atHotspot = getAtHotspot();
+		int copyWaitingWindow = this->waitingWindow;
+		timeLeftAfterWaiting = this->wait(duration);
+
+		//如果等待已经结束，记录一次等待
+		if( !this->isWaiting() )
+		{
+			int timeStartWaiting = now - timeLeftAfterWaiting - copyWaitingWindow;
+			atHotspot->recordWaitingTime(timeStartWaiting, copyWaitingWindow);
+		}
+	}
+	else
+	{
+		timeLeftAfterWaiting = duration;
+	}
+
+	if( timeLeftAfterWaiting == 0 )
+	{
+		this->setTime(now);
+		return;
+	}
+
+	/***************** Actually Moving ****************/
+
+	this->setTime(now - timeLeftAfterWaiting);  //将时间置于等待结束，移动即将开始的时间点
+	atPoint = nullptr;  //离开之前的路点
 
 	CBasicEntity *toPoint = route->getToPoint();
-	int timeLeftAfterArrival = this->moveTo(*toPoint, interval, getConfig<int>("ma", "speed"));
+	int waitingTime = route->getWaitingTime();
+	int timeLeftAfterArrival = this->moveToward(*toPoint, timeLeftAfterWaiting, this->getSpeed());
 
-	//如果已到达目的地
 	if( timeLeftAfterArrival >= 0 )
 	{
 
+		CSink *psink = nullptr;
+
 		//若目的地的类型是 hotspot
 		CHotspot *photspot = nullptr;
-		CSink *psink = nullptr;
 		//FIXME: nullptr ?
 		if( ( photspot = dynamic_cast< CHotspot * >( toPoint ) ) != nullptr )
 		{
 			this->atPoint = toPoint;
-			waitingWindow = int(HAR::calculateWaitingTime(time, photspot));
-			waitingState = 0;  //重新开始等待
 
-#ifdef DEBUG
-			CPrintHelper::PrintBrief(time, this->getName() + " arrives at waypoint " + photspot->getLocation().format() + ".");
-#endif // DEBUG
-			route->updateToPoint();
+			CPrintHelper::PrintDetail(time, this->getName() + " arrives at waypoint " + photspot->getLocation().format() + ".");
+			
+			//set waiting time
+			this->setWaiting(HAR::calculateWaitingTime(now, photspot));
 		}
 		//若目的地的类型是 sink
 		else if( ( psink = dynamic_cast<CSink *>( toPoint ) ) != nullptr )
 		{
-#ifdef DEBUG
-			CPrintHelper::PrintBrief(time, this->getName() + " arrives at sink.");
-#endif // DEBUG
-			setReturnAtOnce(true);
+			CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink.");
+			setReturningToSink();
 		}
 	}
 	return;
@@ -110,8 +131,8 @@ void CHARMANode::updateStatus(int time)
 
 
 vector<CHotspot *> HAR::hotspots;
-vector<CHARRoute *> HAR::maRoutes;
-vector<CHARRoute *> HAR::oldRoutes;
+vector<CHarRoute *> HAR::maRoutes;
+vector<CHarRoute *> HAR::oldRoutes;
 int HAR::indexRoute = 0;
 int HAR::SUM_MA_COST = 0;
 int HAR::COUNT_MA_COST = 0;
@@ -147,7 +168,7 @@ double HAR::calculateWaitingTime(int now, CHotspot *hotspot)
 		double temp;
 
 		//IHAR: Reduce Memory now
-		if( getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved )
+		if( getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved )
 		{
 			temp_time = min(now, getConfig<int>("ihs", "lifetime_position"));
 		}
@@ -184,13 +205,13 @@ double HAR::getSumDataRate(vector<int> nodes)
 	return sum;
 }
 
-double HAR::getTimeIncreForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot)
+double HAR::getTimeIncreForInsertion(int now, CHarRoute route, int front, CHotspot *hotspot)
 {
-	double result = calculateWaitingTime(now, hotspot) + ( route.getIncreDistance(front, hotspot) / CHARMANode::getSpeed() );
+	double result = calculateWaitingTime(now, hotspot) + ( route.getIncreDistance(front, hotspot) / CMANode::getMASpeed() );
 	return result;
 }
 
-double HAR::calculateRatioForInsertion(int now, CHARRoute route, int front, CHotspot *hotspot)
+double HAR::calculateRatioForInsertion(int now, CHarRoute route, int front, CHotspot *hotspot)
 {
 	double time_incr = getTimeIncreForInsertion(now, route, front, hotspot);
 	vector<int> temp_nodes = route.getCoveredNodes();
@@ -215,7 +236,7 @@ double HAR::calculateEDTime(int now)
 	double EIM = 0;
 	double ED = 0;
 
-	for(vector<CHARRoute*>::iterator iroute = maRoutes.begin(); iroute != maRoutes.end(); ++iroute)
+	for(vector<CHarRoute*>::iterator iroute = maRoutes.begin(); iroute != maRoutes.end(); ++iroute)
 		sum_length += (*iroute)->getLength();
 	avg_length = sum_length / hotspots.size() + 1;
 	for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
@@ -224,10 +245,10 @@ double HAR::calculateEDTime(int now)
 		sum_pm += exp( -1 / (*ihotspot)->getHeat() );
 	}
 	avg_waitingTime = sum_waitingTime / hotspots.size();
-	avg_u = avg_length / CHARMANode::getSpeed() + avg_waitingTime;
+	avg_u = avg_length / CMANode::getMASpeed() + avg_waitingTime;
 	avg_pw = sum_pm / hotspots.size();
-	pmh = sum_waitingTime / (sum_length / CHARMANode::getSpeed() + sum_waitingTime);
-	EM = (1 - pmh) * ( ( (1 - avg_pw) / avg_pw) * avg_u + (avg_length / (2 * CHARMANode::getSpeed()) + avg_waitingTime) ) + pmh * ( ( (1 - avg_pw) / avg_pw) * avg_u + avg_waitingTime);
+	pmh = sum_waitingTime / (sum_length / CMANode::getMASpeed() + sum_waitingTime);
+	EM = (1 - pmh) * ( ( (1 - avg_pw) / avg_pw) * avg_u + (avg_length / (2 * CMANode::getMASpeed()) + avg_waitingTime) ) + pmh * ( ( (1 - avg_pw) / avg_pw) * avg_u + avg_waitingTime);
 	EIM = avg_u / avg_pw;
 	ED = EM + ( (1 - getConfig<double>("trans", "prob_trans")) / getConfig<double>("trans", "prob_trans") ) * EIM + ( double( hotspots.size() ) / (2 * maRoutes.size()) ) * avg_u;
 
@@ -235,11 +256,11 @@ double HAR::calculateEDTime(int now)
 }
 
 
-void HAR::OptimizeRoute(CHARRoute *route)
+void HAR::OptimizeRoute(CHarRoute *route)
 {
 	vector<pair<CBasicEntity *, int>> waypoints = route->getWayPoints();
 	CBasicEntity *current = CSink::getSink();
-	CHARRoute result(route->getTimeCreation(), route->getTimeExpiration());
+	CHarRoute result(route->getTimeCreation(), route->getTimeExpiration());
 	waypoints.erase(waypoints.begin());
 	while(! waypoints.empty())
 	{
@@ -275,12 +296,12 @@ void HAR::HotspotClassification(int now)
 		(*ihotspot)->setHeat( getHotspotHeat(*ihotspot) );
 	}
 	
-	vector<CHARRoute*> newRoutes;
+	vector<CHarRoute*> newRoutes;
 	
 	while(! temp_hotspots.empty())
 	{
 		//构造一个hotspot class
-		CHARRoute* route = new CHARRoute(now, now + CHotspotSelect::SLOT_HOTSPOT_UPDATE);
+		CHarRoute* route = new CHarRoute(now, now + CHotspotSelect::SLOT_HOTSPOT_UPDATE);
 		double current_time_cost = 0;
 		while(true)
 		{
@@ -330,7 +351,7 @@ void HAR::HotspotClassification(int now)
 			double new_buffer = ( current_time_cost + max_time_increment ) * max_sum_ge;
 			//如果单个热点Buffer期望过大，就将其单独分配给一个MA
 			//FIXME: 或分配多个？
-			if( new_buffer > CHARMANode::getCapacityBuffer()
+			if( new_buffer > CHarMANode::getCapacityBuffer()
 				&& route->getNWayPoints() == 1)
 			{
 				//throw string("HAR::HotspotClassification() : A single hotspot's buffer expection > BUFFER_CAPACITY_MA");
@@ -340,7 +361,7 @@ void HAR::HotspotClassification(int now)
 				temp_hotspots.erase(ihotspot);
 				break;
 			}
-			if( new_buffer > CHARMANode::getCapacityBuffer() )
+			if( new_buffer > CHarMANode::getCapacityBuffer() )
 				break;
 			else
 			{
@@ -364,9 +385,9 @@ void HAR::MANodeRouteDesign(int now)
 		  && now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT ) )
 		return;
 
-	vector<CHARRoute*> routes = getRoutes();
+	vector<CHarRoute*> routes = getRoutes();
 	//对每个分类的路线用最近邻居算法进行优化
-	for(vector<CHARRoute*>::iterator iroute = routes.begin(); iroute != routes.end(); ++iroute)
+	for(vector<CHarRoute*>::iterator iroute = routes.begin(); iroute != routes.end(); ++iroute)
 	{
 		OptimizeRoute( *iroute );
 	}
@@ -380,7 +401,7 @@ vector<CGeneralNode*> HAR::findNeighbors(CGeneralNode & src)
 
 	/**************************************************** MA ***********************************************************/
 
-	for( vector<CHARMANode*>::iterator iMA = busyMAs.begin(); iMA != busyMAs.end(); ++iMA )
+	for( vector<CHarMANode*>::iterator iMA = busyMAs.begin(); iMA != busyMAs.end(); ++iMA )
 	{
 		//skip itself
 		if( ( *iMA )->getID() == src.getID() )
@@ -412,16 +433,16 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 
 		/*********************************************** Sink <- MA *******************************************************/
 
-		if(typeid( gFromNode ) == typeid( CHARMANode ))
+		if(typeid( gFromNode ) == typeid( CHarMANode ))
 		{
-			CHARMANode* fromMA = dynamic_cast< CHARMANode* >( &gFromNode );
+			CHarMANode* fromMA = dynamic_cast< CHarMANode* >( &gFromNode );
 			packetsToSend = HAR::receivePackets(toSink, fromMA, packets, now);
 		}
 	}
 
-	else if(typeid( gToNode ) == typeid( CHARMANode ))
+	else if(typeid( gToNode ) == typeid( CHarMANode ))
 	{
-		CHARMANode* toMA = dynamic_cast< CHARMANode* >( &gToNode );
+		CHarMANode* toMA = dynamic_cast< CHarMANode* >( &gToNode );
 
 		/************************************************ MA <- sink *******************************************************/
 
@@ -446,9 +467,9 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 
 		/************************************************ Node <- MA *******************************************************/
 
-		if(typeid( gFromNode ) == typeid( CHARMANode ))
+		if(typeid( gFromNode ) == typeid( CHarMANode ))
 		{
-			CHARMANode* fromMA = dynamic_cast< CHARMANode* >( &gFromNode );
+			CHarMANode* fromMA = dynamic_cast< CHarMANode* >( &gFromNode );
 			packetsToSend = HAR::receivePackets(node, fromMA, packets, now);
 		}
 	}
@@ -460,7 +481,7 @@ vector<CPacket*> HAR::receivePackets(CGeneralNode & gToNode, CGeneralNode & gFro
 	return packetsToSend;
 }
 
-vector<CPacket*> HAR::receivePackets(CSink* sink, CHARMANode* fromMA, vector<CPacket*> packets, int time)
+vector<CPacket*> HAR::receivePackets(CSink* sink, CHarMANode* fromMA, vector<CPacket*> packets, int time)
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
@@ -534,7 +555,7 @@ vector<CPacket*> HAR::receivePackets(CSink* sink, CHARMANode* fromMA, vector<CPa
 
 }
 
-vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPacket*> packets, int time)
+vector<CPacket*> HAR::receivePackets(CHarMANode* ma, CSink* fromSink, vector<CPacket*> packets, int time)
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
@@ -557,14 +578,14 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 
 				if( ! ma->hasData() )
 				{
-					if( ma->ifReturnAtOnce() )
+					if( ma->isReturningToSink() )
 						atMAReturn(ma, time);
 					return packetsToSend;
 				}
 				//CTS
 				ctrlToSend = new CCtrl(ma->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 				// + DATA
-				dataToSend = ma->getDataForTrans(0, true);
+				dataToSend = ma->getDataForTrans(INVALID);
 
 				// TODO: mark skipRTS ?
 				// TODO: connection established ?
@@ -574,12 +595,12 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 
 				if( !ma->hasData() )
 				{
-					if( ma->ifReturnAtOnce() )
+					if( ma->isReturningToSink() )
 						atMAReturn(ma, time);
 					return packetsToSend;
 				}
 				// + DATA
-				dataToSend = ma->getDataForTrans(0, true);
+				dataToSend = ma->getDataForTrans(INVALID);
 
 				break;
 
@@ -602,7 +623,7 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
 				{
-					if( ma->ifReturnAtOnce() )
+					if( ma->isReturningToSink() )
 						atMAReturn(ma, time);
 					return packetsToSend;
 				}
@@ -612,7 +633,7 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 					ma->dropDataByAck(ctrl->getACK());
 
 					CPrintHelper::PrintCommunication(time, ma->format(), fromSink->format(), ctrl->getACK().size());
-					if( ma->ifReturnAtOnce() )
+					if( ma->isReturningToSink() )
 					{
 						if( !ma->hasData() )
 							atMAReturn(ma, time);
@@ -649,12 +670,12 @@ vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CSink* fromSink, vector<CPa
 	
 }
 
-vector<CPacket*> HAR::receivePackets(CNode* node, CHARMANode* fromMA, vector<CPacket*> packets, int time)
+vector<CPacket*> HAR::receivePackets(CNode* node, CHarMANode* fromMA, vector<CPacket*> packets, int time)
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
 	vector<CData> dataToSend;  //空vector代表代表缓存为空
-	int capacity = -1;
+	int capacity = INVALID;
 
 	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -678,12 +699,6 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CHARMANode* fromMA, vector<CPa
 				//CTS
 				ctrlToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
 
-				// + DATA
-				dataToSend = node->getDataForTrans(0, true);
-
-				if( dataToSend.empty() )
-					return packetsToSend;
-
 				break;
 
 			case CCtrl::_cts:
@@ -696,11 +711,14 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CHARMANode* fromMA, vector<CPa
 
 				capacity = ctrl->getCapacity();
 
+				// + DATA
 				if( capacity == 0 )
 					return packetsToSend;
-				else if( capacity > 0
-						 && capacity < dataToSend.size() )
-					CGeneralNode::removeDataByCapacity(dataToSend, capacity, false);
+				else
+					dataToSend = node->getDataForTrans(capacity);
+
+				if( dataToSend.empty() )
+					return packetsToSend;
 
 				break;
 
@@ -756,7 +774,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CHARMANode* fromMA, vector<CPa
 	
 }
 
-vector<CPacket*> HAR::receivePackets(CHARMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time)
+vector<CPacket*> HAR::receivePackets(CHarMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time)
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
@@ -869,7 +887,7 @@ void HAR::PrintInfo(int now)
 			ma_route << endl << getConfig<string>("log", "info_log") << endl;
 			ma_route << getConfig<string>("log", "info_ma_route") << endl;
 		}
-		for( vector<CHARRoute*>::iterator iroute = maRoutes.begin(); iroute != maRoutes.end(); iroute++ )
+		for( vector<CHarRoute*>::iterator iroute = maRoutes.begin(); iroute != maRoutes.end(); iroute++ )
 		{
 			ma_route << now << TAB << (*iroute)->format() << endl;
 		}

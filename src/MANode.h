@@ -22,16 +22,23 @@ class CMANode :
 
 protected:
 
+	double speed;
 	CRoute *route;
 	vector<CRoute> routeHistory;
 	CBasicEntity *atPoint;
 	int waitingWindow;  //当前规定的waiting时间窗大小
 	int waitingState;  //当前处于waiting时间窗的位置（值为0说明还未开始等待，值等于最大值说明等待时间结束）
-	bool returnAtOnce;
+	bool returningToSink;
+	bool busy;
 
-//	static int encounterActive;  //有效相遇
-	static int encounter;
 	static int COUNT_ID;
+	static int INIT_NUM_MA;
+	static int MAX_NUM_MA;
+	static int CAPACITY_BUFFER;
+	static double SPEED;
+
+	//	static int encounterActive;  //有效相遇
+	static int encounter;
 
 
 	void init()
@@ -39,19 +46,32 @@ protected:
 		if( COUNT_ID == 0 )
 			COUNT_ID = getConfig<int>("ma", "base_id");
 
+		fifo = getConfig<config::EnumQueueScheme>("node", "scheme_queue") == config::_fifo;
 		setLocation( CSink::getSink()->getLocation() );  //初始化 MA 位置在 sink 处
+		speed = getConfig<int>("ma", "speed");
 		atPoint = nullptr;	
 		waitingWindow = 0;
 		waitingState = 0;
 		capacityBuffer = getConfig<int>("ma", "buffer");
-		returnAtOnce = false;
+		returningToSink = false;
+		busy = false;
 		route = nullptr;
 		atPoint = nullptr;
 		time = time;
 		generateID();
 		setName("MA #" + STRING(this->getID()));
 	}
-
+	static void Init()
+	{
+		if( INIT_NUM_MA == INVALID )
+			INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
+		if( MAX_NUM_MA == INVALID )
+			MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
+		if( CAPACITY_BUFFER == INVALID )
+			CAPACITY_BUFFER = getConfig<int>("ma", "buffer");
+		if( SPEED == INVALID )
+			SPEED = getConfig<int>("ma", "speed");
+	}
 	//自动生成ID，需手动调用
 	inline void generateID()
 	{
@@ -62,19 +82,27 @@ protected:
 		}
 	}
 
-	inline bool ifReturnAtOnce()
+	inline bool isReturningToSink()
 	{
-		return this->returnAtOnce;
+		return this->returningToSink;
 	}
-	inline void setReturnAtOnce(bool returnAtOnce)
+	inline void setReturningToSink()
 	{
-		this->returnAtOnce = returnAtOnce;
-		this->waitingWindow = this->waitingState = 0;
+		this->returningToSink = true;
 	}
-
-protected:
-	
-	void setRoute(CRoute* route)
+	inline void setBusy(bool busy)
+	{
+		this->busy = busy;
+	}
+	inline bool isBusy() const
+	{
+		return this->busy;
+	}
+	inline bool hasRoute() const
+	{
+		return this->route != nullptr;
+	}
+	inline void setRoute(CRoute* route)
 	{
 		this->route = route;
 	}
@@ -100,14 +128,17 @@ protected:
 public:
 
 
+	inline double getSpeed() const
+	{
+		return this->speed;
+	}
+	static double getMASpeed()
+	{
+		return SPEED;
+	}
 	static int getCapacityBuffer()
 	{
-		return getConfig<int>("ma", "buffer");
-	}
-
-	static int getSpeed()
-	{
-		return getConfig<int>("ma", "speed");
+		return CAPACITY_BUFFER;
 	}
 
 
@@ -142,21 +173,58 @@ public:
 	}
 	inline void endRoute()
 	{
-		if( this->route != nullptr )
-		{
-			this->routeHistory.push_back(*this->route);
-			FreePointer(this->route);
-			this->route = nullptr;
-		}
+		if( this->route == nullptr )
+			return;
+
+		this->routeHistory.push_back(*this->route);
+		FreePointer(this->route);
+		this->route = nullptr;
 		atPoint = nullptr;
 		waitingWindow = 0;
 		waitingState = 0;
-		this->setReturnAtOnce(false);
+		this->returningToSink = false;
 	}
 	inline void updateRoute(CRoute *route)
 	{
 		this->endRoute();
 		this->setRoute(route);
+	}
+	inline bool isWaiting() const
+	{
+		return this->waitingWindow > 0;
+	}
+	inline void setWaiting(int window)
+	{
+		this->endWaiting();
+		this->waitingWindow = window;
+	}
+	//等待结束，将时间窗重置
+	inline void endWaiting()
+	{
+		this->waitingWindow = this->waitingState = 0;
+	}
+	//更新等待状态，不会更新节点时间戳
+	//返回等待结束后，剩余的将用于移动的时间；返回 0 意味着等待未结束/刚好结束
+	inline int wait(int duration)
+	{
+		if( !this->isWaiting() )
+			throw string("CMANode::wait(): " + this->getName() + " is not waiting.");
+
+		int timeLeft = 0;
+		//等待即将结束		
+		if( ( waitingState + duration ) >= waitingWindow )
+		{
+			timeLeft = waitingState + duration - waitingWindow;  //等待结束后，剩余的将用于移动的时间
+			this->endWaiting();
+			route->updateToPoint();
+		}
+
+		//等待还未结束
+		else
+		{
+			waitingState += duration;
+		}
+		return timeLeft;
 	}
 	//inline void setAtSink(bool atSink)
 	//{
@@ -197,21 +265,6 @@ public:
 			return false;
 	}	
 
-	//接收数据时，返回允许接收的最大数据数
-	inline int getCapacityForward() const
-	{
-		int capacity = capacityBuffer - buffer.size();
-		if( capacity < 0 )
-			capacity = 0;
-
-		if( getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_selfish )
-			return capacity;
-		else if( getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_loose )
-			return capacityBuffer;
-		else
-			return 0;
-	}
-
 	vector<CData> bufferData(int now, vector<CData> datas)
 	{
 		vector<CData> ack = CGeneralNode::bufferData(now, datas);
@@ -242,9 +295,7 @@ public:
 	{
 		vector<CPacket*> packets;
 		packets.push_back(new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_rts));
-		if( getConfig<CConfiguration::EnumRelayScheme>("ma", "scheme_relay") == config::_selfish
-		   && ( !buffer.empty() ) )
-			packets.push_back(new CCtrl(ID, capacityBuffer - buffer.size(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity));
+		packets.push_back(new CCtrl(ID, this->getBufferVacancy(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity));
 
 		CFrame* frame = new CFrame(*this, packets);
 
@@ -256,6 +307,7 @@ public:
 		RemoveFromList(buffer, ack);
 	}
 
+	virtual void updateStatus(int time) = 0;
 };
 
 #endif // __MA_NODE_H__
