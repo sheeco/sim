@@ -142,6 +142,8 @@ protected:
 	}
 	void assignTask(CNode* node, CPosition location, int waitingTime, int now)
 	{
+		this->endTask();
+
 		CPFerryTask* task = new CPFerryTask(node, location);
 		this->tasks[node->getID()] = task;
 		if( !this->hasRoute() )
@@ -149,6 +151,7 @@ protected:
 		this->route->AddWaypoint(new CPosition(location), waitingTime);
 		this->route->initToPoint();
 		this->setTime(now);
+		this->setBusy(true);
 	}
 	void endTask()
 	{
@@ -337,11 +340,13 @@ private:
 	{
 		RemoveFromList(targetNodes, node);
 		AddToListUniquely(candidateNodes, node);
+		CPFerryTask::recordTaskMet();
 	}
 	static void recordTargetMiss(CNode* node)
 	{
 		RemoveFromList(targetNodes, node);
 		AddToListUniquely(candidateNodes, node);
+		CPFerryTask::recordTaskMiss();
 	}
 	static void reportTask(CPFerryMANode* ma, int now)
 	{
@@ -352,21 +357,16 @@ private:
 			CNode* node = task->target;
 			met = task->met;
 			if( met )
-			{
 				recordTargetMet(node);
-				CPFerryTask::recordTaskMet();
-			}
 			else
-			{
 				recordTargetMiss(node);
-				CPFerryTask::recordTaskMiss();
-			}
 		}
 
 		map<int, CPFerryMANode::CCollectionRecord> collections = ma->getCollections();
 		for( pair<int, CPFerryMANode::CCollectionRecord> collection : collections )
 		{
 			recordTargetMet( CNode::findNodeByID( collection.first ) );
+			updatecollectionRecords(collection.first, collection.second.bufferVacancy, collection.second.time);
 		}
 
 		string message = ma->getName() + " returns with target ";
@@ -418,6 +418,7 @@ private:
 
 	static void turnFree(CPFerryMANode* ma)
 	{
+		ma->setBusy(false);
 		AddToListUniquely(freeMAs, ma);
 		RemoveFromList(busyMAs, ma);
 	}
@@ -441,11 +442,14 @@ private:
 		double dataRate = node->getDataCountRate();
 		double timePrediction = prediction.getTime();
 
-		int bufferOccupancy = int( ( min(timePrediction, datatime) - timeLastCollectoin ) * dataRate + bufferCapacity - bufferVacancy );
+		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CMANode::getMASpeed();
+		timeArrival = timeArrival + now;
+		timeArrival = min(timeArrival, timePrediction);
+		int bufferOccupancy = int( ( min(timeArrival, datatime) - timeLastCollectoin ) * dataRate 
+								  + bufferCapacity - bufferVacancy );
 		int dataLoss = max(0, bufferOccupancy - bufferCapacity);
 		bufferOccupancy = min(bufferOccupancy, bufferCapacity);
 		//double timeOverflow = timeLastCollectoin + bufferVacancy / dataRate;
-		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CMANode::getMASpeed();
 
 		//if( timeArrival + now > timePrediction )
 		//	return -timeOverflow;
@@ -460,15 +464,14 @@ private:
 		//		//return (timePrediction - timeOverflow) * node->getDataCountRate();
 		//}
 
+		double dataMetric = dataLoss + (double)bufferOccupancy / bufferCapacity;
+		if( EQUAL(dataMetric, 0) )
+			dataMetric = 0;
 		if( timeArrival + now > timePrediction )
-			return -( bufferOccupancy + dataLoss ) / timeArrival;
+			return -dataMetric;
+			//return dataMetric;
 		else
-		{
-			if( dataLoss == 0 )
-				return bufferOccupancy / timeArrival;
-			else
-				return dataLoss;
-		}
+			return dataMetric;
 
 	}
 
@@ -479,13 +482,13 @@ private:
 		for( CNode* node : nodes )
 		{
 			CPosition prediction;
-			bool unreachable = true;
+			bool reachable = false;
 			double metric;
 			for( int stride : strides )
 			{
 				if( !hasPrediction(node, now, stride) )
 				{
-					unreachable = false;
+					reachable = true;
 					break;
 				}
 				prediction = getNextPrediction(node, now, stride);
@@ -493,11 +496,11 @@ private:
 				if( metric > 0 )
 				{
 					priNormal.insert(pair<double, pair<CNode*, CPosition>>(metric, pair<CNode*, CPosition>(node, prediction)));
-					unreachable = false;
+					reachable = true;
 					break;
 				}
 			}
-			if( unreachable )
+			if( !reachable )
 				priUnreachable.insert(pair<double, pair<CNode*, CPosition>>(-metric, pair<CNode*, CPosition>(node, prediction)));
 				//priUnreachable.insert(pair<double, pair<CNode*, CPosition>>(priUnreachable.size(), pair<CNode*, CPosition>(node, prediction)));
 		}
@@ -780,7 +783,9 @@ private:
 
 					case CCtrl::_ack:
 
-						atMAReturn(ma, time);
+						if( ma->isReturningToSink() )
+							atMAReturn(ma, time);
+
 						//收到空的ACK时，结束本次数据传输
 						if( ctrl->getACK().empty() )
 							return packetsToSend;
@@ -983,9 +988,9 @@ private:
 
 				//accept data into buffer
 				vector<CData> ack = ma->bufferData(time, datas);
-				atDataCollection(ma, fromNode, ma->getLocation(), time);
 
 				CPrintHelper::PrintCommunication(time, fromNode->getName(), ma->getName(), ack.size());
+				atDataCollection(ma, fromNode, ma->getLocation(), time);
 
 				//ACK（如果收到的数据全部被丢弃，发送空的ACK）
 				ctrlToSend = new CCtrl(ma->getID(), ack, time, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);

@@ -94,7 +94,7 @@ public:
 
 	CTracePrediction(CNode *node, string dir): node(node)
 	{
-		string path = dir + '/' + filenamePrediction(this->node->getIdentifier());
+		string path = dir + '\\' + filenamePrediction(this->node->getIdentifier());
 		if( !CFileHelper::IfExists(path) )
 		{
 			throw string("CTracePredict::CTracePredict(): Cannot find trace file \"" + path + "\".");

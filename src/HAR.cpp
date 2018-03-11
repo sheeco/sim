@@ -134,7 +134,7 @@ void CHarMANode::updateStatus(int now)
 		//若目的地的类型是 sink
 		else if( ( psink = dynamic_cast<CSink *>( toPoint ) ) != nullptr )
 		{
-			CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink.", 2);
+			CPrintHelper::PrintDetail(time, this->getName() + " has returned to Sink.", 2);
 			setReturningToSink();
 		}
 	}
