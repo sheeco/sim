@@ -249,6 +249,8 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("log", "info_ed", typeid(string), new string("#Time	#EstimatedDelay "));
 	addConfiguration("log", "file_task", typeid( string ), new string("task.log"));
 	addConfiguration("log", "info_task", typeid( string ), new string("#Time	#PercentTaskMet	#CountTaskMet	#CountTask"));
+	addConfiguration("log", "file_task_node", typeid( string ), new string("task_node.log"));
+	addConfiguration("log", "info_task_node", typeid( string ), new string("#Time	#CountTaskForEachNode ..."));
 
 
 	addGroup("data");

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>log.detail 3 hs.starttime_hospot_select 8100 hs.slot_hotspot_update 8100 simulation.hotspot_select 2 simulation.routing_protocol 3</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>log.detail 3 simulation.hotspot_select 2 simulation.routing_protocol 3 pferry.path_predict ../res/fake</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>..\bin\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>

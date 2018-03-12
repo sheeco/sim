@@ -1,8 +1,11 @@
 #include "PFerry.h"
 
 
-int CPFerryTask::NUM_TASK_MET;
-int CPFerryTask::NUM_TASK;
+int CPFerryTask::COUNT_TASK_MET;
+int CPFerryTask::COUNT_TASK;
+map<int, int> CPFerryTask::countTaskForNodes;
+
+bool CPFerryMANode::RETURN_ONCE_TASK_MET = false;
 
 map<int, map<int, CTracePrediction*>> CPFerry::predictions;
 int CPFerry::STARTTIME_PREDICTION = INVALID;
@@ -126,14 +129,18 @@ void CPFerryMANode::updateStatus(int now)
 			CPrintHelper::PrintDetail(now, this->getName() + " arrives at task position " + ppos->format() + ".", 2);
 
 			CPFerryTask* task = this->findTask(ppos->getNode());
-			if( task && !task->isMet() )
-			{
-				//set waiting time
-				int timePred = task->getTime();
-				this->setWaiting(max(minWaitingTime, timePred - this->getTime() + minWaitingTime));
-			}
-			else if( !task )
+			if( !task )
 				throw string("CPFerryMANode::updateStatus(): Cannot find task for node id" + STRING(ppos->getNode()) + ".");
+			else
+			{
+				if(!RETURN_ONCE_TASK_MET
+				   || !task->isMet())
+				{
+					//set waiting time
+					int timePred = task->getTime();
+					this->setWaiting(max(minWaitingTime, timePred - this->getTime() + minWaitingTime));
+				}
+			}
 		}
 		//若目的地的类型是 sink
 		else if( ( psink = dynamic_cast< CSink * >( toPoint ) ) != nullptr )

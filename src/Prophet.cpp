@@ -601,14 +601,6 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 
 void CProphet::CommunicateBetweenNeighbors(int now)
 {
-	static bool print = false;
-	if( now == 0
-	   || print )
-	{
-		CPrintHelper::PrintHeading(now, "DATA DELIVERY");
-		print = false;
-	}
-
 	// Prophet: sink => nodes
 	CSink* sink = CSink::getSink();
 	//use default neighbor pool (only sensor nodes)
@@ -629,7 +621,6 @@ void CProphet::CommunicateBetweenNeighbors(int now)
 	{
 		CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
 		CPrintHelper::PrintNewLine();
-		print = true;
 	}
 }
 

@@ -23,10 +23,6 @@ private:
 		{
 			try
 			{
-				if( !CFileHelper::IfExists(filename) )
-				{
-					throw pair<int, string>(EFILE, string("CPanSystem::readPanSystemFromFile() : Cannot find file \"" + filename + "\" ! "));
-				}
 				FILE *file;
 				file = fopen(filename.c_str(), "rb");
 
@@ -94,7 +90,7 @@ public:
 
 	CTracePrediction(CNode *node, string dir): node(node)
 	{
-		string path = dir + '\\' + filenamePrediction(this->node->getIdentifier());
+		string path = dir + '/' + filenamePrediction(this->node->getIdentifier());
 		if( !CFileHelper::IfExists(path) )
 		{
 			throw string("CTracePredict::CTracePredict(): Cannot find trace file \"" + path + "\".");
@@ -103,9 +99,23 @@ public:
 		{
 			this->predictions = CCTrace::readTraceFromFile(path, false);
 			
-			string pathPan = dir + '/' + filenamePan(this->node->getIdentifier());
-			CPanSystem pan = CPanSystem::readPanSystemFromFile(pathPan);
-			pan.CancelPanding(this->predictions);
+			static bool panning = true;
+
+			if(panning)
+			{
+				string pathPan = dir + '/' + filenamePan(this->node->getIdentifier());
+				if( CFileHelper::IfExists(pathPan) )
+				{
+					CPanSystem pan = CPanSystem::readPanSystemFromFile(pathPan);
+					pan.CancelPanding(this->predictions);
+				}
+				else
+				{
+					if(CPrintHelper::Warn("CTracePrediction::CTracePrediction(): No pan file for trace predictions is found. "
+										  "Confirm to proceed."))
+						panning = false;
+				}
+			}
 
 			double hitrate = calculateHitrate(node->getTrace(), *(this->predictions), 100);
 			pair<int, int> range = this->predictions->getRange();

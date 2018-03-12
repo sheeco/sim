@@ -22,8 +22,9 @@ private:
 	CPosition location;  //when & where to expect the target node
 	bool met;
 
-	static int NUM_TASK_MET;
-	static int NUM_TASK;
+	static int COUNT_TASK_MET;
+	static int COUNT_TASK;
+	static map<int, int> countTaskForNodes;
 
 protected:
 	friend class CPFerryMANode;
@@ -47,27 +48,6 @@ protected:
 	{
 		return this->location.getTime();
 	}
-	static void recordTaskMet()
-	{
-		++NUM_TASK_MET;
-		++NUM_TASK;
-	}
-	static void recordTaskMiss()
-	{
-		++NUM_TASK;
-	}
-	static int getCountTaskMet()
-	{
-		return NUM_TASK_MET;
-	}
-	static int getCountTask()
-	{
-		return NUM_TASK;
-	}
-	static double getPercentTaskMet()
-	{
-		return NDigitFloat(double(NUM_TASK_MET) / NUM_TASK, 2);
-	}
 	bool isMet()
 	{
 		return this->met;
@@ -76,12 +56,47 @@ protected:
 	{
 		this->met = met;
 	}
+
+	static void Init(vector<int> idNodes)
+	{
+		countTaskForNodes.clear();
+		for(int id : idNodes)
+			countTaskForNodes[id] = 0;
+	}
+	static void recordTaskMet(int nodeId)
+	{
+		++COUNT_TASK_MET;
+		++COUNT_TASK;
+		countTaskForNodes[nodeId]++;
+	}
+	static void recordTaskMiss(int nodeId)
+	{
+		++COUNT_TASK;
+		countTaskForNodes[nodeId]++;
+	}
+	static int getCountTaskMet()
+	{
+		return COUNT_TASK_MET;
+	}
+	static int getCountTask()
+	{
+		return COUNT_TASK;
+	}
+	static double getPercentTaskMet()
+	{
+		return double(COUNT_TASK_MET) / COUNT_TASK;
+	}
+	static map<int, int> getCountTaskForNodes()
+	{
+		return countTaskForNodes;
+	}
 };
 
 class CPFerryMANode : 
 	virtual public CMANode
 {
 protected:
+	friend class CPFerry;
 
 	typedef struct CCollectionRecord
 	{
@@ -96,6 +111,8 @@ protected:
 		{
 		};
 	} CCollectionRecord;
+	
+	static bool RETURN_ONCE_TASK_MET;
 
 private:
 	map<int, CPFerryTask*> tasks;
@@ -110,7 +127,6 @@ public:
 	~CPFerryMANode();
 
 protected:
-	friend class CPFerry;
 
 	CPFerryMANode()
 	{
@@ -168,14 +184,12 @@ protected:
 		if( task != nullptr )
 		{
 			task->setMet(true);
-			CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink due to task met.", 2);
-
-			CBasicEntity* waypoint = nullptr;
-			if( (waypoint = getAtWaypoint())
-			    && waitingState >= 0 )
-				CPrintHelper::PrintDetail(time, this->getName() + " has waited at " + waypoint->format() + " for " 
-										  + STRING(waitingState) + "s.", 3);
-			this->setReturningToSink();
+			
+			if(RETURN_ONCE_TASK_MET)
+			{
+				CPrintHelper::PrintDetail(time, this->getName() + " is returning to Sink due to task met.", 2);
+				this->setReturningToSink();
+			}
 		}
 	}
 	//UNDONE: test
@@ -340,13 +354,13 @@ private:
 	{
 		RemoveFromList(targetNodes, node);
 		AddToListUniquely(candidateNodes, node);
-		CPFerryTask::recordTaskMet();
+		CPFerryTask::recordTaskMet(node->getID());
 	}
 	static void recordTargetMiss(CNode* node)
 	{
 		RemoveFromList(targetNodes, node);
 		AddToListUniquely(candidateNodes, node);
-		CPFerryTask::recordTaskMiss();
+		CPFerryTask::recordTaskMiss(node->getID());
 	}
 	static void reportTask(CPFerryMANode* ma, int now)
 	{
@@ -435,21 +449,36 @@ private:
 	//FIXME:
 	static double calculateMetric(CNode* node, CPosition prediction, int now)
 	{
+#ifdef DEBUG
+		static map<int, vector<pair<string, double>>> cache;
+
+		if(cache.find(now) == cache.end()
+		   && !cache.empty())
+		{
+			cache.clear();
+			cache[now] = vector<pair<string, double>>();
+		}
+#endif // DEBUG
+
 		int datatime = getConfig<int>("simulation", "datatime");
+		double timePrediction = prediction.getTime();
 		int timeLastCollectoin = collectionRecords[node->getID()].timeCollect;
 		int bufferVacancy = collectionRecords[node->getID()].bufferVacancy;
 		int bufferCapacity = node->getCapacityBuffer();
 		double dataRate = node->getDataCountRate();
-		double timePrediction = prediction.getTime();
 
-		double timeArrival = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CMANode::getMASpeed();
-		timeArrival = timeArrival + now;
-		timeArrival = min(timeArrival, timePrediction);
-		int bufferOccupancy = int( ( min(timeArrival, datatime) - timeLastCollectoin ) * dataRate 
-								  + bufferCapacity - bufferVacancy );
-		int dataLoss = max(0, bufferOccupancy - bufferCapacity);
-		bufferOccupancy = min(bufferOccupancy, bufferCapacity);
+		double timeTravel = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CMANode::getMASpeed();
+		double timeArrival = timeTravel + now;
+		
+		//double timeEstimate = min(timeArrival + now, timePrediction);
+		double timeEstimate = timeArrival;
+		int bufferEstimation = int( ( min(timeEstimate, datatime) - timeLastCollectoin ) * dataRate 
+								   + bufferCapacity - bufferVacancy );
+		int bufferOccupancy = min(bufferEstimation, bufferCapacity);
+		int dataLoss = bufferEstimation - bufferOccupancy;
 		//double timeOverflow = timeLastCollectoin + bufferVacancy / dataRate;
+
+		//original metric
 
 		//if( timeArrival + now > timePrediction )
 		//	return -timeOverflow;
@@ -464,15 +493,31 @@ private:
 		//		//return (timePrediction - timeOverflow) * node->getDataCountRate();
 		//}
 
-		double dataMetric = dataLoss + (double)bufferOccupancy / bufferCapacity;
-		if( EQUAL(dataMetric, 0) )
+		//double dataMetric = dataLoss + ( double ) bufferOccupancy / bufferCapacity;
+		double dataMetric = bufferOccupancy;
+		//fix -0
+		if( EQUAL(dataMetric, -0) )
 			dataMetric = 0;
-		if( timeArrival + now > timePrediction )
-			return -dataMetric;
+
+
+		double metric = 0;
+		if( timeArrival > timePrediction + CCTrace::getInterval() )
+			metric = bufferOccupancy;
 			//return dataMetric;
 		else
-			return dataMetric;
+		{
+			metric = bufferEstimation;
+			//if(dataLoss > 0)
+			//	metric = dataLoss;
+			//else
+			//	metric = timeArrival / max(1, timeOverflow - now);
+		}
 
+#ifdef DEBUG
+		cache[now].push_back(pair<string, double>(node->getIdentifier(), metric));
+#endif // DEBUG
+
+		return metric;
 	}
 
 	static pair<vector<pair<CNode*, CPosition>>, vector<pair<CNode*, CPosition>>> sortByPriority(vector<CNode*> nodes, int now)
@@ -1011,13 +1056,6 @@ private:
 
 	static void CommunicateBetweenNeighbors(int now)
 	{
-		static bool print = false;
-		if( now == 0
-		   || print )
-		{
-			CPrintHelper::PrintHeading(now, "DATA DELIVERY");
-			print = false;
-		}
 
 		// TODO: sink receive RTS / send by slot ?
 		// pferry: sink => MAs
@@ -1038,9 +1076,9 @@ private:
 
 		if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
 		{
+			CPrintHelper::PrintPercentage("Task Met", CPFerryTask::getPercentTaskMet());
 			CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
 			CPrintHelper::PrintNewLine();
-		print = true;
 		}
 	}
 
@@ -1089,6 +1127,8 @@ public:
 	{	
 		PATH_PREDICT = getConfig<string>("pferry", "path_predict");
 		PRESTAGE_PROTOCOL = getConfig<config::EnumRoutingProtocolScheme>("pferry", "prestage_protocol");
+
+		CPFerryTask::Init( CNode::getIdNodes(CNode::getAllNodes()) );
 
 		if( PRESTAGE_PROTOCOL == config::_xhar )
 			HAR::Init(now);
@@ -1162,38 +1202,48 @@ public:
 
 		CRoutingProtocol::PrintInfo(CNode::getAllNodes(), now);
 
+
 		/**************************************** ²¹³äÊä³ö *********************************************/
 
-
-
-		if( now % getConfig<int>("log", "slot_log") == 0
-		   || now == getConfig<int>("simulation", "runtime") )
+		//MA Buffer
+		ofstream buffer_ma(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_ma"), ios::app);
+		if(now == 0)
 		{
-			//Task Met
-			ofstream task(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_task"), ios::app);
-			if( now == 0 )
-			{
-				task << endl << getConfig<string>("log", "info_log") << endl;
-				task << getConfig<string>("log", "info_task") << endl;
-			}
-			task << now << TAB << CPFerryTask::getPercentTaskMet() << TAB << CPFerryTask::getCountTaskMet() 
-				<< TAB << CPFerryTask::getCountTask() << endl;
-			task.close();
-
-			//MA Buffer
-			ofstream buffer_ma(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_ma"), ios::app);
-			if( now == 0 )
-			{
-				buffer_ma << endl << getConfig<string>("log", "info_log") << endl;
-				buffer_ma << getConfig<string>("log", "info_buffer_ma") << endl;
-			}
-			buffer_ma << now << TAB;
-			for( auto iMA = allMAs.begin(); iMA != allMAs.end(); ++iMA )
-				buffer_ma << ( *iMA )->getBufferSize() << TAB;
-			buffer_ma << endl;
-			buffer_ma.close();
-
+			buffer_ma << endl << getConfig<string>("log", "info_log") << endl;
+			buffer_ma << getConfig<string>("log", "info_buffer_ma") << endl;
 		}
+		buffer_ma << now << TAB;
+		for(auto iMA = allMAs.begin(); iMA != allMAs.end(); ++iMA)
+			buffer_ma << ( *iMA )->getBufferSize() << TAB;
+		buffer_ma << endl;
+		buffer_ma.close();
+
+		//Task Met
+		ofstream task(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_task"), ios::app);
+		if(now == STARTTIME_PREDICTION)
+		{
+			task << endl << getConfig<string>("log", "info_log") << endl;
+			task << getConfig<string>("log", "info_task") << endl;
+		}
+		task << now << TAB << CPFerryTask::getPercentTaskMet() << TAB << CPFerryTask::getCountTaskMet()
+			<< TAB << CPFerryTask::getCountTask() << endl;
+		task.close();
+
+		//Task Distribution Among Nodes
+		ofstream task_node(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_task_node"), ios::app);
+		if(STARTTIME_PREDICTION <= now
+		   && now < STARTTIME_PREDICTION + getConfig<int>("log", "slot_log"))
+		{
+			task_node << endl << getConfig<string>("log", "info_log") << endl;
+			task_node << getConfig<string>("log", "info_task_node") << endl;
+			task_node << "Nodes" << TAB;
+			for(pair<int, int> p : CPFerryTask::getCountTaskForNodes())
+				task_node << p.first << TAB;
+			task_node << endl;
+		}
+		for(pair<int, int> p : CPFerryTask::getCountTaskForNodes())
+			task_node << p.second << TAB;
+		task_node.close();
 
 	}
 

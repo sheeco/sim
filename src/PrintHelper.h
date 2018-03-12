@@ -140,6 +140,14 @@ public:
 	inline static void Alert()
 	{
 		printToCout(ALERT, false);
+		_PAUSE_;
+	}
+	inline static bool Warn(string error)
+	{
+		PrintNewLine();
+		printToCout("[Warning]" + error, true);
+		Alert();
+		return true;
 	}
 	inline static void PrintError(string error)
 	{

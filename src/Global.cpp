@@ -39,9 +39,9 @@ void global::Exit(int code)
 	if( code > EFINISH )
 	{
 		CPrintHelper::Alert();
-		_PAUSE_;
 	}
 
+	_PAUSE_;
 	exit(code);
 }
 

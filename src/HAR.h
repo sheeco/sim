@@ -319,14 +319,6 @@ public:
 
 	static void CommunicateBetweenNeighbors(int now)
 	{
-		static bool print = false;
-		if( now == 0
-		   || print )
-		{
-			CPrintHelper::PrintHeading(now, "DATA DELIVERY");
-			print = false;
-		}
-
 		// TODO: sink receive RTS / send by slot ?
 		// xHAR: sink => MAs
 		CSink* sink = CSink::getSink();
@@ -348,7 +340,6 @@ public:
 		{
 			CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
 			CPrintHelper::PrintNewLine();
-			print = true;
 		}
 	}
 

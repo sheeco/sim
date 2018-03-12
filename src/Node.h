@@ -90,7 +90,7 @@ protected:
 		string filename = CFileHelper::SplitPath(filepath).second;
 		string nodename = CFileHelper::SplitFilename(filename).first;
 		this->setIdentifier(nodename);
-		this->setName("Node #" + nodename);
+		this->setName("Node " + nodename);
 	}
 	static vector<CNode*> loadNodesFromFile()
 	{
