@@ -16,9 +16,11 @@ public:
 	static bool IfExists(string filename);
 	static bool IsEmpty(string filename);
 	//static bool Rename(string oldname, string newname);
-	//static bool SetHidden(string filename);
-	//static bool UnsetHidden(string filename);
+	static bool SetHidden(string filename);
+	static bool UnsetHidden(string filename);
 
+	static bool IsDirectory(string strPath);
+	static bool IsFile(string strPath);
 	// Return empty vector if dir does not exist
 	static vector<string> ListDirectory(string pathDir);
 	static vector<string> FilterByExtension(vector<string> filenames, string extension);
@@ -27,8 +29,6 @@ public:
 	// Return <name, extension>
 	static pair<string, string> SplitFilename(string filename);
 	static void test();
-
-	//static CPosition* findPositionByID(vector<CPosition *> positions, int ID);
 
 	////将hotspot的时间、坐标和cover数保存到文件
 	//static void writeHotspotToFile(char *filename, CHotspot *hotspot, bool withDetail);

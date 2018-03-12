@@ -6,8 +6,7 @@
 #include <iostream>
 #include "Configuration.h"
 #include "Position.h"
-#include "GeoEntity.h"
-#include "GeneralNode.h"
+#include "Node.h"
 
 
 //存储hostspot信息的类
@@ -25,14 +24,12 @@ protected:
 
 	typedef enum EnumHotspotType {_new_hotspot, _old_hotspot, _merge_hotspot } EnumHotspotType;
 
-	//以下公有静态变量是从原来的g_系列全局变量移动到此处的，所有原来的引用都已作出替换
-	static vector<CHotspot *> hotspotCandidates;
-	static vector<CHotspot *> selectedHotspots;
-	//上一次贪婪选取最终得到的热点集合，保留
-	//注意：merge操作得到的输出hotspot应该使用CHotspot::hotspotCandidates中的实例修改得到，不可保留对CHotspot::oldSelectedHotspots中实例的任何引用，因为在merge结束后将被free
-	static map<int, vector<CHotspot *>> oldSelectedHotspots;
-	//static vector<CHotspot *> deletedHotspots;
 
+	static map<int, CHotspot*> atHotspots;
+
+	static int encounterAtHotspot;
+	static int visiterAtHotspot;
+	//热点区域所有可能的相遇（只与数据集和热点选取有关）
 
 private:
 	
@@ -56,87 +53,29 @@ private:
 	//从覆盖列表中删除某个position，只有贪婪算法会用到
 	void removePosition(CPosition* pos);
 
-	//检查某个node是否在覆盖列表中，必须在generateCoveredNodes之后调用
-	bool ifNodeExists(int inode) const;
-
 	//计算两个热点的重叠面积，如无重叠则返回0
 	static double getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot);
 
-	void init()
-	{
-		this->heat = 0;
-		this->ratio = 0;		
-		
-		//merge_HAR
-		this->typeHotspotCandidate = _new_hotspot;
-		this->age = 0;
-	}
-
-	void generateHotspot(CCoordinate location, int time)
-	{
-		init();
-		this->setLocation(location);
-		this->setTime(time);
-		//必须在setTime之后初始化
-		this->countsDelivery[this->time] = 0;
-		this->generateID();
-
-		//重置flag
-		for(int i = 0; i < CPosition::nPositions; ++i)
-			CPosition::positions[i]->setFlag(false);
-
-		bool modified;
-		//循环，直到没有新的position被加入
-		do
-		{
-			modified = false;
-			//对新的hotspot重心，再次遍历position
-			for(int i = 0; i < CPosition::nPositions; ++i)
-			{
-				if( CPosition::positions[i]->getFlag() )
-					continue;
-				if( CPosition::positions[i]->getX() + getConfig<int>("trans", "range_trans") < this->getX() )
-					continue;
-				//若水平距离已超出range，则可以直接停止搜索
-				if( this->getX() + getConfig<int>("trans", "range_trans") < CPosition::positions[i]->getX() )
-					break;
-				if( CBasicEntity::withinRange(*this, *CPosition::positions[i], getConfig<int>("trans", "range_trans") ) )
-				{
-					this->addPosition(CPosition::positions[i]);
-					CPosition::positions[i]->setFlag(true);
-					modified = true;
-				}
-			}
-
-			//重新计算hotspot的重心
-			if(modified)
-				this->recalculateCenter();
-		}while(modified);
-		
-	}
-
+	void init();
 	CHotspot()
 	{
 		init();
 	}
+
+	static CHotspot* generateHotspot(CCoordinate location, vector<CPosition*> positions, int time);
 
 
 public:
 
 	//从pos出发生成一个初始hotspot，并完成此候选hotspot的构建
 	//time应当是当前time，而不是pos的time
-	CHotspot(CPosition* pos, int time)
-	{
-		init();
-		addPosition(pos);
-		generateHotspot(pos->getLocation(), time);
-	}
-
 	//由merge函数调用
 	CHotspot(CCoordinate location, int time)
 	{
 		init();
-		generateHotspot(location, time);
+		this->setLocation(location);
+		this->setTime(time);
+		this->generateID();
 	}
 
 	~CHotspot(){};
@@ -204,6 +143,64 @@ public:
 
 	int getNCoveredPositionsForNode(int inode);	
 	
+	static CHotspot* getAtHotspot(int nodeid)
+	{
+		if(!isAtWaypoint(nodeid))
+			return nullptr;
+		else
+			return atHotspots[nodeid];
+	}
+
+	static void setAtWaypoint(int nodeid, CHotspot* atHotspot)
+	{
+		atHotspots[nodeid] = atHotspot;
+	}
+
+	static bool isAtWaypoint(int nodeid)
+	{
+		if(atHotspots.find(nodeid) == atHotspots.end())
+			return false;
+		else
+			return atHotspots[nodeid] != nullptr;
+	}
+	static void encountAtHotspot()
+	{
+		++encounterAtHotspot;
+	}
+
+	static int getEncounterAtHotspot()
+	{
+		return encounterAtHotspot;
+	}
+	static double getPercentEncounterAtHotspot()
+	{
+		if(encounterAtHotspot == 0)
+			return 0.0;
+		return double(encounterAtHotspot) / double(CNode::getEncounter());
+	}
+	//	static double getPercentEncounterActive() 
+	//	{
+	//		if(encounterActive == 0)
+	//			return 0.0;
+	//		return double(encounterActive) / double(encounter);
+	//	}
+
+	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
+	static void visitAtHotspot()
+	{
+		++visiterAtHotspot;
+	}
+	static double getPercentVisiterAtHotspot()
+	{
+		if(visiterAtHotspot == 0)
+			return 0.0;
+		return double(visiterAtHotspot) / double(CNode::getVisiter());
+	}
+	static int getVisiterAtHotspot()
+	{
+		return visiterAtHotspot;
+	}
+
 	inline void recordCountDelivery(int n)
 	{
 		map<int, int>::iterator imap = countsDelivery.find(this->time);
@@ -282,6 +279,10 @@ public:
 	}
 	string format() const
 	{
+		return this->location.format();
+	}
+	string getName() const
+	{
 		return "Hotspot " + STRING(this->ID);
 	}
 
@@ -304,26 +305,11 @@ public:
 	//确定覆盖的node列表，在hotspot选取结束后手动调用
 	void generateCoveredNodes();
 
-	static vector<CHotspot*> getSelectedHotspots()
-	{
-		return selectedHotspots;
-	}
-	static vector<CHotspot*> getSelectedHotspots(int forTime)
-	{
-		if( !selectedHotspots.empty()
-		   && forTime == selectedHotspots[0]->getTime() )
-			return selectedHotspots;
-		else if( oldSelectedHotspots.find(forTime) != oldSelectedHotspots.end() )
-			return oldSelectedHotspots[forTime];
-		else
-			throw string("CHotspot::getSelectedHotspots(" + STRING(forTime) + ") : Cannot find selected hotspots for given time !");
-	}
-
 	//为所有节点检查是否位于热点区域内，并统计visiter和encounter的热点区域计数
 	//visit 和 encounter 计数的统计时槽仅由轨迹文件决定
-	static bool UpdateAtHotspotForNodes(int currentTime);
+	static bool UpdateAtHotspotForNodes(vector<CNode *> nodes, vector<CHotspot*> hotspots, int now);
 //	//为所有MA节点检查是否位于热点区域内（用于xHAR）
-//	static bool UpdateAtHotspotForMANodes(int currentTime);
+//	static bool UpdateAtHotspotForMANodes(int now);
 		
 	/****************************************   merge-HAR   ****************************************/ 
 

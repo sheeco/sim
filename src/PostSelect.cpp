@@ -3,16 +3,7 @@
 #include "HotspotSelect.h"
 #include "PrintHelper.h"
 
-
-CPostSelect::CPostSelect(vector<CHotspot *> selectedHotspots, vector<CHotspot *> &unselectedHotspots) : hotspotCandidates(selectedHotspots), unselectedHotspots(unselectedHotspots)
-{
-	this->maxRatio = 0;
-	this->hotspotCandidates = CSortHelper::mergeSort(this->hotspotCandidates, CSortHelper::ascendByRatio);
-	if(hotspotCandidates.size() > 0)
-	{
-		this->maxRatio = hotspotCandidates.at(hotspotCandidates.size() - 1)->getNCoveredPosition();
-	}
-}
+double CPostSelect::ALPHA = INVALID;
 
 double CPostSelect::getRatioForHotspot(CHotspot *hotspot) const
 {
@@ -29,43 +20,37 @@ double CPostSelect::getRatioForHotspot(CHotspot *hotspot) const
 	}
 }
 
-void  CPostSelect::includeHotspots(CHotspot *hotspot)
+void CPostSelect::updateForNewlySelectedHotspot(CHotspot * hotspot)
 {
 	vector<CPosition *> positions = hotspot->getCoveredPositions();
 	for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 	{
-		AddToListUniquely(this->coveredNodes, (*ipos)->getNode());
-		AddToListUniquely(this->coveredPositions, (*ipos)->getID());
+		AddToListUniquely(this->coveredNodes, ( *ipos )->getNode());
+		AddToListUniquely(this->coveredPositions, ( *ipos )->getID());
 	}
-	this->selectedHotspots.push_back(hotspot);
 }
 
-void CPostSelect::findLostNodes()
+vector<int> CPostSelect::findLostNodes()
 {
-	this->lostNodes.clear();
-	vector<int> idNodes = CNode::getIdNodes();
-
-	for(vector<int>::iterator i = idNodes.begin(); i != idNodes.end(); ++i)
-	{
-		if( ! IfExists(this->coveredNodes, *i))
-			this->lostNodes.push_back( *i );
-	}
+	vector<int> lostNodes = idNodes;
+	RemoveFromList(lostNodes, coveredNodes);
+	return lostNodes;
 }
 
-CHotspot* CPostSelect::findBestHotspotForNode(int inode)
+CHotspot * CPostSelect::findBestHotspotForNode(int inode)
 {
 	int maxCoverCount = 0;
 	CHotspot *result = nullptr;
-	for(int i = hotspotCandidates.size() - 1; i >= 0; i--)
+	for(int i = unselectedHotspots.size() - 1; i >= 0; i--)
 	{
-		CHotspot *ihotspot = hotspotCandidates[i];
-		if(hotspotCandidates[i]->getFlag())
+		CHotspot *ihotspot = unselectedHotspots[i];
+		if(unselectedHotspots[i]->getFlag())
 			continue;
 		int coverCount = 0;
 		vector<CPosition *> positions = ihotspot->getCoveredPositions();
 		for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); ++ipos)
 		{
-			if((*ipos)->getNode() == inode)
+			if(( *ipos )->getNode() == inode)
 				++coverCount;
 		}
 		if(coverCount > maxCoverCount)
@@ -78,73 +63,72 @@ CHotspot* CPostSelect::findBestHotspotForNode(int inode)
 	return result;
 }
 
-
 bool CPostSelect::verifyCompleted()
 {
-	findLostNodes();
-	if(lostNodes.size() == 0)
-		return true;
-	else
-		return false;
+	vector<int> lostNodes = findLostNodes();
+	return lostNodes.size() == 0;
 }
 
-vector<CHotspot *> CPostSelect::PostSelect(int currentTime)
+CPostSelect::CPostSelect(vector<CHotspot*> selectedHotspots, vector<int> idNodes) : unselectedHotspots(selectedHotspots)
 {
-	CPrintHelper::PrintDoing("POST SELECT");
-
-	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
+	this->maxRatio = 0;
+	this->unselectedHotspots = CSortHelper::mergeSort(this->unselectedHotspots, CSortHelper::ascendByRatio);
+	if(unselectedHotspots.size() > 0)
 	{
-		(*ihotspot)->setFlag(false);
-		(*ihotspot)->updateStatus();
+		this->maxRatio = unselectedHotspots.at(unselectedHotspots.size() - 1)->getNCoveredPosition();
 	}
-	//选中所有ratio >= getConfig<double>("hs", "alpha")的hotspot，按照 ratio 从大到小的顺序
-	for(vector<CHotspot *>::reverse_iterator rihotspot = hotspotCandidates.rbegin(); rihotspot != hotspotCandidates.rend(); )
+}
+
+void CPostSelect::PostSelect()
+{
+	for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ++ihotspot)
 	{
-		if(this->getRatioForHotspot(*rihotspot) >= getConfig<double>("hs", "alpha"))
+		( *ihotspot )->setFlag(false);
+		( *ihotspot )->updateStatus();
+	}
+	//选中所有ratio >= hs.alpha的hotspot，按照 ratio 从大到小的顺序
+	for(vector<CHotspot *>::reverse_iterator riHotspot = unselectedHotspots.rbegin(); riHotspot != unselectedHotspots.rend(); )
+	{
+		if(this->getRatioForHotspot(*riHotspot) >= ALPHA)
 		{
-			(*rihotspot)->setFlag(true);
-			this->includeHotspots( (*rihotspot) );
-			
+			( *riHotspot )->setFlag(true);
+			this->updateForNewlySelectedHotspot(( *riHotspot ));
+
+			selectedHotspots.push_back(*riHotspot);
 			//将选中的热点从候选集中删除（注意：删除反向迭代器指向的元素）
-			vector<CHotspot *>::iterator ihotspot = hotspotCandidates.erase( ( ++rihotspot ).base() );
-			rihotspot = vector<CHotspot *>::reverse_iterator(ihotspot);
+			vector<CHotspot *>::iterator ihotspot = unselectedHotspots.erase(( ++riHotspot ).base());
+			riHotspot = vector<CHotspot *>::reverse_iterator(ihotspot);
 		}
 		else
 		{
-			++rihotspot;
+			++riHotspot;
 			continue;
 		}
 	}
 	//为每个lost node选中一个cover数最大的hotspot
-	this->findLostNodes();
+	vector<int> lostNodes = this->findLostNodes();
 	for(vector<int>::iterator inode = lostNodes.begin(); inode != lostNodes.end(); ++inode)
 	{
 		CHotspot* hotspot = findBestHotspotForNode(*inode);
-		if(hotspot != nullptr)
-			includeHotspots(hotspot);
+		if(hotspot == nullptr)
+			continue;
+
+		updateForNewlySelectedHotspot(hotspot);
+		selectedHotspots.push_back(hotspot);
+
 		//将选中的热点从候选集中删除
-		for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
+		for(vector<CHotspot *>::iterator ihotspot = unselectedHotspots.begin(); ihotspot != unselectedHotspots.end(); ++ihotspot)
 		{
-			if( (*ihotspot)->getID() == hotspot->getID() )
+			if(( *ihotspot )->getID() == hotspot->getID())
 			{
-				hotspotCandidates.erase(ihotspot);
+				unselectedHotspots.erase(ihotspot);
 				break;
 			}
 		}
 
 	}
-	if( ! verifyCompleted())
+	if(!verifyCompleted())
 	{
 		throw string("CPostSelect::PostSelect() : not completed");
 	}
-
-	//将未选中的候选热点放回全局候选集
-	unselectedHotspots.insert(unselectedHotspots.end(), hotspotCandidates.begin(), hotspotCandidates.end() );
-	CPrintHelper::PrintDone();
-	return selectedHotspots;
 }
-
-//int CPostSelect::getNCoveredPositions() const
-//{
-//	return coveredPositions.size();
-//}

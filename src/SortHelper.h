@@ -63,9 +63,6 @@ public:
 	template <class E>
 	static vector<E> insertIntoSortedList(vector<E> dstList, E src, bool(*compPos)( E, E ), bool(*compNeg)( E, E ));
 
-	template <class E>
-	static vector<E> insertIntoSortedList(vector<E> dstList, vector<E> srcList, bool(*compPos)( E, E ), bool(*compNeg)( E, E ));
-
 };
 
 #endif // __SORT_HELPER_H__
@@ -95,12 +92,4 @@ inline vector<E> CSortHelper::insertIntoSortedList(vector<E> dstList, E src, boo
 	rtn.insert(rtn.end(), idst, dstList.end());
 
 	return rtn;
-}
-
-template<class E>
-inline vector<E> CSortHelper::insertIntoSortedList(vector<E> dstList, vector<E> srcList, bool(*compPos)( E, E ), bool(*compNeg)( E, E ))
-{
-	for( typename vector<E>::iterator isrc = srcList.begin(); isrc != srcList.end(); ++isrc )
-		dstList = insertIntoSortedList(dstList, *isrc, compPos, compNeg);
-	return dstList;
 }

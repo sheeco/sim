@@ -12,7 +12,8 @@
 #include "Global.h"
 #include "ParseHelper.h"
 
-class CConfiguration
+class CConfiguration :
+	virtual public CHelper
 {
 	friend class CRunHelper;
 
@@ -34,6 +35,8 @@ class CConfiguration
 	//typedef struct Described Described;
 
 private:
+
+	//TODO: opt for map definitions 
 	static map<string, map<string, pair<void*, EnumType>>> configurations;
 
 	static void addGroup(string group);
@@ -70,46 +73,52 @@ public:
 
 	typedef enum EnumMacProtocolScheme
 	{
-		_smac,
-		_hdc
+		_smac = 1,
+		_hdc = 2
 	} EnumMacProtocolScheme;
 
 	typedef enum EnumRoutingProtocolScheme
 	{
-		_xhar,
-		_prophet,
+		_xhar = 1,
+		_prophet = 2,
 	} EnumRoutingProtocolScheme;
 
 	typedef enum EnumHotspotSelectScheme
 	{
-		_skip,
-		_original,
-		_improved,
-		_merge
+		_skip = 0,
+		_original = 1,
+		_improved = 2,
+		_merge = 3
 	} EnumHotspotSelectScheme;
 
+	//TODO: not in use now
+	//typedef enum EnumForwardScheme
+	//{
+	//	_copy = 1,  //发送数据成功后，保留自身副本
+	//	_dump = 2   //发送数据成功后，删除自身副本
+	//} EnumForwardScheme;
 
-	typedef enum EnumForwardScheme
-	{
-		_copy,  //发送数据成功后，保留自身副本
-		_dump   //发送数据成功后，删除自身副本
-	} EnumForwardScheme;
-
-	typedef enum EnumRelayScheme
-	{
-		_loose,   //MA buffer已满时，仍允许继续接收数据
-		_selfish   //MA buffer已满时，不再从其他节点接收数据
-	} EnumRelayScheme;
+	//typedef enum EnumRelayScheme
+	//{
+	//	_loose = 1,   //buffer已满时，仍允许继续接收数据
+	//	_selfish = 2   //buffer已满时，不再从其他节点接收数据
+	//} EnumRelayScheme;
 
 	typedef enum EnumQueueScheme
 	{
-		_fifo,   //可发送配额有限时，优先从头部发送
-		_lifo   //可发送配额有限时，优先从尾部发送
+		_fifo = 1,   //可发送配额有限时，优先从头部发送
+		_lifo = 2   //可发送配额有限时，优先从尾部发送
 	} EnumQueueScheme;
 
 
 	template <class T>
 	static void updateConfiguration(string group, string keyword, T value)
+	{
+		updateConfiguration(group, keyword, value, false);
+	}
+		
+	template <class T>
+	static void updateConfiguration(string group, string keyword, T value, bool silence)
 	{
 		if( !has(group, keyword) )
 			throw string("CConfiguration::updateConfiguration(): Cannot find configuration with keyword \"" + keyword + "\" in group \"" + group + "\".");
@@ -123,8 +132,9 @@ public:
 		{
 			echo << "from " << *pT;
 			*pT = value;
-			echo << " to " << *pT << "." << endl;
-			CPrintHelper::PrintDetail(echo.str());
+			echo << " to " << *pT << ".";
+			if( !silence )
+				CPrintHelper::PrintDetail(echo.str(), 0);
 		}
 		else
 			throw string("CConfiguration::updateConfiguration(): Cannot convert configuration \"" + keyword + "\" from " + typeid( pVoid ).name() + " to " + typeid( T ).name() + ".");

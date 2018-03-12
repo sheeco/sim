@@ -4,23 +4,7 @@
 #include "PrintHelper.h"
 
 
-CNodeRepair::CNodeRepair(vector<CHotspot *> selectedHotspots, vector<CHotspot *> &unselectedHotspots) : selectedHotspots(selectedHotspots), unselectedHotspots(unselectedHotspots)
-{	
-	//this->selectedHotspots = selectedHotspots;
-	//this->unselectedHotspots = unselectedHotspots;
-	//if( ! hotspotCandidates.empty())
-	//{
-	//	for(vector<CHotspot *>::iterator ihotspot = hotspotCandidates.begin(); ihotspot != hotspotCandidates.end(); ++ihotspot)
-	//	{
-	//		if( ! IfExists(this->selectedHotspots, *ihotspot, CHotspot::identical))
-	//			unselectedHotspots.push_back(*ihotspot);
-	//	}
-	//}
-
-	// 初始化为所有node
-	vector<int> idNodes = CNode::getIdNodes();
-	poorNodes.insert( poorNodes.begin(), idNodes.begin(), idNodes.end() );
-}
+double CNodeRepair::LAMBDA = INVALID;
 
 int CNodeRepair::countForNode(vector<CHotspot *> hotspots, int n) const
 {
@@ -64,15 +48,12 @@ CHotspot* CNodeRepair::findMaxCoverHotspotForNode(int inode)
 	return result;
 }
 
-vector<CHotspot *> CNodeRepair::RepairPoorNodes(int time)
+void CNodeRepair::Repair()
 {
-	CPrintHelper::PrintDoing("POOR NODE REPAIR");
-
-	this->time = time;
-	while(! poorNodes.empty())
+	while(!poorNodes.empty())
 	{
-		int inode = poorNodes[0];
-		while(countForNode(selectedHotspots, inode) < getConfig<double>("ihs", "lambda") * min(time, getConfig<int>("ihs", "lifetime_position")) )
+		int inode = poorNodes.back();
+		while(countForNode(selectedHotspots, inode) < LAMBDA * min(time, CHotspotSelect::LIFETIME_POSITION))
 		{
 			CHotspot *hotspot = findMaxCoverHotspotForNode(inode);
 			if(hotspot != nullptr)
@@ -83,13 +64,23 @@ vector<CHotspot *> CNodeRepair::RepairPoorNodes(int time)
 			else
 				break;
 		}
-		poorNodes.erase(poorNodes.begin());
+		poorNodes.pop_back();
 	}
 
-	CPrintHelper::PrintDone();
-	return selectedHotspots;
 }
 
-//CNodeRepair::~CNodeRepair()
-//{
-//}
+void CNodeRepair::Repair(vector<CHotspot*>& selectedHotspots, vector<CHotspot*>& unselectedHotspots, vector<int> idNodes, int now)
+{
+	Init();
+
+	CPrintHelper::PrintDoing("POOR NODE REPAIR");
+
+	CNodeRepair repair(selectedHotspots, unselectedHotspots, idNodes, now);
+	repair.Repair();
+	selectedHotspots = repair.selectedHotspots;
+	unselectedHotspots = repair.unselectedHotspots;
+
+	CPrintHelper::PrintDoing(STRING(selectedHotspots.size()) + " hotspots");
+	CPrintHelper::PrintDone();
+}
+

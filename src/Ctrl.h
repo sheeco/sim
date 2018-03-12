@@ -29,7 +29,7 @@ public:
 		_cts, 
 		_ack, 
 		_capacity,  //允许接受的最大数据个数
-		_index,   //data index ( delivery preds & summary vector )
+		_index,   //data index ( delivery preds in Prophet / summary vetor in Epidemic )
 		_no_data  //inform no data to send
 	} EnumCtrlType;
 
@@ -38,7 +38,6 @@ private:
 
 	EnumCtrlType type;
 	int capacity;
-	map<int, double> pred;
 //	vector<int> sv;
 	vector<CData> ack;  //直接传递 CData 类，方便操作，实际应传递 sv
 
@@ -71,11 +70,6 @@ public:
 		return capacity;
 	}
 
-	map<int, double> getPred() const
-	{
-		return pred;
-	}
-
 //	vector<int> getSV() const
 //	{
 //		return sv;
@@ -85,11 +79,6 @@ public:
 	{
 		return ack;
 	}
-
-	bool allowForward() const
-	{
-		return HOP > 0;
-	};
 
 };
 

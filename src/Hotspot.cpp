@@ -6,10 +6,11 @@
 #include "HotspotSelect.h"
 
 int CHotspot::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
-vector<CHotspot *> CHotspot::hotspotCandidates;
-vector<CHotspot *> CHotspot::selectedHotspots;
-map<int, vector<CHotspot *>> CHotspot::oldSelectedHotspots;
-//vector<CHotspot *> CHotspot::deletedHotspots;
+
+map<int, CHotspot*> CHotspot::atHotspots;
+
+int CHotspot::encounterAtHotspot = 0;
+int CHotspot::visiterAtHotspot = 0;
 
 
 bool CHotspot::ifPositionExists(CPosition* pos)
@@ -90,11 +91,6 @@ int CHotspot::getNCoveredPositionsForNode(int inode)
 	return count;
 }
 
-bool CHotspot::ifNodeExists(int inode) const
-{
-	return ( IfExists(coveredNodes, inode) );
-}
-
 void CHotspot::generateCoveredNodes()
 {
 	this->coveredNodes.clear();
@@ -104,11 +100,94 @@ void CHotspot::generateCoveredNodes()
 	}
 }
 
+//为所有节点检查是否位于热点区域内，并统计visiter和encounter的热点区域计数
+//visit 和 encounter 计数的统计时槽仅由轨迹文件决定
+
+bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> hotspots, int now)
+{
+	if(!( getConfig<bool>("trace", "continuous")
+		 || now % getConfig<int>("trace", "interval") == 0 ))
+		return false;
+
+	if(hotspots.empty()
+	   || nodes.empty())
+		return false;
+
+	nodes = CSortHelper::mergeSort(nodes);
+	hotspots = CSortHelper::mergeSort(hotspots, CSortHelper::ascendByLocationX);
+
+	int countAtHotspot = 0;
+	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
+	{
+		CNode* pnode = *inode;
+		CHotspot *newAtHotspot = nullptr;
+		CHotspot *oldAtHotspot = getAtHotspot(pnode->getID());
+
+		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
+		{
+			if(( *ihotspot )->getX() + getConfig<int>("trans", "range_trans") < pnode->getX())
+				continue;
+			if(pnode->getX() + getConfig<int>("trans", "range_trans") < ( *ihotspot )->getX())
+				break;
+			if(CBasicEntity::withinRange(**inode, **ihotspot, getConfig<int>("trans", "range_trans")))
+			{
+				newAtHotspot = *ihotspot;
+				break;
+			}
+		}
+
+		if(oldAtHotspot != nullptr
+		   && newAtHotspot != oldAtHotspot)
+			CPrintHelper::PrintDetail(now, pnode->getName() + " leaves " + oldAtHotspot->getName() + ".", 3);
+		if(newAtHotspot != nullptr
+		   && newAtHotspot != oldAtHotspot)
+			CPrintHelper::PrintDetail(now, pnode->getName() + " enters " + newAtHotspot->getName() + ".", 3);
+		if(newAtHotspot != nullptr)
+			++countAtHotspot;
+
+		//update atHotspot
+		setAtWaypoint(pnode->getID(), newAtHotspot);
+
+		// visit 和 encounter 计数的统计
+		// 时槽仅由轨迹文件决定
+		if(now % getConfig<int>("trace", "interval") == 0)
+		{
+			CNode::visit();
+			if(newAtHotspot != nullptr)
+				visitAtHotspot();
+
+			for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
+			{
+				if(pnode->getX() + getConfig<int>("trans", "range_trans") < ( *jnode )->getX())
+					break;
+				if(CBasicEntity::withinRange(**inode, **jnode, getConfig<int>("trans", "range_trans")))
+				{
+					CNode::encount();
+
+					if(newAtHotspot != nullptr
+					   || isAtWaypoint(( *jnode )->getID()))
+						encountAtHotspot();
+				}
+			}
+		}
+
+	}
+
+	//控制台输出时保留一位小数
+	if(( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0)
+	{
+		CPrintHelper::PrintPercentage("Encounters At Hotspots", CHotspot::getPercentEncounterAtHotspot());
+	}
+	CPrintHelper::PrintPercentage("Nodes At Hotspots", (double)countAtHotspot / nodes.size());
+
+	return true;
+}
+
 double CHotspot::calculateRatio()
 {
 	if( getConfig<bool>("mhs", "test_balanced_ratio") )
 	{
-		ratio = coveredPositions.size() * double(CNode::getNodeCount() - coveredNodes.size() + 1) / double(CNode::getNodeCount());
+		ratio = coveredPositions.size() * double(CNode::getCountAliveNodes() - coveredNodes.size() + 1) / double(CNode::getCountAliveNodes());
 		return ratio;
 	}
 //	else if( HAR::TEST_LEARN )
@@ -153,110 +232,59 @@ double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 	return ( sector - triangle ) * 4 ;
 }
 
-bool CHotspot::UpdateAtHotspotForNodes(int currentTime)
+void CHotspot::init()
 {
-	if( ! ( getConfig<bool>("trace", "continuous_trace")
-		    || currentTime % getConfig<int>("trace", "interval") == 0 ) )
-		return false;
+	this->heat = 0;
+	this->ratio = 0;
 
-	vector<CHotspot *> hotspots = selectedHotspots;
-	vector<CNode *> nodes = CNode::getNodes();
-	if( hotspots.empty()
-		|| nodes.empty() )
-		return false;
-
-	nodes = CSortHelper::mergeSort( nodes );
-	hotspots = CSortHelper::mergeSort( hotspots, CSortHelper::ascendByLocationX );
-
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
-	{
-		CHotspot *atHotspot = nullptr;
-
-		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
-		{
-			if( (*ihotspot)->getX() + getConfig<int>("trans", "range_trans") < (*inode)->getX() )
-				continue;
-			if( (*inode)->getX() + getConfig<int>("trans", "range_trans") < (*ihotspot)->getX() )
-				break;
-			if( CBasicEntity::withinRange( **inode, **ihotspot, getConfig<int>("trans", "range_trans") ) )		
-			{
-				atHotspot = *ihotspot;
-				break;
-			}
-		}
-
-		//update atHotspot
-		(*inode)->setAtHotspot(atHotspot);
-
-		// visit 和 encounter 计数的统计
-		// 时槽仅由轨迹文件决定
-		if( currentTime % getConfig<int>("trace", "interval") == 0 )
-		{
-			CNode::visit();
-			if( ( *inode )->isAtHotspot() )
-				CNode::visitAtHotspot();
-
-			for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
-			{
-				if( (*inode)->getX() + getConfig<int>("trans", "range_trans") < (*jnode)->getX() )
-					break;
-				if( CBasicEntity::withinRange( **inode, **jnode, getConfig<int>("trans", "range_trans") ) )		
-				{
-					CNode::encount();
-
-					if( atHotspot != nullptr
-						|| (*jnode)->isAtHotspot() )
-						CNode::encountAtHotspot();
-				}
-			}
-		}
-
-	}
-
-	return true;
+	//merge_HAR
+	this->typeHotspotCandidate = _new_hotspot;
+	this->age = 0;
 }
 
-//bool CHotspot::UpdateAtHotspotForMANodes(int currentTime)
-//{
-//	if( ! ( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 ) )
-//		return false;
-//
-//	vector<CHotspot *> hotspots = selectedHotspots;
-//	vector<CMANode *> mas = CMANode::getMANodes();
-//	if( hotspots.empty() 
-//		|| mas.empty() )
-//		return false;
-//
-//	hotspots = CSortHelper::mergeSort( hotspots, CSortHelper::ascendByLocationX );
-//
-//	for(vector<CMANode *>::iterator iMA = mas.begin(); iMA != mas.end(); ++iMA)
-//	{
-//		CHotspot *atHotspot = nullptr;
-//
-//		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
-//		{
-//			if( (*ihotspot)->getX() + getConfig<int>("trans", "range_trans") < (*iMA)->getX() )
-//				continue;
-//			if( (*iMA)->getX() + getConfig<int>("trans", "range_trans") < (*ihotspot)->getX() )
-//				break;
-//			if( CBasicEntity::withinRange( **iMA, **ihotspot, getConfig<int>("trans", "range_trans") ) )		
-//			{
-//				atHotspot = *ihotspot;
-//				break;
-//			}
-//		}
-//
-//		//update atHotspot
-//		if( ( ! (*iMA)->isAtHotspot() )
-//			&& atHotspot != nullptr )
-//		{
-//			(*iMA)->setAtHotspot(atHotspot);
-//			(*iMA)->setWaitingTime( HAR::calculateWaitingTime(currentTime, atHotspot) );
-//		}
-//	}
-//
-//	return true;
-//}
+CHotspot * CHotspot::generateHotspot(CCoordinate location, vector<CPosition*> positions, int time)
+{
+	CHotspot* photspot = new CHotspot(location, time);
+
+	//必须在setTime之后初始化
+	photspot->countsDelivery[photspot->time] = 0;
+
+	int nPositions = positions.size();
+	//重置flag
+	for(int i = 0; i < nPositions; ++i)
+		positions[i]->setFlag(false);
+
+	bool modified;
+	//循环，直到没有新的position被加入
+	do
+	{
+		modified = false;
+		//对新的hotspot重心，再次遍历position
+		for(int i = 0; i < nPositions; ++i)
+		{
+			if(positions[i]->getFlag())
+				continue;
+			if(positions[i]->getX() + getConfig<int>("trans", "range_trans") < photspot->getX())
+				continue;
+			//若水平距离已超出range，则可以直接停止搜索
+			if(photspot->getX() + getConfig<int>("trans", "range_trans") < positions[i]->getX())
+				break;
+			if(CBasicEntity::withinRange(*photspot, *positions[i], getConfig<int>("trans", "range_trans")))
+			{
+				photspot->addPosition(positions[i]);
+				positions[i]->setFlag(true);
+				modified = true;
+			}
+		}
+
+		//重新计算hotspot的重心
+		if(modified)
+			photspot->recalculateCenter();
+	} while(modified);
+
+	return photspot;
+}
+
 
 double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot *> newHotspots)
 {

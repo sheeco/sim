@@ -28,22 +28,11 @@ private:
 
 	static string LINE_END;
 
-	inline static void printToCout(string str, bool newLine)
-	{
-		cout << LINE_END;
-		if( LINE_END == CR )
-			cout << BLANK_LINE << CR;
-		cout << str;
-		if( newLine )
-			LINE_END = LF;
-		else
-			LINE_END = "";
-	}
-	inline static void flashToCout(string str)
-	{
-		printToCout(CR + str, false);
-		LINE_END = CR;
-	}
+	static bool newline;
+
+	static void printToCout(string str, bool newLine);
+
+	static void flashToCout(string str);
 	// TODO: call printToFile() for logging in PrintInfo()
 	inline static void printToFile(string filepath, string str, bool newLine)
 	{
@@ -57,7 +46,7 @@ private:
 	{
 		return HEADER_H_1 + str + TAIL_H_1;
 	}
-	inline static string toSubHeading(string str)
+	inline static string toBrief(string str)
 	{
 		return HEADER_H_2 + str + TAIL_H_2;
 	}
@@ -82,6 +71,27 @@ private:
 		return HEADER_COMMUNICATION + comm + TAIL_COMMUNICATION;
 	}
 
+	inline static void PrintToCurrentLine(string str)
+	{
+		printToCout(str, false);
+	}
+	inline static void PrintBrief(string str, bool newline)
+	{
+		printToCout(toBrief(str), newline);
+	}
+	inline static void PrintDetailToCout(string str)
+	{
+		printToCout(toDetail(str), true);
+	}
+	inline static void FlashDetail(string str)
+	{
+		flashToCout(toDetail(str));
+	}
+	inline static void PrintCommunication(int time, string str)
+	{
+		PrintDetail(time, str, 1);
+	}
+
 
 public:
 
@@ -100,14 +110,9 @@ public:
 	{
 		PrintHeading(toTime(time) + str);
 	}
-	inline static void PrintSubHeading(string str)
-	{
-		printToCout(toSubHeading(str), false);
-	}
 	inline static void PrintAttribute(string des, string value)
 	{
-		PrintSubHeading( toAttribute(des) + value );
-		PrintNewLine();
+		PrintBrief(toAttribute(des) + value, true);
 	}
 	inline static void PrintAttribute(string des, double value)
 	{
@@ -120,16 +125,29 @@ public:
 	}
 	inline static void PrintDoing(string str)
 	{
-		PrintSubHeading(toDoing(str));
+		str = toDoing(str);
+		if(newline)
+			PrintBrief(str, false);
+		else
+			PrintToCurrentLine(str);
 	}
 	inline static void PrintDone()
 	{
-		printToCout(" Done", true);
+		PrintToCurrentLine("Done");
+		PrintNewLine();
 	}
 
 	inline static void Alert()
 	{
 		printToCout(ALERT, false);
+		_PAUSE_;
+	}
+	inline static bool Warn(string error)
+	{
+		PrintNewLine();
+		printToCout("[Warning]" + error, true);
+		Alert();
+		return true;
 	}
 	inline static void PrintError(string error)
 	{
@@ -148,21 +166,27 @@ public:
 	{
 		printToCout("Error caught correctly @ " + error, true);
 	}
-	inline static void PrintDetail(string str)
+	inline static void PrintBrief(string str)
 	{
-		flashToCout(toDetail(str));
+		PrintBrief(str, true);
 	}
-	inline static void PrintDetail(int time, string str)
+	inline static void PrintBrief(int time, string str)
 	{
-		flashToCout(toDetail( toTime(time) + str ));
+		PrintBrief(toTime(time) + str);
+	}
+	//给定该输出信息的detail等级，当该等级高于(小于)当前配置等级时正常输出，低于(大于)配置等级时flash输出
+	static void PrintDetail(string str, int detail);
+	inline static void PrintDetail(int time, string str, int detail)
+	{
+		PrintDetail(toTime(time) + str, detail);
 	}
 	inline static void PrintCommunication(int time, string from, string to, string comm)
 	{
-		PrintDetail(time, from + toCommunication(comm) + to);
+		PrintCommunication(time, from + toCommunication(comm) + to);
 	}
 	inline static void PrintCommunication(int time, string from, string to, int nData)
 	{
-		PrintDetail(time, from + toCommunication( NDigitString(nData, 2) ) + to);
+		PrintCommunication(time, from + toCommunication( NDigitString(nData, 2) ) + to);
 	}
 	inline static void PrintFile(string filepath, string des)
 	{

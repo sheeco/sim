@@ -32,14 +32,14 @@ bool CConfiguration::has(string group, string keyword)
 		return igroup->second.find(keyword) != igroup->second.end();
 }
 
-inline void CConfiguration::addGroup(string group)
+void CConfiguration::addGroup(string group)
 {
 	if( has(group) )
 		throw string("CConfiguration::addGroup(): Configuration group with name \"" + group + "\" already exists.");
 	configurations[group] = map<string, pair<void*, EnumType>>();
 }
 
-inline void CConfiguration::addConfiguration(string group, string keyword, const type_info & type, void * value)
+void CConfiguration::addConfiguration(string group, string keyword, const type_info & type, void * value)
 {
 	if( has(group, keyword) )
 		throw string("CConfiguration::addConfiguration(): Configuration with keyword \"" + keyword + "\" already exists in group \"" + group + "\".");
@@ -173,7 +173,8 @@ void CConfiguration::InitConfiguration()
 
 
 	addGroup("log");
-	addConfiguration("log", "slot_log", typeid(int), new int(100));  //记录数据投递率和数据投递时延的slot
+	addConfiguration("log", "slot_log", typeid( int ), new int(100));  //记录数据投递率和数据投递时延的slot
+	addConfiguration("log", "detail", typeid(int), new int(1));  //控制台输出的细致等级，1~3，数值越大越细致
 
 	addConfiguration("log", "dir_root", typeid(string), new string("../"));
 	addConfiguration("log", "dir_project", typeid(string), new string("../.project/"));
@@ -186,12 +187,11 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("log", "info_log", typeid(string), new string(""));
 	addConfiguration("log", "file_default_config", typeid(string), new string("default.config"));
 	addConfiguration("log", "file_help", typeid(string), new string("help.md"));
-	addConfiguration("log", "file_version", typeid(string), new string("sim.version"));
+	addConfiguration("log", "file_version", typeid( string ), new string("sim.version"));
 
+	addConfiguration("log", "file_console", typeid(string), new string("console.log"));
 	addConfiguration("log", "file_error", typeid(string), new string("error.log"));
 	addConfiguration("log", "file_config", typeid(string), new string("config.log"));
-	addConfiguration("log", "file_final", typeid(string), new string("final.log"));
-	addConfiguration("log", "info_final", typeid(string), new string("#DataTime	#RunTime	#TransProb	#Buffer	#Energy	#HOP/TTL	#Cycle	#DefaultDC	(#HotspotDC	#Alpha	#Beta)	#Delivery%	#Delay/	#HOP/	#EnergyConsumption/	#TransmitSuccessful%	#EncounterActive%	(#EncounterAtHotspot%)	(#NetworkTime	#Node)	#Log "));
 
 	addConfiguration("log", "file_node", typeid(string), new string("node.log"));
 	addConfiguration("log", "info_node", typeid(string), new string("#Time	#NodeCount "));
@@ -247,13 +247,17 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("log", "info_buffer_ma", typeid(string), new string("#Time	#BufferStateOfEachMA "));
 	addConfiguration("log", "file_ed", typeid(string), new string("ed.log"));
 	addConfiguration("log", "info_ed", typeid(string), new string("#Time	#EstimatedDelay "));
+	addConfiguration("log", "file_task", typeid( string ), new string("task.log"));
+	addConfiguration("log", "info_task", typeid( string ), new string("#Time	#PercentTaskMet	#CountTaskMet	#CountTask"));
+	addConfiguration("log", "file_task_node", typeid( string ), new string("task_node.log"));
+	addConfiguration("log", "info_task_node", typeid( string ), new string("#Time"));
 
 
 	addGroup("data");
 	addConfiguration("data", "size_data", typeid(int), new int(200));  //( Byte )
 	addConfiguration("data", "size_ctrl", typeid(int), new int(10));  // FIXME:
 	addConfiguration("data", "size_header_mac", typeid(int), new int(8));  //Mac Header Size
-	addConfiguration("data", "max_hop", typeid(int), new int(0));
+	addConfiguration("data", "max_hop", typeid(int), new int(INVALID));
 
 
 	addGroup("mac");
@@ -291,21 +295,24 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("node", "default_data_rate", typeid(double), new double(6.8));  //( Byte / s )
 	addConfiguration("node", "buffer", typeid(int), new int(0));
 	addConfiguration("node", "energy", typeid(int), new int(0));
-	addConfiguration("node", "lifetime_spoken_cache", typeid(int), new int(0));  //在这个时间内交换过数据的节点暂时不再交换数据
-	addConfiguration("node", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
-	addConfiguration("node", "scheme_forward", typeid(int), new EnumForwardScheme(_dump));
+	addConfiguration("node", "lifetime_communication_history", typeid(int), new int(INVALID));  //在这个时间内交换过数据的节点暂时不再交换数据
+	//addConfiguration("node", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
+	//addConfiguration("node", "scheme_forward", typeid(int), new EnumForwardScheme(_dump));
 	addConfiguration("node", "scheme_queue", typeid(int), new EnumQueueScheme(_fifo));
 
 
 	addGroup("ma");
 	addConfiguration("ma", "speed", typeid(int), new int(30));
 	addConfiguration("ma", "buffer", typeid(int), new int(100));
-	addConfiguration("ma", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
+	//addConfiguration("ma", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
 	addConfiguration("ma", "base_id", typeid(int), new int(100));  //ID的起始值，用于和传感器节点相区分
+	addConfiguration("ma", "init_num_ma", typeid( int ), new int(0));
+	addConfiguration("ma", "max_num_ma", typeid( int ), new int(0));
 
 
+	//TODO: move to group "node" ?
 	addGroup("trace");
-	addConfiguration("trace", "continuous_trace", typeid(bool), new bool(true));
+	addConfiguration("trace", "continuous", typeid(bool), new bool(true));
 	addConfiguration("trace", "extension_trace_file", typeid(string), new string(".trace"));
 	addConfiguration("trace", "path", typeid(string), new string("../res/NCSU"));
 	addConfiguration("trace", "interval", typeid(int), new int(30));
@@ -344,11 +351,6 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("prophet", "trans_pred", typeid(double), new double(0.25));  //参考值 0.25
 	addConfiguration("prophet", "trans_strict_by_pred", typeid(bool), new bool(true));
 
-
-	/*********************************************  按照命令格式解析参数配置  *********************************************/
-
-	ParseConfiguration(getConfig<string>("log", "dir_run") + getConfig<string>("log", "file_default_config"));
-
 }
 
 void CConfiguration::ValidateConfiguration()
@@ -362,10 +364,10 @@ void CConfiguration::ValidateConfiguration()
 		updateConfig<int>("simulation", "datatime", INFINITE_INT);
 	}
 
-	if( ( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar
-		 || getConfig<CConfiguration::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
-	   && getConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_skip )
-		updateConfig<CConfiguration::EnumHotspotSelectScheme>("simulation", "hotspot_select", CConfiguration::EnumHotspotSelectScheme(config::_original));
+	if( ( getConfig<config::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_xhar
+		 || getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
+	   && getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_skip )
+		updateConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select", config::EnumHotspotSelectScheme(config::_original));
 	
 }
 
@@ -414,19 +416,6 @@ void CConfiguration::PrintConfiguration()
 	log.close();
 
 
-	//输出文件为空时，输出文件头
-	ofstream final(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_final"), ios::app);
-	final.seekp(0, ios::end);
-	if( !final.tellp() )
-		final << getConfig<string>("log", "info_final") << endl;
-
-	final << getConfig<int>("simulation", "datatime") << TAB << getConfig<int>("simulation", "runtime") << TAB << getConfig<double>("trans", "prob_trans") << TAB << getConfig<int>("node", "buffer") << TAB << getConfig<int>("node", "energy") << TAB;
-	if( CData::useHOP() )
-		final << getConfig<int>("data", "max_hop") << TAB;
-
-	final << getConfig<int>("mac", "cycle") << TAB << getConfig<double>("mac", "duty_rate") << TAB;
-	final.close();
-
 	// 输出版本信息
 
 	ofstream version(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_version"), ios::out);
@@ -443,7 +432,7 @@ void CConfiguration::PrintConfiguration()
 
 }
 
-inline void CConfiguration::Help()
+void CConfiguration::Help()
 {
 	return;
 	CPrintHelper::PrintFile(getConfig<string>("log", "dir_run") + getConfig<string>("log", "file_help"), "");

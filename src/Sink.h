@@ -25,8 +25,6 @@ class CSink :
 private:
 
 	static CSink* sink;
-	vector<CRoute> newRoutes;
-
 	static int encounterActive;  //有效相遇
 	static int encounter;
 
@@ -56,19 +54,23 @@ public:
 		return true;
 	}
 
-	CFrame* sendRTS(int currentTime);
-
 	//void Occupy(int time) override
 	//{
 	//	return;
 	//}
 
-	void updateStatus(int time) override
+	//TODO: put statistic here?
+	void updateStatus(int time)
 	{
 		//updateTimerOccupied(time);
 
 		this->time = time;
 	}
+	static void UpdateStatus(int time)
+	{
+		getSink()->updateStatus(time);
+	}
+
 
 	//相遇计数：统计节点和 sink 的相遇
 	static void encount() 
@@ -97,7 +99,7 @@ public:
 
 	static vector<CData> bufferData(int time, vector<CData> datas);
 
-//	void receiveFrame(CFrame* frame, int currentTime) override;
+//	void receiveFrame(CFrame* frame, int now) override;
 
 
 //	//从Node收取数据
@@ -120,34 +122,6 @@ public:
 //		_PAUSE_;
 //		return vector<CData>();
 //	}
-
-
-	/********************************************* HAR路由 ***********************************************/
-
-	//取得新的路线集合
-	static inline void setNewRoutes(vector<CRoute> newRoutes)
-	{
-		sink->newRoutes = newRoutes;
-	}
-	static inline vector<CRoute> getNewRoutes()
-	{
-		return sink->newRoutes;
-	}
-	//判断是否还有未分配出去的新路线
-	static inline bool hasMoreNewRoutes()
-	{
-		if( sink->newRoutes.empty() )
-			return false;
-		else 
-			return true;
-	}
-	//必须先调用hasMoreNewRoutes判断
-	static inline CRoute popRoute()
-	{
-		CRoute result = sink->newRoutes[0];
-		sink->newRoutes.erase(sink->newRoutes.begin());
-		return result;
-	}
 
 };
 

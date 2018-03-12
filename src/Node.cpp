@@ -12,40 +12,47 @@
 
 int CNode::COUNT_ID = 0;  //从1开始，数值等于当前实例总数
 
-int CNode::encounterAtHotspot = 0;
-//int CNode::encounterActiveAtHotspot = 0;
-//int CNode::encounterActive = 0;
-int CNode::encounter = 0;
-int CNode::visiterAtHotspot = 0;
-int CNode::visiter = 0;
-
-vector<CNode*> CNode::nodes;
+vector<CNode*> CNode::allNodes;
+vector<CNode*> CNode::aliveNodes;
 vector<CNode*> CNode::deadNodes;
-vector<CNode *> CNode::deletedNodes;
+vector<int> CNode::idNodes;
+map<int, CNode*> CNode::mapAllNodes;
+
+int CNode::LIFETIME_COMMUNICATION_HISROTY = INVALID;
+double CNode::DEFAULT_DATA_RATE = INVALID;
+int CNode::DEFAULT_CAPACITY_BUFFER = INVALID;
+int CNode::DEFAULT_CAPACITY_ENERGY = INVALID;
+int CNode::WORK_CYCLE = INVALID;
+double CNode::DEFAULT_DUTY_RATE = INVALID;
+
+int CNode::encounter = 0;
+int CNode::visiter = 0;
 
 
 void CNode::init() 
 {
+	fifo = getConfig<config::EnumQueueScheme>("node", "scheme_queue") == config::_fifo;
 	trace = nullptr;
-	dataRate = 0;
-	atHotspot = nullptr;
+	dataRate = INVALID;
 	//timerCarrierSense = getConfig<int>("mac", "cycle_carrier_sense");
 	//discovering = false;
-	timeLastData = 0;
-	timeDeath = 0;
-	capacityBuffer = getConfig<int>("node", "buffer");
+	timeLastData = INVALID;
+	timeDeath = INVALID;
+	capacityBuffer = DEFAULT_CAPACITY_BUFFER;
+	capacityEnergy = DEFAULT_CAPACITY_ENERGY;
 	sumTimeAwake = 0;
 	sumTimeAlive = 0;
 	sumBufferRecord = 0;
 	countBufferRecord = 0;
-	dutyCycle = getConfig<double>("mac", "duty_rate");
-	SLOT_WAKE = int( dutyCycle * getConfig<int>("mac", "cycle") );
-	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
-	timerCarrierSense = UNVALID;
+	dutyCycle = DEFAULT_DUTY_RATE;
+	SLOT_WAKE = int( dutyCycle * WORK_CYCLE );
+	SLOT_SLEEP = WORK_CYCLE - SLOT_WAKE;
+	timerCarrierSense = INVALID;
+	discovering = false;
 	if( SLOT_WAKE == 0 )
 	{
 		state = _asleep;
-		timerWake = UNVALID;
+		timerWake = INVALID;
 		if( getConfig<bool>("mac", "sync_cycle") )
 			timerSleep = SLOT_SLEEP;
 		else
@@ -54,7 +61,7 @@ void CNode::init()
 	else
 	{
 		state = _awake;
-		timerSleep = UNVALID;
+		timerSleep = INVALID;
 		if( getConfig<bool>("mac", "sync_cycle") )
 			timerWake = SLOT_WAKE;
 		else
@@ -65,217 +72,61 @@ void CNode::init()
 
 CNode::CNode() 
 {
-	throw string("CNode::CNode() : Default constructor is disabled.");
+	init();
 }
 
 CNode::CNode(double dataRate) 
 {
 	init();
-	this->dataRate = dataRate;
+	this->setDataByteRate(dataRate);
 }
 
 CNode::~CNode()
 {
-	if( trace != nullptr )
-	{
-		delete trace;
-		trace = nullptr;
-	}
 }
 
-void CNode::initNodes() {
-	if( nodes.empty() && deadNodes.empty() )
-	{
-		vector<string> filenames = CFileHelper::ListDirectory(getConfig<string>("trace", "path"));
-		filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
-
-		if( filenames.empty() )
-			throw string("CNode::initNodes(): Cannot find any trace files under \"" + getConfig<string>("trace", "path")
-						  + "\".");
-
-		for(int i = 0; i < filenames.size(); ++i)
-		{
-			double dataRate = getConfig<double>("node", "default_data_rate");
-			if(i % 5 == 0)
-				dataRate *= 5;
-			CNode* node = new CNode(dataRate);
-			node->generateID();
-			node->loadTrace(filenames[i]);
-			CNode::nodes.push_back(node);
-		}
-	}
-}
-
-void CNode::generateData(int currentTime) {
-	int timeDataIncre = currentTime - timeLastData;
+void CNode::generateData(int now) {
+	int timeDataIncre = now - timeLastData;
 	int nData = int( timeDataIncre * dataRate / getConfig<int>("data", "size_data"));
 	if(nData > 0)
 	{
 		for(int i = 0; i < nData; ++i)
 		{
-			CData data(ID, currentTime, getConfig<int>("data", "size_data"));
+			CData data(ID, now, getConfig<int>("data", "size_data"));
 			this->buffer = CSortHelper::insertIntoSortedList(this->buffer, data, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
 		}
-		timeLastData = currentTime;
+		timeLastData = now;
 	}
-	updateBufferStatus(currentTime);
+	dropDataIfOverflow();
 }
 
-
-vector<CNode*>& CNode::getNodes() 
+int CNode::getCountAliveNodes() 
 {
-	if( getConfig<int>("mac", "cycle") == 0 || ( ZERO( getConfig<double>("mac", "duty_rate") ) && ZERO( getConfig<double>("hdc", "hotspot_duty_rate") ) ) )
-	{
-		throw string("CNode::getNodes() : cycle_total = " + STRING(getConfig<int>("mac", "cycle")) + ", duty_rate = " + STRING(getConfig<double>("mac", "duty_rate")) + ", hotspot_duty_rate = " + STRING(getConfig<double>("hdc", "hotspot_duty_rate")) + ".");
-	}
-
-	if( nodes.empty() && deadNodes.empty() )
-		initNodes();
-	return nodes;
-}
-
-int CNode::getNodeCount() 
-{
-	return nodes.size();
-}
-
-vector<CNode *> CNode::getAllNodes(bool sort)
-{
-	vector<CNode *> allNodes = CNode::getNodes();
-	allNodes.insert(allNodes.end(), deadNodes.begin(), deadNodes.end());
-	allNodes.insert(allNodes.end(), deletedNodes.begin(), deletedNodes.end());
-	if( sort )
-		allNodes = CSortHelper::mergeSort(allNodes, CSortHelper::ascendByID);
-	return allNodes;
-}
-
-vector<int> CNode::getIdNodes() 
-{
-	if( nodes.empty() && deadNodes.empty() )
-		initNodes();
-	vector<int> ids;
-	for( CNode * inode : nodes )
-		ids.push_back(inode->getID());
-	return ids;
+	return allNodes.size();
 }
 
 bool CNode::finiteEnergy() 
 {
-	return getConfig<int>("node", "energy") > 0;
-}
-
-bool CNode::hasNodes(int currentTime) 
-{
-	if( nodes.empty() && deadNodes.empty() )
-	{
-		initNodes();
-		return true;
-	}
-		
-	bool death = ClearDeadNodes(currentTime);
-	if(death)
-		CPrintHelper::PrintAttribute("Node", CNode::getNodes().size());
-
-	return ( ! nodes.empty() );
-}
-
-bool CNode::ClearDeadNodes(int currentTime) 
-{
-	bool death = false;
-	for(vector<CNode *>::iterator ipNode = nodes.begin(); ipNode != nodes.end(); )
-	{
-		if(! (*ipNode)->isAlive())
-		{
-			death = true;
-			deadNodes.push_back( *ipNode );
-			ipNode = nodes.erase( ipNode );
-		}
-		else
-			++ipNode;
-	}
-
-	// TODO: more detailed feedback
-	if( death )
-	{
-		ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
-		if( currentTime == 0 )
-		{
-			death << endl << getConfig<string>("log", "info_log") << endl;
-			death << getConfig<string>("log", "info_death") << endl;
-		}
-		death << currentTime << TAB << CNode::getAllNodes(false).size() - CNode::getNodeCount()
-			<< TAB << CData::getCountDelivery() << TAB << CData::getDeliveryRatio() << endl;
-		death.close();
-	}
-	return death;
-}
-
-bool CNode::ifNodeExists(int id) 
-{
-	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
-	{
-		if((*inode)->getID() == id)
-			return true;
-	}
-	return false;
-}
-
-CNode* CNode::getNodeByID(int id) 
-{
-	for(auto inode = nodes.begin(); inode != nodes.end(); ++inode)
-	{
-		if((*inode)->getID() == id)
-			return *inode;
-	}
-	return nullptr;
+	return DEFAULT_CAPACITY_ENERGY > 0;
 }
 
 double CNode::getSumEnergyConsumption() 
 {
 	double sumEnergyConsumption = 0;
-	auto allNodes = getAllNodes(false);
+	auto allNodes = getAllNodes();
 	for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 		sumEnergyConsumption += (*inode)->getEnergyConsumption();
 	return sumEnergyConsumption;
 }
 
-void CNode::raiseDutyCycle() 
+void CNode::dropDataByAck(vector<CData> ack)
 {
-	if( useHotspotDutyCycle() )
-		return;
-
-	dutyCycle = getConfig<double>("hdc", "hotspot_duty_rate");
-	int oldSlotWake = SLOT_WAKE;
-	SLOT_WAKE = int( getConfig<int>("mac", "cycle") * dutyCycle );
-	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
-	//唤醒状态下，延长唤醒时间
-	if( isAwake() )
-		timerWake += SLOT_WAKE - oldSlotWake;
-	//休眠状态下，立即唤醒
-	else
-		Wake();
+	RemoveFromList(buffer, ack);
 }
 
-void CNode::resetDutyCycle() 
+void CNode::Overhear(int now)
 {
-	if( useDefaultDutyCycle() )
-		return;
-
-	dutyCycle = getConfig<double>("hdc", "hotspot_duty_rate");
-	int oldSlotWake = SLOT_WAKE;
-	SLOT_WAKE = int(getConfig<int>("mac", "cycle") * dutyCycle);
-	SLOT_SLEEP = getConfig<int>("mac", "cycle") - SLOT_WAKE;
-}
-
-void CNode::checkDataByAck(vector<CData> ack)
-{
-	if( getConfig<CConfiguration::EnumForwardScheme>("node", "scheme_forward") == config::_dump )
-		RemoveFromList(buffer, ack);
-}
-
-void CNode::Overhear(int currentTime)
-{
-	CGeneralNode::Overhear(currentTime);
+	CGeneralNode::Overhear(now);
 
 	//继续载波侦听
 	//时间窗内随机值 / 立即休眠？
@@ -291,7 +142,7 @@ void CNode::Wake()
 		return;
 	}
 	state = _awake;
-	timerSleep = UNVALID;
+	timerSleep = INVALID;
 	timerWake = SLOT_WAKE;
 	timerCarrierSense = RandomInt(0, CMacProtocol::getMaxTransmissionDelay());
 }
@@ -305,188 +156,80 @@ void CNode::Sleep()
 		return;
 	}
 	state = _asleep;
-	timerWake = UNVALID;
-	timerCarrierSense = UNVALID;
+	timerWake = INVALID;
+	timerCarrierSense = INVALID;
 	timerSleep = SLOT_SLEEP;
 }
 
-CFrame* CNode::sendRTSWithCapacityAndPred(int currentTime)
+CFrame* CNode::sendRTSWithCapacityAndIndex(int now)
 {
 	vector<CPacket*> packets;
-	if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_selfish
-		&& ( ! buffer.empty() ) )
-		packets.push_back( new CCtrl(ID, capacityBuffer - buffer.size(), currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity) );
-	packets.push_back( new CCtrl(ID, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_rts) );
-	packets.push_back( new CCtrl(ID, deliveryPreds, currentTime, getConfig<int>("data", "size_ctrl"), CCtrl::_index) );
+	
+	packets.push_back( new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_rts) );
+	packets.push_back( new CCtrl(ID, this->getBufferVacancy(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity) );
+	packets.push_back( new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_index) );
 	CFrame* frame = new CFrame(*this, packets);
 
 	return frame;	
 }
 
-bool CNode::hasSpokenRecently(CNode* node, int currentTime) 
+bool CNode::hasCommunicatedRecently(int nodeId, int now)
 {
-	if( getConfig<int>("node", "lifetime_spoken_cache") == 0 )
+	if( LIFETIME_COMMUNICATION_HISROTY <= 0 )
 		return false;
 
-	map<CNode *, int>::iterator icache = spokenCache.find( node );
-	if( icache == spokenCache.end() )
+	map<int, int>::iterator icache = communicationHistory.find(nodeId);
+	if( icache == communicationHistory.end() )
 		return false;
-	else if( ( currentTime - icache->second ) == 0
-		|| ( currentTime - icache->second ) < getConfig<int>("node", "lifetime_spoken_cache") )
+	else if( ( now - icache->second ) < LIFETIME_COMMUNICATION_HISROTY )
 		return true;
 	else
 		return false;
 }
 
-void CNode::addToSpokenCache(CNode* node, int currentTime) 
+void CNode::updateCommunicationHistory(int nodeId, int now)
 {
-	spokenCache.insert( pair<CNode*, int>(node, currentTime) );
+	communicationHistory.insert(pair<int, int>(nodeId, now));
 }
 
-//vector<CData> CNode::dropOverdueData(int currentTime) {
-//	if( buffer.empty() )
-//		return vector<CData>();
-////	if( ! CData::useTTL() )
-////		return vector<CData>();
-//
-//	vector<CData> overflow;
-//	for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); )
-//	{
-//		idata->updateStatus(currentTime);
-//		//如果TTL过期，丢弃
-//		if( idata->isOverdue() )
-//		{
-//			overflow.push_back( *idata );
-//			idata = buffer.erase( idata );
-//		}
-//		else
-//			++idata;
-//	}
-//	return overflow;
-//}
-
-
-//手动将数据压入 buffer，不伴随其他任何操作
-//注意：必须在调用此函数之后手动调用 updateBufferStatus() 检查溢出
-
-void CNode::pushIntoBuffer(vector<CData> datas)
+vector<CNode*> CNode::restoreNodes(vector<CNode*> removedNodes, int n)
 {
-	this->buffer = CSortHelper::insertIntoSortedList(this->buffer, datas, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
-}
+	vector<CNode*> restoredNodes;
+	if(removedNodes.empty())
+		return restoredNodes;
 
-vector<CData> CNode::removeDataByCapacity(vector<CData> &datas, int capacity, bool fromLeft)
-{
-	vector<CData> overflow;
-	if( capacity <= 0
-	   || datas.size() <= capacity )
-		return overflow;
-
-	if( fromLeft )
-	{
-		overflow = vector<CData>(datas.begin(), datas.begin() + capacity);
-		datas = vector<CData>(datas.begin() + capacity, datas.end());
-	}
-	else
-	{
-		datas = vector<CData>(datas.begin(), datas.begin() + capacity);
-		overflow = vector<CData>(datas.begin() + capacity, datas.end());
-	}
-
-	return overflow;
-}
-
-vector<CData> CNode::dropDataIfOverflow()
-{
-	if( buffer.empty() )
-		return vector<CData>();
-
-	vector<CData> myData;
-	vector<CData> overflow;
-
-	myData = buffer;
-	//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
-	overflow = removeDataByCapacity(myData, capacityBuffer, true);
-
-	buffer = myData;
-	return overflow;
-}
-
-vector<CData> CNode::updateBufferStatus(int currentTime) 
-{
-	vector<CData> overflow = dropDataIfOverflow();
-
-	return overflow;
-}
-
-vector<int> CNode::updateSummaryVector() 
-{
-	if( buffer.size() > getConfig<int>("node", "buffer") )
-	{
-		throw string("CNode::updateSummaryVector() : Buffer isn't clean !");
-	}
-
-	summaryVector.clear();
-	for(vector<CData>::iterator idata = buffer.begin(); idata != buffer.end(); ++idata)
-	{
-
-		if( CData::useHOP() && ( ! idata->allowForward() ) )
-			continue;
-		else
-			summaryVector.push_back( idata->getID() );
-	}
-
-	return summaryVector;
-}
-
-void CNode::restoreNodes(int n) 
-{
 	// TODO: 恢复时重新充满能量？
-	for(int i = nodes.size(); i < nodes.size() + n; ++i)
+	for(int i = allNodes.size(); i < allNodes.size() + n; ++i)
 	{
-		if( deletedNodes.empty() )
-			break;
-
-		CNode::nodes.push_back(deletedNodes[0]);
+		restoredNodes.push_back(removedNodes[0]);
 		--n;
 	}
+	return restoredNodes;
 }
 
-void CNode::removeNodes(int n) 
+vector<CNode*> CNode::removeNodes(int n)
 {
 	//FIXME: Random selected ?
-	vector<CNode *>::iterator start = nodes.begin();
-	vector<CNode *>::iterator end = nodes.end();
-	vector<CNode *>::iterator fence = nodes.begin();
-	fence += nodes.size() - n;
+	vector<CNode *>::iterator start = allNodes.begin();
+	vector<CNode *>::iterator end = allNodes.end();
+	vector<CNode *>::iterator fence = allNodes.begin();
+	fence += allNodes.size() - n;
 	vector<CNode *> leftNodes(start, fence);
 
 	//Remove invalid positoins belonging to the deleted nodes
-	vector<CNode *> deletedNodes(fence, end);
-	vector<int> deletedIDs;
-	for(auto inode = deletedNodes.begin(); inode != deletedNodes.end(); ++inode)
-		deletedIDs.push_back( (*inode)->getID() );
-
-	for(vector<CPosition *>::iterator ipos = CPosition::positions.begin(); ipos != CPosition::positions.end(); )
-	{
-		if( IfExists(deletedIDs, (*ipos)->getNode()) )
-			ipos = CPosition::positions.erase(ipos);
-		else
-			++ipos;
-	}
-
-	nodes = leftNodes;
-	CNode::deletedNodes.insert(CNode::deletedNodes.end(), deletedNodes.begin(), deletedNodes.end());
+	vector<CNode *> removed(fence, end);
+	return removed;
 }
 
-void CNode::updateStatus(int currentTime)
+void CNode::updateStatus(int now)
 {
-	if( this->time == currentTime )
+	if( this->time == now )
 		return;
 
 	int newTime = this->time;
 
 	//计算能耗、更新工作状态
-	while( ( newTime + getConfig<int>("simulation", "slot") ) <= currentTime )
+	while( ( newTime + getConfig<int>("simulation", "slot") ) <= now )
 	{
 		newTime += getConfig<int>("simulation", "slot");
 
@@ -507,12 +250,12 @@ void CNode::updateStatus(int currentTime)
 		switch( state )
 		{
 			case _awake:
-				consumeEnergy(getConfig<double>("trans", "consumption_wake") * getConfig<int>("simulation", "slot"), currentTime);
+				consumeEnergy(getConfig<double>("trans", "consumption_wake") * getConfig<int>("simulation", "slot"), now);
 				updateTimerWake(newTime);
 
 				break;
 			case _asleep:
-				consumeEnergy(getConfig<double>("trans", "consumption_sleep") * getConfig<int>("simulation", "slot"), currentTime);
+				consumeEnergy(getConfig<double>("trans", "consumption_sleep") * getConfig<int>("simulation", "slot"), now);
 				updateTimerSleep(newTime);
 
 				break;
@@ -530,23 +273,18 @@ void CNode::updateStatus(int currentTime)
 	sumTimeAlive += newTime - this->time;
 
 	//生成数据
-	if( currentTime <= getConfig<int>("simulation", "datatime") )
-		generateData(currentTime);
-
-
-	/**************************************  Prophet  *************************************/
-	if( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") == config::_prophet 
-		 && (currentTime % getConfig<int>("trace", "interval")) == 0  )
-		CProphet::decayDeliveryPreds(this, currentTime);
+	if( now <= getConfig<int>("simulation", "datatime") )
+		generateData(now);
 
 	//更新坐标及时间戳
-	if( ! trace->isValid(currentTime) )
+	if( ! trace->isValid(now) )
 	{
-		die(currentTime);  //因 trace 信息终止而死亡的节点，无法回收
+		die(now);
+		CPrintHelper::PrintBrief(now, this->getName() + " dies of trace exhaustion.");
 		return;
 	}
-	setLocation(trace->getLocation(currentTime));
-	setTime(currentTime);
+	setLocation(trace->getLocation(now));
+	setTime(now);
 
 }
 
@@ -599,26 +337,3 @@ void CNode::recordBufferStatus()
 	++countBufferRecord;
 }
 
-vector<CData> CNode::getDataByRequestList(vector<int> requestList) const
-{
-	if( requestList.empty() || buffer.empty() )
-		return vector<CData>();
-
-	vector<CData> result;
-	result = CData::GetItemsByID(buffer, requestList);
-	return result;
-}
-
-int CNode::getCapacityForward()
-{
-	int capacity = capacityBuffer - buffer.size();
-	if( capacity < 0 )
-		capacity = 0;
-
-	if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_selfish )
-		return capacity;
-	else if( getConfig<CConfiguration::EnumRelayScheme>("node", "scheme_relay") == config::_loose )
-		return capacityBuffer;
-	else
-		return 0;
-}

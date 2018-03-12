@@ -6,6 +6,7 @@
 #include "HotspotSelect.h"
 #include "PrintHelper.h"
 
+double CHDC::HOTSPOT_DUTY_RATE = 0;
 
 CHDC::CHDC()
 {
@@ -17,86 +18,81 @@ CHDC::~CHDC()
 	
 }
 
-void CHDC::UpdateDutyCycleForNodes(int currentTime)
+void CHDC::UpdateDutyCycleForNodes(int now)
 {
-	if( ! ( currentTime % getConfig<int>("trace", "interval") == 0 ) )
+	if( ! ( now % getConfig<int>("trace", "interval") == 0 ) )
 		return;
 
-	vector<CHotspot *> hotspots = CHotspot::getSelectedHotspots();
-	vector<CNode *> nodes = CNode::getNodes();
+	vector<CHotspot *> hotspots = CHotspotSelect::getSelectedHotspots();
+	vector<CNode *> nodes = CNode::getAllNodes();
 	if( hotspots.empty()
 		|| nodes.empty() )
 		return;
 
-	static bool print = false;
-	if( currentTime == 0 
-		|| print )
-	{
-		CPrintHelper::PrintHeading(currentTime, "DUTY CYCLE UPDATE");
-		print = false;
-	}
+	CPrintHelper::PrintHeading(now, "DUTY CYCLE UPDATE");
 
-	int atHotspotCount = 0;
+	int nHotspotDutyRate = 0;
 	for(vector<CNode *>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
 	{
+		bool usingHotspotDutyCycle = isUsingHotspotDutyCycle( *inode );
+		bool atHotspot = CHotspot::isAtWaypoint(( *inode )->getID());
 		//update duty cycle
-		if( (*inode)->useHotspotDutyCycle()
-			&& ( ! (*inode)->isAtHotspot() ) )
+		if( usingHotspotDutyCycle
+			&& !atHotspot  )
 		{
-			CPrintHelper::PrintDetail(currentTime, (*inode)->format() + " leaves hotspot");
 			(*inode)->resetDutyCycle();
+			CPrintHelper::PrintDetail(now, "Duty cycle of " + ( *inode )->getName() + " is reset.", 3);
 		}
-		else if( (*inode)->useDefaultDutyCycle()
-				 && (*inode)->isAtHotspot() )
+		else if( !usingHotspotDutyCycle
+				 && atHotspot )
 		{
-			CPrintHelper::PrintDetail(currentTime, ( *inode )->format() + " enters " + ( *inode )->getAtHotspot()->format());
-			(*inode)->raiseDutyCycle();
+			(*inode)->raiseDutyCycle(HOTSPOT_DUTY_RATE);
+			CPrintHelper::PrintDetail(now, "Duty cycle of " + (*inode)->getName() + " is raised.", 3);
 		}
-	}
 
-	//控制台输出时保留一位小数
-	if( ( currentTime + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
-	{
-		CPrintHelper::PrintPercentage("Hotspot Encounter", CNode::getPercentEncounterAtHotspot());
-		print = true;
+		if( isUsingHotspotDutyCycle(*inode) )
+			++nHotspotDutyRate;
 	}
-	CPrintHelper::PrintPercentage("Hot-Node", atHotspotCount);
-
+	CPrintHelper::PrintPercentage("Nodes Using Hotspot Duty Rate", (double)nHotspotDutyRate / nodes.size());
 }
 
-void CHDC::PrintInfo(int currentTime)
+bool CHDC::isUsingHotspotDutyCycle(CNode * node)
 {
-	CMacProtocol::PrintInfo(currentTime);
+	return EQUAL(node->getDutyCycle(), HOTSPOT_DUTY_RATE);
+}
 
-	if( ! ( ( currentTime % getConfig<int>("hs", "slot_hotspot_update") == 0 
-		      && currentTime >= getConfig<int>("hs", "starttime_hospot_select") )
-			|| currentTime == getConfig<int>("simulation", "runtime")  ) )
+void CHDC::PrintInfo(int now)
+{
+	CMacProtocol::PrintInfo(now);
+
+	if( ! ( ( now % getConfig<int>("hs", "slot_hotspot_update") == 0 
+		      && now >= getConfig<int>("hs", "starttime_hospot_select") )
+			|| now == getConfig<int>("simulation", "runtime")  ) )
 		return;
 
-	CHotspotSelect::PrintInfo(currentTime);
+	CHotspotSelect::PrintInfo(now);
 }
 
-void CHDC::PrintFinal(int currentTime)
+void CHDC::PrintFinal(int now)
 {
-	CMacProtocol::PrintFinal(currentTime);
+	CMacProtocol::PrintFinal(now);
 
-	CHotspotSelect::PrintFinal(currentTime);
+	CHotspotSelect::PrintFinal(now);
 	
 }
 
-bool CHDC::Prepare(int currentTime)
+bool CHDC::Init()
 {
-	if( !CMacProtocol::Prepare(currentTime) )
-		return false;
-
-	UpdateDutyCycleForNodes(currentTime);
-
+	HOTSPOT_DUTY_RATE = getConfig<double>("hdc", "hotspot_duty_rate");
 	return true;
 }
 
-bool CHDC::Operate(int currentTime)
+bool CHDC::Prepare(int now)
 {
-	CMacProtocol::CommunicateWithNeighbor(currentTime);
+	if( !CMacProtocol::Prepare(now) )
+		return false;
+
+	UpdateDutyCycleForNodes(now);
 
 	return true;
 }

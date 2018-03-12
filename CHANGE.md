@@ -811,9 +811,13 @@
 - RFCT: Change to use `map<string, map<string, pair<void*, EnumType>>>` to store & access all the configs;
 - MNT: Modify recent commits as 3.7.*;
 
-###### 2018-02-14 ¡¤ *< 3.7.6619.23046 >*
+###### [2018-02-14 ¡¤ *< 3.7.6619.23046 >*](364bb0eabbbfe2f820c6e68255b4e8a4240887d1)
 
 - MNT: Changes to version Numbering & rc attributes;
+
+###### 2018-03-12 ¡¤ *< 4.0.6645.28455 >*
+
+- RFCT: Major refactoring for Node related classes, routing & MAC protocols and so on;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

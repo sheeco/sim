@@ -49,7 +49,17 @@ public:
 	{
 		string xstr = STRING(this->x);
 		string ystr = STRING(this->y);
-		return xstr + "," + ystr;
+		return "(" + xstr + ", " + ystr + ")";
+	}
+	//返回两点间距离
+	inline static double getDistance(CCoordinate m, CCoordinate n)
+	{
+		double mx, my, nx, ny;
+		mx = m.getX();
+		my = m.getY();
+		nx = n.getX();
+		ny = n.getY();
+		return sqrt(( mx - nx ) * ( mx - nx ) + ( my - ny ) * ( my - ny ));
 	}
 
 	// 算术操作符重载

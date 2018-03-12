@@ -9,9 +9,6 @@
 
 void CRunHelper::InitLogPath()
 {
-	CPrintHelper::PrintNewLine();
-	CPrintHelper::PrintHeading("Initializing Log Path ...");
-
 	// Create root path (../test/) if doesn't exist
 	if( access(getConfig<string>("log", "dir_log").c_str(), 00) != 0 )
 		_mkdir(getConfig<string>("log", "dir_log").c_str());
@@ -21,24 +18,19 @@ void CRunHelper::InitLogPath()
 	char temp[65] = { '\0' };
 	seconds = time(nullptr); //获取目前秒时间  
 	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
-	updateConfig<string>("log", "timestamp", string(temp));
+	CConfiguration::updateConfiguration<string>("log", "timestamp", string(temp), true);
 	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
 	string timestring;
 	timestring = string(temp);
-	updateConfig<string>("log", "info_log", string("@" + getConfig<string>("log", "timestamp") + TAB));
-	updateConfig<string>("log", "path_timestamp", string("." + timestring + "/"));
+	CConfiguration::updateConfiguration<string>("log", "info_log", string("@" + getConfig<string>("log", "timestamp") + TAB), true);
+	CConfiguration::updateConfiguration<string>("log", "path_timestamp", string("." + timestring + "/"), true);
 
 	// Create log path
 	if( access(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str(), 00) != 0 )
 		_mkdir(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str());
 
 	// Hide folder
-	LPWSTR wstr = CString(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str()).AllocSysString();
-	int attr = GetFileAttributes(wstr);
-	if( ( attr & FILE_ATTRIBUTE_HIDDEN ) == 0 )
-	{
-		SetFileAttributes(wstr, attr | FILE_ATTRIBUTE_HIDDEN);
-	}
+	CFileHelper::SetHidden( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") );
 
 }
 
@@ -46,12 +38,17 @@ bool CRunHelper::PrepareSimulation(int argc, char* argv[])
 {
 	CConfiguration::InitConfiguration();
 
+	InitLogPath();
+
+	/*********************************************  按照命令格式解析参数配置  *********************************************/
+
+	CConfiguration::ParseConfiguration(getConfig<string>("log", "dir_run") + getConfig<string>("log", "file_default_config"));
+
 	vector<string> args = CConfiguration::ConvertToConfiguration(argc - 1, ( argv + 1 ));
 	CConfiguration::ParseConfiguration(args, "Command Line Args");
 
 	CConfiguration::ValidateConfiguration();
 
-	InitLogPath();
 
 	CConfiguration::PrintConfiguration();
 
@@ -61,44 +58,46 @@ bool CRunHelper::PrepareSimulation(int argc, char* argv[])
 
 bool CRunHelper::RunSimulation()
 {
-	int currentTime = 0;
+	int now = 0;
 	bool dead = false;
 
-	switch( getConfig<CConfiguration::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
+	CNode::Init(now);
+
+	switch( getConfig<config::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
 		case config::_prophet:
 			
-			CProphet::Init();
-			while( currentTime <= getConfig<int>("simulation", "runtime") )
+			CProphet::Init(now);
+			while( now <= getConfig<int>("simulation", "runtime") )
 			{
-				dead = !CProphet::Operate(currentTime);
+				dead = !CProphet::Operate(now);
 
 				if( dead )
 				{
-					updateConfig<int>("simulation", "runtime", currentTime);
+					updateConfig<int>("simulation", "runtime", now);
 					break;
 				}
-				currentTime += getConfig<int>("simulation", "slot");
+				now += getConfig<int>("simulation", "slot");
 			}
-			CProphet::PrintFinal(currentTime);
+			CProphet::PrintFinal(now);
 
 			break;
 
 		case config::_xhar:
 
-			HAR::Init();
-			while( currentTime <= getConfig<int>("simulation", "runtime") )
+			HAR::Init(now);
+			while( now <= getConfig<int>("simulation", "runtime") )
 			{
-				dead = !HAR::Operate(currentTime);
+				dead = !HAR::Operate(now);
 
 				if( dead )
 				{
-					updateConfig<int>("simulation", "runtime", currentTime);
+					updateConfig<int>("simulation", "runtime", now);
 					break;
 				}
-				currentTime += getConfig<int>("simulation", "slot");
+				now += getConfig<int>("simulation", "slot");
 			}
-			HAR::PrintFinal(currentTime);
+			HAR::PrintFinal(now);
 
 			break;
 
@@ -149,5 +148,6 @@ bool CRunHelper::Debug()
 	CConfiguration::test();
 
 	Exit(ESKIP);
+	return true;
 }
 

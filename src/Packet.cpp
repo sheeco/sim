@@ -22,4 +22,5 @@ void CPacket::init()
 	this->timeBirth = 0;
 	this->size = 0;
 	this->HOP = 0;
+	this->MAX_HOP = INVALID;
 }

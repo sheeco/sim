@@ -75,9 +75,6 @@
     <ClCompile Include="..\src\MacProtocol.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SMac.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Ctrl.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

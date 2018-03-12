@@ -20,6 +20,7 @@ class CGeneralNode :
 {
 protected:
 	string name;
+	bool fifo;
 
 public:
 
@@ -50,6 +51,7 @@ protected:
 	EnumTransmitterState state;
 	vector<CData> buffer;
 	int capacityBuffer;
+	int capacityEnergy;
 	double energyConsumption;
 	int timerOccupied;
 
@@ -59,19 +61,41 @@ public:
 	CGeneralNode()
 	{
 		this->capacityBuffer = 0;
+		this->capacityEnergy = 0;
 		this->energyConsumption = 0;
-		this->timerOccupied = UNVALID;
+		this->timerOccupied = INVALID;
 		state = _awake;
+		fifo = true;
 	}
 
 	virtual ~CGeneralNode() = 0
 	{};
 
+	inline bool finiteEnergy() const
+	{
+		return this->capacityEnergy > 0;
+	}
+	inline bool hasEnergyLeft() const
+	{
+		return !finiteEnergy() || ( this->getEnergyLeft() > 0 );
+	}
+	double getEnergyLeft() const
+	{
+		return this->capacityEnergy - energyConsumption;
+	}
+	inline void setCapacityEnergy(int energy)
+	{
+		this->capacityEnergy = energy;
+	}
+	inline int getCapacityEnergy() const
+	{
+		return capacityEnergy;
+	}
 	inline double getEnergyConsumption() const
 	{
 		return energyConsumption;
 	}
-	virtual void consumeEnergy(double cons, int currentTime)
+	virtual void consumeEnergy(double cons, int now)
 	{
 		this->energyConsumption += cons;
 	}
@@ -79,14 +103,28 @@ public:
 	{
 		return ( ! this->buffer.empty() );
 	}
-	inline int getSizeBuffer() const
+	inline int getCapacityBuffer() const
+	{
+		return this->capacityBuffer;
+	}
+	inline int getBufferSize() const
 	{
 		return this->buffer.size();
+	}
+	inline int getBufferVacancy() const
+	{
+		return this->capacityBuffer - this->getBufferSize();
 	}
 	inline vector<CData> getAllData() const
 	{
 		return this->buffer;
 	}
+
+	/*************************** Communication ***************************/
+
+	CFrame* sendRTS(int now);
+
+	/*************************** DC ***************************/
 
 	virtual inline void Wake()
 	{
@@ -102,7 +140,7 @@ public:
 		return state == _awake;
 	}
 
-	virtual void Overhear(int currentTime);
+	virtual void Overhear(int now);
 	//virtual void Occupy(int time)
 	//{
 	//	if( time <= 0 )
@@ -120,17 +158,86 @@ public:
 	//		timerOccupied -= time - this->time;
 	//	//保留 timerOccupied 的下沿
 	//	if( timerOccupied < 0 )
-	//		timerOccupied = UNVALID;
+	//		timerOccupied = INVALID;
 	//}
 
-//	virtual void receiveFrame(CFrame* frame, int currentTime);
+	/*************************** Buffer ***************************/
 
-//	virtual vector<CData> bufferData(int time, vector<CData> datas);
+	bool isFull()
+	{
+		return buffer.size() >= capacityBuffer;
+	}
 
+	//手动将数据压入 buffer，不伴随其他任何操作，返回新数据的数目
+	//注意：必须在调用此函数之后手动调用 dropDataIfOverflow() 检查溢出
+	int pushIntoBuffer(vector<CData> datas, int now);
 
-//	virtual vector<CData> sendAllData(_SEND mode);
+	//TODO: add queue managing method as arg
+	//溢出时将按照fifo原则丢弃数据并返回溢出的数据
+	vector<CData> dropDataIfOverflow()
+	{
+		if( buffer.empty() )
+			return vector<CData>();
 
-//	virtual bool receiveData(int time, vector<CData> datas);
+		vector<CData> myData;
+		vector<CData> overflow;
+
+		myData = buffer;
+		//myData = CSortHelper::mergeSort(myData, CSortHelper::ascendByTimeBirth);
+		overflow = clipDataByCapacity(myData, capacityBuffer, this->fifo);
+
+		buffer = myData;
+		return overflow;
+	}
+
+	//按照给定的容量裁剪数据列表，返回被移除的数据,FIFO意味着从左侧开始移除
+	//注意：调用之前应该确保数据已排序
+	static vector<CData> clipDataByCapacity(vector<CData> &datas, int capacity, bool fifo)
+	{
+		vector<CData> overflow;
+		if( capacity <= 0
+		   || datas.size() <= capacity )
+			return overflow;
+
+		if( fifo )
+		{
+			overflow = vector<CData>(datas.begin(), datas.begin() + capacity);
+			datas = vector<CData>(datas.begin() + capacity, datas.end());
+		}
+		else
+		{
+			datas = vector<CData>(datas.begin(), datas.begin() + capacity);
+			overflow = vector<CData>(datas.begin() + capacity, datas.end());
+		}
+
+		return overflow;
+	}
+
+	//给定容量，按照节点的 FIFO/FILO 策略，选出合适的数据用于数据传输
+	//返回的队列不会超过传输窗口大小，如果capacity 为 -1 即默认上限即窗口大小
+	vector<CData> getDataForTrans(int capacity)
+	{
+		int window = getConfig<int>("trans", "window_trans");
+		if( capacity == 0 )
+			throw string("CGeneralNode::getDataForTrans() capacity = 0.");
+		else if( capacity < 0 
+				|| capacity > window )
+			capacity = window;
+
+		vector<CData> datas = this->getAllData();
+		clipDataByCapacity(datas, capacity, !this->fifo);
+		return datas;
+	}
+	vector<CData> bufferData(int now, vector<CData> datas)
+	{
+		vector<CData> ack = datas;
+
+		this->pushIntoBuffer(datas, now);
+		vector<CData> overflow = this->dropDataIfOverflow();
+		RemoveFromList(ack, overflow);
+
+		return ack;
+	}
 
 };
 

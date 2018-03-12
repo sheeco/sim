@@ -6,10 +6,10 @@
 #include "Global.h"
 #include "Configuration.h"
 #include "GeneralNode.h"
-#include "Hotspot.h"
 #include "Frame.h"
 #include "Trace.h"
 #include "FileHelper.h"
+#include "PrintHelper.h"
 
 class CNode :
 	virtual public CGeneralNode
@@ -22,18 +22,20 @@ class CNode :
 	//	bool flag;
 
 
-private:
+protected:
 
+	//TODO: make sure identifier is printed instead of ID in log files
+	string nodeIdentifier;  //node identifier read from trace file
 	CCTrace* trace;
 	double dataRate;
 	double dutyCycle;
 
 	//  [ ----------SLEEP----------> | ----WAKE----> )
 
-	int SLOT_SLEEP;  //由getConfig<int>("mac", "cycle")和DC计算得到
-	int SLOT_WAKE;  //由getConfig<int>("mac", "cycle")和DC计算得到
+	int SLOT_SLEEP;  //由WORK_CYCLE和DC计算得到
+	int SLOT_WAKE;  //由WORK_CYCLE和DC计算得到
 
-					//计时器：UNVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
+					//计时器：INVALID(-1) 表示当前不处于此状态；0 表示此状态即将结束
 	int timerSleep;
 	int timerWake;
 	int timerCarrierSense;  //距离载波侦听结束、邻居节点发现开始的剩余时间
@@ -41,26 +43,31 @@ private:
 
 	int timeLastData;  //上一次数据生成的时间
 	int timeDeath;  //节点失效时间，默认值为-1
-	CHotspot *atHotspot;
 
 	int sumTimeAwake;
 	int sumTimeAlive;
 	//用于统计输出节点的buffer状态信息
 	int sumBufferRecord;
 	int countBufferRecord;
-	static int encounterAtHotspot;
-	//	static int encounterActiveAtHotspot;
-	//	static int encounterActive;  //有效相遇
+	//TODO: move to proper class
 	static int encounter;
-	static int visiterAtHotspot;
 	static int visiter;
 
 	static int COUNT_ID;
-	static vector<CNode *> nodes;  //用于储存所有传感器节点，从原来的HAR::CNode::nodes移动到这里
-								   // TODO: remove ?
-	static vector<CNode *> deadNodes;  //能量耗尽的节点
-	static vector<CNode *> deletedNodes;  //用于暂存Node个数动态变化时被暂时移出的节点
+	static vector<CNode*> allNodes;
+	static vector<CNode*> aliveNodes;
+	static vector<CNode*> deadNodes;
+	static map<int, CNode*> mapAllNodes;
+	//TODO: remove ?
+	static vector<int> idNodes;
 
+	static double DEFAULT_DATA_RATE;
+	static int DEFAULT_CAPACITY_BUFFER;
+	static int DEFAULT_CAPACITY_ENERGY;
+	static int WORK_CYCLE;
+	static double DEFAULT_DUTY_RATE;
+
+	/***********************  Initialization  ************************/
 
 	void init();
 
@@ -68,89 +75,170 @@ private:
 
 	CNode(double dataRate);
 
-	~CNode();
+	void generateID()
+	{
+		++COUNT_ID;
+		this->ID = COUNT_ID;
+	}
+	void setIdentifier(string nodeIdentifier)
+	{
+		this->nodeIdentifier = nodeIdentifier;
+	}
+	void loadTrace(string filepath)
+	{
+		this->trace = CCTrace::readTraceFromFile(filepath, getConfig<bool>("trace", "continuous"));
+		string filename = CFileHelper::SplitPath(filepath).second;
+		string nodename = CFileHelper::SplitFilename(filename).first;
+		this->setIdentifier(nodename);
+		this->setName("Node " + nodename);
+	}
+	static vector<CNode*> loadNodesFromFile()
+	{
+		vector<CNode*> nodes;
+		string path = getConfig<string>("trace", "path");
+		vector<string> filenames = CFileHelper::ListDirectory(path);
+		filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
 
-	static void initNodes();
+		if(filenames.empty())
+			throw string("CNode::loadNodesFromFile(): Cannot find any trace files under \"" + path + "\".");
 
-	void generateData(int currentTime);
+		for(int i = 0; i < filenames.size(); ++i)
+		{
+			double dataRate = DEFAULT_DATA_RATE;
+			if(i % 5 == 0)
+				dataRate *= 5;
+			CNode* pnode = new CNode();
+			pnode->setDataByteRate(dataRate);
+			pnode->generateID();
+			pnode->loadTrace(filenames[i]);
+
+			nodes.push_back(pnode);
+			CPrintHelper::PrintBrief(pnode->getName() + " is loaded from trace file " + filenames[i] + ". (" 
+									   + STRING(nodes.size()) + " in total)");
+		}
+		return nodes;
+	}
+
+	void generateData(int now);
 
 
 	/****************************************  MAC  ***************************************/
 
-	//将死亡节点整理移出，返回是否有新的节点死亡
-	static bool ClearDeadNodes(int currentTime);
-
 	//待测试
-	static void removeNodes(int n);
+	static vector<CNode*> removeNodes(int n);
 	//待测试
-	static void restoreNodes(int n);
+	static vector<CNode*> restoreNodes(vector<CNode*> removedNodes, int n);
 
-	//	CFrame sendCTSWithIndex(CNode* dst, int currentTime);
-	//	CFrame sendDataWithIndex(CNode* dst, vector<CData> datas, int currentTime);
+	//	CFrame sendCTSWithIndex(CNode* dst, int now);
+	//	CFrame sendDataWithIndex(CNode* dst, vector<CData> datas, int now);
 	//	vector<CData> bufferData(int time, vector<CData> datas) override;
 
 
 
 	/*************************************  Epidemic  *************************************/
 
-	vector<int> summaryVector;
-	map<CNode *, int> spokenCache;
-
-
-	/**************************************  Prophet  *************************************/
-
-
-	map<int, double> deliveryPreds;  //< ID:x, P(this->id, x) >，sink节点ID为0将位于最前，便于查找
+	//vector<int> summaryVector;
+	static int LIFETIME_COMMUNICATION_HISROTY;
+	map<int, int> communicationHistory;  // (nodeId, lastCommunicationTime)
 
 
 public:
 
+	~CNode();
+
+	/***********************  Setters & Getters  ************************/
+
+	string getIdentifier()
+	{
+		return this->nodeIdentifier;
+	}
+
+	void setDataByteRate(double dataRate)
+	{
+		this->dataRate = dataRate;
+	}
+	double getDataByteRate() const
+	{
+		return dataRate;
+	}
+	double getDataCountRate() const
+	{
+		return dataRate / getConfig<int>("data", "size_data");
+	}
+	CCTrace getTrace() const
+	{
+		return *(this->trace);
+	}
+
+
+	/***********************  Alive / Dead  ************************/
+
+	void die(int now)
+	{
+		this->timeDeath = now;
+		this->setTime(now);
+	}
+	//不设置能量值时，始终返回true
+	bool isAlive() const
+	{
+		return !( this->timeDeath >= 0 );
+	}
+	//true if energy has ran out
+	//false if trace information has ran out
+	//the feature is not used for now
+	bool isRecyclable(int now) const
+	{
+		return this->trace->isValid(now);
+	}
+
 	/****************************************  MAC  ***************************************/
 
 	// TODO: trigger operations here ?
-	// *TODO: move even between 2 locations ?
+	// TODO: move even between 2 locations ?
 	// TODO: how to trigger RTS ?
 	//更新所有node的坐标、占空比和工作状态，生成数据；调用之后应调用 isAlive() 检验存活
-	void updateStatus(int currentTime);
+	void updateStatus(int now);
 
-	void updateTimerWake(int time);
-	void updateTimerSleep(int time);
+	//TODO: move into Prophet ?
+	CFrame* sendRTSWithCapacityAndIndex(int now);
 
-	//	void receiveRTS(CFrame frame);
+	bool hasCommunicatedRecently(int nodeId, int now);
 
-	//	void receiveFrame(CFrame* frame, int currentTime) override;
-
-	CFrame* sendRTSWithCapacityAndPred(int currentTime);
-
-	bool hasSpokenRecently(CNode* node, int currentTime);
-
-	void addToSpokenCache(CNode* node, int t);
-
-	//由给出的ID列表提取对应数据
-	vector<CData> getDataByRequestList(vector<int> requestList) const;
+	void updateCommunicationHistory(int nodeId, int now);
 
 	//（仅MODE_SEND == _dump时）删除 ACK 的数据
-	void checkDataByAck(vector<CData> ack);
+	void dropDataByAck(vector<CData> ack);
 
-	// TODO: skip sending RTS if node has received any RTS ? yes if *trans delay countable
+	// TODO: skip sending RTS if node has received any RTS ? yes if trans delay countable
 	//标记已收到过其他节点的 RTS (暂未使用)
 	//bool skipRTS()
 	//{
 	//	return false;
 	//}
 
-	void Overhear(int currentTime) override;
+	void Overhear(int now) override;
 
 	/*************************** DC相关 ***************************/
 
 	void Wake() override;
 	void Sleep() override;
 
+	void setDutyCycle(double dutyCycle)
+	{
+		this->dutyCycle = dutyCycle;
+	}
+	double getDutyCycle() const
+	{
+		return this->dutyCycle;
+	}
 	bool isAwake() const override
 	{
 		//将 timerOccupied 的下沿也认为是唤醒的
 		return state == _awake /*|| timerOccupied == 0*/;
 	}
+	void updateTimerWake(int time);
+	void updateTimerSleep(int time);
+
 
 	//判断是否处于邻居节点发现状态
 	//注意：调用此函数之前必须确保已updateStatus
@@ -163,7 +251,7 @@ public:
 	void startDiscovering()
 	{
 		this->discovering = true;
-		this->timerCarrierSense = UNVALID;
+		this->timerCarrierSense = INVALID;
 	}
 
 	//标记本次邻居节点发现已经完成
@@ -180,77 +268,180 @@ public:
 
 		this->timerCarrierSense += timeDelay;
 		this->discovering = false;
-		//延迟后超出唤醒时限，则立即休眠
+		//延迟后超出唤醒时限，延长唤醒，延迟休眠
 		if( timerCarrierSense >= timerWake )
-			Sleep();
+			delaySleep(timeDelay);
 	}
 
+	//如果剩余唤醒时间不足数，将延长唤醒时间，延迟休眠
 	void delaySleep(int timeDelay)
 	{
 		if( timeDelay <= 0 )
 			return;
 		if( state != _awake )
 			return;
-
-		this->timerWake += timeDelay;
+		if( timerWake < timeDelay )
+			this->timerWake += timeDelay;
 	}
 
-	inline bool useDefaultDutyCycle()
-	{
-		return EQUAL(dutyCycle, getConfig<double>("mac", "duty_rate"));
-	}
-	inline bool useHotspotDutyCycle()
-	{
-		return EQUAL(dutyCycle, getConfig<double>("hdc", "hotspot_duty_rate"));
-	}
 	//在热点处提高 dc
-	void raiseDutyCycle();
+	void raiseDutyCycle(double newDutyCycle)
+	{
+		this->setDutyCycle(newDutyCycle);
+		int oldSlotWake = SLOT_WAKE;
+		SLOT_WAKE = int(WORK_CYCLE * newDutyCycle);
+		SLOT_SLEEP = WORK_CYCLE - SLOT_WAKE;
+		//唤醒状态下，延长唤醒时间
+		if(isAwake())
+			timerWake += SLOT_WAKE - oldSlotWake;
+		//休眠状态下，立即唤醒
+		else
+			Wake();
+	}
 	//在非热点处降低 dc
-	void resetDutyCycle();
+	void resetDutyCycle()
+	{
+		this->setDutyCycle( DEFAULT_DUTY_RATE );
+		int oldSlotWake = SLOT_WAKE;
+		SLOT_WAKE = int(WORK_CYCLE * this->getDutyCycle());
+		SLOT_SLEEP = WORK_CYCLE - SLOT_WAKE;
+	}
 
-	/*************************** ------- ***************************/
 
 	/*************************** 能耗相关 ***************************/
 
-	void consumeEnergy(double cons, int currentTime) override
+	void consumeEnergy(double cons, int now) override
 	{
-		this->energyConsumption += cons;
-		if( getConfig<int>("node", "energy") > 0
-		   && getConfig<int>("node", "energy") - energyConsumption <= 0 )
-			this->die(currentTime);
+		CGeneralNode::consumeEnergy(cons, now);
+
+		if( !hasEnergyLeft() )
+		{
+			this->die(now);
+			CPrintHelper::PrintBrief(now, this->getName() + " dies of energy exhaustion.");
+		}
 	}
 
-	//不设置能量值时，始终返回true
-	bool isAlive() const
+
+	/****************************  Static Methods  *******************************/
+
+	static int getCountAliveNodes();
+
+	static vector<int> getIdNodes(vector<CNode*> nodes)
 	{
-		return this->timeDeath >= 0;
+		vector<int> ids;
+		for(CNode * inode : nodes)
+			ids.push_back(inode->getID());
+		return ids;
 	}
 
-	double getEnergy() const
+	static void Init(int now)
 	{
-		if( !isAlive() )
-			return 0;
-		return getConfig<int>("node", "energy") - energyConsumption;
-	}
+		DEFAULT_DATA_RATE = getConfig<double>("node", "default_data_rate");
+		DEFAULT_CAPACITY_BUFFER = getConfig<int>("node", "buffer");
+		DEFAULT_CAPACITY_ENERGY = getConfig<int>("node", "energy");
+		WORK_CYCLE = getConfig<int>("mac", "cycle");
+		DEFAULT_DUTY_RATE = getConfig<double>("mac", "duty_rate");
 
-	//true if energy has ran out
-	//false if trace information has ran out
-	//the feature is not used for now
-	bool isRecyclable(int currentTime) const
-	{
-		return this->trace->isValid(currentTime);
-	}
+		LIFETIME_COMMUNICATION_HISROTY = getConfig<int>("node", "lifetime_communication_history");
 
-	void die(int currentTime)
+		allNodes = CNode::loadNodesFromFile();
+		aliveNodes = allNodes;
+		mapAllNodes.clear();
+		for( CNode* pnode : allNodes )
+			mapAllNodes[pnode->getID()] = pnode;
+		deadNodes.clear();
+	}
+	//TODO: check all the static methods for CNode
+	static bool hasNodes()
 	{
-		this->timeDeath = currentTime;
+		return !aliveNodes.empty();
+	}
+	static vector<CNode*> getAllNodes()
+	{
+		return allNodes;
+	}
+	static vector<CNode*> getAliveNodes()
+	{
+		return aliveNodes;
+	}
+	static vector<CNode*> getDeadNodes()
+	{
+		return deadNodes;
+	}
+	static CNode* findNodeByID(int id)
+	{
+		map<int, CNode*>::iterator imap = mapAllNodes.find(id);
+		if( imap == mapAllNodes.end() )
+			return nullptr;
+		else
+			return imap->second;
+	}
+	static bool UpdateNodeStatus(int now)
+	{
+		//update basic status
+		vector<CNode *> nodes = aliveNodes;
+		for( CNode * pnode : aliveNodes )
+			pnode->updateStatus(now);
+
+		CNode::ClearDeadNodes(now);
+
+		return hasNodes();
+	}
+	//将死亡节点整理移出，返回是否有新的节点死亡
+	static bool ClearDeadNodes(int now)
+	{
+		int nAlive = aliveNodes.size();
+		vector<CNode*> newlyDeadNodes;
+		bool death = false;
+		for( vector<CNode *>::iterator ipNode = aliveNodes.begin(); ipNode != aliveNodes.end(); )
+		{
+			if( !( *ipNode )->isAlive() )
+			{
+				death = true;
+				newlyDeadNodes.push_back(*ipNode);
+				ipNode = aliveNodes.erase(ipNode);
+			}
+			else
+				++ipNode;
+		}
+
+		if( death )
+		{
+			int nDead = 0;
+			ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
+			if( now == 0 )
+			{
+				death << endl << getConfig<string>("log", "info_log") << endl;
+				death << getConfig<string>("log", "info_death") << endl;
+			}
+			for( CNode* pdead : newlyDeadNodes )
+				death << now << TAB << pdead->getIdentifier() << TAB << nAlive - (++nDead) << TAB << CData::getCountDelivery()
+				<< TAB << CData::getDeliveryRatio() << endl;
+			death.close();
+			ASSERT(nAlive - nDead == aliveNodes.size());
+			CPrintHelper::PrintAttribute("Node Count", STRING(nAlive) + " -> " + STRING(nAlive - nDead));
+		}
+
+		deadNodes.insert(deadNodes.end(), newlyDeadNodes.begin(), newlyDeadNodes.end());
+		return death;
 	}
 
 	static bool finiteEnergy();
 
-	static bool hasNodes(int currentTime);
+	/****************************  Statistics  *******************************/
 
 	static double getSumEnergyConsumption();
+
+	//更新buffer状态记录，以便计算buffer status
+	void recordBufferStatus();
+
+	double getAverageSizeBuffer() const
+	{
+		if( sumBufferRecord == 0 )
+			return 0;
+		else
+			return double(sumBufferRecord) / double(countBufferRecord);
+	}
 
 	//统计唤醒时间
 	int getSumTimeAwake() const
@@ -264,72 +455,6 @@ public:
 		return double(sumTimeAwake) / double(sumTimeAlive);
 	}
 
-	/*************************** ------- ***************************/
-
-
-	/*************************** 队列管理 ***************************/
-
-	bool isFull()
-	{
-		return buffer.size() == capacityBuffer;
-	}
-
-	//手动将数据压入 buffer，不伴随其他任何操作
-	//注意：必须在调用此函数之后手动调用 updateBufferStatus() 检查溢出
-	void pushIntoBuffer(vector<CData> datas);
-
-	//返回溢出的数据
-	//注意：调用之前应该确保数据已排序
-	static vector<CData> removeDataByCapacity(vector<CData> &datas, int capacity, bool fromLeft);
-
-	//将按照(1)“其他节点-本节点”(2)“旧-新”的顺序对buffer中的数据进行排序
-	//超出MAX_DATA_RELAY时从前端丢弃数据，溢出时将从前端丢弃数据并返回
-	//注意：必须在dropOverdueData之后调用
-	vector<CData> dropDataIfOverflow();
-
-	//注意：需要在每次收到数据之后、投递数据之后、生成新数据之后调用此函数
-	vector<CData> updateBufferStatus(int currentTime);
-
-	/*************************** ------- ***************************/
-
-	//获取最新 SV（HOP == 0 的消息不会放入SV）
-	//注意：应确保调用之前buffer状态为最新
-	vector<int> updateSummaryVector();
-
-
-	/**************************************  Prophet  *************************************/
-
-	map<int, double> getDeliveryPreds() const
-	{
-		return deliveryPreds;
-	}
-
-	void setDeliveryPreds(map<int, double> deliveryPreds)
-	{
-		this->deliveryPreds = deliveryPreds;
-	}
-
-	//返回节点允许接收的最大数据数
-	int getCapacityForward();
-
-
-	static vector<CNode *>& getNodes();
-
-	static int getNodeCount();
-
-	//包括已经失效的节点和删除的节点，按照ID排序
-	static vector<CNode *> getAllNodes(bool sort);
-
-	static vector<int> getIdNodes();
-
-	static bool ifNodeExists(int id);
-
-	//该节点不存在时无返回值所以将出错，所以必须在每次调用之前调用函数ifNodeExists()进行检查
-	static CNode* getNodeByID(int id);
-
-
-	/*************************** 相遇 & 访问 & 传输计数 ***************************/
-
 	//相遇计数：HAR中统计节点和MA的相遇，否则统计节点间的相遇计数
 	//注意：暂时只支持Prophet路由，其他路由尚未添加相关代码
 	//所有可能的相遇（与MAC和路由协议无关，只与数据集和统计时槽有关）
@@ -342,17 +467,6 @@ public:
 	//	{
 	//		++encounterActive;
 	//	}
-	//热点区域所有可能的相遇（只与数据集和热点选取有关）
-	static void encountAtHotspot()
-	{
-		++encounterAtHotspot;
-	}
-	//	//热点区域内的有效相遇，即邻居节点发现时槽上的节点和监听时槽上的节点（即将触发数据传输）的相遇
-	//	static void encountActiveAtHotspot() 
-	//	{
-	//		++encounterActiveAtHotspot;
-	//	}
-
 	static int getEncounter()
 	{
 		return encounter;
@@ -361,122 +475,15 @@ public:
 	//	{
 	//		return encounterActive;
 	//	}
-	static int getEncounterAtHotspot()
-	{
-		return encounterAtHotspot;
-	}
-	//	static int getEncounterActiveAtHotspot() 
-	//	{
-	//		return encounterActiveAtHotspot;
-	//	}
-	//	//所有有效相遇中，发生在热点区域的比例
-	//	static double getPercentEncounterActiveAtHotspot() 
-	//	{
-	//		if(encounterActiveAtHotspot == 0)
-	//			return 0.0;
-	//		return double(encounterActiveAtHotspot) / double(encounterActive);
-	//	}
-	static double getPercentEncounterAtHotspot()
-	{
-		if( encounterAtHotspot == 0 )
-			return 0.0;
-		return double(encounterAtHotspot) / double(encounter);
-	}
-	//	static double getPercentEncounterActive() 
-	//	{
-	//		if(encounterActive == 0)
-	//			return 0.0;
-	//		return double(encounterActive) / double(encounter);
-	//	}
-
-	//访问计数：用于统计节点位于热点内的百分比（HAR路由中尚未添加调用）
-	static void visitAtHotspot()
-	{
-		++visiterAtHotspot;
-	}
 	static void visit()
 	{
 		++visiter;
 	}
 
-	static double getPercentVisiterAtHotspot()
-	{
-		if( visiterAtHotspot == 0 )
-			return 0.0;
-		return double(visiterAtHotspot) / double(visiter);
-	}
 	static int getVisiter()
 	{
 		return visiter;
 	}
-	static int getVisiterAtHotspot()
-	{
-		return visiterAtHotspot;
-	}
-
-	/*************************** ------- ***************************/
-
-	double getDataByteRate() const
-	{
-		return dataRate;
-	}
-
-	double getDataCountRate() const
-	{
-		return dataRate / getConfig<int>("data", "size_data");
-	}
-
-	CHotspot* getAtHotspot() const
-	{
-		return atHotspot;
-	}
-
-	void setAtHotspot(CHotspot* atHotspot)
-	{
-		this->atHotspot = atHotspot;
-	}
-
-	bool isAtHotspot() const
-	{
-		return atHotspot != nullptr;
-	}
-
-	void generateID()
-	{
-		++COUNT_ID;
-		this->ID = COUNT_ID;
-	}
-	void loadTrace(string filepath)
-	{
-		this->trace = CCTrace::readTraceFromFile(filepath);
-		string filename = CFileHelper::SplitPath(filepath).second;
-		string nodename = CFileHelper::SplitFilename(filename).first;
-		this->setName("Node #" + nodename);
-	}
-
-	double getAverageSizeBuffer() const
-	{
-		if( sumBufferRecord == 0 )
-			return 0;
-		else
-			return double(sumBufferRecord) / double(countBufferRecord);
-	}
-
-	//更新buffer状态记录，以便计算buffer status
-	void recordBufferStatus();
-
-	//	vector<CData> sendAllData(_SEND mode) override;
-
-	//	vector<CData> sendData(int n);
-
-	//	bool receiveData(int time, vector<CData> datas) override;
-
-
-	/**************************************  Prophet  *************************************/
-
-	//	map<int, double> sendDeliveryPreds();
-	//
-	//	map<int, double> receiveDeliveryPredsAndSV(map<int, double> preds, vector<int>& sv);
 
 };
 

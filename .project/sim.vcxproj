@@ -150,7 +150,6 @@
     <ClCompile Include="..\src\Route.cpp" />
     <ClCompile Include="..\src\RoutingProtocol.cpp" />
     <ClCompile Include="..\src\Sink.cpp" />
-    <ClCompile Include="..\src\SMac.cpp" />
     <ClCompile Include="..\src\SortHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
