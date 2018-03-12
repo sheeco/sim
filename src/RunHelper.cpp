@@ -3,6 +3,7 @@
 #include "Prophet.h"
 #include "HAR.h"
 #include "HDC.h"
+#include "PFerry.h"
 #include "PrintHelper.h"
 #include "ParseHelper.h"
 
@@ -98,6 +99,24 @@ bool CRunHelper::RunSimulation()
 				now += getConfig<int>("simulation", "slot");
 			}
 			HAR::PrintFinal(now);
+
+			break;
+
+		case config::_pferry:
+
+			CPFerry::Init(now);
+			while( now <= getConfig<int>("simulation", "runtime") )
+			{
+				dead = !CPFerry::Operate(now);
+
+				if( dead )
+				{
+					updateConfig<int>("simulation", "runtime", now);
+					break;
+				}
+				now += getConfig<int>("simulation", "slot");
+			}
+			CPFerry::PrintFinal(now);
 
 			break;
 

@@ -81,6 +81,7 @@ public:
 	{
 		_xhar = 1,
 		_prophet = 2,
+		_pferry = 3
 	} EnumRoutingProtocolScheme;
 
 	typedef enum EnumHotspotSelectScheme

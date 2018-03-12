@@ -351,6 +351,13 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("prophet", "trans_pred", typeid(double), new double(0.25));  //²Î¿¼Öµ 0.25
 	addConfiguration("prophet", "trans_strict_by_pred", typeid(bool), new bool(true));
 
+	addGroup("pferry");
+	addConfiguration("pferry", "path_predict", typeid( string ), new string(""));  //e.g. ../res/predict
+	addConfiguration("pferry", "keyword_predict", typeid( string ), new string(""));
+	addConfiguration("pferry", "extension_pan_file", typeid( string ), new string(".pan"));
+	addConfiguration("pferry", "prestage_protocol", typeid( int ), new EnumRoutingProtocolScheme(_xhar));
+	addConfiguration("pferry", "starttime", typeid( int ), new int(INVALID));
+
 }
 
 void CConfiguration::ValidateConfiguration()

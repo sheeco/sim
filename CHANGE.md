@@ -815,9 +815,13 @@
 
 - MNT: Changes to version Numbering & rc attributes;
 
-###### 2018-03-12 ¡¤ *< 4.0.6645.28455 >*
+###### [2018-03-12 ¡¤ *< 4.0.6645.28455 >*](4134cd402dc787e5f4f856dc7fe32c361dc61741)
 
 - RFCT: Major refactoring for Node related classes, routing & MAC protocols and so on;
+
+###### 2018-03-13 ¡¤ *< 4.1.6645.28455 >*
+
+- ADD: PFerry routing protocol, including `CTracePrediction`, `CPFerryTask`, `CPFerryMANode`, `CPFerry`;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»
