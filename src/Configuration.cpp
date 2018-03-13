@@ -306,8 +306,8 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("ma", "buffer", typeid(int), new int(100));
 	//addConfiguration("ma", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
 	addConfiguration("ma", "base_id", typeid(int), new int(100));  //ID的起始值，用于和传感器节点相区分
-	addConfiguration("ma", "init_num_ma", typeid( int ), new int(0));
-	addConfiguration("ma", "max_num_ma", typeid( int ), new int(0));
+	addConfiguration("ma", "init_num_ma", typeid( int ), new int(INVALID));
+	addConfiguration("ma", "max_num_ma", typeid( int ), new int(INVALID));
 
 
 	//TODO: move to group "node" ?
@@ -357,7 +357,8 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("pferry", "extension_pan_file", typeid( string ), new string(".pan"));
 	addConfiguration("pferry", "prestage_protocol", typeid( int ), new EnumRoutingProtocolScheme(_xhar));
 	addConfiguration("pferry", "starttime", typeid( int ), new int(INVALID));
-
+	addConfiguration("pferry", "return_once_met", typeid( bool ), new bool(false));
+	
 }
 
 void CConfiguration::ValidateConfiguration()
@@ -375,7 +376,10 @@ void CConfiguration::ValidateConfiguration()
 		 || getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_hdc )
 	   && getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_skip )
 		updateConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select", config::EnumHotspotSelectScheme(config::_original));
-	
+
+	if( getConfig<int>("ma", "max_num_ma") < getConfig<int>("ma", "init_num_ma") )
+		updateConfig<int>("ma", "max_num_ma", getConfig<int>("ma", "init_num_ma"));
+
 }
 
 

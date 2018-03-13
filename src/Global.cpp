@@ -41,7 +41,6 @@ void global::Exit(int code)
 		CPrintHelper::Alert();
 	}
 
-	_PAUSE_;
 	exit(code);
 }
 

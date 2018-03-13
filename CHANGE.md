@@ -819,9 +819,13 @@
 
 - RFCT: Major refactoring for Node related classes, routing & MAC protocols and so on;
 
-###### 2018-03-13 ¡¤ *< 4.1.6645.28455 >*
+###### [2018-03-13 ¡¤ *< 4.1.6645.28455 >*](d4d1fb4a95cb53d368c846458842c7a7e277ce1b)
 
 - ADD: PFerry routing protocol, including `CTracePrediction`, `CPFerryTask`, `CPFerryMANode`, `CPFerry`;
+
+###### 2018-03-13 ¡¤ *< 4.1.6646.25089 >*
+
+- RFCT: for MA number & PFerry configuration;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»

@@ -137,64 +137,16 @@ private:
 	static vector<CHarMANode *> freeMAs;
 
 
-	static bool newMANode(int now)
-	{
-		if(allMAs.size() >= CMANode:: MAX_NUM_MA)
-			return false;
-		else
-		{
-			CHarMANode* ma = new CHarMANode(now);
-			allMAs.push_back(ma);
-			freeMAs.push_back(ma);
-			CPrintHelper::PrintBrief(ma->getName() + " is created. (" + STRING(allMAs.size()) + " in total)");
-			return true;
-		}
-	}
-	static bool newMANode(int n, int now)
-	{
-		for(int i = 0; i < n; ++i)
-		{
-			if(!newMANode(now))
-				return false;
-		}
-		return true;
-	}
-	static void initNodeInfo()
-	{
-		for( CNode* pnode : CNode::getAllNodes() )
-			mapDataCountRates[pnode->getID()] = pnode->getDataCountRate();
-	}
-	static void initMANodes(int now)
-	{
-		newMANode(CMANode::INIT_NUM_MA, now);
-
-		freeMAs = allMAs;
-	}
-	static void turnFree(CHarMANode * ma)
-	{
-		ma->endRoute();
-		ma->setBusy(false);
-		AddToListUniquely(freeMAs, ma);
-		RemoveFromList(busyMAs, ma);
-	}
-	static void turnBusy(CHarMANode * ma)
-	{
-		ma->setBusy(true);
-		RemoveFromList(freeMAs, ma);
-		AddToListUniquely(busyMAs, ma);
-	}
+	static bool newMANode(int now);
+	static bool newMANode(int n, int now);
+	static void initNodeInfo();
+	static void initMANodes(int now);
+	static void turnFree(CHarMANode * ma);
+	static void turnBusy(CHarMANode * ma);
 
 	//取得新的路线集合
-	static inline void updateRoutes(vector<CHarRoute*> newRoutes)
-	{
-		oldRoutes.insert(oldRoutes.end(), maRoutes.begin(), maRoutes.end());
-		maRoutes = newRoutes;
-		indexRoute = 0;
-	}
-	static inline vector<CHarRoute*> getRoutes()
-	{
-		return maRoutes;
-	}
+	static inline void updateRoutes(vector<CHarRoute*> newRoutes);
+	static inline vector<CHarRoute*> getRoutes();
 
 	//用于计算所需MA个数的历史平均值
 	static int SUM_MA_COST;
@@ -252,56 +204,55 @@ public:
 		return ! maRoutes.empty();
 	}
 	//必须先调用hasRoutes判断
-	static inline CHarRoute* popRoute()
-	{
-		CHarRoute* result = maRoutes[indexRoute];
-		indexRoute = ( indexRoute + 1 ) % maRoutes.size();
-		return new CHarRoute(*result);
-	}
+	static inline CHarRoute* popRoute();
 
-	static void atMAReturn(CHarMANode* ma, int now)
-	{
-		if( !CBasicEntity::withinRange(*ma, *CSink::getSink(), getConfig<int>("trans", "range_trans")) )
-			throw string("CHarMANode::atMAReturn(): " + ma->getName() + " is not around Sink.");
+	static void atMAReturn(CHarMANode* ma, int now);
 
-		if( hasRoutes() )
-			ma->updateRoute(HAR::popRoute(), now);
-		else
-		{
-			turnFree(ma);
-		}
-	}
-
-	static inline double getSumEnergyConsumption()
-	{
-		double sumEnergyConsumption = 0;
-		for( auto iMANode = busyMAs.begin(); iMANode != busyMAs.end(); ++iMANode )
-			sumEnergyConsumption += ( *iMANode )->getEnergyConsumption();
-		for( auto iMANode = freeMAs.begin(); iMANode != freeMAs.end(); ++iMANode )
-			sumEnergyConsumption += ( *iMANode )->getEnergyConsumption();
-
-		return sumEnergyConsumption;
-	}
+	static inline double getSumEnergyConsumption();
 	//根据时间和热点，计算等待时间
-	static double calculateWaitingTime(int now, CHotspot *hotspot);
+	static double calculateWaitingTime(int now, CHotspot *hotspot)
+	{
+		double result = 1;
+		int count_trueHotspot = 0;
+		vector<int> coveredNodes = hotspot->getCoveredNodes();
+		vector<int> nCoveredPositionsForNode;
+
+		for( int i = 0; i < coveredNodes.size(); ++i )
+		{
+			int temp_time = now;
+			double temp;
+
+			//IHAR: Reduce Memory now
+			if( getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved )
+			{
+				temp_time = min(now, getConfig<int>("ihs", "lifetime_position"));
+			}
+
+			nCoveredPositionsForNode.push_back(hotspot->getNCoveredPositionsForNode(coveredNodes[i]));
+			temp = double(hotspot->getNCoveredPositionsForNode(coveredNodes[i])) / double(temp_time + CHotspotSelect::SLOT_HOTSPOT_UPDATE);
+
+			//merge-HAR: ratio
+			temp *= pow(hotspot->getRatioByTypeHotspotCandidate(), hotspot->getAge());
+
+			if( temp >= getConfig<double>("har", "beta") )
+			{
+				result *= temp;
+				++count_trueHotspot;
+			}
+		}
+		//FIXME: 如果不是true hotspot，waiting time为0
+		if( count_trueHotspot == 0 )
+			return getConfig<int>("har", "min_waiting_time");
+		double prob = exp(-1 / hotspot->getHeat());
+		result = prob / result;
+		result = pow(result, ( 1 / double(count_trueHotspot) ));
+
+		return result + getConfig<int>("har", "min_waiting_time");
+	}
 
 	//更新所有 MA 的坐标、等待时间
 	//注意：必须在新一轮热点选取之后调用
-	static void UpdateMANodeStatus(int now)
-	{
-		//为空闲的MA分配路线
-		while( !freeMAs.empty() )
-		{
-			CHarMANode *ma = freeMAs.front();
-			if( !hasRoutes() )
-				break;
-			ma->updateRoute(popRoute(), now);
-			turnBusy(ma);
-		}
-
-		for( CHarMANode *pMA: allMAs )
-			pMA->updateStatus(now);
-	}
+	static void UpdateMANodeStatus(int now);
 
 	static vector<CGeneralNode*> findNeighbors(CGeneralNode& src);
 	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now);
@@ -316,84 +267,144 @@ public:
 	// MA <- Node 
 	static vector<CPacket*> receivePackets(CHarMANode* ma, CNode* fromNode, vector<CPacket*> packets, int time);
 
-	static void CommunicateBetweenNeighbors(int now)
-	{
-		// TODO: sink receive RTS / send by slot ?
-		// xHAR: sink => MAs
-		CSink* sink = CSink::getSink();
-		transmitFrame(*sink, sink->sendRTS(now), now);
-
-		vector<CHarMANode*> MAs = allMAs;
-		// xHAR: MAs => nodes
-		for( CHarMANode* pMA : busyMAs )
-		{
-			// skip discover if buffer is full
-			if( pMA->isBusy()
-			   && pMA->getBufferVacancy() > 0 )
-				transmitFrame(*pMA, pMA->sendRTSWithCapacity(now), now);
-		}
-
-		// xHAR: no forward between nodes
-
-		if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
-		{
-			CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
-			CPrintHelper::PrintNewLine();
-		}
-	}
+	static void CommunicateBetweenNeighbors(int now);
 
 	//打印相关信息到文件
-	static void PrintInfo(int now);
-	static void PrintFinal(int now);
-
-	static bool Init(int now)
+	static void PrintInfo(int now)
 	{
-		CMANode::Init();
-		CHotspotSelect::Init();
+		if( !( now % getConfig<int>("log", "slot_log") == 0
+			  || now == getConfig<int>("simulation", "runtime") ) )
+			return;
 
-		initNodeInfo();
-		return true;
+
+		/***************************************** 路由协议的通用输出 *********************************************/
+
+		CRoutingProtocol::PrintInfo(now);
+
+		/***************************************** 热点选取的相关输出 *********************************************/
+
+		CHotspotSelect::PrintInfo(now);
+
+		if( !( now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT ) )
+			return;
+
+		/**************************************** HAR 路由的补充输出 *********************************************/
+
+		//hotspot选取结果、hotspot class数目、ED、Energy Consumption、MA节点buffer状态 ...
+
+		if( now % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0
+		   || now == getConfig<int>("simulation", "runtime") )
+		{
+			//MA节点个数
+			ofstream ma(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ma"), ios::app);
+			if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
+			{
+				ma << endl << getConfig<string>("log", "info_log") << endl;
+				ma << getConfig<string>("log", "info_ma") << endl;
+			}
+			ma << now << TAB << maRoutes.size() << TAB << ( double(hotspots.size()) / double(maRoutes.size()) ) << endl;
+			ma.close();
+
+			//
+			ofstream ma_route(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ma_route"), ios::app);
+			if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
+			{
+				ma_route << endl << getConfig<string>("log", "info_log") << endl;
+				ma_route << getConfig<string>("log", "info_ma_route") << endl;
+			}
+			for( vector<CHarRoute*>::iterator iroute = maRoutes.begin(); iroute != maRoutes.end(); iroute++ )
+			{
+				ma_route << now << TAB << ( *iroute )->format() << endl;
+			}
+			ma_route.close();
+
+			//用于计算MA节点个数的历史平均值信息
+			SUM_MA_COST += maRoutes.size();
+			++COUNT_MA_COST;
+			//用于计算MA路点（热点）平均个数的历史平均值信息
+			SUM_WAYPOINT_PER_MA += double(hotspots.size()) / double(maRoutes.size());
+			++COUNT_WAYPOINT_PER_MA;
+
+			//ED即平均投递延迟的理论值
+			ofstream ed(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_ed"), ios::app);
+			if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
+			{
+				ed << endl << getConfig<string>("log", "info_log") << endl;
+				ed << getConfig<string>("log", "info_ed") << endl;
+			}
+			ed << now << TAB << calculateEDTime(now) << endl;
+			ed.close();
+
+			//热点质量、投递计数等统计信息
+			ofstream hotspot_statistics(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hotspot_statistics"), ios::app);
+			if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
+			{
+				hotspot_statistics << endl << getConfig<string>("log", "info_log") << endl;
+				hotspot_statistics << getConfig<string>("log", "info_hotspot_statistics") << endl;
+			}
+			//在 t 被时刻选出的热点，工作周期截至到 t + 900，在 t + 1800 时刻才被统计输出
+			vector<int> timesToPrint;
+			int timeBeforeYesterday = 0;
+			//运行结束，补充输出上一轮的热点统计
+			if( now == getConfig<int>("simulation", "runtime") )
+			{
+				timeBeforeYesterday = ( now / CHotspotSelect::SLOT_HOTSPOT_UPDATE - 1 ) * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+				int timeYesterday = timeBeforeYesterday + CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+				if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
+					timesToPrint.push_back(timeBeforeYesterday);
+				if( timeYesterday >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
+					timesToPrint.push_back(timeYesterday);
+			}
+			else if( now % CHotspotSelect::SLOT_HOTSPOT_UPDATE == 0 )
+			{
+				timeBeforeYesterday = now - 2 * CHotspotSelect::SLOT_HOTSPOT_UPDATE;
+				if( timeBeforeYesterday >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
+					timesToPrint.push_back(timeBeforeYesterday);
+			}
+			if( !timesToPrint.empty() )
+			{
+				for( vector<int>::iterator itime = timesToPrint.begin(); itime != timesToPrint.end(); itime++ )
+				{
+					vector<CHotspot *> hotspotsToPrint = CHotspotSelect::getSelectedHotspots(*itime);
+					hotspotsToPrint = CSortHelper::mergeSort(hotspotsToPrint, CSortHelper::descendByCountDelivery);
+					for( vector<CHotspot *>::iterator it = hotspotsToPrint.begin(); it != hotspotsToPrint.end(); ++it )
+						hotspot_statistics << *itime << '-' << *itime + CHotspotSelect::SLOT_HOTSPOT_UPDATE << TAB
+						<< ( *it )->getID() << TAB << ( *it )->format() << TAB << ( *it )->getNCoveredPosition() << "," << ( *it )->getNCoveredNodes() << TAB
+						<< ( *it )->getRatio() << TAB << ( *it )->getWaitingTimesString(true) << TAB << ( *it )->getCountDelivery(*itime) << endl;
+				}
+			}
+			hotspot_statistics.close();
+		}
+
+		//MA Buffer
+		if( now % getConfig<int>("log", "slot_log") == 0
+		   || now == getConfig<int>("simulation", "runtime") )
+		{
+			//每个MA的当前buffer状态
+			ofstream buffer_ma(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_ma"), ios::app);
+			if( now == CHotspotSelect::STARTTIME_HOTSPOT_SELECT )
+			{
+				buffer_ma << endl << getConfig<string>("log", "info_log") << endl;
+				buffer_ma << getConfig<string>("log", "info_buffer_ma") << endl;
+			}
+			buffer_ma << now << TAB;
+			for( auto iMA = busyMAs.begin(); iMA != busyMAs.end(); ++iMA )
+				buffer_ma << ( *iMA )->getBufferSize() << TAB;
+			buffer_ma << endl;
+			buffer_ma.close();
+
+		}
+
 	}
-	static bool Operate(int now)
+	static void PrintFinal(int now)
 	{
-		if(getConfig<config::EnumMacProtocolScheme>("simulation", "mac_protocol") == config::_smac)
-			CSMac::Prepare(now);
-		// 不允许 xHAR 使用 HDC 作为 MAC 协议
-		else
-			throw string("HAR::Operate(): Only SMac is allowed as MAC protocol for HAR.");
+		CRoutingProtocol::PrintFinal(now);
 
-		if(! CNode::UpdateNodeStatus(now))
-			return false;
-
-		CHotspotSelect::RemovePositionsForDeadNodes(CNode::getIdNodes(CNode::getDeadNodes()), now);
-		CHotspotSelect::CollectNewPositions(now, CNode::getAliveNodes());
-
-		hotspots = CHotspotSelect::HotspotSelect(CNode::getIdNodes(CNode::getAliveNodes()), now);
-
-		//检测节点所在热点区域
-		CHotspot::UpdateAtHotspotForNodes(CNode::getAliveNodes(), hotspots, now);
-
-		if(now >= CHotspotSelect::STARTTIME_HOTSPOT_SELECT
-		   && now <= CHotspotSelect::STARTTIME_HOTSPOT_SELECT + getConfig<int>("simulation", "slot"))
-			initMANodes(now);
-
-		UpdateMANodeStatus(now);
-
-		HotspotClassification(now);
-
-		MANodeRouteDesign(now);
-
-		// 不允许 xHAR 使用 HDC 作为 MAC 协议
-		//if( config.MAC_PROTOCOL == config::_hdc )
-		//	CHDC::Operate(now);
-		//else 
-		if(now < getConfig<int>("simulation", "runtime") )
-			CommunicateBetweenNeighbors(now);
-
-		PrintInfo(now);
-
-		return true;
+		CHotspotSelect::PrintFinal(now);
 	}
+
+	static bool Init(int now);
+	static bool Operate(int now);
 
 };
 
