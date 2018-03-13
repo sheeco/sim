@@ -38,7 +38,7 @@ private:
 	vector<int> coveredNodes;  //覆盖的node列表，hotspot选取结束后手动调用generateCoveredNodes生成
 	double heat;
 	map<int, int> countsDelivery;  //存储该热点上的投递计数，连任的热点应对每一任期内的投递计数进行统计
-	map<int, int> waitingTimes;  //存储该热点上的等待时间: key指示开始时间，value指示等待时长
+	vector<pair<int, int>> waitingTimes;  //存储该热点上的等待时间: key指示开始时间，value指示等待时长
 	double ratio;  //用于测试新的ratio计算方法，将在贪婪选取和后续选取过程中用到
 
 	static int COUNT_ID;
@@ -239,13 +239,10 @@ public:
 	//在 CMANode::updateStatus 中，在每次等待结束waitingState重置时调用
 	inline void recordWaitingTime(int startTime, int duration)
 	{
-		if( waitingTimes.find(startTime) != waitingTimes.end() )
-			throw string("CHotspot::recordWaitingTime(" + STRING(startTime) + ", " + STRING(duration) + ") : "
-						 "Record (" + STRING(startTime) + ", " + STRING(waitingTimes.find(startTime)->second) + ") has already existed !");
-		waitingTimes[startTime] = duration;
+		waitingTimes.push_back(pair<int, int>(startTime, duration));
 	}
 	//返回等待时间map，用于统计等待时间
-	inline map<int, int> getWaitingTimes()
+	inline vector<pair<int, int>> getWaitingTimes()
 	{
 		return waitingTimes;
 	}
@@ -253,13 +250,13 @@ public:
 	{
 		stringstream sstr;
 		int sum = 0;
-		for( map<int, int>::iterator imap = waitingTimes.begin(); imap != waitingTimes.end();  )
+		for( vector<pair<int, int>>::iterator irecord = waitingTimes.begin(); irecord != waitingTimes.end();  )
 		{
 			if( details )
-				sstr << imap->first << ":";
-			sstr << imap->second;
-			sum += imap->second;
-			if( ++imap != waitingTimes.end() )
+				sstr << irecord->first << ":";
+			sstr << irecord->second;
+			sum += irecord->second;
+			if( ++irecord != waitingTimes.end() )
 				sstr << ",";
 			else
 			{

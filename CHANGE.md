@@ -823,9 +823,13 @@
 
 - ADD: PFerry routing protocol, including `CTracePrediction`, `CPFerryTask`, `CPFerryMANode`, `CPFerry`;
 
-###### 2018-03-13 ¡¤ *< 4.1.6646.25089 >*
+###### [2018-03-13 ¡¤ *< 4.1.6646.25089 >*](9df736d90203dd0061091b6ed0d07240eec90b62)
 
 - RFCT: for MA number & PFerry configuration;
+
+###### 2018-03-13 ¡¤ *< 4.1.6646.25223 >*
+
+- FIX: Unnecessay exception caught when 2 MA are assigned with the same route;
 
 
 - [ ] ADD£ºÌí¼Ó¾¯¸æº¯Êý `CRunHelper::Warn()`£»
