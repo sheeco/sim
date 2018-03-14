@@ -4,8 +4,7 @@
 #define __POST_SELECT_H__
 
 #include "Hotspot.h"
-#include "Position.h"
-#include "Algorithm.h"
+#include "Process.h"
 
 
 class CPostSelect : 
@@ -38,25 +37,9 @@ private:
 
 public:
 
-	static void Init()
-	{
-		ALPHA = getConfig<double>("hs", "alpha");
-	}
+	static void Init();
 	//执行hotspot选取，返回得到的hotspot集合
-	static void PostSelect(vector<CHotspot *> &selectedHotspots, vector<CHotspot *> &unselectedHotspots, vector<int> idNodes)
-	{
-		Init();
-
-		CPrintHelper::PrintDoing("POST SELECT");
-
-		CPostSelect selector(selectedHotspots, idNodes);
-		selector.PostSelect();
-		selectedHotspots = selector.selectedHotspots;
-		unselectedHotspots.insert(unselectedHotspots.end(), selector.unselectedHotspots.begin(), selector.unselectedHotspots.end());
-
-		CPrintHelper::PrintDoing(STRING(selectedHotspots.size()) + " hotspots");
-		CPrintHelper::PrintDone();
-	}
+	static void PostSelect(vector<CHotspot *> &selectedHotspots, vector<CHotspot *> &unselectedHotspots, vector<int> idNodes);
 };
 
 #endif // __POST_SELECT_H__

@@ -9,7 +9,7 @@
 #ifndef __ROUTING_PROTOCOL_H__
 #define __ROUTING_PROTOCOL_H__
 
-#include "Protocol.h"
+#include "Process.h"
 #include "Node.h"
 
 

@@ -1,4 +1,7 @@
 #include "PFerry.h"
+#include "SortHelper.h"
+#include "PrintHelper.h"
+#include "FileHelper.h"
 
 
 string CTracePrediction::KEYWORD_PREDICT;
@@ -133,7 +136,7 @@ void CPFerryMANode::updateStatus(int now)
 				throw string("CPFerryMANode::updateStatus(): waypoint = nullptr");
 
 			CPrintHelper::PrintDetail(this->time + duration - timeLeftAfterWaiting
-									  , this->getName() + " has waited at " + waypoint->format() + " for " 
+									  , this->getName() + " has waited at " + waypoint->toString() + " for " 
 									  + STRING(copyWaitingWindow) + "s.", 3);
 		}
 	}
@@ -168,7 +171,7 @@ void CPFerryMANode::updateStatus(int now)
 		{
 			this->atPoint = toPoint;
 
-			CPrintHelper::PrintDetail(now, this->getName() + " arrives at task position " + ppos->format() + ".", 2);
+			CPrintHelper::PrintDetail(now, this->getName() + " arrives at task position " + ppos->toString() + ".", 2);
 
 			CPFerryTask* task = this->findTask(ppos->getNode());
 			if( !task )
@@ -257,10 +260,17 @@ void CPFerry::initPredictions()
 			predictions[stride] = map<int, CTracePrediction*>();
 			for( CNode *pnode : nodes )
 			{
-				CTracePrediction *pPred = new CTracePrediction(pnode, subdir);
+				CTracePrediction *pPred = new CTracePrediction(pnode->getID(), pnode->getIdentifier(), subdir);
+
+				double hitrate = CTracePrediction::calculateHitrate(pnode->getTrace(), *pPred, 100);
+				CPrintHelper::PrintBrief("Trace prediction for " + pnode->getName()
+										 + " from " + STRING(pPred->getStartTime()) + "s to "
+										 + STRING(pPred->getEndTime()) + "s is loaded, hitrate "
+										 + STRING(NDigitFloat(hitrate * 100, 1)) + "%.");
+
 				int starttime = pPred->getStartTime();
 				if( STARTTIME >= 0
-				   && starttime > STARTTIME + CCTrace::getInterval() )
+				   && starttime > STARTTIME + Trace::getInterval() )
 					throw string("CPFerry::initPredictions(): Range of predictions cannot reach given STARTTIME ("
 								 + STRING(STARTTIME) + "s). ");
 
@@ -289,7 +299,7 @@ void CPFerry::updatecollectionRecords(int nodeId, int bufferVacancy, int time)
 
 int CPFerry::nextInterval(int now, int stride)
 {
-	int interval = CCTrace::getInterval();
+	int interval = Trace::getInterval();
 	return ( now / interval + stride ) * interval;
 }
 
@@ -383,7 +393,7 @@ bool CPFerry::dealWithUnreachableNodes(vector<pair<CNode*, CPosition>> nodes, in
 		ma->assignTask(node, pos, minWaitingTime(), now);
 
 		CPrintHelper::PrintBrief(now, ma->getName() + " is targetting (unreachable) " + node->getName()
-								 + " around " + pos.format()
+								 + " around " + pos.toString()
 								 + " at " + STRING(pos.getTime()) + "s.");
 
 		RemoveFromList(freeMAs, ma);
@@ -471,7 +481,7 @@ double CPFerry::calculateMetric(CNode * node, CPosition prediction, int now)
 	if( EQUAL(dataMetric, -0) )
 		dataMetric = 0;
 
-	if( timeArrival > timePrediction + CCTrace::getInterval() )
+	if( timeArrival > timePrediction + Trace::getInterval() )
 		dataMetric = bufferOccupancy;
 	//dataMetric = -bufferEstimation;
 	else
@@ -1023,6 +1033,16 @@ vector<CPacket*> CPFerry::receivePackets(CPFerryMANode * ma, CNode * fromNode, v
 
 void CPFerry::CommunicateBetweenNeighbors(int now)
 {
+	if( now % getConfig<int>("log", "slot_log") == 0 )
+	{
+		if( now > 0 )
+		{
+			CPrintHelper::PrintPercentage("Task Met", CPFerryTask::getPercentTaskMet());
+			CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
+		}
+		CPrintHelper::PrintNewLine();
+		CPrintHelper::PrintHeading(now, "DATA DELIVERY");
+	}
 
 	// TODO: sink receive RTS / send by slot ?
 	// pferry: sink => MAs
@@ -1038,15 +1058,8 @@ void CPFerry::CommunicateBetweenNeighbors(int now)
 		   && pMA->getBufferVacancy() > 0 )
 			transmitFrame(*pMA, pMA->sendRTSWithCapacity(now), now);
 	}
+
 	// pferry: no forward between nodes
-
-
-	if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
-	{
-		CPrintHelper::PrintPercentage("Task Met", CPFerryTask::getPercentTaskMet());
-		CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
-		CPrintHelper::PrintNewLine();
-	}
 }
 
 //return false if skipped (no valid prediction for current time / no available nodes)
@@ -1068,7 +1081,7 @@ bool CPFerry::arrangeTask(vector<CNode*> nodes, int now)
 			ma->assignTask(node, pos, minWaitingTime(), now);
 
 			CPrintHelper::PrintBrief(now, ma->getName() + " is targetting " + node->getName()
-									 + " around " + pos.format()
+									 + " around " + pos.toString()
 									 + " at " + STRING(pos.getTime()) + "s.");
 
 			RemoveFromList(freeMAs, ma);
@@ -1245,14 +1258,12 @@ CTracePrediction::CPanSystem CTracePrediction::CPanSystem::readPanSystemFromFile
 	}
 }
 
-void CTracePrediction::CPanSystem::CancelPanding(CCTrace * trace)
+void CTracePrediction::CPanSystem::CancelPanding(map<int, CCoordinate>& trace)
 {
-	map<int, CCoordinate> coors = trace->getTrace();
-	for( map<int, CCoordinate>::iterator icoor = coors.begin(); icoor != coors.end(); ++icoor )
+	for( map<int, CCoordinate>::iterator icoor = trace.begin(); icoor != trace.end(); ++icoor )
 	{
 		icoor->second = cancelPanding(icoor->second);
 	}
-	trace->setTrace(coors);
 }
 
 //e.g. 31.full.trace
@@ -1275,26 +1286,27 @@ string CTracePrediction::filenamePan(string nodename)
 	return filename;
 }
 
-CTracePrediction::CTracePrediction(CNode * node, string dir) : node(node)
+CTracePrediction::CTracePrediction(int nodeId, string identifier, string dir) : node(nodeId)
 {
-	string path = dir + '/' + filenamePrediction(this->node->getIdentifier());
+	string path = dir + '/' + filenamePrediction(identifier);
 	if( !CFileHelper::IfExists(path) )
 	{
 		throw string("CTracePredict::CTracePredict(): Cannot find trace file \"" + path + "\".");
 	}
 	else
 	{
-		this->predictions = CCTrace::readTraceFromFile(path, false);
+		Trace trace = Trace::readTraceFromFile(path, false);
+		*this = CTracePrediction(trace);
 
 		static bool panning = true;
 
 		if( panning )
 		{
-			string pathPan = dir + '/' + filenamePan(this->node->getIdentifier());
+			string pathPan = dir + '/' + filenamePan(identifier);
 			if( CFileHelper::IfExists(pathPan) )
 			{
 				CPanSystem pan = CPanSystem::readPanSystemFromFile(pathPan);
-				pan.CancelPanding(this->predictions);
+				pan.CancelPanding(this->trace);
 			}
 			else
 			{
@@ -1303,17 +1315,10 @@ CTracePrediction::CTracePrediction(CNode * node, string dir) : node(node)
 					panning = false;
 			}
 		}
-
-		double hitrate = calculateHitrate(node->getTrace(), *( this->predictions ), 100);
-		pair<int, int> range = this->predictions->getRange();
-		CPrintHelper::PrintBrief("Trace prediction for " + node->getName()
-								 + " from " + STRING(range.first) + "s to "
-								 + STRING(range.second) + "s is loaded, hitrate "
-								 + STRING(NDigitFloat(hitrate * 100, 1)) + "%.");
 	}
 }
 
-double CTracePrediction::calculateHitrate(CCTrace fact, CCTrace pred, int hitrange)
+double CTracePrediction::calculateHitrate(Trace fact, Trace pred, int hitrange)
 {
 	map<int, CCoordinate> facts = fact.getTrace(), preds = pred.getTrace();
 	int nHit = 0;

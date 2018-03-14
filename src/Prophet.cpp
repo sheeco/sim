@@ -601,6 +601,16 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 
 void CProphet::CommunicateBetweenNeighbors(int now)
 {
+	if( now % getConfig<int>("log", "slot_log") == 0 )
+	{
+		if( now > 0 )
+		{
+			CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
+		}
+		CPrintHelper::PrintNewLine();
+		CPrintHelper::PrintHeading(now, "DATA DELIVERY");
+	}
+
 	// Prophet: sink => nodes
 	CSink* sink = CSink::getSink();
 	//use default neighbor pool (only sensor nodes)
@@ -615,12 +625,6 @@ void CProphet::CommunicateBetweenNeighbors(int now)
 			CMacProtocol::transmitFrame(**srcNode, ( *srcNode )->sendRTSWithCapacityAndIndex(now), now, receivePackets);
 			( *srcNode )->finishDiscovering();
 		}
-	}
-
-	if( ( now + getConfig<int>("simulation", "slot") ) % getConfig<int>("log", "slot_log") == 0 )
-	{
-		CPrintHelper::PrintPercentage("Delivery Ratio", CData::getDeliveryRatio());
-		CPrintHelper::PrintNewLine();
 	}
 }
 

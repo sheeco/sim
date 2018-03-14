@@ -1,6 +1,5 @@
 #include "MacProtocol.h"
 #include "Configuration.h"
-#include "Node.h"
 #include "Sink.h"
 #include "MANode.h"
 #include "Prophet.h"
@@ -14,6 +13,24 @@ int CMacProtocol::transmit = 0;
 
 CMacProtocol::CMacProtocol()
 {
+}
+
+int CMacProtocol::getTransmissionDelay(int nByte)
+{
+	if(getConfig<double>("trans", "constant_trans_delay") >= 0)
+		return int(getConfig<double>("trans", "constant_trans_delay"));
+	else
+		return ROUND(double(nByte) / double(getConfig<int>("trans", "speed_trans")));
+}
+
+int CMacProtocol::getTransmissionDelay(vector<CPacket*> packets)
+{
+	return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + CPacket::getSumSize(packets));
+}
+
+int CMacProtocol::getMaxTransmissionDelay()
+{
+	return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + getConfig<int>("trans", "window_trans") * getConfig<int>("data", "size_data") + getConfig<int>("data", "size_ctrl"));
 }
 
 vector<CGeneralNode*> CMacProtocol::findNeighbors(CGeneralNode & src)
@@ -281,7 +298,7 @@ void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 			energy_consumption <<  endl << getConfig<string>("log", "info_log") << endl ; 
 			energy_consumption << getConfig<string>("log", "info_energy_consumption") << endl;
 		}
-		energy_consumption << now << TAB << CData::getAverageEnergyConsumption() ;
+		energy_consumption << now << TAB << CNode::getSumEnergyConsumption() / CData::getCountDelivery() ;
 		if( CNode::finiteEnergy() )
 		{			
 			//节点剩余能量

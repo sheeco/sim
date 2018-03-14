@@ -159,10 +159,6 @@ namespace global
 
 	/****************************** Global Func *******************************/
 
-	void Exit(int code);
-
-	void Exit(int code, string error);
-
 	//Randomly product a float number between min and max
 	inline double RandomFloat(double min, double max)
 	{

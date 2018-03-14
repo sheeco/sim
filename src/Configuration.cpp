@@ -72,7 +72,7 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string source)
 		if( keyword == KEYWORD_HELP )
 		{
 			Help();
-			Exit(ESKIP);
+			CRunHelper::Exit(ESKIP);
 		}
 
 		size_t pos = keyword.find('.');

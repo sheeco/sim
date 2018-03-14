@@ -3,15 +3,13 @@
 #ifndef __HOTSPOT_H__
 #define __HOTSPOT_H__
 
-#include <iostream>
-#include "Configuration.h"
 #include "Position.h"
 #include "Node.h"
 
 
 //存储hostspot信息的类
 class CHotspot : 
-	virtual public CBasicEntity, public CGeoEntity
+	virtual public CBasicEntity, virtual public CUnique, public CGeoEntity
 {
 	friend class CHotspotSelect;
 	friend class CPostSelect;
@@ -269,14 +267,13 @@ public:
 	}
 
 	//自动生成ID，需手动调用，为了确保热点ID的唯一性，制作临时拷贝时不应调用此函数
-	inline void generateID()
+	inline void generateID() override
 	{
-		++COUNT_ID;
-		this->ID = COUNT_ID;
+		CUnique::generateID(COUNT_ID);
 	}
-	string format() const
+	string toString() const
 	{
-		return this->location.format();
+		return this->location.toString();
 	}
 	string getName() const
 	{

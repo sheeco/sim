@@ -1,5 +1,5 @@
 #include "PrintHelper.h"
-#include "Global.h"
+#include "FileHelper.h"
 #include "Configuration.h"
 
 string CPrintHelper::BLANK_LINE = NDigitString("", 80);
@@ -61,5 +61,15 @@ void CPrintHelper::PrintDetail(string str, int detail)
 		PrintDetailToCout(str);
 	else
 		FlashDetail(str);
+}
+
+void CPrintHelper::PrintFile(string filepath, string des)
+{
+	if(!CFileHelper::IfExists(filepath))
+		return;
+	ifstream file(filepath, ios::in);
+	printToCout(des, true);
+	cout << file.rdbuf();
+	file.close();
 }
 

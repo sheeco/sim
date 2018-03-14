@@ -3,17 +3,14 @@
 #ifndef __PFERRY_H__
 #define __PFERRY_H__
 
-#include "Configuration.h"
 #include "RoutingProtocol.h"
 #include "HAR.h"
 #include "MacProtocol.h"
-#include "MANode.h"
-#include "SortHelper.h"
-#include "PrintHelper.h"
+#include "Configuration.h"
 
 
 class CTracePrediction :
-	virtual public CProcess
+	virtual public Trace
 {
 private:
 
@@ -21,28 +18,26 @@ private:
 		virtual public CGeoEntity
 	{
 	private:
-		CCoordinate delta;
+		CCoordinate stride;
 
 	public:
-		inline void setPan(CCoordinate delta)
+		inline void setPan(CCoordinate stride)
 		{
-			this->delta = delta;
+			this->stride = stride;
 		}
 		static CPanSystem readPanSystemFromFile(string filename);
 		CCoordinate applyPanding(CCoordinate coor)
 		{
-			return coor + delta;
+			return coor + stride;
 		}
 		inline CCoordinate cancelPanding(CCoordinate coor)
 		{
-			return coor - delta;
+			return coor - stride;
 		}
-		void CancelPanding(CCTrace* trace);
+		void CancelPanding(map<int, CCoordinate>& trace);
 	};
 
-	CNode *node = nullptr;
-	CCTrace *predictions = nullptr;
-	// FIXME: 1 or 30 ?
+	int node;
 
 	static string KEYWORD_PREDICT;
 	static string EXTENSION_PAN_FILE;
@@ -52,37 +47,26 @@ private:
 	//e.g. 31.pan
 	static string filenamePan(string nodename);
 
+	CTracePrediction(Trace& trace) : Trace(trace)
+	{
+		this->node = INVALID;
+	};
+
 public:
 
-	CTracePrediction()
-	{
-	};
 	~CTracePrediction()
 	{
 	};
 
-	CTracePrediction(CNode *node, string dir);
+	CTracePrediction(int nodeId, string identifier, string dir);
 
-	inline int getStartTime() const
-	{
-		return this->predictions->getRange().first;
-	}
+	static double calculateHitrate(Trace fact, Trace pred, int hitrange);
 
-	static double calculateHitrate(CCTrace fact, CCTrace pred, int hitrange);
-	inline bool isValid(int time)
-	{
-		return predictions->isValid(time);
-	}
-	inline bool hasPrediction(int time)
-	{
-		return predictions->hasEntry(time);
-	}
 	inline CPosition getPrediction(int time)
 	{
-		if( !hasPrediction(time) )
-			throw string("CTracePrediction::getPrediction(): Cannot find prediction for "
-						 + this->node->getName() + " at " + STRING(time) + "s.");
-		return CPosition(this->node->getID(), predictions->getLocation(time), time);
+		if( !hasEntry(time) )
+			throw string("CTracePrediction::getPrediction(): Cannot find prediction at " + STRING(time) + "s.");
+		return CPosition(this->node, this->getLocation(time), time);
 	}
 };
 
@@ -246,7 +230,7 @@ private:
 
 	static int minWaitingTime()
 	{
-		return CCTrace::getInterval();
+		return Trace::getInterval();
 	}
 
 	static void updatecollectionRecords(int nodeId, int bufferVacancy, int time);

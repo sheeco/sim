@@ -3,7 +3,7 @@
 #ifndef __NODE_REPAIR_H__
 #define __NODE_REPAIR_H__
 
-#include "Algorithm.h"
+#include "Process.h"
 #include "Hotspot.h"
 
 
@@ -38,11 +38,7 @@ public:
 
 	static double LAMBDA;
 
-	static void Init()
-	{
-		if(EQUAL( LAMBDA, INVALID))
-			LAMBDA = getConfig<double>("ihs", "lambda");
-	}
+	static void Init();
 
 	static void Repair(vector<CHotspot *> &selectedHotspots, vector<CHotspot *> &unselectedHotspots, vector<int> idNodes, int now);
 

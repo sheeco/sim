@@ -1,12 +1,10 @@
 #include "Node.h"
 #include "Sink.h"
-#include "Ctrl.h"
+#include "Data.h"
 #include "SortHelper.h"
 #include "FileHelper.h"
-#include <typeinfo.h>
 #include "Prophet.h"
 #include "MacProtocol.h"
-#include "Trace.h"
 #include "PrintHelper.h"
 #include "Configuration.h"
 
@@ -81,8 +79,49 @@ CNode::CNode(double dataRate)
 	this->setDataByteRate(dataRate);
 }
 
+void CNode::loadTrace(string filepath)
+{
+	this->trace = new Trace(Trace::readTraceFromFile(filepath, getConfig<bool>("trace", "continuous")));
+	string filename = CFileHelper::SplitPath(filepath).second;
+	string nodename = CFileHelper::SplitFilename(filename).first;
+	this->setIdentifier(nodename);
+	this->setName("Node " + nodename);
+}
+
+vector<CNode*> CNode::loadNodesFromFile()
+{
+	vector<CNode*> nodes;
+	string path = getConfig<string>("trace", "path");
+	vector<string> filenames = CFileHelper::ListDirectory(path);
+	filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
+
+	if(filenames.empty())
+		throw string("CNode::loadNodesFromFile(): Cannot find any trace files under \"" + path + "\".");
+
+	for(int i = 0; i < filenames.size(); ++i)
+	{
+		double dataRate = DEFAULT_DATA_RATE;
+		if(i % 5 == 0)
+			dataRate *= 5;
+		CNode* pnode = new CNode();
+		pnode->setDataByteRate(dataRate);
+		pnode->generateID();
+		pnode->loadTrace(filenames[i]);
+
+		nodes.push_back(pnode);
+		CPrintHelper::PrintBrief(pnode->getName() + " is loaded from trace file " + filenames[i] + ". ("
+								 + STRING(nodes.size()) + " in total)");
+	}
+	return nodes;
+}
+
 CNode::~CNode()
 {
+}
+
+double CNode::getDataCountRate() const
+{
+	return dataRate / getConfig<int>("data", "size_data");
 }
 
 void CNode::generateData(int now) {
@@ -100,12 +139,82 @@ void CNode::generateData(int now) {
 	dropDataIfOverflow();
 }
 
-int CNode::getCountAliveNodes() 
+void CNode::consumeEnergy(double cons, int now)
+{
+	CGeneralNode::consumeEnergy(cons, now);
+
+	if(!hasEnergyLeft())
+	{
+		this->die(now);
+		CPrintHelper::PrintBrief(now, this->getName() + " dies of energy exhaustion.");
+	}
+}
+
+int CNode::getCountAliveNodes()
 {
 	return allNodes.size();
 }
 
-bool CNode::finiteEnergy() 
+void CNode::Init(int now)
+{
+	DEFAULT_DATA_RATE = getConfig<double>("node", "default_data_rate");
+	DEFAULT_CAPACITY_BUFFER = getConfig<int>("node", "buffer");
+	DEFAULT_CAPACITY_ENERGY = getConfig<int>("node", "energy");
+	WORK_CYCLE = getConfig<int>("mac", "cycle");
+	DEFAULT_DUTY_RATE = getConfig<double>("mac", "duty_rate");
+
+	LIFETIME_COMMUNICATION_HISROTY = getConfig<int>("node", "lifetime_communication_history");
+
+	allNodes = CNode::loadNodesFromFile();
+	aliveNodes = allNodes;
+	mapAllNodes.clear();
+	for(CNode* pnode : allNodes)
+		mapAllNodes[pnode->getID()] = pnode;
+	deadNodes.clear();
+}
+
+
+//将死亡节点整理移出，返回是否有新的节点死亡
+
+bool CNode::ClearDeadNodes(int now)
+{
+	int nAlive = aliveNodes.size();
+	vector<CNode*> newlyDeadNodes;
+	bool death = false;
+	for(vector<CNode *>::iterator ipNode = aliveNodes.begin(); ipNode != aliveNodes.end(); )
+	{
+		if(!( *ipNode )->isAlive())
+		{
+			death = true;
+			newlyDeadNodes.push_back(*ipNode);
+			ipNode = aliveNodes.erase(ipNode);
+		}
+		else
+			++ipNode;
+	}
+
+	if(death)
+	{
+		int nDead = 0;
+		ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
+		if(now == 0)
+		{
+			death << endl << getConfig<string>("log", "info_log") << endl;
+			death << getConfig<string>("log", "info_death") << endl;
+		}
+		for(CNode* pdead : newlyDeadNodes)
+			death << now << TAB << pdead->getIdentifier() << TAB << nAlive - ( ++nDead ) << TAB << CData::getCountDelivery()
+			<< TAB << CData::getDeliveryRatio() << endl;
+		death.close();
+		ASSERT(nAlive - nDead == aliveNodes.size());
+		CPrintHelper::PrintAttribute("Node Count", STRING(nAlive) + " -> " + STRING(nAlive - nDead));
+	}
+
+	deadNodes.insert(deadNodes.end(), newlyDeadNodes.begin(), newlyDeadNodes.end());
+	return death;
+}
+
+bool CNode::finiteEnergy()
 {
 	return DEFAULT_CAPACITY_ENERGY > 0;
 }

@@ -3,18 +3,16 @@
 #ifndef __POSITION_H__
 #define __POSITION_H__
 
-#include "BasicEntity.h"
-#include "GeoEntity.h"
+#include "Entity.h"
 
 
 //存储单个节点移动位置的类
 class CPosition : 
-	virtual public CBasicEntity, public CGeoEntity
+	virtual public CBasicEntity, virtual public CUnique, public CGeoEntity
 {
 private:
 
 	int node;  //所属节点ID
-	//bool isCovered;
 	static int COUNT_ID;
 
 
@@ -33,7 +31,8 @@ public:
 	{
 		init();
 		this->setNode(node);
-		this->setLocation(location, time);
+		this->setLocation(location);
+		this->setTime(time);
 	}
 
 	inline int getNode() const
@@ -45,14 +44,15 @@ public:
 		this->node = node;
 	}
 	//自动生成ID，需手动调用
-	inline void generateID()
+	inline void generateID() override
 	{
-		++COUNT_ID;
-		this->ID = COUNT_ID;
+		CUnique::generateID(COUNT_ID);
 	}
-	string format() override
+
+
+	string toString() override
 	{
-		return this->location.format();
+		return this->location.toString();
 	};
 
 };

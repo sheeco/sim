@@ -340,6 +340,49 @@ void CHotspotSelect::Init()
 	LIFETIME_POSITION = getConfig<int>("ihs", "lifetime_position");
 }
 
+
+//读取所有节点的当前位置，加入position列表（append），在每个地理位置信息收集时隙上调用
+//注意：必须在调用 UpdateNodeStatus() 之后调用
+
+void CHotspotSelect::CollectNewPositions(int now, vector<CNode*> nodes)
+{
+	if(!( now % SLOT_POSITION_UPDATE == 0 ))
+		return;
+
+	CPosition* temp_pos = nullptr;
+
+	//遍历所有节点，获取当前位置，生成相应的CPosition类，添加到positions中
+	for(vector<CNode*>::iterator inode = nodes.begin(); inode != nodes.end(); ++inode)
+	{
+		temp_pos = new CPosition();
+		CCoordinate location = ( *inode )->getLocation();
+		temp_pos->setLocation(location);
+		temp_pos->setTime(now);
+		temp_pos->setNode(( *inode )->getID());
+		temp_pos->generateID();
+		positions.push_back(temp_pos);
+	}
+
+	//IHAR: 删除过期的position记录
+	if(getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_improved)
+	{
+		int threshold = now - LIFETIME_POSITION;
+		if(threshold > 0)
+		{
+			for(vector<CPosition *>::iterator ipos = positions.begin(); ipos != positions.end(); )
+			{
+				if(( *ipos )->getTime() < threshold)
+				{
+					delete *ipos;
+					ipos = positions.erase(ipos);
+				}
+				else
+					++ipos;
+			}
+		}
+	}
+}
+
 vector<CHotspot *> CHotspotSelect::HotspotSelect(vector<int> idNodes, int now)
 {
 	if(!( now % SLOT_HOTSPOT_UPDATE == 0

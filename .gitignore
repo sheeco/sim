@@ -194,6 +194,11 @@ ipch/
 *.cachefile
 
 
+# Visual Studio Class Diagram file
+
+*.cd
+
+
 # Visual Studio profiler
 
 *.psess

@@ -3,8 +3,8 @@
 #ifndef __RUN_HELPER_H__
 #define __RUN_HELPER_H__
 
-#include "Helper.h"
 #include "Global.h"
+#include "Process.h"
 
 //
 class CRunHelper :
@@ -23,6 +23,8 @@ public:
 	static bool Debug();
 	//static bool Catch();
 
+	static void Exit(int code);
+	static void Exit(int code, string error);
 
 };
 

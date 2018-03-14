@@ -1,7 +1,6 @@
 #include "GeneralNode.h"
-#include "Node.h"
-#include "MacProtocol.h"
 #include "SortHelper.h"
+#include "Configuration.h"
 
 
 CFrame * CGeneralNode::sendRTS(int now)
@@ -28,4 +27,18 @@ int CGeneralNode::pushIntoBuffer(vector<CData> datas, int now)
 		this->buffer = CSortHelper::insertIntoSortedList(this->buffer, data, CSortHelper::ascendByTimeBirth, CSortHelper::descendByTimeBirth);
 	}
 	return this->getBufferSize() - ndata;
+}
+
+vector<CData> CGeneralNode::getDataForTrans(int capacity)
+{
+	int window = getConfig<int>("trans", "window_trans");
+	if(capacity == 0)
+		throw string("CGeneralNode::getDataForTrans() capacity = 0.");
+	else if(capacity < 0
+			|| capacity > window)
+		capacity = window;
+
+	vector<CData> datas = this->getAllData();
+	clipDataByCapacity(datas, capacity, !this->fifo);
+	return datas;
 }

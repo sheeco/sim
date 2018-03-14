@@ -2,6 +2,7 @@
 #include "HotspotSelect.h"
 #include "Node.h"
 #include "PrintHelper.h"
+#include "Configuration.h"
 
 
 double CNodeRepair::LAMBDA = INVALID;
@@ -67,6 +68,12 @@ void CNodeRepair::Repair()
 		poorNodes.pop_back();
 	}
 
+}
+
+void CNodeRepair::Init()
+{
+	if(EQUAL(LAMBDA, INVALID))
+		LAMBDA = getConfig<double>("ihs", "lambda");
 }
 
 void CNodeRepair::Repair(vector<CHotspot*>& selectedHotspots, vector<CHotspot*>& unselectedHotspots, vector<int> idNodes, int now)

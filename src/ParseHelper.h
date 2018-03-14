@@ -3,7 +3,7 @@
 #ifndef __PARSE_HELPER_H__
 #define __PARSE_HELPER_H__
 
-#include "Helper.h"
+#include "Process.h"
 #include "Global.h"
 
 //

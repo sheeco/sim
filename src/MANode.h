@@ -41,41 +41,12 @@ protected:
 	static int encounter;
 
 
-	void init()
-	{
-		if( COUNT_ID == 0 )
-			COUNT_ID = getConfig<int>("ma", "base_id");
-
-		fifo = getConfig<config::EnumQueueScheme>("node", "scheme_queue") == config::_fifo;
-		setLocation( CSink::getSink()->getLocation() );  //初始化 MA 位置在 sink 处
-		speed = getConfig<int>("ma", "speed");
-		atPoint = nullptr;	
-		waitingWindow = INVALID;
-		waitingState = INVALID;
-		capacityBuffer = getConfig<int>("ma", "buffer");
-		returningToSink = false;
-		busy = false;
-		route = nullptr;
-		atPoint = nullptr;
-		time = time;
-		generateID();
-		setName("MA #" + STRING(this->getID()));
-	}
-	static void Init()
-	{
-		INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
-		MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
-		CAPACITY_BUFFER = getConfig<int>("ma", "buffer");
-		SPEED = getConfig<int>("ma", "speed");
-	}
+	void init();
+	static void Init();
 	//自动生成ID，需手动调用
-	inline void generateID()
+	inline void generateID() override
 	{
-		if(this->getID() == INVALID)
-		{
-			++COUNT_ID;
-			this->ID = COUNT_ID;
-		}
+		CUnique::generateID(COUNT_ID);
 	}
 
 	inline bool isReturningToSink()
@@ -105,15 +76,6 @@ protected:
 	CMANode()
 	{
 		init();
-	}
-	CMANode(CRoute* route, int time)
-	{
-		init();
-		FreePointer(this->route);
-		this->setRoute(route);
-		this->setTime(time);
-		generateID();
-		this->setName("MA #" + STRING(this->getID()));
 	}
 	virtual ~CMANode() = 0
 	{
@@ -280,16 +242,7 @@ public:
 	//如果路线过期或缓存已满，立即返回sink
 	//virtual void updateStatus(int time) = 0;
 
-	CFrame* sendRTSWithCapacity(int now)
-	{
-		vector<CPacket*> packets;
-		packets.push_back(new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_rts));
-		packets.push_back(new CCtrl(ID, this->getBufferVacancy(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity));
-
-		CFrame* frame = new CFrame(*this, packets);
-
-		return frame;
-	}
+	CFrame* sendRTSWithCapacity(int now);
 
 	void dropDataByAck(vector<CData> ack)
 	{

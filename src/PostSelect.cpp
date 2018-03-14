@@ -2,6 +2,8 @@
 #include "SortHelper.h"
 #include "HotspotSelect.h"
 #include "PrintHelper.h"
+#include "Configuration.h"
+
 
 double CPostSelect::ALPHA = INVALID;
 
@@ -131,4 +133,26 @@ void CPostSelect::PostSelect()
 	{
 		throw string("CPostSelect::PostSelect() : not completed");
 	}
+}
+
+//执行hotspot选取，返回得到的hotspot集合
+
+void CPostSelect::Init()
+{
+	ALPHA = getConfig<double>("hs", "alpha");
+}
+
+void CPostSelect::PostSelect(vector<CHotspot*>& selectedHotspots, vector<CHotspot*>& unselectedHotspots, vector<int> idNodes)
+{
+	Init();
+
+	CPrintHelper::PrintDoing("POST SELECT");
+
+	CPostSelect selector(selectedHotspots, idNodes);
+	selector.PostSelect();
+	selectedHotspots = selector.selectedHotspots;
+	unselectedHotspots.insert(unselectedHotspots.end(), selector.unselectedHotspots.begin(), selector.unselectedHotspots.end());
+
+	CPrintHelper::PrintDoing(STRING(selectedHotspots.size()) + " hotspots");
+	CPrintHelper::PrintDone();
 }

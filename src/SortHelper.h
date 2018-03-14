@@ -4,7 +4,7 @@
 #define __SORT_HELPER_H__
 
 #include "Hotspot.h"
-#include "Helper.h"
+#include "Process.h"
 #include "Node.h"
 
 

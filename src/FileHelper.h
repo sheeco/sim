@@ -3,9 +3,8 @@
 #ifndef __FILE_HELPER_H__
 #define __FILE_HELPER_H__
 
-//#include "Hotspot.h"
-#include "Helper.h"
-#include "Coordinate.h"
+#include "Process.h"
+#include "Entity.h"
 
 //包含用于文件相关操作的函数的类
 class CFileHelper :

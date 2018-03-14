@@ -19,6 +19,7 @@
     <None Include="..\sim.version">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Data.cpp">
@@ -75,25 +76,10 @@
     <ClCompile Include="..\src\MacProtocol.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Ctrl.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\BasicEntity.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Global.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Coordinate.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Trace.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Frame.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Packet.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\src\RunHelper.cpp">
@@ -114,14 +100,11 @@
     <ClCompile Include="..\src\PFerry.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Entity.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\Algorithm.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\BasicEntity.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Configuration.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -137,16 +120,10 @@
     <ClInclude Include="..\src\GeneralNode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\GeoEntity.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\HAR.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\HDC.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Helper.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Hotspot.h">
@@ -176,9 +153,6 @@
     <ClInclude Include="..\src\Prophet.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Protocol.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Route.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -197,25 +171,10 @@
     <ClInclude Include="..\src\SMac.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Coordinate.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Ctrl.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GeneralData.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Global.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Trace.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Frame.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Packet.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\RunHelper.h">

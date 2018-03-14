@@ -3,8 +3,7 @@
 #ifndef __ROUTE_H__
 #define __ROUTE_H__
 
-#include "Hotspot.h"
-#include "GeoEntity.h"
+#include "Entity.h"
 
 
 class CRoute : 
@@ -36,8 +35,9 @@ protected:
 
 	void setStartPoint(CBasicEntity *startPoint)
 	{
+		this->waypoints.clear();
 		this->AddWaypoint(startPoint, 0);
-		this->toPoint = startPoint->getID();
+		this->toPoint = 0;
 	}
 	CRoute()
 	{
@@ -88,8 +88,8 @@ public:
 	}
 	inline void initToPoint()
 	{
-		if(this->waypoints.empty() )
-			this->toPoint = 0;
+		if(this->waypoints.size() < 2 )
+			this->toPoint = INVALID;
 		else
 			this->toPoint = 1;
 	}
@@ -112,24 +112,24 @@ public:
 	}
 
 	//对给定插入计算路径增量
-	double getIncreDistance(int front, CHotspot *hotspot)
+	double getIncreDistance(int front, CBasicEntity *waypoint)
 	{
 		int back = ( front + 1 ) % waypoints.size();
 		double oldDistance =  CBasicEntity::getDistance( *waypoints[front].first, *waypoints[back].first);
-		double newDistance = CBasicEntity::getDistance( *waypoints[front].first, *hotspot) + CBasicEntity::getDistance(*hotspot, *waypoints[back].first);
+		double newDistance = CBasicEntity::getDistance( *waypoints[front].first, *waypoint) + CBasicEntity::getDistance(*waypoint, *waypoints[back].first);
 		return ( newDistance - oldDistance );
 	}
 
 	//计算路径长度，应该在路径更改或更新之后手动后调用
 	void updateLength();
 
-	string format() override
+	string toString() override
 	{
 		stringstream sstr;
 		sstr << "[";
 		for( vector<pair<CBasicEntity *, int>>::const_iterator iwaypoint = waypoints.begin(); iwaypoint != waypoints.end(); )
 		{
-			sstr << iwaypoint->first->getLocation().format();
+			sstr << iwaypoint->first->getLocation().toString();
 			++iwaypoint;
 			if(iwaypoint != waypoints.end())
 				sstr << " -> ";

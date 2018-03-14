@@ -3,9 +3,8 @@
 #ifndef __PRINT_HELPER_H__
 #define __PRINT_HELPER_H__
 
-#include "Helper.h"
 #include "Global.h"
-#include "FileHelper.h"
+#include "Process.h"
 
 class CPrintHelper :
 	virtual public CHelper
@@ -140,13 +139,13 @@ public:
 	inline static void Alert()
 	{
 		printToCout(ALERT, false);
-		_PAUSE_;
 	}
 	inline static bool Warn(string error)
 	{
 		PrintNewLine();
 		printToCout("[Warning]" + error, true);
 		Alert();
+		_PAUSE_;
 		return true;
 	}
 	inline static void PrintError(string error)
@@ -188,15 +187,7 @@ public:
 	{
 		PrintCommunication(time, from + toCommunication( NDigitString(nData, 2) ) + to);
 	}
-	inline static void PrintFile(string filepath, string des)
-	{
-		if( ! CFileHelper::IfExists(filepath) )
-			return;
-		ifstream file(filepath, ios::in);
-		printToCout(des, true);
-		cout << file.rdbuf();
-		file.close();
-	}
+	static void PrintFile(string filepath, string des);
 
 };
 

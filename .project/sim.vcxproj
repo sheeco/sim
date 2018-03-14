@@ -119,18 +119,16 @@
       </ExcludedFromBuild>
     </None>
     <None Include="..\sim.version" />
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\BasicEntity.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
-    <ClCompile Include="..\src\Coordinate.cpp" />
-    <ClCompile Include="..\src\Packet.cpp" />
+    <ClCompile Include="..\src\Entity.cpp" />
     <ClCompile Include="..\src\ParseHelper.cpp" />
     <ClCompile Include="..\src\PFerry.cpp" />
     <ClCompile Include="..\src\PrintHelper.cpp" />
     <ClCompile Include="..\src\RunHelper.cpp" />
     <ClCompile Include="..\src\Trace.cpp" />
-    <ClCompile Include="..\src\Ctrl.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
     <ClCompile Include="..\src\FileHelper.cpp" />
     <ClCompile Include="..\src\GeneralNode.cpp" />
@@ -144,7 +142,6 @@
     <ClCompile Include="..\src\MANode.cpp" />
     <ClCompile Include="..\src\Node.cpp" />
     <ClCompile Include="..\src\NodeRepair.cpp" />
-    <ClCompile Include="..\src\Frame.cpp" />
     <ClCompile Include="..\src\Position.cpp" />
     <ClCompile Include="..\src\PostSelect.cpp" />
     <ClCompile Include="..\src\Prophet.cpp" />
@@ -154,39 +151,29 @@
     <ClCompile Include="..\src\SortHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\Algorithm.h" />
-    <ClInclude Include="..\src\BasicEntity.h" />
     <ClInclude Include="..\src\Configuration.h" />
-    <ClInclude Include="..\src\Coordinate.h" />
-    <ClInclude Include="..\src\Packet.h" />
     <ClInclude Include="..\src\ParseHelper.h" />
     <ClInclude Include="..\src\PFerry.h" />
     <ClInclude Include="..\src\PrintHelper.h" />
     <ClInclude Include="..\src\RunHelper.h" />
     <ClInclude Include="..\src\Trace.h" />
-    <ClInclude Include="..\src\Ctrl.h" />
     <ClInclude Include="..\src\Data.h" />
     <ClInclude Include="..\src\Entity.h" />
     <ClInclude Include="..\src\FileHelper.h" />
-    <ClInclude Include="..\src\GeneralData.h" />
     <ClInclude Include="..\src\GeneralNode.h" />
-    <ClInclude Include="..\src\GeoEntity.h" />
     <ClInclude Include="..\src\Global.h" />
     <ClInclude Include="..\src\HAR.h" />
     <ClInclude Include="..\src\HDC.h" />
-    <ClInclude Include="..\src\Helper.h" />
     <ClInclude Include="..\src\Hotspot.h" />
     <ClInclude Include="..\src\HotspotSelect.h" />
     <ClInclude Include="..\src\MacProtocol.h" />
     <ClInclude Include="..\src\MANode.h" />
     <ClInclude Include="..\src\Node.h" />
     <ClInclude Include="..\src\NodeRepair.h" />
-    <ClInclude Include="..\src\Frame.h" />
     <ClInclude Include="..\src\Position.h" />
     <ClInclude Include="..\src\PostSelect.h" />
     <ClInclude Include="..\src\Process.h" />
     <ClInclude Include="..\src\Prophet.h" />
-    <ClInclude Include="..\src\Protocol.h" />
     <ClInclude Include="..\src\Route.h" />
     <ClInclude Include="..\src\RoutingProtocol.h" />
     <ClInclude Include="..\src\Sink.h" />

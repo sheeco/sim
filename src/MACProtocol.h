@@ -9,11 +9,9 @@
 #ifndef __MAC_PROTOCOL_H__
 #define __MAC_PROTOCOL_H__
 
-#include "Protocol.h"
+#include "Process.h"
 #include "Node.h"
-#include "GeneralNode.h"
-
-#include "Frame.h"
+#include "Data.h"
 
 class CMacProtocol :
 	virtual public CProtocol
@@ -59,28 +57,16 @@ public:
 		return double(transmitSuccessful) / double(transmit);
 	}
 
-	static int getTransmissionDelay(int nByte)
-	{
-		if( getConfig<double>("trans", "constant_trans_delay") >= 0 )
-			return int(getConfig<double>("trans", "constant_trans_delay"));
-		else
-			return ROUND(double(nByte) / double(getConfig<int>("trans", "speed_trans")));
-	}
+	static int getTransmissionDelay(int nByte);
 
 	static int getTransmissionDelay(CFrame* frame)
 	{
 		return getTransmissionDelay(frame->getSize());
 	}
 
-	static int getTransmissionDelay(vector<CPacket*> packets)
-	{
-		return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + CPacket::getSumSize(packets));
-	}
+	static int getTransmissionDelay(vector<CPacket*> packets);
 
-	static int getMaxTransmissionDelay()
-	{
-		return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + getConfig<int>("trans", "window_trans") * getConfig<int>("data", "size_data") + getConfig<int>("data", "size_ctrl"));
-	}
+	static int getMaxTransmissionDelay();
 
 	static vector<CGeneralNode*> findNeighbors(CGeneralNode& src);
 

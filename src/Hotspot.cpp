@@ -1,7 +1,7 @@
 #include "Hotspot.h"
 #include "Configuration.h"
 #include "SortHelper.h"
-#include "Node.h"
+#include "PrintHelper.h"
 #include "HAR.h"
 #include "HotspotSelect.h"
 

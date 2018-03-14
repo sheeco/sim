@@ -10,13 +10,12 @@
 #define __GENERAL_NODE_H__
 
 #include "Data.h"
-//#include "Frame.h"
 
 
 class CFrame;
 
 class CGeneralNode :
-	virtual public CBasicEntity
+	virtual public CBasicEntity, virtual public CUnique, virtual public CSpatial
 {
 protected:
 	string name;
@@ -34,7 +33,7 @@ public:
 		return this->name;
 	}
 
-	string format() override
+	string toString() override
 	{
 		return this->getName();
 	}
@@ -215,19 +214,8 @@ public:
 
 	//给定容量，按照节点的 FIFO/FILO 策略，选出合适的数据用于数据传输
 	//返回的队列不会超过传输窗口大小，如果capacity 为 -1 即默认上限即窗口大小
-	vector<CData> getDataForTrans(int capacity)
-	{
-		int window = getConfig<int>("trans", "window_trans");
-		if( capacity == 0 )
-			throw string("CGeneralNode::getDataForTrans() capacity = 0.");
-		else if( capacity < 0 
-				|| capacity > window )
-			capacity = window;
+	vector<CData> getDataForTrans(int capacity);
 
-		vector<CData> datas = this->getAllData();
-		clipDataByCapacity(datas, capacity, !this->fifo);
-		return datas;
-	}
 	vector<CData> bufferData(int now, vector<CData> datas)
 	{
 		vector<CData> ack = datas;

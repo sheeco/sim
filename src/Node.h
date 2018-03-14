@@ -4,12 +4,9 @@
 #define __NODE_H__
 
 #include "Global.h"
-#include "Configuration.h"
 #include "GeneralNode.h"
-#include "Frame.h"
+#include "Data.h"
 #include "Trace.h"
-#include "FileHelper.h"
-#include "PrintHelper.h"
 
 class CNode :
 	virtual public CGeneralNode
@@ -26,7 +23,7 @@ protected:
 
 	//TODO: make sure identifier is printed instead of ID in log files
 	string nodeIdentifier;  //node identifier read from trace file
-	CCTrace* trace;
+	Trace* trace;
 	double dataRate;
 	double dutyCycle;
 
@@ -75,49 +72,16 @@ protected:
 
 	CNode(double dataRate);
 
-	void generateID()
+	void generateID() override
 	{
-		++COUNT_ID;
-		this->ID = COUNT_ID;
+		CUnique::generateID(COUNT_ID);
 	}
 	void setIdentifier(string nodeIdentifier)
 	{
 		this->nodeIdentifier = nodeIdentifier;
 	}
-	void loadTrace(string filepath)
-	{
-		this->trace = CCTrace::readTraceFromFile(filepath, getConfig<bool>("trace", "continuous"));
-		string filename = CFileHelper::SplitPath(filepath).second;
-		string nodename = CFileHelper::SplitFilename(filename).first;
-		this->setIdentifier(nodename);
-		this->setName("Node " + nodename);
-	}
-	static vector<CNode*> loadNodesFromFile()
-	{
-		vector<CNode*> nodes;
-		string path = getConfig<string>("trace", "path");
-		vector<string> filenames = CFileHelper::ListDirectory(path);
-		filenames = CFileHelper::FilterByExtension(filenames, getConfig<string>("trace", "extension_trace_file"));
-
-		if(filenames.empty())
-			throw string("CNode::loadNodesFromFile(): Cannot find any trace files under \"" + path + "\".");
-
-		for(int i = 0; i < filenames.size(); ++i)
-		{
-			double dataRate = DEFAULT_DATA_RATE;
-			if(i % 5 == 0)
-				dataRate *= 5;
-			CNode* pnode = new CNode();
-			pnode->setDataByteRate(dataRate);
-			pnode->generateID();
-			pnode->loadTrace(filenames[i]);
-
-			nodes.push_back(pnode);
-			CPrintHelper::PrintBrief(pnode->getName() + " is loaded from trace file " + filenames[i] + ". (" 
-									   + STRING(nodes.size()) + " in total)");
-		}
-		return nodes;
-	}
+	void loadTrace(string filepath);
+	static vector<CNode*> loadNodesFromFile();
 
 	void generateData(int now);
 
@@ -161,11 +125,8 @@ public:
 	{
 		return dataRate;
 	}
-	double getDataCountRate() const
-	{
-		return dataRate / getConfig<int>("data", "size_data");
-	}
-	CCTrace getTrace() const
+	double getDataCountRate() const;
+	Trace getTrace() const
 	{
 		return *(this->trace);
 	}
@@ -310,16 +271,7 @@ public:
 
 	/*************************** 能耗相关 ***************************/
 
-	void consumeEnergy(double cons, int now) override
-	{
-		CGeneralNode::consumeEnergy(cons, now);
-
-		if( !hasEnergyLeft() )
-		{
-			this->die(now);
-			CPrintHelper::PrintBrief(now, this->getName() + " dies of energy exhaustion.");
-		}
-	}
+	void consumeEnergy(double cons, int now) override;
 
 
 	/****************************  Static Methods  *******************************/
@@ -334,23 +286,7 @@ public:
 		return ids;
 	}
 
-	static void Init(int now)
-	{
-		DEFAULT_DATA_RATE = getConfig<double>("node", "default_data_rate");
-		DEFAULT_CAPACITY_BUFFER = getConfig<int>("node", "buffer");
-		DEFAULT_CAPACITY_ENERGY = getConfig<int>("node", "energy");
-		WORK_CYCLE = getConfig<int>("mac", "cycle");
-		DEFAULT_DUTY_RATE = getConfig<double>("mac", "duty_rate");
-
-		LIFETIME_COMMUNICATION_HISROTY = getConfig<int>("node", "lifetime_communication_history");
-
-		allNodes = CNode::loadNodesFromFile();
-		aliveNodes = allNodes;
-		mapAllNodes.clear();
-		for( CNode* pnode : allNodes )
-			mapAllNodes[pnode->getID()] = pnode;
-		deadNodes.clear();
-	}
+	static void Init(int now);
 	//TODO: check all the static methods for CNode
 	static bool hasNodes()
 	{
@@ -388,43 +324,7 @@ public:
 		return hasNodes();
 	}
 	//将死亡节点整理移出，返回是否有新的节点死亡
-	static bool ClearDeadNodes(int now)
-	{
-		int nAlive = aliveNodes.size();
-		vector<CNode*> newlyDeadNodes;
-		bool death = false;
-		for( vector<CNode *>::iterator ipNode = aliveNodes.begin(); ipNode != aliveNodes.end(); )
-		{
-			if( !( *ipNode )->isAlive() )
-			{
-				death = true;
-				newlyDeadNodes.push_back(*ipNode);
-				ipNode = aliveNodes.erase(ipNode);
-			}
-			else
-				++ipNode;
-		}
-
-		if( death )
-		{
-			int nDead = 0;
-			ofstream death(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_death"), ios::app);
-			if( now == 0 )
-			{
-				death << endl << getConfig<string>("log", "info_log") << endl;
-				death << getConfig<string>("log", "info_death") << endl;
-			}
-			for( CNode* pdead : newlyDeadNodes )
-				death << now << TAB << pdead->getIdentifier() << TAB << nAlive - (++nDead) << TAB << CData::getCountDelivery()
-				<< TAB << CData::getDeliveryRatio() << endl;
-			death.close();
-			ASSERT(nAlive - nDead == aliveNodes.size());
-			CPrintHelper::PrintAttribute("Node Count", STRING(nAlive) + " -> " + STRING(nAlive - nDead));
-		}
-
-		deadNodes.insert(deadNodes.end(), newlyDeadNodes.begin(), newlyDeadNodes.end());
-		return death;
-	}
+	static bool ClearDeadNodes(int now);
 
 	static bool finiteEnergy();
 
