@@ -30,6 +30,7 @@ map<int, CPFerry::CNodeRecord> CPFerry::collectionRecords;  //known latest colle
 string CPFerry::PATH_PREDICT;
 config::EnumRoutingProtocolScheme CPFerry::PRESTAGE_PROTOCOL = config::_xhar;
 int CPFerry::STARTTIME = INVALID;
+int CPFerry::WAITING_TIME = INVALID;
 
 
 CPFerryMANode::~CPFerryMANode()
@@ -88,7 +89,7 @@ void CPFerryMANode::updateStatus(int now)
 	
 	if( !this->isBusy() )
 	{
-		if( !CBasicEntity::withinRange(*this, *CSink::getSink(), getConfig<int>("trans", "range_trans")) )
+		if( !CBasicEntity::withinRange(*this, *CSink::getSink(), getConfig<int>("trans", "range")) )
 			throw string("CPFerryMANode::updateStatus(): " + this->getName() + " is free but not around Sink.");
 
 		this->setTime(now);
@@ -157,7 +158,7 @@ void CPFerryMANode::updateStatus(int now)
 	atPoint = nullptr;  //离开之前的路点
 
 	CBasicEntity *toPoint = route->getToPoint();
-	int minWaitingTime = route->getWaitingTime();
+	int waitingTime = route->getWaitingTime();
 	int timeLeftAfterArrival = this->moveToward(*toPoint, timeLeftAfterWaiting, this->getSpeed());
 
 	//如果已到达目的地
@@ -183,7 +184,7 @@ void CPFerryMANode::updateStatus(int now)
 				{
 					//set waiting time
 					int timePred = task->getTime();
-					this->setWaiting(max(minWaitingTime, timePred - this->getTime() + minWaitingTime));
+					this->setWaiting(max(waitingTime, timePred - this->getTime() + waitingTime));
 				}
 			}
 		}
@@ -390,7 +391,7 @@ bool CPFerry::dealWithUnreachableNodes(vector<pair<CNode*, CPosition>> nodes, in
 		CPFerryMANode* ma = freeMAs.front();
 		CNode* node = nodes[i].first;
 		CPosition pos = nodes[i].second;
-		ma->assignTask(node, pos, minWaitingTime(), now);
+		ma->assignTask(node, pos, getWaitingTime(), now);
 
 		CPrintHelper::PrintBrief(now, ma->getName() + " is targetting (unreachable) " + node->getName()
 								 + " around " + pos.toString()
@@ -449,7 +450,7 @@ double CPFerry::calculateMetric(CNode * node, CPosition prediction, int now)
 	double dataRate = node->getDataCountRate();
 
 	double timeForTravel = timePrediction - now;
-	double timeTravel = CBasicEntity::getDistance(prediction, *CSink::getSink()) / CMANode::getMASpeed();
+	double timeTravel = ( CBasicEntity::getDistance(prediction, *CSink::getSink()) - getConfig<int>("trans", "range")) / CMANode::getMASpeed();
 	double timeArrival = timeTravel + now;
 
 	//double timeEstimate = min(timeArrival + now, timePrediction);
@@ -594,7 +595,7 @@ vector<CGeneralNode*> CPFerry::findNeighbors(CGeneralNode & src)
 		if( ( *iMA )->getID() == src.getID() )
 			continue;
 
-		if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
+		if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range"))
 		   && ( *iMA )->isAwake() )
 		{
 			neighbors.push_back(*iMA);
@@ -1078,7 +1079,7 @@ bool CPFerry::arrangeTask(vector<CNode*> nodes, int now)
 			CPFerryMANode* ma = freeMAs.front();
 			CNode* node = sorted[i].first;
 			CPosition pos = sorted[i].second;
-			ma->assignTask(node, pos, minWaitingTime(), now);
+			ma->assignTask(node, pos, getWaitingTime(), now);
 
 			CPrintHelper::PrintBrief(now, ma->getName() + " is targetting " + node->getName()
 									 + " around " + pos.toString()
@@ -1107,6 +1108,7 @@ void CPFerry::Init(int now)
 	PATH_PREDICT = getConfig<string>("pferry", "path_predict");
 	PRESTAGE_PROTOCOL = getConfig<config::EnumRoutingProtocolScheme>("pferry", "prestage_protocol");
 	STARTTIME = getConfig<int>("pferry", "starttime");
+	WAITING_TIME = getConfig<int>("pferry", "waiting_time");
 	CPFerryMANode::RETURN_ONCE_MET = getConfig<bool>("pferry", "return_once_met");
 
 	CPFerryTask::Init(CNode::getIdNodes(CNode::getAllNodes()));
@@ -1296,7 +1298,7 @@ CTracePrediction::CTracePrediction(int nodeId, string identifier, string dir) : 
 	else
 	{
 		Trace trace = Trace::readTraceFromFile(path, false);
-		*this = CTracePrediction(trace);
+		*this = CTracePrediction(trace, nodeId);
 
 		static bool panning = true;
 

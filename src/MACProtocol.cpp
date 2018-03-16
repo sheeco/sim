@@ -20,7 +20,7 @@ int CMacProtocol::getTransmissionDelay(int nByte)
 	if(getConfig<double>("trans", "constant_trans_delay") >= 0)
 		return int(getConfig<double>("trans", "constant_trans_delay"));
 	else
-		return ROUND(double(nByte) / double(getConfig<int>("trans", "speed_trans")));
+		return ROUND(double(nByte) / double(getConfig<int>("trans", "speed")));
 }
 
 int CMacProtocol::getTransmissionDelay(vector<CPacket*> packets)
@@ -30,7 +30,7 @@ int CMacProtocol::getTransmissionDelay(vector<CPacket*> packets)
 
 int CMacProtocol::getMaxTransmissionDelay()
 {
-	return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + getConfig<int>("trans", "window_trans") * getConfig<int>("data", "size_data") + getConfig<int>("data", "size_ctrl"));
+	return getTransmissionDelay(getConfig<int>("data", "size_header_mac") + getConfig<int>("trans", "size_window") * getConfig<int>("data", "size_data") + getConfig<int>("data", "size_ctrl"));
 }
 
 vector<CGeneralNode*> CMacProtocol::findNeighbors(CGeneralNode & src)
@@ -47,7 +47,7 @@ vector<CGeneralNode*> CMacProtocol::findNeighbors(CGeneralNode & src)
 		if( ( dstNode )->getID() == src.getID() )
 			continue;
 
-		if( CBasicEntity::withinRange(src, *dstNode, getConfig<int>("trans", "range_trans")) )
+		if( CBasicEntity::withinRange(src, *dstNode, getConfig<int>("trans", "range")) )
 		{
 			//统计sink节点的相遇计数
 			if( typeid( src ) == typeid( CSink ) )
@@ -67,7 +67,7 @@ vector<CGeneralNode*> CMacProtocol::findNeighbors(CGeneralNode & src)
 	/*************************************************** Sink **********************************************************/
 
 	CSink* sink = CSink::getSink();
-	if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range_trans"))
+	if( CBasicEntity::withinRange(src, *sink, getConfig<int>("trans", "range"))
 	   && sink->getID() != src.getID() )
 	{
 		neighbors.push_back(sink);
@@ -81,7 +81,7 @@ vector<CGeneralNode*> CMacProtocol::findNeighbors(CGeneralNode & src)
 
 bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ))
 {
-	if(! Bet(getConfig<double>("trans", "prob_trans")) )
+	if(! Bet(getConfig<double>("trans", "probability")) )
 	   return false;
 
 	// Make local copy

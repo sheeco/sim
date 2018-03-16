@@ -143,9 +143,9 @@ void CHotspotSelect::GreedySelect(int now)
 				{
 					if((*ipos)->getFlag() == true)
 						continue;
-					if(fabs(hotspotsAboveAverage[i]->getX() - (*ipos)->getX()) > getConfig<int>("trans", "range_trans"))
+					if(fabs(hotspotsAboveAverage[i]->getX() - (*ipos)->getX()) > getConfig<int>("trans", "range"))
 						continue;
-					if(CBasicEntity::withinRange(*hotspotsAboveAverage[i], **ipos, getConfig<int>("trans", "range_trans") ))
+					if(CBasicEntity::withinRange(*hotspotsAboveAverage[i], **ipos, getConfig<int>("trans", "range") ))
 					{
 						hotspotsAboveAverage[i]->addPosition(*ipos);
 						(*ipos)->setFlag(true);
@@ -242,12 +242,12 @@ void CHotspotSelect::MergeHotspots(int now)
 		for(vector<CHotspot *>::iterator iNew = hotspotCandidates.begin(); iNew != hotspotCandidates.end(); ++iNew, ++i)
 		{
 			//for (x within range)
-			if( (*iNew)->getX() + 2 * getConfig<int>("trans", "range_trans") <= (*iOld)->getX() )
+			if( (*iNew)->getX() + 2 * getConfig<int>("trans", "range") <= (*iOld)->getX() )
 				continue;
-			if( (*iOld)->getX() + 2 * getConfig<int>("trans", "range_trans") <= (*iNew)->getX() )
+			if( (*iOld)->getX() + 2 * getConfig<int>("trans", "range") <= (*iNew)->getX() )
 				break;
 			//try merge
-			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * getConfig<int>("trans", "range_trans") ) )
+			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * getConfig<int>("trans", "range") ) )
 			{
 				//FIXE: now copied from old or new ?
 				CCoordinate location( ( (*iOld)->getX() + (*iNew)->getX() ) / 2 , ( (*iOld)->getY() + (*iNew)->getY() ) / 2);
@@ -312,9 +312,9 @@ void CHotspotSelect::CompareWithOldHotspots(int now)
 
 	double overlapArea = CHotspot::getOverlapArea(oldSelectedHotspots[now - SLOT_HOTSPOT_UPDATE], selectedHotspots);
 	double oldArea = oldSelectedHotspots[now - SLOT_HOTSPOT_UPDATE].size() 
-		* AreaCircle( getConfig<int>("trans", "range_trans")) 
+		* AreaCircle( getConfig<int>("trans", "range")) 
 		- CHotspot::getOverlapArea(oldSelectedHotspots[now - SLOT_HOTSPOT_UPDATE]);
-	double newArea = selectedHotspots.size() * AreaCircle( getConfig<int>("trans", "range_trans")) - CHotspot::getOverlapArea(selectedHotspots);
+	double newArea = selectedHotspots.size() * AreaCircle( getConfig<int>("trans", "range")) - CHotspot::getOverlapArea(selectedHotspots);
 
 	ofstream similarity( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hotspot_similarity"), ios::app);
 	if( now == STARTTIME_HOTSPOT_SELECT + SLOT_HOTSPOT_UPDATE )

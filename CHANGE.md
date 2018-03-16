@@ -831,9 +831,14 @@
 
 - FIX: Unnecessay exception caught when 2 MA are assigned with the same route;
 
-###### 2018-03-15 · *< 4.2.6647.29852 >*
+###### [2018-03-15 · *< 4.2.6647.29852 >*](918a4647b416b2b90446227de56aa020e63ad3d6)
 
 - RFCT: for class definitions & inheritance, decorator classes added;
+
+###### 2018-03-16 · *< 4.2.6649.28141 >*
+
+- FIX: bug with the initialization of `CTracePrediction`;
+- OPT: for PFerry metric calculation;
 
 
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；

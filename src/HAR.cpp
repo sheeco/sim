@@ -30,7 +30,7 @@ void CHarMANode::updateStatus(int now)
 
 	if( !this->isBusy() )
 	{
-		if( !CBasicEntity::withinRange(*this, *CSink::getSink(), getConfig<int>("trans", "range_trans")) )
+		if( !CBasicEntity::withinRange(*this, *CSink::getSink(), getConfig<int>("trans", "range")) )
 			throw string("CHarMANode::updateStatus(): " + this->getName() + " is free but not around Sink.");
 
 		this->setTime(now);
@@ -294,7 +294,7 @@ double HAR::calculateEDTime(int now)
 	pmh = sum_waitingTime / (sum_length / CMANode::getMASpeed() + sum_waitingTime);
 	EM = (1 - pmh) * ( ( (1 - avg_pw) / avg_pw) * avg_u + (avg_length / (2 * CMANode::getMASpeed()) + avg_waitingTime) ) + pmh * ( ( (1 - avg_pw) / avg_pw) * avg_u + avg_waitingTime);
 	EIM = avg_u / avg_pw;
-	ED = EM + ( (1 - getConfig<double>("trans", "prob_trans")) / getConfig<double>("trans", "prob_trans") ) * EIM + ( double( hotspots.size() ) / (2 * maRoutes.size()) ) * avg_u;
+	ED = EM + ( (1 - getConfig<double>("trans", "probability")) / getConfig<double>("trans", "probability") ) * EIM + ( double( hotspots.size() ) / (2 * maRoutes.size()) ) * avg_u;
 
 	return ED;
 }
@@ -451,7 +451,7 @@ CHarRoute * HAR::popRoute()
 
 void HAR::atMAReturn(CHarMANode * ma, int now)
 {
-	if( !CBasicEntity::withinRange(*ma, *CSink::getSink(), getConfig<int>("trans", "range_trans")) )
+	if( !CBasicEntity::withinRange(*ma, *CSink::getSink(), getConfig<int>("trans", "range")) )
 		throw string("CHarMANode::atMAReturn(): " + ma->getName() + " is not around Sink.");
 
 	if( hasRoutes() )
@@ -547,7 +547,7 @@ vector<CGeneralNode*> HAR::findNeighbors(CGeneralNode & src)
 		if( ( *iMA )->getID() == src.getID() )
 			continue;
 
-		if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range_trans"))
+		if( CBasicEntity::withinRange(src, **iMA, getConfig<int>("trans", "range"))
 		   && ( *iMA )->isAwake() )
 		{
 			neighbors.push_back(*iMA);

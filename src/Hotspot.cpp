@@ -125,11 +125,11 @@ bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> h
 
 		for(vector<CHotspot *>::iterator ihotspot = hotspots.begin(); ihotspot != hotspots.end(); ++ihotspot)
 		{
-			if(( *ihotspot )->getX() + getConfig<int>("trans", "range_trans") < pnode->getX())
+			if(( *ihotspot )->getX() + getConfig<int>("trans", "range") < pnode->getX())
 				continue;
-			if(pnode->getX() + getConfig<int>("trans", "range_trans") < ( *ihotspot )->getX())
+			if(pnode->getX() + getConfig<int>("trans", "range") < ( *ihotspot )->getX())
 				break;
-			if(CBasicEntity::withinRange(**inode, **ihotspot, getConfig<int>("trans", "range_trans")))
+			if(CBasicEntity::withinRange(**inode, **ihotspot, getConfig<int>("trans", "range")))
 			{
 				newAtHotspot = *ihotspot;
 				break;
@@ -158,9 +158,9 @@ bool CHotspot::UpdateAtHotspotForNodes(vector<CNode*> nodes, vector<CHotspot*> h
 
 			for(vector<CNode *>::iterator jnode = inode; jnode != nodes.end(); ++jnode)
 			{
-				if(pnode->getX() + getConfig<int>("trans", "range_trans") < ( *jnode )->getX())
+				if(pnode->getX() + getConfig<int>("trans", "range") < ( *jnode )->getX())
 					break;
-				if(CBasicEntity::withinRange(**inode, **jnode, getConfig<int>("trans", "range_trans")))
+				if(CBasicEntity::withinRange(**inode, **jnode, getConfig<int>("trans", "range")))
 				{
 					CNode::encount();
 
@@ -223,11 +223,11 @@ double CHotspot::getRatioByTypeHotspotCandidate() const
 double CHotspot::getOverlapArea(CHotspot *oldHotspot, CHotspot *newHotspot)
 {
 	double distance = CBasicEntity::getDistance(*oldHotspot, *newHotspot);
-	double cos = ( distance / 2 ) / getConfig<int>("trans", "range_trans");
+	double cos = ( distance / 2 ) / getConfig<int>("trans", "range");
 	double sin = sqrt( 1 - cos * cos );
 	double angle = acos(cos);
-	double sector = ( angle / 2 ) * getConfig<int>("trans", "range_trans") * getConfig<int>("trans", "range_trans");
-	double triangle = ( getConfig<int>("trans", "range_trans") * ( distance / 2 ) ) * sin / 2;
+	double sector = ( angle / 2 ) * getConfig<int>("trans", "range") * getConfig<int>("trans", "range");
+	double triangle = ( getConfig<int>("trans", "range") * ( distance / 2 ) ) * sin / 2;
 
 	return ( sector - triangle ) * 4 ;
 }
@@ -264,12 +264,12 @@ CHotspot * CHotspot::generateHotspot(CCoordinate location, vector<CPosition*> po
 		{
 			if(positions[i]->getFlag())
 				continue;
-			if(positions[i]->getX() + getConfig<int>("trans", "range_trans") < photspot->getX())
+			if(positions[i]->getX() + getConfig<int>("trans", "range") < photspot->getX())
 				continue;
 			//若水平距离已超出range，则可以直接停止搜索
-			if(photspot->getX() + getConfig<int>("trans", "range_trans") < positions[i]->getX())
+			if(photspot->getX() + getConfig<int>("trans", "range") < positions[i]->getX())
 				break;
-			if(CBasicEntity::withinRange(*photspot, *positions[i], getConfig<int>("trans", "range_trans")))
+			if(CBasicEntity::withinRange(*photspot, *positions[i], getConfig<int>("trans", "range")))
 			{
 				photspot->addPosition(positions[i]);
 				positions[i]->setFlag(true);
@@ -300,16 +300,16 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 		{
 			if( (*iOld)->getID() == (*iNew)->getID() )
 			{
-				sumArea += AreaCircle( getConfig<int>("trans", "range_trans"));
+				sumArea += AreaCircle( getConfig<int>("trans", "range"));
 				continue;
 			}
 
-			if( (*iNew)->getX() + 2 * getConfig<int>("trans", "range_trans") <= (*iOld)->getX() )
+			if( (*iNew)->getX() + 2 * getConfig<int>("trans", "range") <= (*iOld)->getX() )
 				continue;
-			if( (*iOld)->getX() + 2 * getConfig<int>("trans", "range_trans") <= (*iNew)->getX() )
+			if( (*iOld)->getX() + 2 * getConfig<int>("trans", "range") <= (*iNew)->getX() )
 				break;
 
-			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * getConfig<int>("trans", "range_trans") ) )
+			if( CBasicEntity::withinRange(**iOld, **iNew, 2 * getConfig<int>("trans", "range") ) )
 			{
 				sumArea += getOverlapArea(*iOld, *iNew);
 			}
@@ -321,5 +321,5 @@ double CHotspot::getOverlapArea(vector<CHotspot *> oldHotspots, vector<CHotspot 
 
 double CHotspot::getOverlapArea(vector<CHotspot *> hotspots)
 {
-	return getOverlapArea(hotspots, hotspots) - AreaCircle( getConfig<int>("trans", "range_trans")) * hotspots.size();
+	return getOverlapArea(hotspots, hotspots) - AreaCircle( getConfig<int>("trans", "range")) * hotspots.size();
 }

@@ -272,15 +272,15 @@ void CConfiguration::InitConfiguration()
 
 
 	addGroup("trans");
-	addConfiguration("trans", "speed_trans", typeid(int), new int(2500));  // Byte / s
-	addConfiguration("trans", "range_trans", typeid(int), new int(100));  //transmission range
-	addConfiguration("trans", "prob_trans", typeid(double), new double(1.0));
+	addConfiguration("trans", "speed", typeid(int), new int(2500));  // Byte / s
+	addConfiguration("trans", "range", typeid(int), new int(100));  //transmission range
+	addConfiguration("trans", "probability", typeid(double), new double(1.0));
 	addConfiguration("trans", "consumption_byte_send", typeid(double), new double(0.008));  //( mJ / Byte )
 	addConfiguration("trans", "consumption_byte_receive", typeid(double), new double(0.004));
 	addConfiguration("trans", "consumption_wake", typeid(double), new double(13.5));  // ( mJ / s )
 	addConfiguration("trans", "consumption_sleep", typeid(double), new double(0.015));
 
-	addConfiguration("trans", "window_trans", typeid(int), new int(10));
+	addConfiguration("trans", "size_window", typeid(int), new int(10));
 	addConfiguration("trans", "constant_trans_delay", typeid(double), new double(0));  // delay ignored if 0; realtime calculated if negative
 
 
@@ -357,6 +357,7 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("pferry", "extension_pan_file", typeid( string ), new string(".pan"));
 	addConfiguration("pferry", "prestage_protocol", typeid( int ), new EnumRoutingProtocolScheme(_xhar));
 	addConfiguration("pferry", "starttime", typeid( int ), new int(INVALID));
+	addConfiguration("pferry", "waiting_time", typeid( int ), new int(INVALID));
 	addConfiguration("pferry", "return_once_met", typeid( bool ), new bool(false));
 	
 }

@@ -47,9 +47,8 @@ private:
 	//e.g. 31.pan
 	static string filenamePan(string nodename);
 
-	CTracePrediction(Trace& trace) : Trace(trace)
+	CTracePrediction(Trace& trace, int nodeId) : Trace(trace), node(nodeId)
 	{
-		this->node = INVALID;
 	};
 
 public:
@@ -221,6 +220,7 @@ private:
 	static string PATH_PREDICT;
 	static config::EnumRoutingProtocolScheme PRESTAGE_PROTOCOL;
 	static int STARTTIME;
+	static int WAITING_TIME;
 
 
 	//init based on newly loaded CNode
@@ -228,9 +228,9 @@ private:
 	static void initMANodes();
 	static void initPredictions();
 
-	static int minWaitingTime()
+	static int getWaitingTime()
 	{
-		return Trace::getInterval();
+		return WAITING_TIME;
 	}
 
 	static void updatecollectionRecords(int nodeId, int bufferVacancy, int time);

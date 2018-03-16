@@ -31,7 +31,7 @@ int CGeneralNode::pushIntoBuffer(vector<CData> datas, int now)
 
 vector<CData> CGeneralNode::getDataForTrans(int capacity)
 {
-	int window = getConfig<int>("trans", "window_trans");
+	int window = getConfig<int>("trans", "size_window");
 	if(capacity == 0)
 		throw string("CGeneralNode::getDataForTrans() capacity = 0.");
 	else if(capacity < 0
