@@ -257,11 +257,6 @@ void CMacProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 		sink << endl;
 		sink.close();
 
-	}
-
-	if( now % getConfig<int>("hs", "slot_hotspot_update") == 0
-	   || now == getConfig<int>("simulation", "runtime") )
-	{
 		//Êý¾Ý´«Êä
 		ofstream transmit( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_transmit"), ios::app);
 		if(now == 0)

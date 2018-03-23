@@ -19,20 +19,24 @@ void CRunHelper::InitLogPath()
 	time_t seconds;  //秒时间  
 	char temp[65] = { '\0' };
 	seconds = time(nullptr); //获取目前秒时间  
-	strftime(temp, 64, "%Y-%m-%d %H:%M:%S", localtime(&seconds));
-	CConfiguration::updateConfiguration<string>("log", "timestamp", string(temp), true);
 	strftime(temp, 64, "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
 	string timestring;
 	timestring = string(temp);
-	CConfiguration::updateConfiguration<string>("log", "info_log", string("@" + getConfig<string>("log", "timestamp") + TAB), true);
-	CConfiguration::updateConfiguration<string>("log", "path_timestamp", string("." + timestring + "/"), true);
+	CConfiguration::updateConfiguration<string>("log", "timestamp", timestring, true);
+	CConfiguration::updateConfiguration<string>("log", "info_log", string("@" + timestring + TAB), true);
+
+	string tag = getConfig<string>("log", "tag");
+	if(!tag.empty())
+		tag + "[" + tag + "]";
+	string logpath = "." + tag + timestring + "/";
+	CConfiguration::updateConfiguration<string>("log", "path_timestamp", logpath, true);
 
 	// Create log path
-	if( access(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str(), 00) != 0 )
-		_mkdir(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str());
+	if( access(( getConfig<string>("log", "dir_log") + logpath ).c_str(), 00) != 0 )
+		_mkdir(( getConfig<string>("log", "dir_log") + logpath ).c_str());
 
 	// Hide folder
-	CFileHelper::SetHidden( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") );
+	CFileHelper::SetHidden( getConfig<string>("log", "dir_log") + logpath);
 
 }
 
@@ -182,20 +186,21 @@ void CRunHelper::Exit(int code)
 
 	if( code == EFINISH )
 	{
-
-		if( _access(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str(), 02) == 0
-		   && ( getConfig<string>("log", "path_timestamp").find(".") != getConfig<string>("log", "path_timestamp").npos ) )   //if writeable & '.' found in filename
+		string dir = getConfig<string>("log", "dir_log");
+		string logpath = getConfig<string>("log", "path_timestamp");
+		if(_access(( dir + logpath ).c_str(), 02) == 0
+		   && ( logpath.find(".") != logpath.npos ) )   //if writeable & '.' found in filename
 		{
-			string newPathLog = getConfig<string>("log", "path_timestamp").substr(1, getConfig<string>("log", "path_timestamp").npos);
-			if( _access(( getConfig<string>("log", "dir_log") + newPathLog ).c_str(), 00) != 0 )  //if no collision
+			string newpath = logpath.substr(1, logpath.npos);
+			if( _access(( dir + newpath ).c_str(), 00) != 0 )  //if no collision
 			{
-				rename(( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") ).c_str(), ( getConfig<string>("log", "dir_log") + newPathLog ).c_str());
-				updateConfig<string>("log", "path_timestamp", newPathLog);
+				rename(( dir + logpath ).c_str(), ( dir + newpath ).c_str());
+				updateConfig<string>("log", "path_timestamp", newpath);
 			}
 		}
 
 		// Unhide folder
-		CFileHelper::UnsetHidden(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp"));
+		CFileHelper::UnsetHidden(dir + getConfig<string>("log", "path_timestamp"));
 	}
 
 	// Alert & Pause

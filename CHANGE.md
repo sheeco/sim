@@ -835,10 +835,15 @@
 
 - RFCT: for class definitions & inheritance, decorator classes added;
 
-###### 2018-03-16 · *< 4.2.6649.28141 >*
+###### [2018-03-16 · *< 4.2.6649.28141 >*](3b202134feb4169ae4b8d23fa5ff00079ecb2e01)
 
 - FIX: bug with the initialization of `CTracePrediction`;
 - OPT: for PFerry metric calculation;
+
+###### 2018-03-23 · *< 4.2.6656.19382 >*
+
+- ADD: Enable tagging with log folder;
+- RFCT: for logging;
 
 
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；

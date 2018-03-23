@@ -173,8 +173,10 @@ void CConfiguration::InitConfiguration()
 
 
 	addGroup("log");
-	addConfiguration("log", "slot_log", typeid( int ), new int(100));  //记录数据投递率和数据投递时延的slot
-	addConfiguration("log", "detail", typeid(int), new int(1));  //控制台输出的细致等级，1~3，数值越大越细致
+	addConfiguration("log", "slot_log", typeid( int ), new int(0));  //记录数据投递率和数据投递时延的slot
+	addConfiguration("log", "slot_brief", typeid( int ), new int(100));
+	addConfiguration("log", "detail", typeid( int ), new int(1));  //控制台输出的细致等级，1~3，数值越大越细致
+	addConfiguration("log", "tag", typeid(string), new string(""));
 
 	addConfiguration("log", "dir_root", typeid(string), new string("../"));
 	addConfiguration("log", "dir_project", typeid(string), new string("../.project/"));
@@ -306,8 +308,8 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("ma", "buffer", typeid(int), new int(100));
 	//addConfiguration("ma", "scheme_relay", typeid(int), new EnumRelayScheme(_loose));
 	addConfiguration("ma", "base_id", typeid(int), new int(100));  //ID的起始值，用于和传感器节点相区分
-	addConfiguration("ma", "init_num_ma", typeid( int ), new int(INVALID));
-	addConfiguration("ma", "max_num_ma", typeid( int ), new int(INVALID));
+	addConfiguration("ma", "init_num", typeid( int ), new int(INVALID));
+	addConfiguration("ma", "max_num", typeid( int ), new int(INVALID));
 
 
 	//TODO: move to group "node" ?
@@ -378,8 +380,8 @@ void CConfiguration::ValidateConfiguration()
 	   && getConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select") == config::_skip )
 		updateConfig<config::EnumHotspotSelectScheme>("simulation", "hotspot_select", config::EnumHotspotSelectScheme(config::_original));
 
-	if( getConfig<int>("ma", "max_num_ma") < getConfig<int>("ma", "init_num_ma") )
-		updateConfig<int>("ma", "max_num_ma", getConfig<int>("ma", "init_num_ma"));
+	if( getConfig<int>("ma", "max_num") < getConfig<int>("ma", "init_num") )
+		updateConfig<int>("ma", "max_num", getConfig<int>("ma", "init_num"));
 
 }
 

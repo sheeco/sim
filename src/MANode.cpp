@@ -34,8 +34,8 @@ void CMANode::init()
 
 void CMANode::Init()
 {
-	INIT_NUM_MA = getConfig<int>("ma", "init_num_ma");
-	MAX_NUM_MA = getConfig<int>("ma", "max_num_ma");
+	INIT_NUM_MA = getConfig<int>("ma", "init_num");
+	MAX_NUM_MA = getConfig<int>("ma", "max_num");
 	CAPACITY_BUFFER = getConfig<int>("ma", "buffer");
 	SPEED = getConfig<int>("ma", "speed");
 }

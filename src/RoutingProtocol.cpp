@@ -32,11 +32,10 @@ void CRoutingProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 			|| now == getConfig<int>("simulation", "runtime") ) )
 		return;
 
-	//投递率、延迟、节点buffer状态统计 ...
-	if( now % getConfig<int>("hs", "slot_hotspot_update")  == 0
+	if( now % getConfig<int>("log", "slot_brief")  == 0
 		|| now == getConfig<int>("simulation", "runtime") )
 	{
-		//数据投递率（用于debug）
+		//数据投递率（简要）
 		ofstream delivery_ratio( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_delivery_ratio_brief"), ios::app);
 		if(now == 0)
 		{
@@ -45,52 +44,12 @@ void CRoutingProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 		}
 		delivery_ratio << now << TAB << CData::getCountDelivery() << TAB << CData::getCountData() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
-
-		//数据投递延迟
-		ofstream delay( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_delay"), ios::app);
-		if(now == 0)
-		{
-			delay << endl << getConfig<string>("log", "info_log") << endl ;
-			delay << getConfig<string>("log", "info_delay") << endl;
-		}
-		delay << now << TAB << CData::getAverageDelay() << endl;
-		delay.close();
-
-		//数据投递跳数
-		ofstream hop( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hop"), ios::app);
-		if(now == 0)
-		{
-			hop << endl << getConfig<string>("log", "info_log") << endl ;
-			hop << getConfig<string>("log", "info_hop") << endl;
-		}
-		hop << now << TAB << CData::getAverageHOP() << endl;
-		hop.close();
-
-		//每个节点buffer状态的历史平均值
-		ofstream buffer( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_statistics"), ios::app);
-		if(now == 0)
-		{
-			buffer << endl << getConfig<string>("log", "info_log") << endl ;
-			buffer << getConfig<string>("log", "info_buffer_statistics") << endl;
-		}
-		buffer << now << TAB;
-		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
-		{
-			if( ! (*inode)->isAlive() )
-				buffer << "-" << TAB ;
-			else
-				buffer << NDigitFloat( (*inode)->getAverageSizeBuffer(), 1) << TAB;
-		}
-		buffer << endl;
-		buffer.close();
-
 	}
 
-	//数据投递率、节点buffer状态
 	if(now % getConfig<int>("log", "slot_log") == 0
 		|| now == getConfig<int>("simulation", "runtime"))
 	{
-		//数据投递率（用于绘制曲线）
+		//数据投递率（细致）
 		ofstream delivery_ratio( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_delivery_ratio_detail"), ios::app);
 		if(now == 0)
 		{
@@ -100,26 +59,63 @@ void CRoutingProtocol::PrintInfo(vector<CNode*> allNodes, int now)
 		delivery_ratio << now << TAB << CData::getCountDelivery() << TAB << CData::getCountData() << TAB << CData::getDeliveryRatio() << endl;
 		delivery_ratio.close();
 
-		//每个节点的当前buffer状态
-		ofstream buffer( getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer"), ios::app);
+		//数据投递延迟
+		ofstream delay(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_delay"), ios::app);
 		if(now == 0)
 		{
-			buffer << endl << getConfig<string>("log", "info_log") << endl ;
+			delay << endl << getConfig<string>("log", "info_log") << endl;
+			delay << getConfig<string>("log", "info_delay") << endl;
+		}
+		delay << now << TAB << CData::getAverageDelay() << endl;
+		delay.close();
+
+		//数据投递跳数
+		ofstream hop(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_hop"), ios::app);
+		if(now == 0)
+		{
+			hop << endl << getConfig<string>("log", "info_log") << endl;
+			hop << getConfig<string>("log", "info_hop") << endl;
+		}
+		hop << now << TAB << CData::getAverageHOP() << endl;
+		hop.close();
+
+		//每个节点的当前buffer状态
+		ofstream buffer(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer"), ios::app);
+		if(now == 0)
+		{
+			buffer << endl << getConfig<string>("log", "info_log") << endl;
 			buffer << getConfig<string>("log", "info_buffer") << endl;
 		}
 		buffer << now << TAB;
 		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
 		{
-			if( ! (*inode)->isAlive() )
-				buffer << "-" << TAB ;
+			if(!( *inode )->isAlive())
+				buffer << "-" << TAB;
 			else
-				buffer << (*inode)->getBufferSize() << "  " ;
+				buffer << ( *inode )->getBufferSize() << "  ";
 
-			(*inode)->recordBufferStatus();
+			( *inode )->recordBufferStatus();
 		}
 		buffer << endl;
 		buffer.close();
 
+		//每个节点buffer状态的历史平均值
+		ofstream statistics(getConfig<string>("log", "dir_log") + getConfig<string>("log", "path_timestamp") + getConfig<string>("log", "file_buffer_statistics"), ios::app);
+		if(now == 0)
+		{
+			statistics << endl << getConfig<string>("log", "info_log") << endl;
+			statistics << getConfig<string>("log", "info_buffer_statistics") << endl;
+		}
+		statistics << now << TAB;
+		for(auto inode = allNodes.begin(); inode != allNodes.end(); ++inode)
+		{
+			if(!( *inode )->isAlive())
+				statistics << "-" << TAB;
+			else
+				statistics << NDigitFloat(( *inode )->getAverageSizeBuffer(), 1) << TAB;
+		}
+		statistics << endl;
+		statistics.close();
 	}
 
 }
