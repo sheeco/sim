@@ -84,8 +84,6 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vec
 	if(! Bet(getConfig<double>("trans", "probability")) )
 	   return false;
 
-	// Make local copy
-	frame = new CFrame(*frame);
 	CGeneralNode* gFromNode = frame->getSrcNode();
 	CGeneralNode* gToNode = frame->getDstNode();
 
@@ -116,7 +114,6 @@ bool CMacProtocol::receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vec
 	CFrame* frameToSend = nullptr;
 
 	packetsToSend = receivePackets(gnode, *gFromNode, packets, now);
-
 
 	/*********************************************** send reply *******************************************************/
 
@@ -184,7 +181,7 @@ bool CMacProtocol::transmitFrame(CGeneralNode& src, CFrame* frame, int now, vect
 			rcv = rcv || new_rcv;
 		}
 
-		free(currentFrame);
+		FreePointer(currentFrame);
 	}
 
 	return rcv;

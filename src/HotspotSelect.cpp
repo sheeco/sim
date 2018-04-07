@@ -263,7 +263,7 @@ void CHotspotSelect::MergeHotspots(int now)
 					max_cover = current_cover;
 					index_max_hotspot = i;
 					if(best_merge != nullptr)
-						delete best_merge;
+						FreePointer(best_merge);
 					best_merge = merge;
 				}
 			}	
@@ -273,7 +273,9 @@ void CHotspotSelect::MergeHotspots(int now)
 		if(index_max_hotspot != -1)
 		{
 			vector<CHotspot *>::iterator usedHotspotCandidate = hotspotCandidates.begin() + index_max_hotspot;
-			delete *usedHotspotCandidate;
+			
+			
+			FreePointer(*usedHotspotCandidate);
 			hotspotCandidates.erase(usedHotspotCandidate);
 			//push the merge result into mergeResult and set type to merge type
 			best_merge->setCandidateType(CHotspot::_merge_hotspot);
@@ -373,7 +375,7 @@ void CHotspotSelect::CollectNewPositions(int now, vector<CNode*> nodes)
 			{
 				if(( *ipos )->getTime() < threshold)
 				{
-					delete *ipos;
+					FreePointer(*ipos);
 					ipos = positions.erase(ipos);
 				}
 				else

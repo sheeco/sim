@@ -8,8 +8,8 @@ string CTracePrediction::KEYWORD_PREDICT;
 string CTracePrediction::EXTENSION_PAN_FILE;
 
 
-int CPFerryTask::COUNT_TASK_MET;
-int CPFerryTask::COUNT_TASK;
+int CPFerryTask::COUNT_TASK_MET = 0;
+int CPFerryTask::COUNT_TASK = 0;
 map<int, int> CPFerryTask::countTaskForNodes;
 
 bool CPFerryMANode::RETURN_ONCE_MET = false;
@@ -176,7 +176,7 @@ void CPFerryMANode::updateStatus(int now)
 
 			CPFerryTask* task = this->findTask(ppos->getNode());
 			if( !task )
-				throw string("CPFerryMANode::updateStatus(): Cannot find task for node id " + STRING(ppos->getNode()) + ".");
+				throw string("CPFerryMANode::updateStatus(): Cannot find task with node id " + STRING(ppos->getNode()) + " for " + this->getName() + ".");
 			else
 			{
 				if(!RETURN_ONCE_MET
@@ -673,6 +673,7 @@ vector<CPacket*> CPFerry::receivePackets(CSink * sink, CPFerryMANode * fromMA, v
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
+	CCtrl* ackToSend = nullptr;
 
 	for( vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -684,7 +685,7 @@ vector<CPacket*> CPFerry::receivePackets(CSink * sink, CPFerryMANode * fromMA, v
 				case CCtrl::_rts:
 
 					//CTS
-					ctrlToSend = new CCtrl(sink->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
+					ctrlToSend = new CCtrl(sink->getID(), time, CCtrl::_cts);
 
 					break;
 
@@ -729,7 +730,7 @@ vector<CPacket*> CPFerry::receivePackets(CSink * sink, CPFerryMANode * fromMA, v
 			vector<CData> ack = CSink::bufferData(time, datas);
 
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(CSink::getSink()->getID(), ack, time, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
+			ackToSend = new CCtrl(CSink::getSink()->getID(), ack, time, CCtrl::_ack);
 		}
 	}
 
@@ -738,6 +739,8 @@ vector<CPacket*> CPFerry::receivePackets(CSink * sink, CPFerryMANode * fromMA, v
 	CFrame* frameToSend = nullptr;
 	if( ctrlToSend != nullptr )
 		packetsToSend.push_back(ctrlToSend);
+	if( ackToSend != nullptr )
+		packetsToSend.push_back(ackToSend);
 
 	return packetsToSend;
 
@@ -771,7 +774,7 @@ vector<CPacket*> CPFerry::receivePackets(CPFerryMANode * ma, CSink * fromSink, v
 						return packetsToSend;
 					}
 					//CTS
-					ctrlToSend = new CCtrl(ma->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
+					ctrlToSend = new CCtrl(ma->getID(), time, CCtrl::_cts);
 					// + DATA
 					dataToSend = ma->getDataForTrans(INVALID);
 
@@ -874,11 +877,11 @@ vector<CPacket*> CPFerry::receivePackets(CNode * node, CPFerryMANode * fromMA, v
 
 					if( !node->hasData() )
 					{
-						nodataToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_no_data);
+						nodataToSend = new CCtrl(node->getID(), time, CCtrl::_no_data);
 						break;
 					}
 					//CTS
-					ctrlToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
+					ctrlToSend = new CCtrl(node->getID(), time, CCtrl::_cts);
 
 					break;
 
@@ -960,6 +963,7 @@ vector<CPacket*> CPFerry::receivePackets(CPFerryMANode * ma, CNode * fromNode, v
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
+	CCtrl* ackToSend = nullptr;
 
 	for( vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -1018,7 +1022,7 @@ vector<CPacket*> CPFerry::receivePackets(CPFerryMANode * ma, CNode * fromNode, v
 			atDataCollection(ma, fromNode, ma->getLocation(), time);
 
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(ma->getID(), ack, time, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
+			ackToSend = new CCtrl(ma->getID(), ack, time, CCtrl::_ack);
 		}
 	}
 
@@ -1027,6 +1031,8 @@ vector<CPacket*> CPFerry::receivePackets(CPFerryMANode * ma, CNode * fromNode, v
 	CFrame* frameToSend = nullptr;
 	if( ctrlToSend != nullptr )
 		packetsToSend.push_back(ctrlToSend);
+	if( ackToSend != nullptr )
+		packetsToSend.push_back(ackToSend);
 
 	return packetsToSend;
 
@@ -1364,7 +1370,10 @@ int CPFerryTask::getCountTask()
 
 double CPFerryTask::getPercentTaskMet()
 {
-	return double(COUNT_TASK_MET) / COUNT_TASK;
+	if( COUNT_TASK == 0 )
+		return 0;
+	else
+		return double(COUNT_TASK_MET) / COUNT_TASK;
 }
 
 map<int, int> CPFerryTask::getCountTaskForNodes()

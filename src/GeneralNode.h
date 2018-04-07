@@ -33,6 +33,11 @@ public:
 		return this->name;
 	}
 
+	bool getFifo() const
+	{
+		return fifo;
+	}
+
 	string toString() override
 	{
 		return this->getName();
@@ -189,13 +194,30 @@ public:
 		return overflow;
 	}
 
+	//给定容量，按照节点的 FIFO/FILO 策略，选出合适的数据用于数据传输
+	//返回的队列不会超过传输窗口大小，如果capacity 为 -1 即默认上限即窗口大小
+	vector<CData> getDataForTrans(int capacity);
+
+	vector<CData> bufferData(int now, vector<CData> datas)
+	{
+		vector<CData> ack = datas;
+
+		this->pushIntoBuffer(datas, now);
+		vector<CData> overflow = this->dropDataIfOverflow();
+		RemoveFromList(ack, overflow);
+
+		return ack;
+	}
+
+public:
+
 	//按照给定的容量裁剪数据列表，返回被移除的数据,FIFO意味着从左侧开始移除
 	//注意：调用之前应该确保数据已排序
 	static vector<CData> clipDataByCapacity(vector<CData> &datas, int capacity, bool fifo)
 	{
 		vector<CData> overflow;
 		if( capacity <= 0
-		   || datas.size() <= capacity )
+			|| datas.size() <= capacity )
 			return overflow;
 
 		if( fifo )
@@ -210,21 +232,6 @@ public:
 		}
 
 		return overflow;
-	}
-
-	//给定容量，按照节点的 FIFO/FILO 策略，选出合适的数据用于数据传输
-	//返回的队列不会超过传输窗口大小，如果capacity 为 -1 即默认上限即窗口大小
-	vector<CData> getDataForTrans(int capacity);
-
-	vector<CData> bufferData(int now, vector<CData> datas)
-	{
-		vector<CData> ack = datas;
-
-		this->pushIntoBuffer(datas, now);
-		vector<CData> overflow = this->dropDataIfOverflow();
-		RemoveFromList(ack, overflow);
-
-		return ack;
 	}
 
 };

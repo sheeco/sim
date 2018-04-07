@@ -86,9 +86,19 @@ bool operator == (const CData data, int id)
 }
 
 
+int CCtrl::SIZE_CTRL = INVALID;
+
+
 CCtrl::CCtrl()
 {
 	init();
+}
+
+int CCtrl::getSizeCtrl()
+{
+	if( SIZE_CTRL < 0 )
+		SIZE_CTRL = getConfig<int>("data", "size_ctrl");
+	return SIZE_CTRL;
 }
 
 void CCtrl::init()
@@ -100,42 +110,42 @@ void CCtrl::init()
 	this->capacity = 0;
 }
 
-CCtrl::CCtrl(int node, int timeBirth, int byte, EnumCtrlType type)
+CCtrl::CCtrl(int node, int timeBirth)
 {
 	init();
 	this->node = node;
 	this->time = this->timeBirth = timeBirth;
-	this->size = byte;
+	this->size = getSizeCtrl();
+}
+
+//TODO: remove arg byte
+CCtrl::CCtrl(int node, int timeBirth, EnumCtrlType type)
+{
+	CCtrl(node, timeBirth);
 	this->type = type;
 }
 
-CCtrl::CCtrl(int node, vector<CData> datas, int timeBirth, int byte, EnumCtrlType type)
+CCtrl::CCtrl(int node, vector<CData> datas, int timeBirth, EnumCtrlType type)
 {
-	init();
-	this->node = node;
+	CCtrl(node, timeBirth);
 	if(type == _ack)
 	{
 		this->ack = datas;
 	}
 	else
 		throw string("CCtrl::CCtrl(): `type` must be _ack for this constructor.");
-	this->time = this->timeBirth = timeBirth;
-	this->size = byte;
 	this->type = type;
 }
 
-CCtrl::CCtrl(int node, int capacity, int timeBirth, int byte, EnumCtrlType type)
+CCtrl::CCtrl(int node, int capacity, int timeBirth, EnumCtrlType type)
 {
-	init();
-	this->node = node;
+	CCtrl(node, timeBirth);
 	if(type == _capacity)
 	{
 		this->capacity = capacity;
 	}
 	else
 		throw string("CCtrl::CCtrl(): `type` must be _capacity for this constructor.");
-	this->time = this->timeBirth = timeBirth;
-	this->size = byte;
 	this->type = type;
 }
 
@@ -160,7 +170,6 @@ CFrame::CFrame(CGeneralNode & src, vector<CPacket*> packets) : src(&src), dst(nu
 CFrame::~CFrame()
 {
 	FreePointerVector(packets);
-	packets.clear();
 }
 
 void CFrame::init()

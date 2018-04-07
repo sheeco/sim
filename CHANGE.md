@@ -840,10 +840,17 @@
 - FIX: bug with the initialization of `CTracePrediction`;
 - OPT: for PFerry metric calculation;
 
-###### 2018-03-23 · *< 4.2.6656.19382 >*
+###### [2018-03-23 · *< 4.2.6656.19382 >*](74a51cc2dc93fa09abb786517752f09a23f2cde8)
 
 - ADD: Enable tagging with log folder;
 - RFCT: for logging;
+
+###### 2018-04-07 · *< 4.3.6671.24382 >*
+
+- FIX: memory leaks caused by 
+  (1)calling of `free` instead of `delete`, 
+  (2)local copy of `CFrame` in `CMacProtocol::receiveFrame()`;
+- OPT: for ACK packet, `CCtrl` & printing;
 
 
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；

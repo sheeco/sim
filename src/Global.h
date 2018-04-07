@@ -13,6 +13,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <io.h>
+
+#ifdef DEBUG
+#include "vld.h"
+#endif // DEBUG
+
 #include <iostream>
 using std::ios;
 using std::cin;
@@ -307,12 +312,12 @@ namespace global
 		return false;
 	}
 
-	template <class E>
-	bool IfExists(vector<E> list, E elem, bool(*comp)(E, E))
+	template <class E, class T>
+	bool IfExists(vector<E> list, T elem, bool(*identical)(E, T))
 	{
 		for(vector<E>::iterator i = list.begin(); i != list.end(); ++i)
 		{
-			if(comp(*i, elem))
+			if(identical(*i, elem))
 				return true;
 		}
 		return false;

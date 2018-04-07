@@ -230,19 +230,24 @@ private:
 	//	vector<int> sv;
 	vector<CData> ack;  //直接传递 CData 类，方便操作，实际应传递 sv
 
+	static int SIZE_CTRL;
+
+	static int getSizeCtrl();
+
 	void init();
 
-	CCtrl();
+	CCtrl(int node, int timeBirth);
 
 
 public:
 
+	CCtrl();
 	//RTS / CTS / NO_DATA
-	CCtrl(int node, int timeBirth, int byte, EnumCtrlType type);
+	CCtrl(int node, int timeBirth, EnumCtrlType type);
 	//ACK
-	CCtrl(int node, vector<CData> datas, int timeBirth, int byte, EnumCtrlType type);
+	CCtrl(int node, vector<CData> datas, int timeBirth, EnumCtrlType type);
 	//capacity
-	CCtrl(int node, int capacity, int timeBirth, int byte, EnumCtrlType type);
+	CCtrl(int node, int capacity, int timeBirth, EnumCtrlType type);
 	////data index ( delivery preds )
 	//CCtrl(int node, map<int, double> pred, int timeBirth, int byte, EnumCtrlType type);
 	////data index ( summary vector )

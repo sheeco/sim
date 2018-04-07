@@ -138,7 +138,7 @@ public:
 			{
 				if(IfExists(newIds, ( *ipos )->getNode()))
 				{
-					delete *ipos;
+					FreePointer(*ipos);
 					ipos = positions.erase(ipos);
 				}
 				else

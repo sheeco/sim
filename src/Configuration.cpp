@@ -61,7 +61,7 @@ bool CConfiguration::ParseConfiguration(vector<string> args, string source)
 		return false;
 
 	CPrintHelper::PrintNewLine();
-	CPrintHelper::PrintHeading("Update Configurations From " + source + " ...");
+	CPrintHelper::PrintDoingHeading("Update Configurations From " + source);
 
 	vector<string>::iterator iarg = args.begin();
 
@@ -367,7 +367,7 @@ void CConfiguration::InitConfiguration()
 void CConfiguration::ValidateConfiguration()
 {
 	CPrintHelper::PrintNewLine();
-	CPrintHelper::PrintHeading("Validate Configurations ...");
+	CPrintHelper::PrintDoingHeading("Validate Configurations");
 
 	if( CNode::finiteEnergy() )
 	{

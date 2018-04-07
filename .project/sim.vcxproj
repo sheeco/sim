@@ -50,6 +50,8 @@
     <IntDir>..\.build\$(ProjectName)\.debug\</IntDir>
     <TargetName>$(ProjectName).debug</TargetName>
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
+    <IncludePath>C:\Program Files (x86)\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\Visual Leak Detector\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -119,7 +121,6 @@
       </ExcludedFromBuild>
     </None>
     <None Include="..\sim.version" />
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Configuration.cpp" />

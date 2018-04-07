@@ -625,6 +625,7 @@ vector<CPacket*> HAR::receivePackets(CSink* sink, CHarMANode* fromMA, vector<CPa
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
+	CCtrl* ackToSend = nullptr;
 
 	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -636,7 +637,7 @@ vector<CPacket*> HAR::receivePackets(CSink* sink, CHarMANode* fromMA, vector<CPa
 			case CCtrl::_rts:
 
 				//CTS
-				ctrlToSend = new CCtrl(sink->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
+				ctrlToSend = new CCtrl(sink->getID(), time, CCtrl::_cts);
 
 				break;
 
@@ -681,7 +682,7 @@ vector<CPacket*> HAR::receivePackets(CSink* sink, CHarMANode* fromMA, vector<CPa
 			vector<CData> ack = CSink::bufferData(time, datas);
 
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(CSink::getSink()->getID(), ack, time, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
+			ackToSend = new CCtrl(CSink::getSink()->getID(), ack, time, CCtrl::_ack);
 		}
 	}
 
@@ -690,6 +691,8 @@ vector<CPacket*> HAR::receivePackets(CSink* sink, CHarMANode* fromMA, vector<CPa
 	CFrame* frameToSend = nullptr;
 	if( ctrlToSend != nullptr )
 		packetsToSend.push_back(ctrlToSend);
+	if( ackToSend != nullptr )
+		packetsToSend.push_back(ackToSend);
 
 	return packetsToSend;
 
@@ -723,7 +726,7 @@ vector<CPacket*> HAR::receivePackets(CHarMANode* ma, CSink* fromSink, vector<CPa
 					return packetsToSend;
 				}
 				//CTS
-				ctrlToSend = new CCtrl(ma->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
+				ctrlToSend = new CCtrl(ma->getID(), time, CCtrl::_cts);
 				// + DATA
 				dataToSend = ma->getDataForTrans(INVALID);
 
@@ -837,7 +840,7 @@ vector<CPacket*> HAR::receivePackets(CNode* node, CHarMANode* fromMA, vector<CPa
 					return packetsToSend;
 				}
 				//CTS
-				ctrlToSend = new CCtrl(node->getID(), time, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
+				ctrlToSend = new CCtrl(node->getID(), time, CCtrl::_cts);
 
 				break;
 
@@ -918,6 +921,7 @@ vector<CPacket*> HAR::receivePackets(CHarMANode* ma, CNode* fromNode, vector<CPa
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
+	CCtrl* ackToSend = nullptr;
 
 	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -971,7 +975,7 @@ vector<CPacket*> HAR::receivePackets(CHarMANode* ma, CNode* fromNode, vector<CPa
 			vector<CData> ack = ma->bufferData(time, datas);
 
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(ma->getID(), ack, time, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
+			ackToSend = new CCtrl(ma->getID(), ack, time, CCtrl::_ack);
 		}
 	}
 
@@ -980,6 +984,8 @@ vector<CPacket*> HAR::receivePackets(CHarMANode* ma, CNode* fromNode, vector<CPa
 	CFrame* frameToSend = nullptr;
 	if( ctrlToSend != nullptr )
 		packetsToSend.push_back(ctrlToSend);
+	if( ackToSend != nullptr )
+		packetsToSend.push_back(ackToSend);
 
 	return packetsToSend;
 

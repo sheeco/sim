@@ -274,9 +274,9 @@ CFrame* CNode::sendRTSWithCapacityAndIndex(int now)
 {
 	vector<CPacket*> packets;
 	
-	packets.push_back( new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_rts) );
-	packets.push_back( new CCtrl(ID, this->getBufferVacancy(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity) );
-	packets.push_back( new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_index) );
+	packets.push_back( new CCtrl(ID, now, CCtrl::_rts) );
+	packets.push_back( new CCtrl(ID, this->getBufferVacancy(), now, CCtrl::_capacity) );
+	packets.push_back( new CCtrl(ID, now, CCtrl::_index) );
 	CFrame* frame = new CFrame(*this, packets);
 
 	return frame;	

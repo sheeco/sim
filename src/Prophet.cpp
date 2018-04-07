@@ -230,12 +230,12 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CSink* sink, vector<CPack
 
 				updateDeliveryPredsWithSink(node->getID(), now);
 
-				if( node->getAllData().empty() )
+				if( !node->hasData() )
 				{
 					return packetsToSend;
 				}
 				//CTS
-				ctrlToSend = new CCtrl(node->getID(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
+				ctrlToSend = new CCtrl(node->getID(), now, CCtrl::_cts);
 				// + DATA
 				dataToSend = node->getDataForTrans(INVALID);
 
@@ -322,6 +322,7 @@ vector<CPacket*> CProphet::receivePackets(CSink* sink, CNode* fromNode, vector<C
 {
 	vector<CPacket*> packetsToSend;
 	CCtrl* ctrlToSend = nullptr;
+	CCtrl* ackToSend = nullptr;
 
 	for(vector<CPacket*>::iterator ipacket = packets.begin(); ipacket != packets.end(); )
 	{
@@ -375,7 +376,7 @@ vector<CPacket*> CProphet::receivePackets(CSink* sink, CNode* fromNode, vector<C
 			vector<CData> ack = CSink::bufferData(now, datas);
 
 			//ACK（如果收到的数据全部被丢弃，发送空的ACK）
-			ctrlToSend = new CCtrl(CSink::getSink()->getID(), ack, now, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
+			ackToSend = new CCtrl(CSink::getSink()->getID(), ack, now, CCtrl::_ack);
 		}
 	}
 
@@ -383,6 +384,8 @@ vector<CPacket*> CProphet::receivePackets(CSink* sink, CNode* fromNode, vector<C
 
 	if( ctrlToSend != nullptr )
 		packetsToSend.push_back(ctrlToSend);
+	if( ackToSend != nullptr )
+		packetsToSend.push_back(ackToSend);
 
 	return packetsToSend;
 
@@ -396,6 +399,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 	CCtrl* capacityToSend = nullptr;
 	CCtrl* indexToSend = nullptr;
 	CCtrl* nodataToSend = nullptr;  //NODATA包代表缓存为空，没有适合传输的数据
+	CCtrl* ackToSend = nullptr;
 	vector<CData> dataToSend;  //空vector代表拒绝传输数据
 	int capacity = INVALID;
 	bool waitForResponse = false;
@@ -418,17 +422,17 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				//skip if has spoken recently
 				if( node->hasCommunicatedRecently(fromNode->getID(), now) )
 				{
-					CPrintHelper::PrintCommunication(now, node->getName(), fromNode->getName(), "skip");
+					CPrintHelper::PrintCommunicationSkipped(now, node->getName(), fromNode->getName());
 					return packetsToSend;
 				}
 				//rcv RTS from node
 				else
 				{
 					//CTS
-					ctrlToSend = new CCtrl(node->getID(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_cts);
+					ctrlToSend = new CCtrl(node->getID(), now, CCtrl::_cts);
 
 					// + Capacity
-					capacityToSend = new CCtrl(node->getID(), node->getBufferVacancy(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_capacity);
+					capacityToSend = new CCtrl(node->getID(), node->getBufferVacancy(), now, CCtrl::_capacity);
 
 				}
 
@@ -463,14 +467,13 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				//路由协议允许向该节点转发数据
 				if( shouldForward(node->getID(), fromNode->getID(), now ) )
 				{
-					if( capacity == 0 )
-						return packetsToSend;
-					else
+					if( capacity > 0 )
 						dataToSend = node->getDataForTrans(capacity);
 
 					//但缓存为空
-					if( dataToSend.empty() )
-						nodataToSend = new CCtrl(node->getID(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_no_data);
+					if( capacity == 0 
+					   || dataToSend.empty() )
+						nodataToSend = new CCtrl(node->getID(), now, CCtrl::_no_data);
 
 					//如果路由协议允许向该节点发送数据，对方节点就不允许发送数据，因此无需发送capacity
 					else
@@ -498,7 +501,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				//收到空的ACK时，结束本次数据传输
 				if( ctrl->getACK().empty() )
 					return packetsToSend;
-				//clear data with ack
+				
 				else
 					node->dropDataByAck( ctrl->getACK() );
 
@@ -512,7 +515,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 
 				//收到NODATA，也将回复一个空的ACK，即，也将被认为数据传输成功
 				//空的ACK
-				ctrlToSend = new CCtrl(node->getID(), vector<CData>(), now, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
+				ackToSend = new CCtrl(node->getID(), vector<CData>(), now, CCtrl::_ack);
 				//加入最近邻居列表
 				node->updateCommunicationHistory( fromNode->getID(), now );
 				node->startDiscovering();
@@ -522,7 +525,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				dataToSend.clear();
 				if( nodataToSend != nullptr )
 				{
-					free(nodataToSend);
+					FreePointer(nodataToSend);
 					nodataToSend = nullptr;
 				}
 
@@ -550,7 +553,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 			dataToSend.clear();
 			if( nodataToSend != nullptr )
 			{
-				free(nodataToSend);
+				FreePointer(nodataToSend);
 				nodataToSend = nullptr;
 			}
 
@@ -558,7 +561,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 			vector<CData> ack;
 			//存入收到的数据并发送ACK
 			ack = node->bufferData(now, datas);
-			ctrlToSend = new CCtrl(node->getID(), ack, now, getConfig<int>("data", "size_ctrl"), CCtrl::_ack);
+			ackToSend = new CCtrl(node->getID(), ack, now, CCtrl::_ack);
 			//加入最近邻居列表
 			node->updateCommunicationHistory( fromNode->getID(), now );
 			node->startDiscovering();
@@ -579,6 +582,10 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 	if( indexToSend != nullptr )
 	{
 		packetsToSend.push_back(indexToSend);
+	}
+	if( ackToSend != nullptr )
+	{
+		packetsToSend.push_back(ackToSend);
 	}
 	if( nodataToSend != nullptr )
 	{

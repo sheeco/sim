@@ -7,7 +7,7 @@ CFrame * CGeneralNode::sendRTS(int now)
 {
 	vector<CPacket*> packets;
 
-	packets.push_back(new CCtrl(ID, now, getConfig<int>("data", "size_ctrl"), CCtrl::_rts));
+	packets.push_back(new CCtrl(ID, now, CCtrl::_rts));
 	CFrame* frame = new CFrame(*this, packets);
 
 	return frame;

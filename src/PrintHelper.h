@@ -86,10 +86,6 @@ private:
 	{
 		flashToCout(toDetail(str));
 	}
-	inline static void PrintCommunication(int time, string str)
-	{
-		PrintDetail(time, str, 1);
-	}
 
 
 public:
@@ -121,6 +117,11 @@ public:
 	{
 		double percentage = NDigitFloat(value * 100, 1);
 		PrintAttribute(des, STRING(percentage) + " %");
+	}
+	inline static void PrintDoingHeading(string str)
+	{
+		str = toDoing(str);
+		PrintHeading(str);
 	}
 	inline static void PrintDoing(string str)
 	{
@@ -179,13 +180,13 @@ public:
 	{
 		PrintDetail(toTime(time) + str, detail);
 	}
-	inline static void PrintCommunication(int time, string from, string to, string comm)
+	inline static void PrintCommunicationSkipped(int time, string from, string to)
 	{
-		PrintCommunication(time, from + toCommunication(comm) + to);
+		PrintDetail(time, from + toCommunication("skip") + to, 2);
 	}
 	inline static void PrintCommunication(int time, string from, string to, int nData)
 	{
-		PrintCommunication(time, from + toCommunication( NDigitString(nData, 2) ) + to);
+		PrintDetail(time, from + toCommunication( NDigitString(nData, 2) ) + to, 1);
 	}
 	static void PrintFile(string filepath, string des);
 

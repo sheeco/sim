@@ -76,10 +76,6 @@ public:
 	{
 		return transmitFrame(src, frame, now, findNeighbors, receivePackets);
 	}
-	static bool receiveFrame(CGeneralNode& src, CFrame* frame, int now, vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ))
-	{
-		receiveFrame(src, frame, now, receivePackets);
-	}
 	//custom transmitting, enabled routing protocols to pass in its own neighbor pool
 	static bool transmitFrame(CGeneralNode& src, CFrame* frame, int now, vector<CGeneralNode*> (*findNeighbors)(CGeneralNode&), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));
 	static bool receiveFrame(CGeneralNode& gnode, CFrame* frame, int now, vector<CGeneralNode*>(*findNeighbors)( CGeneralNode& ), vector<CPacket*>(*receivePackets)( CGeneralNode &gToNode, CGeneralNode &gFromNode, vector<CPacket*> packets, int time ));

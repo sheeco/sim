@@ -177,6 +177,9 @@ bool CRunHelper::Debug()
 
 void CRunHelper::Exit(int code)
 {
+	CPrintHelper::PrintNewLine();
+	CPrintHelper::PrintDoingHeading("Exit");
+
 	time_t seconds;  //秒时间  
 	char temp_time[65];
 	seconds = time(nullptr); //获取目前秒时间  
