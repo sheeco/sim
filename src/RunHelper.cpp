@@ -1,6 +1,7 @@
 #include "RunHelper.h"
 #include "Configuration.h"
 #include "Prophet.h"
+#include "Epidemic.h"
 #include "HAR.h"
 #include "HDC.h"
 #include "PFerry.h"
@@ -71,6 +72,24 @@ bool CRunHelper::RunSimulation()
 
 	switch( getConfig<config::EnumRoutingProtocolScheme>("simulation", "routing_protocol") )
 	{
+		case config::_epidemic:
+
+			CEpidemic::Init(now);
+			while( now <= getConfig<int>("simulation", "runtime") )
+			{
+				dead = !CEpidemic::Operate(now);
+
+				if( dead )
+				{
+					updateConfig<int>("simulation", "runtime", now);
+					break;
+				}
+				now += getConfig<int>("simulation", "slot");
+			}
+			CEpidemic::PrintFinal(now);
+
+			break;
+
 		case config::_prophet:
 			
 			CProphet::Init(now);

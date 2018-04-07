@@ -79,9 +79,10 @@ public:
 
 	typedef enum EnumRoutingProtocolScheme
 	{
-		_xhar = 1,
+		_epidemic = 1,
 		_prophet = 2,
-		_pferry = 3
+		_xhar = 3,
+		_pferry = 4
 	} EnumRoutingProtocolScheme;
 
 	typedef enum EnumHotspotSelectScheme

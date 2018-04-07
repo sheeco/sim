@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\Entity.cpp" />
+    <ClCompile Include="..\src\Epidemic.cpp" />
     <ClCompile Include="..\src\ParseHelper.cpp" />
     <ClCompile Include="..\src\PFerry.cpp" />
     <ClCompile Include="..\src\PrintHelper.cpp" />
@@ -153,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Configuration.h" />
+    <ClInclude Include="..\src\Epidemic.h" />
     <ClInclude Include="..\src\ParseHelper.h" />
     <ClInclude Include="..\src\PFerry.h" />
     <ClInclude Include="..\src\PrintHelper.h" />

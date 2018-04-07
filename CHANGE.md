@@ -845,12 +845,17 @@
 - ADD: Enable tagging with log folder;
 - RFCT: for logging;
 
-###### 2018-04-07 · *< 4.3.6671.24382 >*
+###### [2018-04-07 · *< 4.3.6671.24382 >*](aaf3089e1062274cce696e8e63eca0935bc19364)
 
 - FIX: memory leaks caused by 
   (1)calling of `free` instead of `delete`, 
   (2)local copy of `CFrame` in `CMacProtocol::receiveFrame()`;
+- FIX: bug with task met rate calculationg;
 - OPT: for ACK packet, `CCtrl` & printing;
+
+###### 2018-04-07 · *< 4.4.6671.25245 >*
+
+- ADD: Epidemic routing protocol;
 
 
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；

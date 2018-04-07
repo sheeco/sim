@@ -102,6 +102,9 @@
     <ClCompile Include="..\src\Entity.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Epidemic.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Configuration.h">
@@ -189,6 +192,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\PFerry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Epidemic.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
