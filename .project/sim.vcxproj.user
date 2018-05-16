@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>simulation.routing_protocol 3  log.detail 0 pferry.path_predict ../res/fake pferry.starttime 2400 simulation.hotspot_select 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>simulation.routing_protocol 1  log.detail 1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>..\bin\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

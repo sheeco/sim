@@ -13,24 +13,6 @@
 //	//注意：必须在调用UpdateNodeStatus之后调用此函数
 //	static void SendData(int now);
 
-vector<CData> CEpidemic::getDataForTrans(CNode * from, CNode * to, int capacity)
-{
-	if( capacity == 0 )
-		return vector<CData>();
-
-	vector<CData> my = from->getAllData(), your = to->getAllData();
-	int window = getConfig<int>("trans", "size_window");
-	if( capacity == 0 )
-		throw string("CEpidemic::getDataForTrans() capacity = 0.");
-	else if( capacity < 0
-			|| capacity > window )
-		capacity = window;
-
-	RemoveFromList(my, your);
-	CNode::clipDataByCapacity(my, capacity, !from->getFifo());
-	return my;
-}
-
 CEpidemic::CEpidemic()
 {
 }
@@ -334,7 +316,7 @@ vector<CPacket*> CEpidemic::receivePackets(CNode* node, CNode* fromNode, vector<
 					
 				case CCtrl::_index:
 
-					dataToSend = getDataForTrans(node, fromNode, capacity);
+					dataToSend = node->getDataForTrans(fromNode->getBufferHistory(), capacity);
 
 					if( dataToSend.empty() )
 						nodataToSend = new CCtrl(node->getID(), now, CCtrl::_no_data);
@@ -355,7 +337,6 @@ vector<CPacket*> CEpidemic::receivePackets(CNode* node, CNode* fromNode, vector<
 					//收到空的ACK时，结束本次数据传输
 					if( !ctrl->getACK().empty() )
 					{
-						node->dropDataByAck(ctrl->getACK());
 						CPrintHelper::PrintCommunication(now, node->getName(), fromNode->getName(), ctrl->getACK().size());
 					}
 

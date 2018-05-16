@@ -25,6 +25,9 @@ vector<CData> CSink::bufferData(int time, vector<CData> datas)
 	vector<CData> ack = datas;
 	for(auto idata = datas.begin(); idata != datas.end(); ++idata)
 	{
+		if( IfExists(sink->buffer, *idata) )
+			continue;
+
 		if( idata->getTimeArrival() == INVALID )
 			idata->arriveSink(time);
 		sink->buffer.push_back(*idata);

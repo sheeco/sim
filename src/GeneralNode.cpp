@@ -42,3 +42,23 @@ vector<CData> CGeneralNode::getDataForTrans(int capacity)
 	clipDataByCapacity(datas, capacity, !this->fifo);
 	return datas;
 }
+
+//选择对方没有的数据用于发送
+
+vector<CData> CGeneralNode::getDataForTrans(vector<CData> except, int capacity)
+{
+	if( capacity == 0 )
+		return vector<CData>();
+
+	vector<CData> mine = this->buffer;
+	int window = getConfig<int>("trans", "size_window");
+	if( capacity == 0 )
+		throw string("CGeneralNode::getDataForTrans() capacity = 0.");
+	else if( capacity < 0
+			|| capacity > window )
+		capacity = window;
+
+	RemoveFromList(mine, except);
+	CNode::clipDataByCapacity(mine, capacity, !fifo);
+	return mine;
+}

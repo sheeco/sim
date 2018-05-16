@@ -858,6 +858,11 @@
 - ADD: Epidemic routing protocol;
 
 
+###### 2018-04-09 · *< 4.4.6710.29468 >*
+
+- FIX: bug with sink receiving duplicate data;
+
+
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
 - [ ] ADD：添加在数据连接断开后重新开始邻居节点发现的操作；
 - [ ] ADD：添加节点对信道繁忙的检测及响应；

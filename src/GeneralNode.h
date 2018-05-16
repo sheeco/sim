@@ -21,6 +21,9 @@ protected:
 	string name;
 	bool fifo;
 
+	vector<CData> bufferHistory;
+
+
 public:
 
 	void setName(string name)
@@ -36,6 +39,11 @@ public:
 	bool getFifo() const
 	{
 		return fifo;
+	}
+
+	vector<CData> getBufferHistory() const
+	{
+		return this->bufferHistory;
 	}
 
 	string toString() override
@@ -198,6 +206,9 @@ public:
 	//返回的队列不会超过传输窗口大小，如果capacity 为 -1 即默认上限即窗口大小
 	vector<CData> getDataForTrans(int capacity);
 
+	//选择对方没有的数据用于发送
+	vector<CData> getDataForTrans(vector<CData> except, int capacity);
+
 	vector<CData> bufferData(int now, vector<CData> datas)
 	{
 		vector<CData> ack = datas;
@@ -205,6 +216,7 @@ public:
 		this->pushIntoBuffer(datas, now);
 		vector<CData> overflow = this->dropDataIfOverflow();
 		RemoveFromList(ack, overflow);
+		AddToListUniquely(this->bufferHistory, ack);
 
 		return ack;
 	}

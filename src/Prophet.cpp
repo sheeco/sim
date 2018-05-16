@@ -468,7 +468,7 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 				if( shouldForward(node->getID(), fromNode->getID(), now ) )
 				{
 					if( capacity > 0 )
-						dataToSend = node->getDataForTrans(capacity);
+						dataToSend = node->getDataForTrans(fromNode->getBufferHistory(), capacity);
 
 					//µ«»º´æÎª¿Õ
 					if( capacity == 0 
@@ -503,7 +503,6 @@ vector<CPacket*> CProphet::receivePackets(CNode* node, CNode* fromNode, vector<C
 					return packetsToSend;
 				
 				else
-					node->dropDataByAck( ctrl->getACK() );
 
 				CPrintHelper::PrintCommunication(now, node->getName(), fromNode->getName(), ctrl->getACK().size());
 

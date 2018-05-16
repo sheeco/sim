@@ -158,6 +158,7 @@ public:
 
 	inline void arriveSink(int timeArrival)
 	{
+		this->arriveAnotherNode(timeArrival);
 		this->timeArrival = timeArrival;
 		this->time = timeArrival;
 		++COUNT_ARRIVAL;
