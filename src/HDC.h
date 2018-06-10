@@ -6,6 +6,7 @@
 #include "MacProtocol.h"
 
 
+//HDC协议(基于热点的Duty Cycle)
 class CHDC :
 	virtual public CMacProtocol
 {

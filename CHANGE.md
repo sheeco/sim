@@ -853,14 +853,17 @@
 - FIX: bug with task met rate calculationg;
 - OPT: for ACK packet, `CCtrl` & printing;
 
-###### 2018-04-07 · *< 4.4.6671.25245 >*
+###### 2018-04-07 · [*< 4.4.6671.25245 >*](daa3cd2083a7eb9dd6c7d75aa1e8f6eb67023ccc)
 
 - ADD: Epidemic routing protocol;
 
-
-###### 2018-04-09 · *< 4.4.6710.29468 >*
+###### 2018-04-09 · [*< 4.4.6710.29468 >*](a43071cf85c5169af33d57dc53928832bccd90a7)
 
 - FIX: bug with sink receiving duplicate data;
+
+###### 2018-06-1 · *< 4.4.6735.31503 >*
+
+- MNT: Update `README.md` & add some more comments;
 
 
 - [ ] ADD：添加 `timerTransmission` 以指示数据连接的开始、断开及超时；
@@ -868,19 +871,11 @@
 - [ ] ADD：添加节点对信道繁忙的检测及响应；
 - [ ] ADD：添加对信道冲突的检测及响应（传输失败）；
 - [ ] ADD：添加传输延迟的模拟；
-- [ ] RFCT：将队列管理相关操作提取成类；
 - [ ] ADD：对多 sink 网络的适配；
-- [ ] FIX：对比 [以往版本](48b5f2fe380ebfa510da3f2e578984bd353894b6) 找出 HAR 路由 MA 和节点通信流程中存在的问题；
 - [ ] RFCT：将文件 `GPS.h` 和 `MotionRange.h` 中的定义整理到 Helper 类 ?
 - [ ] RFCT：将文件分离到解决方案下的不同子项目 ?
-- [ ] RFCT：将第一个命令行参数用于分离操作，而非定义多个主函数入口 ?
 - [ ] RFCT：整合 `UTMCoor` 结构体和 `CCoordinate` 类的定义和引用；
-- [ ] RFCT：将 `MotionRange.h` 中获取指定路径下文件列表的操作提取到 `CFileHelper` 类中，并添加路径参数入口；
 - [ ] ADD：如果轨迹文件中的时槽为动态变化的，需要在 `CCTrace::getLocation()` 中增加相应的读取代码；
 - [ ] ADD：对节点集合采用全局的 x 坐标排序存储（使用网格以减少二阶遍历？），并将搜索操作提取到全局，减少不必要的重复遍历搜索；
-- [ ] RFCT：将 `Global.h` 和 `main.cpp` 中的全局辅助函数放入 `CRunHelper` ?
-- [ ] MNT：在 `README.md` 中，添加 trace 文件的格式和目录位置要求的说明；
 - [ ] RFCT：尝试对每个头文件单独生成 dll，而非整个项目全部生成到一个可执行文件；
 - [ ] ADD：使用 `__FILE__`、`__LINE__` 等预编译宏，为未捕捉的异常输出错误信息；
-- [ ] ADD：为 Release 版本添加尽可能多的合法性检查、异常捕获和输出；
-- [ ] ADD：重写 Epidemic 路由的数据通信流程；

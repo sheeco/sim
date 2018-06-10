@@ -7,6 +7,7 @@
 #include "Hotspot.h"
 
 
+//iHAR中的疏漏节点修复算法
 class CNodeRepair : 
 	virtual public CAlgorithm
 {

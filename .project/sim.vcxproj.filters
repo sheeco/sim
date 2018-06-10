@@ -19,6 +19,7 @@
     <None Include="..\sim.version">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Data.cpp">

@@ -14,6 +14,7 @@
 
 class CFrame;
 
+//所有类型节点(sink, sensor node, MA)的通用基类
 class CGeneralNode :
 	virtual public CBasicEntity, virtual public CUnique, virtual public CSpatial
 {

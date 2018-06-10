@@ -9,6 +9,7 @@
 #include "Configuration.h"
 
 
+//存储轨迹预测结果的类
 class CTracePrediction :
 	virtual public Trace
 {
@@ -70,6 +71,7 @@ public:
 };
 
 
+//LTPR(PFerry)中MA节点的数据收集任务类
 class CPFerryTask: 
 	virtual CEntity
 {
@@ -123,6 +125,7 @@ protected:
 	static map<int, int> getCountTaskForNodes();
 };
 
+//装载LTPR(PFerry)协议的MA节点
 class CPFerryMANode : 
 	virtual public CMANode
 {
@@ -193,6 +196,7 @@ protected:
 	void updateStatus(int now);
 };
 
+//LTPR(PFerry)路由
 class CPFerry :
 	virtual public CRoutingProtocol
 {

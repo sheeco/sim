@@ -6,7 +6,7 @@
 #include "Entity.h"
 
 
-//存储单个节点移动位置的类
+//存储节点地理位置记录的类
 class CPosition : 
 	virtual public CBasicEntity, virtual public CUnique, public CGeoEntity
 {

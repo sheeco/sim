@@ -7,6 +7,7 @@
 #include "Global.h"
 
 
+//½Úµã¹ì¼£Àà
 class Trace :
 	virtual public CGeoEntity
 {

@@ -6,7 +6,7 @@
 #include "Global.h"
 #include "Process.h"
 
-//
+//仿真运行的辅助类
 class CRunHelper :
 	virtual public CHelper
 {

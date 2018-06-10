@@ -121,6 +121,7 @@
       </ExcludedFromBuild>
     </None>
     <None Include="..\sim.version" />
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Configuration.cpp" />

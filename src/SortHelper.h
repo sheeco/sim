@@ -8,7 +8,7 @@
 #include "Node.h"
 
 
-//一些预处理函数包装成的类
+//排序辅助类
 class CSortHelper :
 	virtual public CHelper
 {

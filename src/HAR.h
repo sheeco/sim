@@ -10,6 +10,7 @@
 #include "SMac.h"
 
 
+//用于xHAR协议的MA路径类
 class CHarRoute : 
 	virtual public CRoute
 {
@@ -63,6 +64,7 @@ protected:
 
 };
 
+//装在xHAR协议的MA节点类
 class CHarMANode : 
 	virtual public CMANode
 {
@@ -104,6 +106,8 @@ protected:
 
 };
 
+//xHAR路由
+//通过指定配置参数simulation.hotspot_select来选择具体的HAR(_original)/iHAR(_ihs)/mergeHAR(_mhs)
 class HAR :
 	virtual public CRoutingProtocol
 {

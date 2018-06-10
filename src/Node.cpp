@@ -32,8 +32,6 @@ void CNode::init()
 	fifo = getConfig<config::EnumQueueScheme>("node", "scheme_queue") == config::_fifo;
 	trace = nullptr;
 	dataRate = INVALID;
-	//timerCarrierSense = getConfig<int>("mac", "cycle_carrier_sense");
-	//discovering = false;
 	timeLastData = INVALID;
 	timeDeath = INVALID;
 	capacityBuffer = DEFAULT_CAPACITY_BUFFER;

@@ -9,6 +9,7 @@
 #include "GeneralNode.h"
 
 
+//(通用)MA节点类
 class CMANode :
 	virtual public CGeneralNode
 {

@@ -7,6 +7,7 @@
 #include "Process.h"
 
 
+//HAR中的后续选取算法
 class CPostSelect : 
 	virtual public CAlgorithm
 {

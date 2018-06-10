@@ -6,7 +6,8 @@
 #include "Process.h"
 #include "Global.h"
 
-//
+
+//×Ö·û´®½âÎö¸¨ÖúÀà
 class CParseHelper :
 	public CHelper
 {

@@ -102,13 +102,16 @@ using std::setfill;
 
 namespace global
 {
+	//配置参数支持的所有数据类型
 	typedef enum EnumKnownType
 	{
 		bool_type,
-		int_type,
+		int_type,  //Enum类型将被视作int
 		double_type,
 		string_type
 	} EnumKnownType;
+
+	//用于实现类型映射的辅助类
 	typedef struct EnumType
 	{
 		EnumKnownType which;

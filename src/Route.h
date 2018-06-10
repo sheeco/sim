@@ -6,6 +6,7 @@
 #include "Entity.h"
 
 
+//MA节点路径类
 class CRoute : 
 	virtual public CGeoEntity
 {

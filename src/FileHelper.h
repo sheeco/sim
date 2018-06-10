@@ -6,7 +6,7 @@
 #include "Process.h"
 #include "Entity.h"
 
-//包含用于文件相关操作的函数的类
+//文件操作的辅助类
 class CFileHelper :
 	virtual public CHelper
 {

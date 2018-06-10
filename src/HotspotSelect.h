@@ -6,7 +6,7 @@
 #include "SortHelper.h"
 
 
-//HAR中原始的贪婪hotspot选取方法的包装
+//HAR中的热点选取贪婪算法
 class CHotspotSelect :
 	virtual public CAlgorithm
 {

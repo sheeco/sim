@@ -7,7 +7,7 @@
 #include "Node.h"
 
 
-//存储hostspot信息的类
+//xHAR中的热点类
 class CHotspot : 
 	virtual public CBasicEntity, virtual public CUnique, public CGeoEntity
 {

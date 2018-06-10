@@ -13,10 +13,6 @@
 map<string, map<string, pair<void*, EnumType>>> CConfiguration::configurations;
 string CConfiguration::KEYWORD_HELP = "-help";
 
-//CConfiguration::CConfiguration(string keyword) : keyword(keyword)
-//{
-//}
-
 bool CConfiguration::has(string group)
 {
 	map<string, map<string, pair<void*, EnumType>>>::iterator igroup = configurations.find(group);
@@ -188,7 +184,7 @@ void CConfiguration::InitConfiguration()
 
 	addConfiguration("log", "info_log", typeid(string), new string(""));
 	addConfiguration("log", "file_default_config", typeid(string), new string("default.config"));
-	addConfiguration("log", "file_help", typeid(string), new string("help.md"));
+	addConfiguration("log", "file_help", typeid(string), new string("../README.md"));
 	addConfiguration("log", "file_version", typeid( string ), new string("sim.version"));
 
 	addConfiguration("log", "file_console", typeid(string), new string("console.log"));
@@ -233,10 +229,6 @@ void CConfiguration::InitConfiguration()
 	addConfiguration("log", "info_visit", typeid(string), new string("#Time	#VisitAtHotspotPercent	#VisitAtHotspot	#VisitSum "));
 	addConfiguration("log", "file_hotspot_statistics", typeid(string), new string("hotspot-statistics.log"));
 	addConfiguration("log", "info_hotspot_statistics", typeid(string), new string("#Cycle	#ID	#Location	#nPosition, nNode	#Ratio	#Tw	#DeliveryCount "));
-	addConfiguration("log", "file_delivery_hotspot", typeid(string), new string("delivery-hotspot.log"));
-	addConfiguration("log", "info_delivery_hotspot", typeid(string), new string("#Time	#DeliveryCountForSingleHotspotInThisSlot ... "));
-	addConfiguration("log", "file_delivery_statistics", typeid(string), new string("delivery-statistics.log"));
-	addConfiguration("log", "info_delivery_statistics", typeid(string), new string("#Time	#DeliveryAtHotspotCount	#DeliveryTotalCount	#DeliveryAtHotspotPercent "));
 	addConfiguration("log", "file_merge", typeid(string), new string("merge.log"));
 	addConfiguration("log", "info_merge", typeid(string), new string("#Time	#MergeHotspotCount	#MergeHotspotPercent	#OldHotspotCount	#OldHotspotPercent	#NewHotspotCount	#NewHotspotPercent "));
 	addConfiguration("log", "file_merge_details", typeid(string), new string("merge-details.log"));
@@ -265,7 +257,6 @@ void CConfiguration::InitConfiguration()
 	addGroup("mac");
 	addConfiguration("mac", "cycle", typeid(int), new int(30));
 	addConfiguration("mac", "duty_rate", typeid(double), new double(1.0));
-	addConfiguration("mac", "cycle_carrier_sense", typeid(int), new int(0));  //不使用占空比工作时，默认等于 0
 	addConfiguration("mac", "sync_cycle", typeid(bool), new bool(true));
 
 	
@@ -448,7 +439,6 @@ void CConfiguration::PrintConfiguration()
 
 void CConfiguration::Help()
 {
-	return;
 	CPrintHelper::PrintFile(getConfig<string>("log", "dir_run") + getConfig<string>("log", "file_help"), "");
 	_PAUSE_;
 }

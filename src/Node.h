@@ -8,6 +8,8 @@
 #include "Data.h"
 #include "Trace.h"
 
+
+//传感器节点类
 class CNode :
 	virtual public CGeneralNode
 {
